@@ -8,6 +8,10 @@
 //      save version, keeps a backup when it was older, shows its roster, and its checkpoint continues into the case
 //      with its saved lead (seat 1 for older saves), Select cycles the lead and Start → Party opens and closes;
 //      damaged saves open to the title with no errors
+//   6. the case board (spec 004): every test save has a season with Still Harvest (open for saves from before
+//      version 4); a checkpoint, once finished, shows the board with Still Harvest stamped CLOSED and CLOSED n+1;
+//      then New game (asking first when a case is closed) → Pick a team → Your team → START shows the board with
+//      Still Harvest open, B goes back to Your team, and the roster is kept
 // Still needs a person: the changed part playing start to finish, text and typos, the fun check.
 // Usage: node tools/build.js && node tools/check.js
 const { chromium } = require('playwright');
@@ -50,6 +54,17 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
     await page.waitForTimeout(800);
     for (let i = 0; i < 40; i++) await page.keyboard.press(KEYS[i % KEYS.length]);
     await page.screenshot({ path: path.join(__dirname, '..', 'dist', `check-${w}x${h}.png`) });
+    // the case board at this size (spec 004): New game → Pick a team → Your team → START, nothing cut off
+    await page.evaluate(() => localStorage.clear()); await page.reload(); await page.waitForTimeout(600);
+    await page.locator('#list .row', { hasText: 'New game' }).click(); await page.waitForTimeout(150);
+    await page.locator('#list .row.two').first().click(); await page.waitForTimeout(150);
+    await page.keyboard.press('Enter'); await page.waitForTimeout(400);
+    if (!await page.evaluate(() => !!BLG._t.board())) problems.push('Your team → START did not open the case board');
+    const fit = await page.evaluate(() => { const c = document.getElementById('gcv').getBoundingClientRect(), s = document.getElementById('screen').getBoundingClientRect();
+      return { inside: c.top >= s.top - 0.5 && c.left >= s.left - 0.5 && c.bottom <= s.bottom + 0.5 && c.right <= s.right + 0.5, h: document.getElementById('gcv').height }; });
+    if (!fit.inside) problems.push('the case board canvas is cut off');
+    await page.screenshot({ path: path.join(__dirname, '..', 'dist', `check-board-${w}x${h}.png`) });
+    await page.keyboard.press('x'); await page.waitForTimeout(200);
     const all = [...problems, ...errors];
     console.log(`${all.length ? 'FAIL' : 'ok  '} ${w} x ${h}  (saves after mashing: ${saved.join(', ') || 'none'})`);
     all.forEach(p => console.log('     - ' + p));
@@ -87,7 +102,7 @@ async function checkSaves(browser) {
     let n = 0; try { n = JSON.parse(save.keys['bl.roster'] || '[]').length; } catch (e) {}
     if (st.roster !== n) problems.push(`roster has ${st.roster} agents, the save had ${n}`);
     if (!st.rows.some(r => r.includes(`Roster ${n} on file`))) problems.push(`title doesn't show "${n} on file"`);
-    const hasGame = name !== 'damaged saves' && !!save.keys['bl.game'];
+    let hasGame = false; try { hasGame = name !== 'damaged saves' && !!JSON.parse(save.keys['bl.game'] || 'null'); } catch (e) {}
     const cont = st.rows.some(r => r.includes('Continue Chapter One'));
     if (hasGame !== cont) problems.push(hasGame ? 'no Continue Chapter One for its checkpoint' : 'Continue Chapter One shows with no good checkpoint');
     if (hasGame && cont) {
@@ -95,6 +110,7 @@ async function checkSaves(browser) {
       await page.waitForTimeout(500);
       const inCase = await page.evaluate(() => !!(window.BLG && BLG.active && document.querySelector('.screen.gaming')));
       if (!inCase) problems.push('Continue Chapter One did not open the case');
+      if (await page.evaluate(() => !!BLG._t.board())) problems.push('Continue went to the case board instead of straight into the case');
       // who leads (spec 002): a saved lead comes back; saves from before version 3 lead with seat 1
       let want = 0; try { const g = JSON.parse(JSON.parse(save.keys['bl.game'])); if (Number.isInteger(g.lead)) want = g.lead; } catch (e) {}
       const lead = await page.evaluate(() => BLG._t.lead());
@@ -111,6 +127,7 @@ async function checkSaves(browser) {
       for (const k of ['ArrowUp', 'ArrowLeft', 'z', 'x', 'ArrowDown', 'z', 'x']) { await page.keyboard.down(k); await page.waitForTimeout(150); await page.keyboard.up(k); }
       await page.screenshot({ path: path.join(__dirname, '..', 'dist', `check-save-${name.replace(/\.json$/, '')}.png`) });
     }
+    problems.push(...await checkBoard(page, name, save, hasGame && cont, from));
     const all = [...problems, ...errors];
     console.log(`${all.length ? 'FAIL' : 'ok  '} test save: ${name}`);
     all.forEach(p => console.log('     - ' + p));
@@ -118,4 +135,51 @@ async function checkSaves(browser) {
     await ctx.close();
   }
   return failed;
+}
+
+// The case board and the season save (spec 004), from wherever the test save left the game
+async function checkBoard(page, name, save, inCase, from) {
+  const problems = [], tag = name.replace(/\.json$/, '');
+  const season = () => page.evaluate(() => JSON.parse(localStorage.getItem('bl.season') || 'null'));
+  const board = () => page.evaluate(() => !!BLG._t.board());
+  const pause = ms => page.waitForTimeout(ms);
+  let s = await season(), before = 0;
+  if (name !== 'damaged saves' || s) {
+    if (!s || !s.cases || !s.cases['still-harvest']) return ['no season save with Still Harvest after upgrading'];
+    if (from < 4 && (s.cases['still-harvest'].state !== 'open' || s.closed !== 0)) problems.push('an upgraded old save should have Still Harvest open and CLOSED 0');
+    before = s.closed;
+  }
+  const roster = await page.evaluate(() => JSON.parse(localStorage.getItem('bl.roster') || '[]').length);
+  if (inCase) {
+    // finish the case: the dossier, then the board with the card stamped CLOSED, then B to the title
+    await page.evaluate(() => BLG._t.finish()); await pause(300);
+    await page.keyboard.press('x'); await pause(700);
+    s = await season();
+    if (!await board()) problems.push('leaving the dossier after a finish did not open the case board');
+    if (!s || s.cases['still-harvest'].state !== 'closed' || s.closed !== before + 1) problems.push(`after a finish Still Harvest should be closed with CLOSED ${before + 1}`);
+    await page.screenshot({ path: path.join(__dirname, '..', 'dist', `check-board-closed-${tag}.png`) });
+    await page.keyboard.press('x'); await pause(300);
+    if (await board() || await page.evaluate(() => BL.S.step) !== 'title') problems.push('B on the board after a finish did not go to the title');
+  } else {
+    await page.evaluate(() => { if (window.BLG && BLG.active) BLG.input('b'); }); await pause(200);
+  }
+  // New game: asks first when the season has a closed case, then starts Season 1 over and keeps the roster
+  const closed = ((await season()) || {}).closed || 0;
+  await page.locator('#list .row', { hasText: 'New game' }).click(); await pause(200);
+  const step = await page.evaluate(() => BL.S.step);
+  if (closed > 0 && step !== 'confirm') problems.push('New game with a closed case did not ask first');
+  if (closed === 0 && step !== 'pick') problems.push('New game with nothing closed should go straight to Pick a team');
+  if (step === 'confirm') { await page.locator('#list .row', { hasText: 'Yes' }).click(); await pause(200); }
+  await page.locator('#list .row.two').first().click(); await pause(200);
+  await page.keyboard.press('Enter'); await pause(400);
+  s = await season();
+  if (!await board()) problems.push('Your team → START did not open the case board');
+  if (!s || s.cases['still-harvest'].state !== 'open' || s.closed !== 0) problems.push('after New game the board should show Still Harvest open and CLOSED 0');
+  await page.screenshot({ path: path.join(__dirname, '..', 'dist', `check-board-open-${tag}.png`) });
+  await page.keyboard.press('x'); await pause(300);
+  const back = await page.evaluate(() => ({ step: BL.S.step, team: !!BL.S.team, active: BLG.active }));
+  if (back.active || back.step !== 'team' || !back.team) problems.push('B on the board did not go back to Your team with the team kept');
+  const after = await page.evaluate(() => JSON.parse(localStorage.getItem('bl.roster') || '[]').length);
+  if (after < roster) problems.push(`the roster lost agents (${roster} → ${after})`);
+  return problems;
 }
