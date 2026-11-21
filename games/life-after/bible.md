@@ -13,7 +13,8 @@ This game's build bible. Started 2026-11-21 from Keegan's first-pass answers in 
 One item per chat, in order, biggest open decisions first. The Designer ticks the item when its task is done and adds new items where they belong.
 
 - [x] Setup: create this bible (Nov 21).
-- [ ] Controls: settle what Select and L/R do (see Conflicts with the studio bible).
+- [x] Controls: Select opens companion orders (Nov 21). L/R still open.
+- [ ] Controls: what L/R step through.
 - [ ] The clock: how many in-game minutes a step and each action cost, so a day lands at 10 to 15 minutes of play; how long a season is.
 - [ ] The map generator: how big the starting town and its countryside are, what building and area types exist, and how fast places run dry.
 - [ ] Needs and SAN numbers: how fast hunger, sleep and SAN drop, what each refills, and what happens at each low point.
@@ -113,7 +114,7 @@ None yet.
 ## Companions
 
 - **Who you play** (set Nov 21): one survivor you control, plus up to 2 companions (a group of 3 at most).
-- **Simple orders** (set Nov 21): companions act on their own, and you steer them with orders from a quick menu: Follow, Hold here, Sneak, Fight. Between orders they follow a short list of rules in order, for example: don't step next to 2 or more zombies, stay inside your noise ring, retreat when badly hurt, never shoot while sneaking, hit whatever threatens you first.
+- **Simple orders** (set Nov 21): companions act on their own, and you steer them with orders from a quick menu opened with Select: Follow, Hold here, Sneak, Fight. Between orders they follow a short list of rules in order, for example: don't step next to 2 or more zombies, stay inside your noise ring, retreat when badly hurt, never shoot while sneaking, hit whatever threatens you first.
 - **Deaths stick** (set Nov 21): a dead companion is gone. You can meet new people later.
 - **Complex bonds** (set Nov 21). Since you only steer your own survivor, companions carry the depth:
   - **Who they are:** each companion is generated with 2 traits (Brave, Jumpy, Greedy, Kind…), one skill (medic, mechanic, hunter…), one fear and one want.
@@ -164,7 +165,7 @@ None yet.
 Found while drafting (Nov 21). Each needs a decision or a separate `studio-bible/` PR, made after the dev setup's open studio-bible PRs merge.
 
 - **Battle screen** (`studio-bible/ui.md`, Battle screen): describes a head-on battle screen. Life After fights on the map and has none. Proposed: the rule applies to games that have a battle screen.
-- **Select** (`studio-bible/controls.md`, Buttons): Select cycles the lead character on the map. In Life After you only control your own survivor, so cycling the lead doesn't fit. Proposed: Select opens companion orders in Life After, and `controls.md` lets a game with no lead to cycle give Select its own job. To do: Controls.
+- **Select** (`studio-bible/controls.md`, Buttons): settled Nov 21 (Keegan). Select opens companion orders (Follow, Hold here, Sneak, Fight), and `controls.md` lets a game with no lead to cycle give Select its own job.
 
 ## Proposed for the studio bible
 
