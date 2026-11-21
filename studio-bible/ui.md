@@ -9,6 +9,7 @@ Sources: Black Lantern Art (Faces and sprites, Light and mood) and Rushlight Art
 - The 64 × 64 portrait stands on top of the box at the map's pixel size, with the speaker's name in caps on a tab beside it.
 - Signs: tab only, no portrait. Narration: no tab.
 - Short lines, typewriter effect. A ▼ marks advance.
+- Questions show their choices inside the box, under the question line, with a cursor. Tapping a choice also works, and a long list scrolls inside the box.
 - Each game paints the box in its own palette.
 
 ## Menus
