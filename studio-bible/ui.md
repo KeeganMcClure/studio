@@ -19,6 +19,8 @@ Sources: Black Lantern Art (Faces and sprites, Light and mood) and Rushlight Art
 
 ## Battle screen
 
+For games that cut to a battle screen. A game that fights on the map instead (Life After, set Nov 21, 2026) skips this section, and its `bible.md` says how fights show on the map.
+
 - Inside the shell, with the D-pad shown.
 - Head-on: big enemy sprites over a still background drawn from the spot where the fight started. The party is seen from behind.
 - Turn order runs in a column at one side, so it never covers sprites.
