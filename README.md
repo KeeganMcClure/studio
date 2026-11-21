@@ -12,6 +12,7 @@ studio/
     art-style.md       palette, sprite sizes, fonts
     ui.md              menus, dialogue boxes, title cards
     launcher.md        cover art size, how games register
+    saves.md           save slots, versions, export and import
     rules-checks.md    what a rules check verifies
   engine/              shared code: combat, dialogue, saves, input
   launcher/            the home screen app and game shelf
