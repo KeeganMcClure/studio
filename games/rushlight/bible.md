@@ -2062,7 +2062,7 @@ Rushlight's own [Asset Library](https://claude.ai/artifact/WYgm7Gn8afLE51Pce94yn
 
 **Builds**
 
-The live game is the "Rushlight" HTML artifact. Since Nov 21 the code lives in the private GitHub repo KeeganMcClure/rushlight, a clean copy of Black Lantern's kept parts made with no git history, so no Black Lantern case or story ever loads there. It follows the same protocol as Black Lantern (set Nov 21): Claude Code works in the repo and runs the playtest checks, the repo's CLAUDE.md carries these Tech and Process rules, and the bundle step's one HTML file is published to this same artifact each time, so the link and saves stay. The artifact is made at the vertical slice's first build; its link then goes here and in CLAUDE.md. Dated copies go to the Rushlight backups folder in Google Drive as rushlight-build-YYYY-MM-DD.html, never to project files (set Nov 20; see Process).
+The live game is the "Rushlight" HTML artifact. The code lives in the studio repo (KeeganMcClure/studio) under `games/rushlight/src/`. It began on Nov 21 as a clean copy of Black Lantern's kept parts with no git history, and no Black Lantern case or story ever loads in Rushlight. It follows the same protocol as Black Lantern (set Nov 21): Claude Code works in the repo and runs the playtest checks, the CLAUDE.md files there carry these Tech and Process rules, and the bundle step's one HTML file is published to this same artifact each time, so the link and saves stay. The artifact is made at the vertical slice's first build; its link then goes here and in CLAUDE.md. Dated copies go to the Rushlight backups folder in Google Drive as rushlight-build-YYYY-MM-DD.html, never to project files (set Nov 20; see Process).
 
 ## Process
 
