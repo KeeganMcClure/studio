@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Party Menu Mockup</title>
+<!-- Spec 002 rough mockup. A still picture only, not game code. Drawn in code per studio-bible/art-style.md.
+     Each frame is the game canvas at its real size (240 x 300) scaled 2x with crisp pixels.
+     Names, professions and numbers are placeholders. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e1020;--ink:#e8dcc0;--soft:#b9a8e0}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0e1020;--ink:#e8dcc0;--soft:#b9a8e0}}
+:root[data-theme="dark"]{--bg:#0e1020;--ink:#e8dcc0;--soft:#b9a8e0}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'VT323',monospace;font-size:20px;padding:16px}
+h1{font-family:'Press Start 2P',monospace;font-size:13px;color:#f4c96a;margin:0 0 6px}
+p{margin:0 0 16px;color:var(--soft);max-width:60ch}
+.row{display:flex;flex-wrap:wrap;gap:20px}
+figure{margin:0}
+figcaption{margin-top:6px;color:var(--soft);max-width:480px}
+canvas{display:block;width:480px;max-width:100%;image-rendering:pixelated;border:4px solid #14121e;border-radius:6px}
+</style>
+</head>
+<body>
+<h1>SPEC 002 · PARTY MENU</h1>
+<p>Rough still mockup for Black Lantern spec 002. Each frame is the game screen at its real 240 px width, shown 2×. Placeholder names and numbers.</p>
+<div class="row">
+<figure><canvas id="f1" width="240" height="300"></canvas><figcaption>1 · Party. Cards stay in seat order; the LEAD tag moves. Cursor on card 3, A opened the popup. Give item is greyed until Demo 5 brings item slots.</figcaption></figure>
+<figure><canvas id="f2" width="240" height="300"></canvas><figcaption>2 · Dossier, INFO tab. Up/Down moves to the next agent; L/R changes tab (see the spec's open question).</figcaption></figure>
+<figure><canvas id="f3" width="240" height="300"></canvas><figcaption>3 · Map, right after Select. The new lead stands on the same tile, facing the same way; a short banner names them.</figcaption></figure>
+</div>
+<script>
+const C={navy:'#1b1f33',deep:'#14172a',card:'#1f2440',cardOn:'#2a2f52',plum:'#2a2030',cream:'#e8dcc0',lav:'#b9a8e0',mus:'#d6a43a',gold:'#f4c96a',rust:'#b5532e',pump:'#d9772b',pink:'#ff4fa3',green:'#7fbf6a',dim:'#5a5070',dark:'#120e18',sanbar:'#9aa3d6'};
+const AG=[
+ {name:'DUNN',prof:'Investigator',hp:[11,12],wp:[7,13],san:[61,65],bp:52,skin:'#e2b08c',sh:'#b8866a',hair:'#6b4426',iris:'#3e6a7e',coat:'#a88a5c',long:0},
+ {name:'REYES',prof:'Medic',hp:[9,11],wp:[5,12],san:[48,60],bp:48,skin:'#c48a62',sh:'#9a6644',hair:'#2a1a18',iris:'#5a3a22',coat:'#e8dcc0',long:1},
+ {name:'MAKO',prof:'Occultist',hp:[3,10],wp:[3,11],san:[39,55],bp:44,skin:'#a8714c',sh:'#7e5234',hair:'#15141c',iris:'#3a5a3a',coat:'#4a4560',long:0,status:'BLEED'}
+];
+function R(x,c,a,b,w,h){x.fillStyle=c;x.fillRect(a,b,w,h)}
+function box(x,a,b,w,h,fill,line,lw=1){R(x,line,a,b,w,h);R(x,fill,a+lw,b+lw,w-2*lw,h-2*lw)}
+function T(x,s,a,b,col,size=16,font='VT323'){x.font=`${size}px '${font}'`;x.fillStyle=col;x.textBaseline='top';x.fillText(s,a,b)}
+function TW(x,s,size=16,font='VT323'){x.font=`${size}px '${font}'`;return x.measureText(s).width}
+// 32 x 32 Storybook face: big eyes with whites, iris, glint, lashes, rosy cheeks, open mouth, dark outline, shadow side.
+function face(x,ox,oy,g,s=1){const P=(a,b,w,h,c)=>R(x,c,ox+a*s,oy+b*s,w*s,h*s);
+ P(0,0,32,32,C.plum);
+ P(3,28,26,4,C.dark);P(4,29,24,3,g.coat);P(13,27,6,5,C.cream);P(15,28,2,4,C.rust);
+ P(12,22,8,5,g.sh);
+ P(7,7,18,17,C.dark);P(8,8,16,15,g.skin);P(21,9,3,14,g.sh);P(6,14,2,4,g.skin);P(24,14,2,4,g.sh);
+ P(7,3,18,7,C.dark);P(8,4,16,6,g.hair);P(6,6,3,g.long?14:9,g.hair);P(23,6,3,g.long?14:8,g.hair);P(9,10,6,2,g.hair);
+ [[10],[18]].forEach(([ex])=>{P(ex,12,4,1,C.dark);P(ex,13,4,1,C.dark);P(ex,14,4,3,'#f4ecd8');P(ex+1,14,2,3,g.iris);P(ex+1,14,1,1,'#ffffff')});
+ P(15,17,2,2,g.sh);P(9,19,2,1,'#d98a7a');P(21,19,2,1,'#d98a7a');P(13,20,6,1,'#8a3a2e');P(14,21,4,1,'#5a1e1a');}
+function bar(x,a,b,w,frac,col){R(x,C.dark,a,b,w,5);R(x,C.plum,a+1,b+1,w-2,3);R(x,col,a+1,b+1,Math.round((w-2)*frac),3)}
+function lantern(x,a,b){R(x,C.navy,a+1,b,3,1);R(x,C.navy,a,b+1,5,5);R(x,'#fff1c4',a+1,b+2,3,3);R(x,C.navy,a+1,b+6,3,1)}
+function leadTag(x,a,b){const w=TW(x,'LEAD',14)+12;R(x,C.mus,a-w,b,w,11);lantern(x,a-w+2,b+2);T(x,'LEAD',a-w+9,b-1,C.navy,14)}
+
+// Frame 1: party list + popup
+function frame1(){const x=f1.getContext('2d');x.imageSmoothingEnabled=false;R(x,C.navy,0,0,240,300);
+ box(x,4,4,232,16,C.deep,C.cream);T(x,'PARTY',9,9,C.gold,8,'Press Start 2P');const s='SELECT swaps the lead';T(x,s,231-TW(x,s,15),5,C.lav,15);
+ AG.forEach((g,i)=>{const y=24+i*54,on=i===2,lead=i===0;
+  box(x,4,y,232,50,on?C.cardOn:C.card,on?C.mus:(lead?C.cream:C.dim));if(lead)R(x,C.mus,5,y+1,230,2);
+  if(on)T(x,'▶',5,y+18,C.gold,14);
+  box(x,13,y+8,34,34,C.plum,lead?C.mus:C.dim);face(x,14,y+9,g);
+  T(x,g.name,52,y+3,lead?C.gold:C.cream,18);T(x,g.prof,52+TW(x,g.name+' ',18),y+5,C.lav,15);
+  if(lead)leadTag(x,231,y+5);
+  if(g.status){const w=TW(x,g.status,13)+6,ax=231-w;R(x,C.rust,ax,y+5,w,11);T(x,g.status,ax+3,y+4,'#fbe8d8',13)}
+  const lo=g.hp[0]<=3;T(x,'HP',52,y+19,C.lav,15);bar(x,66,y+23,124,g.hp[0]/g.hp[1],lo?C.pump:C.green);const hs=g.hp.join('/');T(x,hs,231-TW(x,hs,15),y+19,lo?C.pump:C.cream,15);
+  T(x,'WP '+g.wp[0]+' · SAN ',52,y+33,C.lav,15);T(x,String(g.san[0]),52+TW(x,'WP '+g.wp[0]+' · SAN ',15),y+33,g.san[0]<40?C.pink:C.lav,15);
+  if(lo){R(x,C.pump,5,y+48,230,1)} // low-health pulse frame (blinks in game)
+ });
+ // detail box for the highlighted card
+ box(x,4,188,232,108,C.card,C.cream,2);T(x,'MAKO',10,192,C.cream,17);T(x,'Occultist',10,206,C.lav,16);
+ T(x,'Bleeding: -1 HP each',10,226,C.lav,16);T(x,'area change. First Aid,',10,240,C.lav,16);T(x,'Treat or a rest ends it.',10,254,C.lav,16);
+ T(x,'HP 3 or less: card blinks',10,276,C.pump,15);
+ // popup
+ const px=140,py=182;R(x,'#0a0812',px+3,py+3,92,54);box(x,px,py,92,54,C.deep,C.cream,2);
+ [['MAKE LEAD',1,0],['DOSSIER',0,0],['GIVE ITEM',0,1]].forEach(([l,sel,dis],k)=>{const yy=py+4+k*16;if(sel){R(x,C.cardOn,px+2,yy,88,15);T(x,'▶',px+5,yy,C.gold,13)}T(x,l,px+16,yy-1,dis?C.dim:(sel?C.gold:C.cream),17)});
+}
+// Frame 2: dossier INFO
+function frame2(){const x=f2.getContext('2d');x.imageSmoothingEnabled=false;R(x,C.navy,0,0,240,300);const g=AG[0];
+ box(x,4,4,232,18,C.deep,C.cream);T(x,'L',9,10,C.lav,7,'Press Start 2P');T(x,'R',225,10,C.lav,7,'Press Start 2P');
+ ['INFO','SKILLS','BONDS'].forEach((t,i)=>{const a=19+i*68;if(!i){R(x,C.cardOn,a,5,68,16);R(x,C.mus,a,19,68,2)}T(x,t,a+34-TW(x,t,16)/2,5,i?C.lav:C.gold,16)});
+ box(x,4,28,68,68,C.plum,C.cream,2);face(x,6,30,g,2);
+ T(x,g.name,78,30,C.gold,10,'Press Start 2P');leadTag(x,236,30);
+ T(x,g.prof,78,44,C.lav,16);T(x,'[One-line backstory]',78,58,C.cream,15);T(x,'MAIN MOTIVATION',78,72,C.lav,14);T(x,'[Main motivation]',78,83,C.cream,15);
+ box(x,4,102,232,46,C.card,C.dim);
+ [['HP',g.hp,C.green,''],['WP',g.wp,C.mus,''],['SAN',g.san,C.sanbar,' BP '+g.bp]].forEach(([l,v,c,ex],i)=>{const y=106+i*14;T(x,l,10,y-2,C.lav,15);bar(x,32,y+3,110,v[0]/v[1],c);const s=v.join('/');T(x,s,148,y-2,C.cream,15);if(ex)T(x,ex,148+TW(x,s,15),y-2,C.lav,15)});
+ ['STR','CON','DEX','INT','POW','CHA'].forEach((st,i)=>{const a=4+i*39;box(x,a,154,36,30,C.deep,C.dim);T(x,st,a+18-TW(x,st,14)/2,155,C.lav,14);const v=String([11,13,14,12,13,10][i]);T(x,v,a+18-TW(x,v,20)/2,166,C.cream,20)});
+ box(x,4,190,232,50,C.card,C.dim);[['EQUIPPED','Handgun · 1d8'],['TO-HIT','Firearms 50%'],['DISORDER','None']].forEach(([a,b],i)=>{T(x,a,10,192+i*15,C.lav,16);T(x,b,230-TW(x,b,16),192+i*15,C.cream,16)});
+ box(x,4,246,232,50,C.card,C.cream,2);T(x,'L/R: tabs · Up/Down: next agent',10,252,C.lav,16);T(x,'B: back to Party',10,268,C.lav,16);
+}
+// Frame 3: map after Select
+function frame3(){const x=f3.getContext('2d');x.imageSmoothingEnabled=false;
+ for(let ty=0;ty<19;ty++)for(let tx=0;tx<15;tx++){const road=ty>=9&&ty<=11;R(x,road?'#6b5a44':'#2f3d2a',tx*16,ty*16,16,16);if(!road&&(tx*7+ty*3)%5===0)R(x,'#3c4d33',tx*16+5,ty*16+7,1,2);if(road&&(tx+ty)%3===0)R(x,'#5a4a38',tx*16+9,ty*16+6,2,1)}
+ R(x,'#3a2a3a',16,16,80,96);R(x,'#b5532e',16,16,80,20);R(x,C.dark,40,72,16,40);R(x,'#d6a43a',72,52,14,12);
+ // lantern glow
+ const gx=128,gy=164,gr=x.createRadialGradient(gx,gy,4,gx,gy,52);gr.addColorStop(0,'rgba(214,164,58,0.35)');gr.addColorStop(1,'rgba(27,31,51,0)');
+ x.fillStyle='rgba(12,14,30,0.55)';x.fillRect(0,0,240,300);x.fillStyle=gr;x.fillRect(0,0,240,300);
+ // lead sprite 14 x 26 (Reyes), facing down
+ const g=AG[1],sx=121,sy=146;const P=(a,b,w,h,c)=>R(x,c,sx+a,sy+b,w,h);
+ P(1,0,12,1,C.dark);P(0,1,14,11,C.dark);P(1,1,12,10,g.hair);P(2,4,10,7,g.skin);P(3,6,2,2,'#f4ecd8');P(9,6,2,2,'#f4ecd8');P(4,6,1,2,g.iris);P(10,6,1,2,g.iris);P(5,9,4,1,'#8a3a2e');
+ P(1,12,12,10,C.dark);P(2,12,10,9,g.coat);P(9,12,3,9,'#c8bca0');P(3,22,3,4,C.dark);P(8,22,3,4,C.dark);
+ P(13,15,1,3,C.dark);lantern(x,sx+12,sy+17);
+ // banner
+ const s='LEAD · REYES';const w=TW(x,s,8,'Press Start 2P')+16;box(x,120-w/2,8,w,18,C.deep,C.cream,2);T(x,s,128-w/2,13,C.gold,8,'Press Start 2P');
+ T(x,'(fades after about 1 second)',62,30,C.lav,14);
+}
+document.fonts.load("16px 'VT323'").then(()=>document.fonts.load("8px 'Press Start 2P'")).catch(()=>{}).finally(()=>{frame1();frame2();frame3()});
+</script>
+</body>
+</html>

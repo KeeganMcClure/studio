@@ -166,6 +166,7 @@ Found while drafting (Nov 21). Each needs a decision or a separate `studio-bible
 
 - **Battle screen** (`studio-bible/ui.md`, Battle screen): describes a head-on battle screen. Life After fights on the map and has none. Proposed: the rule applies to games that have a battle screen.
 - **Select** (`studio-bible/controls.md`, Buttons): settled Nov 21 (Keegan). Select opens companion orders (Follow, Hold here, Sneak, Fight), and `controls.md` lets a game with no lead to cycle give Select its own job.
+- **Party menu** (`studio-bible/ui.md`, Party menu, added Nov 21 from Black Lantern spec 002): assumes a lead you can swap, with Make lead and Select cycling. Life After keeps one survivor as lead, so it has no Make lead and Select opens orders instead. Open: whether Life After uses the party cards (bond, traits, Give item) without Make lead. To do: Companions.
 
 ## Proposed for the studio bible
 
