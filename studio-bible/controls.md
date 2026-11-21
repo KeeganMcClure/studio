@@ -22,7 +22,7 @@ House rules for every game. Sources: Black Lantern Tech (Screen and controls) an
 - Tapping a menu row also works.
 - Holding a D-pad button repeats it in menus: once on press, again after 320 ms, then every 85 ms.
 - On the map, the last direction pressed wins.
-- L and R sit in the middle cluster, in a row above Select and Start.
+- L and R are wide shoulder buttons in the top corners of the controls area: L top left, R top right, right under the screen and above the D-pad and A/B. They are about 80 × 24 px on an iPhone SE, roughly twice the width of the old middle-cluster buttons, so thumbs find them without looking (set Nov 21, spec 003; replaces L and R in the middle cluster). Select and Start stay in the middle.
 - Keep every control in the bottom half of the phone so thumbs reach them.
 
 ## Keyboard (testing on a computer)
