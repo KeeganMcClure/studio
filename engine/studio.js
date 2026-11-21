@@ -8,8 +8,20 @@
   var channel = /\/dev\/[^/]+\/?(index\.html)?$/.test(path) ? 'dev' : 'release';
   var params = new URLSearchParams(location.search);
 
+  var shelfUrl = channel === 'dev' ? '../../' : '../';
+  // True when this game was opened from the game shelf (now, or earlier in this tab), so a game only offers
+  // "back to the shelf" where there is one. A copy played elsewhere (the Black Lantern Intake page, a check
+  // opening the file directly) has no shelf to go back to.
+  var fromShelf = false;
+  try {
+    var shelf = new URL(shelfUrl, location.href).href;
+    fromShelf = document.referrer.split(/[?#]/)[0].replace(/index\.html$/, '') === shelf || sessionStorage.getItem('studio.fromShelf') === shelf;
+    if (fromShelf) sessionStorage.setItem('studio.fromShelf', shelf);
+  } catch (e) {}
+
   window.Studio = {
     channel: channel,
+    fromShelf: fromShelf,
     // True when the launcher's Continue button opened the game.
     continued: params.get('continue') === '1',
     // Dev builds keep their own saves, so testing never touches the stable one.
@@ -21,7 +33,7 @@
     },
     // Back to the game shelf. The launcher sits at the site root, one level up
     // from a Release game and two from a Dev game.
-    shelfUrl: channel === 'dev' ? '../../' : '../',
+    shelfUrl: shelfUrl,
     toShelf: function () { location.href = window.Studio.shelfUrl; }
   };
 })();
