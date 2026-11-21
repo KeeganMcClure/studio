@@ -13,7 +13,8 @@ This game's build bible. Started 2026-11-21 from Keegan's first-pass answers in 
 One item per chat, in order, biggest open decisions first. The Designer ticks the item when its task is done and adds new items where they belong.
 
 - [x] Setup: create this bible (Nov 21).
-- [ ] Controls: settle what Select and L/R do (see Conflicts with the studio bible).
+- [x] Controls: Select opens companion orders (Nov 21). L/R still open.
+- [ ] Controls: what L/R step through.
 - [ ] The clock: how many in-game minutes a step and each action cost, so a day lands at 10 to 15 minutes of play; how long a season is.
 - [ ] The map generator: how big the starting town and its countryside are, what building and area types exist, and how fast places run dry.
 - [ ] Needs and SAN numbers: how fast hunger, sleep and SAN drop, what each refills, and what happens at each low point.
@@ -62,14 +63,14 @@ None yet.
 
 - **When and where** (set Nov 21): 1990s America. The first map is a small town and its countryside. Cities and other regions come later as expansions. The game is not meant to stay rural.
 - **Low-tech survival.** No cell phones or internet. Landlines are dead, radios mostly static, cars need fuel and parts.
-- **Brands** (set Nov 21): look-alike brands only. Made-up names and logos styled after real 1990s brands (a red cola, a big-box store, a pickup truck maker) so the world feels real without using real trademarks. Real brand names and logos never appear. (Proposed for `studio-bible/`, see below.)
+- **Brands** (set Nov 21): look-alike brands only. Made-up names and logos styled after real 1990s brands (a red cola, a big-box store, a pickup truck maker) so the world feels real without using real trademarks. Real brand names and logos never appear (`studio-bible/studio.md`, One repo, one source of truth).
 - **No overarching story.** Nothing explains the outbreak and nothing ends it. The world's history is told only through places, notes and the people you meet.
 
 ## The run
 
 - **One life, one world** (set Nov 21). Each game generates a new world. When your survivor dies, the game is over and the save is cleared. There's no carry-over.
 - **Goal** (set Nov 21): none. The score is days survived, shown on the death screen. A best-days record may be kept outside the run (open).
-- **Seeded** (Claude's call, for review): each world comes from one seed, and dice draw from a second saved stream, so reopening the game rerolls nothing. The seed shows on the death screen, and a new game can start from a typed seed. This matches Rushlight's seed rule (proposed for `studio-bible/`, see below).
+- **Seeded** (Claude's call, for review): each world comes from one seed, and dice draw from a second saved stream, so reopening the game rerolls nothing. The seed shows on the death screen, and a new game can start from a typed seed. Follows `studio-bible/saves.md`, Seeds.
 
 ## The map
 
@@ -113,7 +114,7 @@ None yet.
 ## Companions
 
 - **Who you play** (set Nov 21): one survivor you control, plus up to 2 companions (a group of 3 at most).
-- **Simple orders** (set Nov 21): companions act on their own, and you steer them with orders from a quick menu: Follow, Hold here, Sneak, Fight. Between orders they follow a short list of rules in order, for example: don't step next to 2 or more zombies, stay inside your noise ring, retreat when badly hurt, never shoot while sneaking, hit whatever threatens you first.
+- **Simple orders** (set Nov 21): companions act on their own, and you steer them with orders from a quick menu opened with Select: Follow, Hold here, Sneak, Fight. Between orders they follow a short list of rules in order, for example: don't step next to 2 or more zombies, stay inside your noise ring, retreat when badly hurt, never shoot while sneaking, hit whatever threatens you first.
 - **Deaths stick** (set Nov 21): a dead companion is gone. You can meet new people later.
 - **Complex bonds** (set Nov 21). Since you only steer your own survivor, companions carry the depth:
   - **Who they are:** each companion is generated with 2 traits (Brave, Jumpy, Greedy, Kind…), one skill (medic, mechanic, hunter…), one fear and one want.
@@ -163,10 +164,7 @@ None yet.
 
 Found while drafting (Nov 21). Each needs a decision or a separate `studio-bible/` PR, made after the dev setup's open studio-bible PRs merge.
 
-- **Battle screen** (`studio-bible/ui.md`, Battle screen): describes a head-on battle screen. Life After fights on the map and has none. Proposed: the rule applies to games that have a battle screen.
-- **Select** (`studio-bible/controls.md`, Buttons): Select cycles the lead character on the map. In Life After you only control your own survivor, so cycling the lead doesn't fit. Proposed: Select opens companion orders in Life After, and `controls.md` lets a game with no lead to cycle give Select its own job. To do: Controls.
+- **Battle screen** (`studio-bible/ui.md`, Battle screen): describes a head-on battle screen. Life After fights on the map and has none. Settled Nov 21: the section now applies only to games that have a battle screen.
+- **Select** (`studio-bible/controls.md`, Buttons): settled Nov 21 (Keegan). Select opens companion orders (Follow, Hold here, Sneak, Fight), and `controls.md` lets a game with no lead to cycle give Select its own job.
+- **Party menu** (`studio-bible/ui.md`, Party menu, added Nov 21 from Black Lantern spec 002): assumes a lead you can swap, with Make lead and Select cycling. Life After keeps one survivor as lead, so it has no Make lead and Select opens orders instead. Open: whether Life After uses the party cards (bond, traits, Give item) without Make lead. To do: Companions.
 
-## Proposed for the studio bible
-
-- **Look-alike brands:** no real trademarks in any game, since the repo and builds are public. Could live in `studio.md` or `art-style.md`.
-- **Seeds:** one seed per run, a saved second dice stream, the seed shown at the end and a typed-seed start. Rushlight already uses this rule; Life After would be the second game.

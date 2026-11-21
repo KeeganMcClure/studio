@@ -15,6 +15,7 @@ The loop for each feature and the bug route are in the README; the Developer's r
 - One studio repo holds every game, the shared engine, the launcher and the bibles. No repo per game.
 - Every bible lives as markdown in this repo. The Designer and Developer read the same files. Nothing design-critical lives only in a Claude Project's knowledge or memory.
 - The repo is public: code, bibles and case content are readable by anyone. Secret story files (agency arc, motivation arcs, home scenes) never go in it.
+- No real brands (set Nov 21, 2026). Games and their builds are public, so real brand names and logos never appear. A game that wants a real-world feel uses look-alike brands: made-up names and logos styled after real ones (Life After's 1990s America).
 
 ## Shared engine and spoiler wall
 
