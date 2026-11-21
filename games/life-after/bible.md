@@ -63,7 +63,7 @@ None yet.
 
 - **When and where** (set Nov 21): 1990s America. The first map is a small town and its countryside. Cities and other regions come later as expansions. The game is not meant to stay rural.
 - **Low-tech survival.** No cell phones or internet. Landlines are dead, radios mostly static, cars need fuel and parts.
-- **Brands** (set Nov 21): look-alike brands only. Made-up names and logos styled after real 1990s brands (a red cola, a big-box store, a pickup truck maker) so the world feels real without using real trademarks. Real brand names and logos never appear. (Proposed for `studio-bible/`, see below.)
+- **Brands** (set Nov 21): look-alike brands only. Made-up names and logos styled after real 1990s brands (a red cola, a big-box store, a pickup truck maker) so the world feels real without using real trademarks. Real brand names and logos never appear (`studio-bible/studio.md`, One repo, one source of truth).
 - **No overarching story.** Nothing explains the outbreak and nothing ends it. The world's history is told only through places, notes and the people you meet.
 
 ## The run
@@ -170,5 +170,4 @@ Found while drafting (Nov 21). Each needs a decision or a separate `studio-bible
 
 ## Proposed for the studio bible
 
-- **Look-alike brands:** no real trademarks in any game, since the repo and builds are public. Could live in `studio.md` or `art-style.md`.
 - **Seeds:** one seed per run, a saved second dice stream, the seed shown at the end and a typed-seed start. Rushlight already uses this rule; Life After would be the second game.
