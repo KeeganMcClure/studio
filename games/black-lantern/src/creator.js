@@ -227,8 +227,8 @@ V.title=()=>{
   ],foot:'A: SELECT',bare:true};
 };
 V.pick=()=>{
-  const rows=TEAMS.map(t=>R(`<span class="tn">${esc(t.name.toUpperCase())}</span><span class="ts">${t.seats.map(s=>esc(profOf(s).name)).join(' · ')}</span>`,{cls:'two',val:`<span class="small">${esc(t.tag)}</span>`,t,a:()=>chooseTeam(t)}));
-  rows.push(R(`<span class="tn">BLANK TEAM</span><span class="ts">Build all 3 seats yourself</span>`,{cls:'two blank',val:'<span class="small">Custom</span>',a:()=>chooseTeam(null)}));
+  const rows=TEAMS.map(t=>R(`<span class="tn"><span>${esc(t.name.toUpperCase())}</span><span class="tt small">${esc(t.tag)}</span></span><span class="ts">${t.seats.map(s=>`<span>${esc(profOf(s).name)}</span>`).join(' · ')}</span>`,{cls:'two',t,a:()=>chooseTeam(t)}));
+  rows.push(R(`<span class="tn"><span>BLANK TEAM</span><span class="tt small">Custom</span></span><span class="ts">Build all 3 seats yourself</span>`,{cls:'two blank',a:()=>chooseTeam(null)}));
   const hov=rows[S.sel.pick||0];
   const pane=`<div>${esc(hov&&hov.t?hov.t.blurb:'Three empty seats. Build each agent from scratch, or pull them from the roster.')}</div>`+(S.team?`<div class="small" style="margin-top:4px">Picking a team replaces the one in progress (${esc(S.team.name)}).</div>`:'');
   return{rows,pane,foot:'A: PICK · B: TITLE',bare:true,sub:'NEW GAME'};
