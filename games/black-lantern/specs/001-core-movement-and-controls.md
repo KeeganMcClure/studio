@@ -136,4 +136,8 @@ These go in as a separate PR once Keegan answers the questions below.
    - A. Follow the bible: Backspace = Select, and keep Shift as a second Select key. (Recommended) It only affects testing on a computer, and puts the code back in line with the house rule.
    - B. Change the bibles to match the code: Backspace = B, Shift = Select.
 
-Question 1 must be answered, and the Rushlight bible updated to match, before the Developer starts. Questions 2 and 3 don't block the move: until they're answered, the engine keeps today's canvas fit and today's keys.
+**Answers (Keegan, Nov 21):**
+
+- **1: A.** Shared through `engine/`; Rushlight's bible updated (PR #6).
+- **2: A.** The engine keeps today's canvas fit; `studio-bible/controls.md` now matches.
+- **3: A.** The shared input makes Backspace = Select and keeps Shift as a second Select key; X stays B. This is the one deliberate change in this spec, and it only affects keyboard testing. `npm run check`'s random presses still include Backspace.
