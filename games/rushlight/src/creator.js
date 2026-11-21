@@ -285,7 +285,6 @@ let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add
 // ---------- INPUT ----------
 function rowAt(i){return cur.rows[i]}
 function act(kind){
-  if(window.RLG&&RLG.active){RLG.input(kind);return}
   const r=rowAt(S.sel[S.step]);
   if(kind==='up'||kind==='down'){const ok=selectable(cur.rows),k=ok.indexOf(S.sel[S.step]);const nk=kind==='up'?Math.max(0,k-1):Math.min(ok.length-1,k+1);if(nk!==k){S.sel[S.step]=ok[nk]}render();return}
   if(kind==='left'||kind==='right'){if(r&&r[kind])r[kind]();render();return}
@@ -296,12 +295,8 @@ function act(kind){
   if(kind==='start'){if(S.a.prof&&S.step!=='dossier'){goto('dossier')}else if(S.step==='dossier'){goto('title')}else{toast('PICK A PROFESSION FIRST')}render();return}
 }
 function focusInput(i){const el=list.querySelector(`.row[data-i="${i}"] input`);if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(e){}}}
-// D-pad with hold-repeat
-document.querySelectorAll('[data-pad]').forEach(b=>{let t1,t2;const stop=()=>{clearTimeout(t1);clearInterval(t2);b.classList.remove('down');if(window.RLG&&RLG.active)RLG.hold(b.dataset.pad,false)};
-  b.addEventListener('pointerdown',e=>{e.preventDefault();if(document.activeElement&&document.activeElement.tagName==='INPUT')document.activeElement.blur();b.classList.add('down');if(window.RLG&&RLG.active)RLG.hold(b.dataset.pad,true);act(b.dataset.pad);t1=setTimeout(()=>{t2=setInterval(()=>act(b.dataset.pad),85)},320)});
-  ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,stop));b.addEventListener('contextmenu',e=>e.preventDefault())});
-const btn=(id,k)=>$(id).addEventListener('click',()=>act(k));
-btn('#bA','a');btn('#bB','b');btn('#bL','l');btn('#bR','r');btn('#bStart','start');btn('#bSel','select');
+// Buttons and keyboard are shared (engine/input.js). While the game screen is up every press goes to the engine; otherwise to the creator.
+StudioInput.start({press:k=>window.RLG&&RLG.active?RLG.input(k):act(k),walking:()=>!!(window.RLG&&RLG.active),hold:(d,on)=>{if(window.RLG)RLG.hold(d,on)}});
 // taps on rows
 list.addEventListener('click',e=>{
   const row=e.target.closest('.row');if(!row)return;const i=+row.dataset.i;const r=rowAt(i);
@@ -316,11 +311,7 @@ list.addEventListener('click',e=>{
 list.addEventListener('input',e=>{const t=e.target,b=t.dataset.bind;if(!b)return;
   if(b==='name')S.a.name=t.value;else if(b==='code')S.a.code=t.value.toUpperCase();else if(b==='newMot'){S.newMot=t.value;return}else if(b.startsWith('bond'))S.a.bonds[+b.slice(4)].name=t.value;store.set('rl.draft',S.a)});
 list.addEventListener('focusout',e=>{if(e.target.tagName==='INPUT')setTimeout(()=>{if(!list.contains(document.activeElement)||document.activeElement.tagName!=='INPUT')render(false)},0)});
-list.addEventListener('keydown',e=>{if(e.target.dataset&&e.target.dataset.bind==='newMot'&&e.key==='Enter'){e.preventDefault();addMotive();render(false);const el=list.querySelector('input[data-bind="newMot"]');if(el)el.focus();return}if(e.target.tagName==='INPUT'&&(e.key==='Enter'||e.key==='Escape')){e.preventDefault();e.target.blur()}});
-const KEYS={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',z:'a',Z:'a',' ':'a',x:'b',X:'b',Backspace:'b',q:'l',Q:'l',w:'r',W:'r',Enter:'start',Shift:'select'};
-document.addEventListener('keydown',e=>{if(document.activeElement&&document.activeElement.tagName==='INPUT')return;const k=KEYS[e.key];if(!k)return;e.preventDefault();if(window.RLG&&RLG.active&&['up','down','left','right'].includes(k)){if(e.repeat)return;RLG.hold(k,true)}act(k)});
-document.addEventListener('keyup',e=>{const k=KEYS[e.key];if(k&&window.RLG&&['up','down','left','right'].includes(k))RLG.hold(k,false)});
-window.addEventListener('blur',()=>{if(window.RLG)['up','down','left','right'].forEach(d=>RLG.hold(d,false))});
+list.addEventListener('keydown',e=>{if(e.target.dataset&&e.target.dataset.bind==='newMot'&&e.key==='Enter'){e.preventDefault();addMotive();render(false);const el=list.querySelector('input[data-bind="newMot"]');if(el)el.focus();return}});  // any other Enter or Escape in a text field just closes the keyboard (engine/input.js)
 
 // ambient: blink + lantern flicker
 setInterval(()=>{if(S.step==='look'){drawBig(true);setTimeout(()=>drawBig(false),140)}},3200);

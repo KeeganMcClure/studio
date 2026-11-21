@@ -29,5 +29,5 @@ Secret story files (agency arc, motivation arcs, home scenes) never go in this r
 
 - Each game's `src/CLAUDE.md` still holds its build rules, and its Build Bible doc is still the source of truth for design.
   Follow them, except where they conflict with this file on the repo, the engine or deploys.
-- Rushlight's `engine.js` is a fork of Black Lantern's. It merges into `engine/` in Phase 6. Until then, copy a fix that applies to both by hand.
+- The shell, input and map walking are shared in `engine/` (spec 001). The rest of Rushlight's `engine.js` is still a fork of Black Lantern's and merges into `engine/` part by part. Until a part moves, copy a fix that applies to both by hand.
 - Run `npm run check` inside a game's `src/` before every commit.
