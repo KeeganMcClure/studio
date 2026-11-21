@@ -32,7 +32,7 @@ body{background:var(--page);color:var(--scr-fg);overflow:hidden;-webkit-user-sel
 .ss{display:flex;gap:8px;align-items:flex-start}
 .ss>div{width:var(--pill);display:flex;flex-direction:column;align-items:center}
 .ss button{width:calc(var(--pill) - 4px);height:14px;border-radius:9px;border:0;background:var(--btn);box-shadow:inset 0 -2px 0 rgba(0,0,0,.45);transform:rotate(-22deg)}
-.ss span{display:block;font:6px var(--px);color:var(--label);margin-top:4px;text-align:center}
+.ss span{display:block;font:6px var(--px);color:var(--label);margin-top:10px;text-align:center}  /* the tilted pill reaches about 8 px below its box; 10 px keeps the label clear (bug, Nov 21) */
 button{cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
 button:active,button.down{filter:brightness(1.35);transform:translateY(1px)}
 .ss button:active{transform:rotate(-22deg) translateY(1px)}
