@@ -1,0 +1,7 @@
+{
+  "id": "black-lantern",
+  "title": "Black Lantern",
+  "savePrefix": "bl.",
+  "cover": "cover.js",
+  "channels": ["dev", "release"]
+}

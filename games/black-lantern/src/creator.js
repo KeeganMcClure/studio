@@ -36,6 +36,9 @@ const feature=(k,v)=>v<=5?FEAT[k][0]:v>=16?FEAT[k][1]:'';
 const surname=a=>((a.name||'').trim().split(/\s+/).pop()||'Agent').toUpperCase();
 const mainOf=a=>a.motives[a.main]||a.motives[0]||'';
 
+// Save keys start with bl. on Release and dev.bl. on Dev (engine/studio.js), so testing never touches the
+// stable saves. Outside the site (the Intake page, the checks) there is no Dev build, so it stays bl.
+const BLP=window.Studio?Studio.savePrefix('bl.'):'bl.',K=k=>BLP+k;
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 
 // ---------- SAVE VERSIONS ----------
@@ -74,46 +77,46 @@ const UPGRADES={
   // 0 → 1 (Nov 21): first numbered version. Drops the retired sound key, fills any missing agent
   // fields with creator defaults, and sets aside a checkpoint that can't be read.
   1(){
-    try{localStorage.removeItem('bl.sound')}catch(e){}
-    const r=store.get('bl.roster',[]);store.set('bl.roster',(Array.isArray(r)?r:[]).map(fillAgent).filter(Boolean));
-    const d=store.get('bl.draft',null);if(d!==null){const f=fillAgent(d);f?store.set('bl.draft',f):localStorage.removeItem('bl.draft')}
-    let g=store.get('bl.game',null);
+    try{localStorage.removeItem(K('sound'))}catch(e){}
+    const r=store.get(K('roster'),[]);store.set(K('roster'),(Array.isArray(r)?r:[]).map(fillAgent).filter(Boolean));
+    const d=store.get(K('draft'),null);if(d!==null){const f=fillAgent(d);f?store.set(K('draft'),f):localStorage.removeItem(K('draft'))}
+    let g=store.get(K('game'),null);
     if(g!==null){try{const o=typeof g==='string'?JSON.parse(g):g;if(!o||!o.map||!Array.isArray(o.party)||!o.party.length)throw 0;
-        o.party.forEach(m=>{m.a=fillAgent(m.a)||newAgent()});store.set('bl.game',JSON.stringify(o))}
-      catch(e){localStorage.setItem('bl.broken',localStorage.getItem('bl.game'));localStorage.removeItem('bl.game')}}
+        o.party.forEach(m=>{m.a=fillAgent(m.a)||newAgent()});store.set(K('game'),JSON.stringify(o))}
+      catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
   },
   // 1 → 2 (Nov 21): the new creator. Agents move to the new professions, skills, Bonds and motivations
   // (convertAgent above). bl.draft now holds the team in progress: {team, a, edit, tweak}.
   2(){
-    const r=store.get('bl.roster',[]);store.set('bl.roster',(Array.isArray(r)?r:[]).map(convertAgent).filter(Boolean));
-    const d=store.get('bl.draft',null);
-    if(d!==null)store.set('bl.draft',d&&typeof d==='object'&&'prof' in d?{team:null,a:convertAgent(d),edit:null,tweak:false}:null);
-    const g=store.get('bl.game',null);
-    if(g!==null){try{const o=JSON.parse(g);o.party.forEach(m=>{m.a=convertAgent(m.a)});store.set('bl.game',JSON.stringify(o))}
-      catch(e){localStorage.setItem('bl.broken',localStorage.getItem('bl.game'));localStorage.removeItem('bl.game')}}
+    const r=store.get(K('roster'),[]);store.set(K('roster'),(Array.isArray(r)?r:[]).map(convertAgent).filter(Boolean));
+    const d=store.get(K('draft'),null);
+    if(d!==null)store.set(K('draft'),d&&typeof d==='object'&&'prof' in d?{team:null,a:convertAgent(d),edit:null,tweak:false}:null);
+    const g=store.get(K('game'),null);
+    if(g!==null){try{const o=JSON.parse(g);o.party.forEach(m=>{m.a=convertAgent(m.a)});store.set(K('game'),JSON.stringify(o))}
+      catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
   }
 };
 function upgradeSaves(){
   try{
-    const keys=Object.keys(localStorage).filter(k=>k.startsWith('bl.')&&k!=='bl.backup'&&k!=='bl.version');
-    let v=+(localStorage.getItem('bl.version')||0);
-    if(!keys.length){localStorage.setItem('bl.version',SAVE_V);return}  // fresh phone: nothing to upgrade
+    const keys=Object.keys(localStorage).filter(k=>k.startsWith(K(''))&&k!==K('backup')&&k!==K('version'));
+    let v=+(localStorage.getItem(K('version'))||0);
+    if(!keys.length){localStorage.setItem(K('version'),SAVE_V);return}  // fresh phone: nothing to upgrade
     if(v>=SAVE_V)return;  // up to date (or saved by a newer build: leave it alone)
-    const old=store.get('bl.backup',null);  // a retry after a failed upgrade keeps the first, untouched copy
-    if(!old||old.from!==v)localStorage.setItem('bl.backup',JSON.stringify({from:v,at:new Date().toISOString(),keys:Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)]))}));
-    for(v=v+1;v<=SAVE_V;v++){UPGRADES[v]();localStorage.setItem('bl.version',v)}
+    const old=store.get(K('backup'),null);  // a retry after a failed upgrade keeps the first, untouched copy
+    if(!old||old.from!==v)localStorage.setItem(K('backup'),JSON.stringify({from:v,at:new Date().toISOString(),keys:Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)]))}));
+    for(v=v+1;v<=SAVE_V;v++){UPGRADES[v]();localStorage.setItem(K('version'),v)}
   }catch(e){console.warn('Save upgrade stopped:',e)}
 }
 upgradeSaves();
-const D=(()=>{const d=store.get('bl.draft',null);return d&&typeof d==='object'&&!Array.isArray(d)?d:{}})();
+const D=(()=>{const d=store.get(K('draft'),null);return d&&typeof d==='object'&&!Array.isArray(d)?d:{}})();
 const okAgent=a=>a&&typeof a==='object'&&!Array.isArray(a)&&a.stats&&a.look?a:null;
 const okTeam=t=>t&&Array.isArray(t.seats)&&t.seats.length===3?t:null;
 // team: {tpl, seats:[agent|null x3], state:['kept'|'tweaked'|'rebuilt'|'built'|'roster'|null], opt:[cursor per seat]}
 // edit: the seat being built or tweaked (S.a is a working copy until Done). view: a roster file opened read-only.
 const S={step:'title',sel:{},a:okAgent(D.a)||newAgent(),team:okTeam(D.team),edit:D.edit??null,tweak:!!D.tweak,view:false,seatPick:null,
-  roster:store.get('bl.roster',[]),san:99,swap:null,clearArm:false,leaveArm:false,saved:false};
+  roster:store.get(K('roster'),[]),san:99,swap:null,clearArm:false,leaveArm:false,saved:false};
 if(!Array.isArray(S.roster))S.roster=[];
-const saveDraft=()=>store.set('bl.draft',{team:S.team,a:S.a,edit:S.edit,tweak:S.tweak});
+const saveDraft=()=>store.set(K('draft'),{team:S.team,a:S.a,edit:S.edit,tweak:S.tweak});
 
 // ---------- PIXEL PORTRAIT: 32 × 32 Storybook face (Art: Storybook; approved creator mockup, Nov 21) ----------
 function shade(hex,amt){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;const f=v=>Math.max(0,Math.min(255,Math.round(v+amt)));return'#'+[f(r),f(g),f(b)].map(v=>v.toString(16).padStart(2,'0')).join('')}
@@ -214,10 +217,12 @@ V.title=()=>{
   const n=S.roster.length;
   return{rows:[
     ST(`<canvas class="lantern pix" id="lantern" width="96" height="96" style="border:0;background:transparent"></canvas><div class="logo">BLACK LANTERN<small>PERSONNEL INTAKE · FORM 7-B</small></div><div class="static small" style="text-align:center;padding-top:0">Build a team. Lose them later.</div>`),
-    ...(store.get('bl.game',null)?[R('Continue Chapter One',{cls:'go',a:()=>{if(window.BLG)BLG.resume()}})]:[]),
+    ...(store.get(K('game'),null)?[R('Continue Chapter One',{cls:'go',a:()=>{if(window.BLG)BLG.resume()}})]:[]),
     ...(S.team?[R('Continue team',{val:esc(S.team.name||''),a:()=>{goto(S.edit!==null?(S.tweak?'identity':'profession'):'team')}})]:[]),
     R('New game',{a:()=>goto('pick')}),
     R('Roster',{val:n+' on file',a:()=>{S.seatPick=null;goto('roster')}}),
+    // Back to the studio's game shelf, only when the game was opened from it (launcher.md)
+    ...(window.Studio&&Studio.fromShelf?[R('Game shelf',{val:'◀',a:()=>Studio.toShelf()})]:[]),
     ST(`<div class="small" style="text-align:center;margin-top:6px">Keyboard: arrows · Z = A · X = B · Q/W = L/R · Enter = Start</div>`)
   ],foot:'A: SELECT',bare:true};
 };
@@ -255,7 +260,7 @@ function seatAction(i,j){
   else if(j===1){S.a=clone(a);S.edit=i;S.tweak=true;goto('identity')}
   else{S.a=newAgent();S.edit=i;S.tweak=false;goto('profession')}
 }
-function fileToRoster(a){a.id=a.id||newId();const i=S.roster.findIndex(x=>x.id===a.id);const c=clone(a);if(i>=0)S.roster[i]=c;else S.roster.unshift(c);store.set('bl.roster',S.roster)}
+function fileToRoster(a){a.id=a.id||newId();const i=S.roster.findIndex(x=>x.id===a.id);const c=clone(a);if(i>=0)S.roster[i]=c;else S.roster.unshift(c);store.set(K('roster'),S.roster)}
 function startGame(){
   if(!filled())return toast('FILL ALL 3 SEATS FIRST');
   const seats=S.team.seats.map(clone);seats.forEach(fileToRoster);
@@ -385,7 +390,7 @@ V.dossier=()=>{
   const rows=[ST(dossierCard(a))];
   if(S.view){
     rows.push(R('Copy agent code',{a:()=>copyCode(a)}));
-    rows.push(R(S.clearArm?'Press A again to shred':'Shred this file',{cls:'warn',a:()=>{if(!S.clearArm){S.clearArm=true;return}S.roster=S.roster.filter(x=>x.id!==a.id);store.set('bl.roster',S.roster);S.view=false;goto('roster');toast('FILE SHREDDED')}}));
+    rows.push(R(S.clearArm?'Press A again to shred':'Shred this file',{cls:'warn',a:()=>{if(!S.clearArm){S.clearArm=true;return}S.roster=S.roster.filter(x=>x.id!==a.id);store.set(K('roster'),S.roster);S.view=false;goto('roster');toast('FILE SHREDDED')}}));
     rows.push(R('Back to roster',{a:()=>{S.view=false;goto('roster')}}));
   }else{
     rows.push(R('Done ▶',{cls:'go',val:`seat ${S.edit+1}`,a:done}));
@@ -399,7 +404,7 @@ V.roster=()=>{
   const rows=S.roster.length?S.roster.map(a=>R(esc(a.name||'Unnamed'),{val:esc(profOf(a)?.name||''),cls:picking&&onTeam(a.id)?'dim':'',a:()=>{
       if(picking){if(onTeam(a.id))return toast('ALREADY ON THE TEAM');const i=S.seatPick;S.team.seats[i]=clone(a);S.team.state[i]='roster';S.team.opt[i]=0;S.seatPick=null;S.sel.team=i;goto('team');return toast(surname(a)+' TAKES SEAT '+(i+1))}
       S.a=clone(a);S.view=true;goto('dossier')}})):[ST('No agents on file yet. Agents are filed when you start a case, or from the Dossier step.')];
-  if(S.roster.length&&!picking)rows.push(R(S.clearArm?'Press A again to shred all':'Shred roster',{cls:'warn',a:()=>{if(S.clearArm){S.roster=[];store.set('bl.roster',[]);S.clearArm=false;toast('ROSTER SHREDDED')}else{S.clearArm=true}}}));
+  if(S.roster.length&&!picking)rows.push(R(S.clearArm?'Press A again to shred all':'Shred roster',{cls:'warn',a:()=>{if(S.clearArm){S.roster=[];store.set(K('roster'),[]);S.clearArm=false;toast('ROSTER SHREDDED')}else{S.clearArm=true}}}));
   return{rows,foot:picking?'A: PUT IN SEAT · B: BACK':'A: OPEN FILE · B: BACK',sub:picking?`SEAT ${S.seatPick+1}`:`${S.roster.length} ON FILE`};
 };
 function copyCode(a){
@@ -492,6 +497,6 @@ list.addEventListener('focusout',e=>{if(e.target.tagName==='INPUT')setTimeout(()
 setInterval(()=>{if(S.step==='identity'&&!(window.BLG&&BLG.active)){drawBig(true);setTimeout(()=>drawBig(false),140)}},3200);
 setInterval(()=>{if(S.step==='title'&&!(window.BLG&&BLG.active))drawLantern()},180);
 
-window.BL={S,PROFS,ITEMDEF,WEAP,specOf,profOf,derived,skillVal,newAgent,fromTemplate,drawPortrait,portraitURL,store,render,goto,toast,esc,pick,rnd,SKILLS,HAIRC,SKIN,OUTC};
+window.BL={key:K,S,PROFS,ITEMDEF,WEAP,specOf,profOf,derived,skillVal,newAgent,fromTemplate,drawPortrait,portraitURL,store,render,goto,toast,esc,pick,rnd,SKILLS,HAIRC,SKIN,OUTC};
 render();
 })();
