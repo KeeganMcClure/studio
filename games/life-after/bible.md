@@ -70,7 +70,7 @@ None yet.
 
 - **One life, one world** (set Nov 21). Each game generates a new world. When your survivor dies, the game is over and the save is cleared. There's no carry-over.
 - **Goal** (set Nov 21): none. The score is days survived, shown on the death screen. A best-days record may be kept outside the run (open).
-- **Seeded** (Claude's call, for review): each world comes from one seed, and dice draw from a second saved stream, so reopening the game rerolls nothing. The seed shows on the death screen, and a new game can start from a typed seed. This matches Rushlight's seed rule (proposed for `studio-bible/`, see below).
+- **Seeded** (Claude's call, for review): each world comes from one seed, and dice draw from a second saved stream, so reopening the game rerolls nothing. The seed shows on the death screen, and a new game can start from a typed seed. Follows `studio-bible/saves.md`, Seeds.
 
 ## The map
 
@@ -164,10 +164,7 @@ None yet.
 
 Found while drafting (Nov 21). Each needs a decision or a separate `studio-bible/` PR, made after the dev setup's open studio-bible PRs merge.
 
-- **Battle screen** (`studio-bible/ui.md`, Battle screen): describes a head-on battle screen. Life After fights on the map and has none. Proposed: the rule applies to games that have a battle screen.
+- **Battle screen** (`studio-bible/ui.md`, Battle screen): describes a head-on battle screen. Life After fights on the map and has none. Settled Nov 21: the section now applies only to games that have a battle screen.
 - **Select** (`studio-bible/controls.md`, Buttons): settled Nov 21 (Keegan). Select opens companion orders (Follow, Hold here, Sneak, Fight), and `controls.md` lets a game with no lead to cycle give Select its own job.
 - **Party menu** (`studio-bible/ui.md`, Party menu, added Nov 21 from Black Lantern spec 002): assumes a lead you can swap, with Make lead and Select cycling. Life After keeps one survivor as lead, so it has no Make lead and Select opens orders instead. Open: whether Life After uses the party cards (bond, traits, Give item) without Make lead. To do: Companions.
 
-## Proposed for the studio bible
-
-- **Seeds:** one seed per run, a saved second dice stream, the seed shown at the end and a typed-seed start. Rushlight already uses this rule; Life After would be the second game.
