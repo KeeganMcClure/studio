@@ -28,6 +28,18 @@ Each game folder has a small `game.json` that the launcher reads:
 
 A game with no `release` build shows only when the Dev/Release toggle is on Dev.
 
+## Dev and Release
+
+- Every game has a Dev build (new work, from `main`) and a Release build (stable, from the `release` branch). A toggle on the shelf switches between them.
+- New work goes to Dev. A game moves to Release only when Keegan says so.
+- Dev builds keep their own saves, so testing never touches Release saves.
+
+## On the phone
+
+- Install: open the site in Safari, then Share, Add to Home Screen. It opens full-screen like an app.
+- Every game plays offline once it has loaded.
+- Saves live in on-device browser storage. The installed app protects them far better than a Safari tab, but save export and import stays (see `saves.md`).
+
 ## Shared settings
 
 Control layout, button size and volume live in the launcher and apply to every game. Games read them; they never keep their own copy.
