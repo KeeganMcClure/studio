@@ -539,7 +539,10 @@ function resume(){const s=store.get(B.key('game'),null);if(!s)return false;G=Obj
 async function pauseMenu(){
  held=[];
  for(;;){
-  const r=await choose(['Party','Items','Notebook','Save & quit','Close'],{cancel:true,title:'MENU · '+G.M.name});
+  // Dev build only (never Release): a row that finishes the case at once, for testing the case board on a phone
+  const dev=!!(window.Studio&&Studio.channel==='dev'),rows=['Party','Items','Notebook','Save & quit',...(dev?['Dev: finish case']:[]),'Close'];
+  const r=await choose(rows,{cancel:true,title:'MENU · '+G.M.name});
+  if(rows[r]==='Dev: finish case'){finish();return}
   if(r===0)await openParty();
   else if(r===1){await itemMenu(lead(),false);hideTB()}
   else if(r===2){if(!G.clues.length)await say('NOTEBOOK','Nothing yet. Talk to the townsfolk.');for(const c of G.clues)await say('NOTEBOOK',c.text);if(!G.flags.key)await say('NOTEBOOK',`Deputy Ross wants proof: ${townClues()}/3 town clues.`)}
