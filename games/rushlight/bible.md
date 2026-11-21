@@ -6,7 +6,7 @@ This game's build bible. Moved from the [Rushlight Build Bible doc](https://clau
 - What's been built is in `changelog.md` next to this file.
 - Keegan sends changes through the Design Inbox doc; the Designer edits this file.
 - Reading level (set Nov 21): everything Claude writes for this project, in chat, in this bible and in the game, sits at an average reading level. Plain words over jargon, game or period. Game lines follow Voice's 9th grade rule.
-- Art assets (set Nov 20): before making any art from scratch, Claude checks for premade pieces first, on the Shared Shelf and in Rushlight's Asset Library. Claude only draws something new when nothing fitting exists, and says what it checked. (The old doc also listed free online sources; that part waits on Keegan, since studio art is drawn in code.)
+- Art assets (set Nov 20): before making any art from scratch, Claude checks for premade pieces first, on the Shared Shelf and in Rushlight's Asset Library. Claude only draws something new when nothing fitting exists, and says what it checked. Free online sources are not used, since studio art is drawn in code (Keegan, Nov 21).
 - Known export gaps: date chips, mentions and links to other docs became plain text, and pictures became placeholders. The 23 Art pictures were restored from the old doc on 2026-11-21 and live in `mockups/`.
 
 ## To do
