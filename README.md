@@ -22,6 +22,7 @@ studio/
       changelog.md     what the Developer has built
       specs/           feature specs from the Designer
       assets/          sprite drawing code
+      mockups/         design reference pictures (never loaded by the game)
       src/             game-specific code and content
     rushlight/         same structure
 ```

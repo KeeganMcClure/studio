@@ -5,7 +5,7 @@ This game's build bible. Moved from the [Rushlight Build Bible doc](https://clau
 - The house rules in `studio-bible/` (controls, art style, UI, saves) apply to every game and win where this file overlaps them.
 - What's been built is in `changelog.md` next to this file.
 - Keegan sends changes through the Design Inbox doc; the Designer edits this file.
-- Known export gaps: date chips, mentions and links to other docs became plain text, and pictures became placeholders.
+- Known export gaps: date chips, mentions and links to other docs became plain text, and pictures became placeholders. The 23 Art pictures were restored from the old doc on 2026-11-21 and live in `mockups/`.
 
 ## To do
 
@@ -295,7 +295,7 @@ Mockups are still images by default; something playable only when you approve it
 
 **Battle screen (first mockup, Nov 20).** Top to bottom: a turn strip with the fight's countdown (the Noonwife's noon bell); the enemy nameplate with level, threat skulls and HP (hatched and marked ??? until Identified); the scene, with the party seen from behind in the foreground; a log box; one row per merc (portrait, HP, WP, SAN, status); a 6-command menu; the on-screen controls. Mockup choices: the unnatural is bone-white and outlined like everything else, and breaks one rule of the picture (the Noonwife casts no shadow at noon, her face is a void); a body is shown plainly with no pooled blood. The mockup's text uses a stand-in font; the game uses VT323 as Black Lantern does.
 
-&#91;image: Battle mockup v3: the party against the Noonwife at noon\]
+![Battle mockup v3: the party against the Noonwife at noon](mockups/01-battle-v3.png)
 
 **Battle feedback (Nov 20).** The Noonwife's look works for her; other unnatural things can be wrong in their own ways, not copies of hers. The noon mood is right; night fights carry the darker end. Mercs are drawn bigger and more detailed, about 16–20 × 20–24 px from behind, with their weapons, armor and wear showing, so they read as sellswords, not critters. The scene gets more height: the log box drops to one line and the party rows tighten. Portraits must read at a glance: each species leads with its one strongest mark, drawn high-contrast against the dark backdrop (a badger's eye stripes and white blaze, a rat's big round ears outside the hood, a hare's long ears). The v3 image carries these changes.
 
@@ -303,7 +303,7 @@ Mockups are still images by default; something playable only when you approve it
 
 **Battle menu (set Nov 20, carried from Black Lantern).** Fight, Skills, Items, Guard. Swapping weapons lives in Items: the list opens with the merc's 2 weapons, the equipped one marked, and picking the other swaps and ends the turn. Flee lives in Guard with Defend, for roamers only, so it shows greyed out against a contract target like the Noonwife.
 
-&#91;image: Battle in the GBA shell: Ostra, Wendel and Tomas against the Noonwife at noon\]
+![Battle in the GBA shell: Ostra, Wendel and Tomas against the Noonwife at noon](mockups/02-battle-shell.png)
 
 **Town street (second mockup, Nov 20).** Harrowford, a river-crossing town, at Wide scale: 16 px tiles and the 14 × 26 folk frame, drawn at 2× so about 11½ tiles show across a 375-wide screen. Top to bottom: a slim strip (party heads with the lead marked in Tallow, town name and type, purse, day; set Nov 20 as the town strip, so you can judge what you can afford without a menu, while the Hue and cry stays on the region map); the street in 3/4 top-down with house fronts across the top; the dialog box over the bottom of the map; the on-screen controls, as in the battle mockup. Only the lead walks, as in Black Lantern: Wendel the hare, seen from behind, the rushlight on his pack.
 
@@ -315,11 +315,11 @@ Dialog box: Black Lantern's Lantern Bust layout in the earth palette. A Soot box
 
 **Street dressing (set Nov 20).** Every town has a notice board and market stalls, out in the street where you walk to them. The pillory or gibbet, plague signs and the like depend on the town type and its state (a town hit by plague shows chalk crosses and body carts; one under a hard lord shows the gibbet).
 
-&#91;image: Town street mockup: Wendel the hare at Hanka's eel stall in Brodek, with the dialog box\]
+![Town street mockup: Wendel the hare at Hanka's eel stall in Brodek, with the dialog box](mockups/03-town-v1.png)
 
 **Town street in the GBA shell (rework 2, Nov 20).** Harrowford redrawn inside the battle mockup's shell, so both screens share one frame; the image above stays as the record of Mockup 2. The screen is 340 × 442, so about 10½ tiles show across at 2×. In the screen, top to bottom: the town strip (party heads with Wendel marked in Tallow, HARROWFORD and its type, purse, day); house fronts across the top (a timber house with Hester's eel stall under a striped awning, the chapel, a plastered house with a chalk plague cross on its door); the street, with the notice board and the stoat reading it, the handcart with a shrouded body outside the chapel and the hedgehog at its handle, the badger watchman with his halberd, the mouse passer-by, the fox walking off, and the rat in the pillory with rotten food thrown at it; Wendel, the lead, seen from behind at the stall with the rushlight on his pack. Hester's portrait stands on the dialog box at 2× with her name on a Tallow tab, and her line from Voice fills the 3 lines: "Eels are a groat. The ones from the millrace are free, and you can guess why." Same shell as the battle screen (dark leather body, Rust A, Blood B, RUSHLIGHT label). Stand-in font; VT323 in the game. Approved Nov 20 as the reference for building the town screen; its code (every sprite, color and position) is in Rushlight's Asset Library as rushlight-mockups-town-v1.
 
-&#91;image: Town street in the GBA shell: Wendel at Hester's eel stall in Harrowford, with the dialog box\]
+![Town street in the GBA shell: Wendel at Hester's eel stall in Harrowford, with the dialog box](mockups/04-town-shell.png)
 
 **Region map (third mockup, Nov 20).** Set: a hand-drawn chart, a view that pans with the cursor, standing in the top strip, and a road card at the bottom. The map is the company's own chart on parchment, inked at 2×, with Moss-tinted woods and a washed river; like any chart drawn from rumor, it can be wrong (see Surprises in World and contracts). Top to bottom:
 
@@ -332,33 +332,33 @@ Names set in Voice (Nov 20): the Withy March, Harrowford, Saint Ebbe's, Withy Mi
 
 **Your review (Nov 20).** The bright parchment stays: the map is a paper you unfold, set apart from the dark screens. Changes in v2: town and site icons drawn 1.5× larger, so each type reads without its label, with labels on a clear parchment backing; the faction row shows a word per faction instead of pips; the whole-region inset added; a Key on L, opened over a dimmed map, lists every mark (town, wild site, road kinds, rumor, day ticks, danger, roamer, sign, the company, board and taken job, off-screen tab).
 
-&#91;image: Region map mockup v2: the Vrbno March around Brodek, cursor on Vrba Mill, with the overview inset\]
+![Region map mockup v2: the Vrbno March around Brodek, cursor on Vrba Mill, with the overview inset](mockups/05-map-v2.png)
 
-&#91;image: Region map Key open over the dimmed map\]
+![Region map Key open over the dimmed map](mockups/06-mapkey-v2.png)
 
 **Region map in the GBA shell (rework 3, Nov 20).** The Withy March redrawn inside the battle mockup's shell, so all three screens share one frame; the two v2 images above stay as the record of Mockup 3. The screen is 340 × 442. In the screen, top to bottom: the two-row strip (row 1: party heads with Wendel marked in Tallow, AT HARROWFORD, purse, day; row 2: the Hue and cry at NOTICED, then the four factions as icon and word, WARY and TRUSTED joined by the Rust cross as the feuding pair); the chart, about 312 px tall, with the company at Harrowford and the cursor on Withy Mill; the road card at the bottom. On the chart, with the Voice names: the Withy March cartouche (autumn), the whole-region inset top right, HARROWFORD (walled town, notice board, the company's rushlight on its pole), SAINT EBBE'S, *charcoal*, *shrine*, *old field* under a Rust danger hatch, *gibbet*, *Withy Mill* with its wax seal inside the Tallow brackets, the Tallow-dotted road there with its 2 day ticks, a pencil rumor, the margin notes "dead cattle, downriver" and "tracks, big" with roamer claws, and edge tabs ◂ HOLLIN, CROOKBACK ▸ and ▾ 2 MORE. The road card reads WITHY MILL (wild site · mill), 2 days, food 6 gr, 2 event rolls, Taken: The quiet mill (hunt), threat ??? with signs: dead cattle, A go. The second image is the Key on L, opened over the dimmed chart with the strip and road card still showing. The shell's L button is labelled L KEY; R opens Contracts and gets its label in the build (set Nov 20, see Map menu in Skills and menus). Same shell as the other two (dark leather body, Rust A, Blood B, RUSHLIGHT label). Stand-in font; VT323 in the game. Approved Nov 20 as the reference for building the region map screen and its Key; their code (every glyph, color and position) is in Rushlight's Asset Library as rushlight-mockups-map-v1 and rushlight-mockups-mapkey-v1.
 
-&#91;image: Region map in the GBA shell: the Withy March around Harrowford, cursor on Withy Mill\]
+![Region map in the GBA shell: the Withy March around Harrowford, cursor on Withy Mill](mockups/07-map-shell.png)
 
-&#91;image: Region map Key in the GBA shell, open over the dimmed chart\]
+![Region map Key in the GBA shell, open over the dimmed chart](mockups/08-mapkey-shell.png)
 
 **Items menu in the GBA shell (Mockup 4, Nov 20).** The map menu's Items screen, in the same shell as the other three. The screen is 340 × 442. Top to bottom: a header (ITEMS, then a tab per merc with their head, the open one boxed in Tallow; L and R flip between mercs); the merc line (WENDEL in Tallow, hare · crossbowman · lead, SLOTS 6/8); the gear block, one row each for WPN 1, WPN 2, BODY and HEAD, with the weapon in hand marked by a Tallow dot, its numbers after wear (Knife 1d6−1) and wear as a word and three pips (Sound in Bone and greyed, Worn in Tallow, Cracked in Rust, Broken with no pips); the 8 slots in a 4 × 2 grid, the kit item tagged KIT, uses as a Tallow count, empty slots dashed; an info line naming the item under the cursor; the shared pack as a scrolling list with no slots; and a fixed foot line: PURSE 41 gr, RATIONS 9/15 · 3 days, MEAT 2 · rots 1d. In the pack, trophies carry the tooth mark and a TROPHY tag, an unnatural one also an UNNATURAL tag in Bone, spare parts a PART tag, and pack gear shows its wear (the Mail shirt, Cracked). Shown: A on Wendel's Bodkin bolts opens USE, GIVE, SWAP, TO PACK, DROP; GIVE opens the other mercs with their slots used, Tomas greyed as FULL. Stand-in font; VT323 in the game. Premade check: the shell, strip faces and heads were reused from claude/town-mockup-shell.html; the item icons are new 12 px marks, as no premade set matches the palette and outline rules. Code in Rushlight's Asset Library as rushlight-mockups-items-v1.
 
-&#91;image: Items menu in the GBA shell: Wendel's gear, slots and the GIVE box, the shared pack and the purse and rations line\]
+![Items menu in the GBA shell: Wendel's gear, slots and the GIVE box, the shared pack and the purse and rations line](mockups/09-items-v1.png)
 
 **Item icons (set Nov 20).** One icon per item type, not per item: the name and info line tell items apart, and a new item needs no new art. 13 types: Med; Drug (drugs, drink and chewing root); Throwable; Tool; Gear; Charm and folk remedy; Melee (thrown hatchet included); Shooting; Body armor; Headwear; Shield; Trophy (the tooth); Part. Each is a 12 px mark in the earth palette with a Peat outline, the same in slots, the pack, shops and loot. Rations, meat and the purse are counters, so they get words, not icons.
 
 **Item type icons drawn (Nov 20).** Med is a mortar and pestle with a sprig of herb; Drug a stoppered glass vial with a dark Rust draught; Throwable a clay fire pot with a Straw band and a lit fuse; Tool an iron hammer; Gear a coil of Straw rope with a loose end; Charm and folk remedy a hag stone on a cord; Melee an arming sword; Shooting a crossbow seen from above; Body armor the padded jack; Headwear the kettle hat; Shield a Rust heater with a Straw cross; Trophy the tooth; Part a flayed hide. Premade check: Black Lantern's Art and Shared shelf hold no item icons, and the free sets on OpenGameArt are 16 px or larger and don't fit the palette and outline rules, so 8 are drawn new; Body armor, Headwear, Trophy and Part are Mockup 4's stand-ins kept as is. Swapped into Mockup 4 (second image below): every item now shows its type's icon, so the Adder fang shows Part, not the tooth, and the Torch shows Melee. Code in Rushlight's Asset Library as rushlight-icons-items-v1 (the icon set) and rushlight-mockups-items-v1 (Mockup 4, updated).
 
-&#91;image: Item type icons: the 13 types at 8×, 1× and 2×\]
+![Item type icons: the 13 types at 8×, 1× and 2×](mockups/10-icons-items.png)
 
-&#91;image: Items menu in the GBA shell with the type icons swapped in\]
+![Items menu in the GBA shell with the type icons swapped in](mockups/11-items-icons-swapped.png)
 
 **Company marker options (Mockup 5, Nov 20).** The rushlight on a pole is replaced by one of three tokens standing on the chart where the company is, drawn on the chart's 2× grid with Peat outlines and a soft shadow on the parchment. **A, carved wooden piece:** a 7 × 11 px pawn in wood browns with knife facets and a Tallow-painted collar, like a piece set down on a campaign map. It's the quietest of the three and adds no new rule. **B, pin and red thread:** a 5 × 9 px brass-headed pin with a Rust thread that runs back along the roads the company came by, with a tiny pin at each night's stop, so the run's path stays on the chart. It's the smallest mark, and the thread shares Rust with danger hatches, claws and the wax seal, so a long trail could crowd the chart; a cap on how many days it shows would be needed. **C, coin token:** a 15 × 16 px brass coin seen a little from above, struck with the lead's head in Peat as a silhouette, each species with its one strongest mark (the hare's ears, the badger's Bone blaze, the rat's round ears). It changes when the lead changes, so the map shows who's leading. It's the biggest mark, about the width of a town glyph. Each option is shown at 8× and 2× and in the approved region map screen standing at Harrowford, with nothing else changed. Premade check: nothing on the Shared Shelf or in Rushlight's Asset Library fits, and the free map markers on OpenGameArt are modern pins and flags, so all three were drawn new. Code is in Rushlight's Asset Library as rushlight-mockups-marker-v1 (approved). Picked Nov 20: C, the coin token. It replaces the rushlight on a pole, and the map Key's entry for the company changes to match in the build.
 
-&#91;image: Company marker options at 8× and 2×: carved piece, pin, and coin token with the hare, badger and rat heads\]
+![Company marker options at 8× and 2×: carved piece, pin, and coin token with the hare, badger and rat heads](mockups/12-marker-options.png)
 
-&#91;image: The three marker options standing at Harrowford on the region map in the GBA shell\]
+![The three marker options standing at Harrowford on the region map in the GBA shell](mockups/13-marker-on-map.png)
 
 **Slice screens in the GBA shell (Mockup 6, Nov 21; approved Nov 21 as the references for building these three screens).** The three vertical-slice screens least like anything drawn before, in the same shell as the others (340 × 442 screen, stand-in font, VT323 in the game). The other slice screens are built in the shell's list-box style and reviewed in play. Premade check: the shell, the strip heads and the dialog box style are reused from the approved town mockup; the camp's sprites, the board and the bills are new, since nothing on the Shared Shelf or in the Asset Library fits a wild site or a notice board, and free sets on OpenGameArt don't match the palette and outline rules.
 
@@ -368,11 +368,11 @@ Names set in Voice (Nov 20): the Withy March, Harrowford, Saint Ebbe's, Withy Mi
 
 Code in Rushlight's Asset Library as rushlight-mockups-site-v1, rushlight-mockups-board-v1 and rushlight-mockups-company-v1 (approved).
 
-&#91;image: Contract site in the GBA shell: Wendel at a hotspot in Pell's charcoal camp at dusk\]
+![Contract site in the GBA shell: Wendel at a hotspot in Pell's charcoal camp at dusk](mockups/14-site.png)
 
-&#91;image: Notice board in the GBA shell: Pell's bill under the cursor and his contract card\]
+![Notice board in the GBA shell: Pell's bill under the cursor and his contract card](mockups/15-board.png)
 
-&#91;image: Pick a company in the GBA shell: Free Company picked, Wendel's seat open on Reroll\]
+![Pick a company in the GBA shell: Free Company picked, Wendel's seat open on Reroll](mockups/16-company.png)
 
 **Mockups to come:** none. The battle screen, town street and region map are all redrawn inside the GBA shell (set Nov 20, see Tech and To do). Every new screen still gets a still mockup before it's built.
 
@@ -403,15 +403,15 @@ Code in Rushlight's Asset Library as rushlight-mockups-site-v1, rushlight-mockup
 
 Code in Rushlight's Asset Library as rushlight-sprites-noonwife-v1, rushlight-sprites-counter-v1, rushlight-sprites-monk-v1, rushlight-mockups-battle-counter-v1 and rushlight-mockups-battle-monk-v1 (drafts). Batch 2 (the Corpse-candle, Lampwalkers, Severa, the hedge cat, rooks and the Withy Hag's mask) is its own To do item.
 
-&#91;image: Battle in the GBA shell: the Counter in the emptied plague village\]
+![Battle in the GBA shell: the Counter in the emptied plague village](mockups/17-battle-counter-v1.png)
 
-&#91;image: Battle in the GBA shell: the Hollow Monk rising from the flooded mine, his lamp lighting nothing\]
+![Battle in the GBA shell: the Hollow Monk rising from the flooded mine, his lamp lighting nothing](mockups/18-battle-monk-v1.png)
 
 **Your review (Nov 21): v2 in full color.** The v1s leaned on dark blobs and didn't read. Your picks: draw creatures in full color with real texture, like the mercs, and redraw both. Silhouette first is now an outline check only (see Drawing the unnatural). The Counter v2 has bare grey skin stretched over ribs, mange, spine knuckles, pink gums and bone teeth, lit from the upper left; the cottage walls behind it are now daub brown so it stands off them. The Monk v2 is in wet brown wool with hard folds, a warm rim from the party's rushlight, water running down the cloth, weed hanging from the sleeves and a drowned blue-grey hand on the lamp. Same bodies and drawing rules. Code in the Asset Library as rushlight-sprites-counter-v2, rushlight-sprites-monk-v2, rushlight-mockups-battle-counter-v2 and rushlight-mockups-battle-monk-v2, approved Nov 21 as the references for building both creatures; the v1 images above stay as the record.
 
-&#91;image: Battle in the GBA shell: the Counter v2 in full color\]
+![Battle in the GBA shell: the Counter v2 in full color](mockups/19-battle-counter-v2.png)
 
-&#91;image: Battle in the GBA shell: the Hollow Monk v2 in full color\]
+![Battle in the GBA shell: the Hollow Monk v2 in full color](mockups/20-battle-monk-v2.png)
 
 **Creature sprites for the slice, batch 2 (Nov 21; approved Nov 21 as the references for building all six).** Battle sprites only, in full color from the start like the v2s, each shown in the battle frame to check it reads at phone size. Premade check: nothing on the Shared Shelf or in the Asset Library fits, and the free sets on OpenGameArt (Tiny Creatures, Nighthawking battlers) are 16 px or front-view battlers in other palettes, so all six were drawn new. The two unnatural ones keep to their own pairs of the Drawing the unnatural rules; no pair repeats the Noonwife's, the Counter's or the Monk's.
 
@@ -424,11 +424,11 @@ Code in Rushlight's Asset Library as rushlight-sprites-noonwife-v1, rushlight-sp
 
 Claude's calls, for your review: the Corpse-candle's cold blue light (new colors outside the palette, kept to that one creature); the Lampwalkers' faces carry no species marks; the Hag's real eyes and boots as the visual tells; and the six log lines. Code in Rushlight's Asset Library as rushlight-sprites-candle-v1, -lampwalkers-v1, -severa-v1, -hedgecat-v1, -rooks-v1 and -hag-v1, and rushlight-mockups-battle-candle-v1, -lampwalkers-v1, -severa-v1, -hedgecat-v1, -rooks-v1 and -hag-v1 (approved, 31 pieces). The Corpse-candle, Severa and Withy Hag battle images still need adding here; they're in the Asset Library.
 
-&#91;image: Battle in the GBA shell: three identical Lampwalkers on their line by the flooded mine\]
+![Battle in the GBA shell: three identical Lampwalkers on their line by the flooded mine](mockups/21-battle-lampwalkers.png)
 
-&#91;image: Battle in the GBA shell: the hedge cat flat in a stalking crouch at a dusk hedge\]
+![Battle in the GBA shell: the hedge cat flat in a stalking crouch at a dusk hedge](mockups/22-battle-hedgecat.png)
 
-&#91;image: Battle in the GBA shell: four rooks over a ploughed field, one with a ration in its beak\]
+![Battle in the GBA shell: four rooks over a ploughed field, one with a ration in its beak](mockups/23-battle-rooks.png)
 
 References: from the era, Bosch's hell panels, Bruegel's Triumph of Death, Schongauer's Temptation of Saint Anthony, Dürer's woodcuts, danse macabre prints and manuscript marginalia; modern, Beksiński, Mignola, Junji Ito, Trevor Henderson, and the games Darkwood, Fear & Hunger, Pathologic 2 and Inscryption. Added by the study: Lovecraft fan art on DeviantArt and ArtStation, as the clichés to avoid.
 
