@@ -9,7 +9,7 @@ Keegan is the designer and isn't a programmer. Explain choices briefly in plain 
 - Put anything two games could use in `engine/`, never inside one game.
 - After each feature or fix, add a dated entry to the game's `changelog.md`: what was built, what is left, and any deviations from the spec.
 - Never change a bible or spec. If one is wrong or unclear, stop and ask Keegan.
-- Target: web/PWA, iPhone SE first, GBA-style controls, 240×160 native canvas scaled with crisp pixels, offline play, save export and import.
+- Target: web/PWA, iPhone SE first, GBA-style controls, canvas 240 px wide with the height fitting the screen (up to 320), scaled with crisp pixels, offline play, save export and import.
 - Plain HTML canvas, no game framework. All art is drawn in code. No pixel art tool.
 - New work deploys to Dev. Release only when Keegan says so.
 - When you ask Keegan a question, use multiple choice with 2-4 options and mark the recommended one with (Recommended) and a one-line reason.
