@@ -18,7 +18,21 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # GitHub only lets main deploy to Pages (the github-pages environment's branch rule), so a push to
+  # release hands off to a run on main, which builds the whole site, Release builds included.
+  hand-off:
+    if: github.ref == 'refs/heads/release'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Start the deploy from main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main
+
   build:
+    if: github.ref != 'refs/heads/release'
     runs-on: ubuntu-latest
     steps:
       - name: Check out main (launcher and Dev builds)
