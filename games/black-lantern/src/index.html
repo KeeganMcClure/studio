@@ -92,9 +92,11 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 .row.two{margin:0 0 4px;border:2px solid var(--scr-line);border-radius:3px;background:var(--card);padding:3px 8px 3px 4px}
 .row.two.blank{border-style:dashed}
 .row.two .lab{white-space:normal;line-height:1}
-.tn{display:block;font:8px/1.6 var(--px);color:var(--scr-fg)}
+.tn{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font:8px/1.6 var(--px);color:var(--scr-fg)}
+.tt{font-family:var(--vt);line-height:1;white-space:nowrap}
 .row.on .tn{color:var(--scr-hi)}
-.ts{display:block;font-size:16px;color:var(--scr-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ts{display:block;font-size:16px;color:var(--scr-dim)}
+.ts span{white-space:nowrap}
 .row.seat{display:block;margin:0 0 6px;border:2px solid var(--scr-line);border-radius:3px;background:var(--card);padding:5px 6px}
 .screen:not(.gaming) .row.seat.on{border-color:var(--gold);box-shadow:none}
 .row.seat .cur,.row.seat .val{display:none}
@@ -187,7 +189,7 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 </style>
 
 <!-- The shell around this screen (bezel, brand strip, buttons) comes from engine/shell.js -->
-<div class="screen" id="screen" data-brand="BLACK LANTERN" data-brand-sub="DOT MATRIX · INTAKE" data-label-l="L: previous step" data-label-r="R: next step" data-label-start="Start: dossier, done, or begin">
+<div class="screen" id="screen" data-brand="BLACK LANTERN" data-brand-sub="DOT MATRIX" data-label-l="L: previous step" data-label-r="R: next step" data-label-start="Start: dossier, done, or begin">
   <div class="hdr"><span id="hTitle"></span><span id="hStep"></span><div class="sbar" id="hBar" hidden></div></div>
   <div class="info" id="info" hidden></div>
   <div class="body" id="body"><div class="list" id="list"></div><div class="pane" id="pane"></div></div>
