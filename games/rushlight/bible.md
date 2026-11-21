@@ -2026,7 +2026,7 @@ Rushlight is a fork of Black Lantern's game file, played on an iPhone SE inside 
 **Screen and controls**
 
 - **GBA shell, as in Black Lantern** (set Nov 20). This reverses the Overview's first full-screen plan, for the same reason Black Lantern reversed it. The three mockups were drawn full screen and get redrawn in the shell (see To do).
-- On-screen buttons carry from Black Lantern: D-pad, A (confirm, talk), B (back), L/R, Start (menu), Select (cycles the lead merc). Tapping menu rows also works. Keyboard: arrows, Z = A, X = B, Q/W = L/R, Enter = Start.
+- On-screen buttons carry from Black Lantern: D-pad, A (confirm, talk), B (back), L/R, Start (menu), Select (cycles the lead merc). Tapping menu rows also works. Keyboard: arrows, Z = A, X = B, Q/W = L/R, Enter = Start, Backspace = Select; Space also works as A and Shift as Select (as in `studio-bible/controls.md`, Nov 21).
 - Target: iPhone SE, 375 × 667 (the in-app viewer is shorter). Nothing may be cut off; test at 375 × 550 and 320 × 480 before publishing.
 
 **Code**
