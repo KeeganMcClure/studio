@@ -87,12 +87,16 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
 - [x] Demo 1 of 6: Agent creator under the new rules (team templates, party of 3, Bonds and motivation), built from the approved creator mockup
 
   Done Nov 21: Pick a team, Your team (Keep, Tweak, Rebuild; empty seats build or pull from the roster) and the 7-step creator, matching the mockup. Old agents convert to the new professions; battle abilities and items are stand-ins until Demo 5.
-- [ ] Demo 2 of 6: Pokémon-style party menu, and Select cycling the lead on the map
+- [x] Demo 2 of 6: Pokémon-style party menu, and Select cycling the lead on the map
+
+  Done Nov 21 (spec 002): Start → Party shows the three cards in seat order with the LEAD tag, each opening Make lead, Dossier and Give item (greyed until Demo 5); Select cycles the lead on the map and in Party.
 - [ ] Demo 3 of 6: Case board (season save, open and closed cases), built from the approved case board mockup
 - [ ] Demo 4 of 6: Still Harvest rebuild, map and art: its map on the Shared Shelf (then delete legacy-street-kit.js), townsfolk sprites and portraits, night and low-SAN look
 - [ ] Demo 5 of 6: Still Harvest rebuild, story and play: its text block, branching paths, and fewer but harder fights under the new combat rules
 - [ ] Demo 6 of 6: Debrief and end-of-case improvement (evidence, cover story, skill gains), built from the approved debrief mockup; the finished demo also goes to Drive as a milestone build
-- [ ] Turn the hand copies of shelf.js and dialog.js into shared files, so a change on the Shared Shelf or in the Asset Library reaches the game without copying by hand (step 6 of the Claude Code move)
+- [x] Turn the hand copies of shelf.js and dialog.js into shared files, so a change on the Shared Shelf or in the Asset Library reaches the game without copying by hand (step 6 of the Claude Code move)
+
+  Done Nov 21: one copy of each now lives in the studio's `engine/` (`engine/shelf.js`, `engine/dialog.js`), shared with Rushlight, with a sync step that brings in a new version from the source page and a check that fails if either is edited by hand.
 - [ ] After the Still Harvest playtest: revisit party size (3 vs 4). Weigh tension, skill coverage, fight length on the phone and screen space; switching to 4 means reworking templates, professions, balance and the combat layout
 - [x] Turn the Art Bible page into the Asset Library (sprites, drawing code, palette)
 - [x] Update the project instructions to point here
