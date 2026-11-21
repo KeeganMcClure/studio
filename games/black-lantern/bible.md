@@ -214,7 +214,7 @@ This is the base palette, meant to work in any case (Rust and Pumpkin made gener
 | Portraits | 64 × 64 px in the dialog box, Undertale/Earthbound style. Plain backdrop in the portrait; the scene shows behind it. |
 | Talking | Two-frame mouth flap at 140 ms a frame, in bursts while text types, then a rest. |
 | Text | Short lines, typewriter effect, speaker names in caps. |
-| Dialog box | "Lantern Bust" (set Nov 15). Navy box with a cream border along the bottom of the screen, 3 lines of VT323. The 64 × 64 portrait stands on top of the box at the map's pixel size, the name in caps on a tab beside it. Signs: tab only. Narration: no tab, lavender text. Exact code and colors in the Asset Library under Dialog. |
+| Dialog box | "Lantern Bust" (set Nov 15). Navy box with a cream border along the bottom of the screen, 3 lines of VT323. The 64 × 64 portrait stands on top of the box at the map's pixel size, the name in caps on a tab beside it. Signs: tab only. Narration: no tab, lavender text. A blinking ▼ marks advance (set Nov 21). Exact code and colors in the Asset Library under Dialog. |
 
 ### Maps (set Nov 15)
 
