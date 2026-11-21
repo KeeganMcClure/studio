@@ -406,14 +406,14 @@ async function gameOver(){
 
 // ================= SAVE / FLOW =================
 function snap(){return JSON.stringify({map:G.map,x:G.x,y:G.y,dir:G.dir,party,flags:G.flags,clues:G.clues,items:G.items,fights:G.fights,enc:G.enc,rescued:G.rescued})}
-function checkpoint(){G.cp=snap();store.set('rl.game',G.cp)}
+function checkpoint(){G.cp=snap();store.set(B.key('game'),G.cp)}
 function restore(s){const o=JSON.parse(s);party=o.party;G.flags=o.flags;G.clues=o.clues;G.items=o.items;G.fights=o.fights;G.enc=o.enc;G.rescued=o.rescued||0;G.mode='world';goMap(o.map,o.x,o.y,o.dir);applySan()}
 function enter(){G.active=true;scr.classList.add('gaming');sanEl.hidden=false;fit();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
 function leave(){G.active=false;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
 function quit(){checkpoint();leave();B.goto('title');B.render()}
 function finish(){
- store.set('rl.game',null);const a=lead().a;
- a.id=a.id||Date.now();const R=B.S.roster,i=R.findIndex(x=>x.id===a.id);const copy=JSON.parse(JSON.stringify(a));if(i>=0)R[i]=copy;else R.unshift(copy);store.set('rl.roster',R);
+ store.set(B.key('game'),null);const a=lead().a;
+ a.id=a.id||Date.now();const R=B.S.roster,i=R.findIndex(x=>x.id===a.id);const copy=JSON.parse(JSON.stringify(a));if(i>=0)R[i]=copy;else R.unshift(copy);store.set(B.key('roster'),R);
  B.S.a=a;leave();B.goto('dossier');B.render();B.toast('FILED. CHAPTER ONE CLOSED.');
 }
 function startKit(){const it={aid:1};const add=(k,n)=>{it[k]=(it[k]||0)+n};
@@ -425,7 +425,7 @@ async function start(agent,squad){
  MAZE=null;enter();applySan();
  run(caseOpening);
 }
-function resume(){const s=store.get('rl.game',null);if(!s)return false;G=Object.assign(G,{active:true,busy:0,mode:'world'});MAZE=null;enter();restore(s);G.cp=s;return true}
+function resume(){const s=store.get(B.key('game'),null);if(!s)return false;G=Object.assign(G,{active:true,busy:0,mode:'world'});MAZE=null;enter();restore(s);G.cp=s;return true}
 
 // ================= PAUSE =================
 async function pauseMenu(){
@@ -456,4 +456,8 @@ function hold(d,on){held=StudioMove.hold(held,d,on)}
 dhost.addEventListener('click',e=>{if(!e.target.closest('.bld'))return;const li=e.target.closest('.bld-c li');
  if(menu){if(!li||!menu.inBox)return;const i=[...li.parentNode.children].indexOf(li);if(menu.sel!==i){menu.sel=i;renderMenu()}}input('a')});
 menuEl.addEventListener('click',e=>{const el=e.target.closest('.gi');if(!el||!menu)return;const i=+el.dataset.i;if(menu.sel!==i){menu.sel=i;renderMenu()}input('a')});
+// The shelf's Continue button opens straight into the save (studio-bible/launcher.md, Title cards): the
+// checkpoint if there is one, else the agent draft's dossier; with neither, the title screen opens as usual.
+window.addEventListener('load',()=>{if(!(window.Studio&&Studio.continued)||G.active)return;
+ if(resume())return;if(B.S.a&&B.S.a.prof){B.goto('dossier');B.render()}});
 window.RLG={start,resume,input,hold,get active(){return G.active},_t:{fight:t=>run(async()=>{const r=await battle(t);if(r==='lose')await gameOver()}),go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,boss:()=>run(bossIntro)}};

@@ -37,7 +37,7 @@ Loaded in this order by `index.html`: the shared `engine/shell.js` (builds the s
 - `creator.js` and `strings.js`: Black Lantern's agent creator, professions, specialties and items. Pick a company replaces them.
 - `engine.js`: the notebook, clues, the maze, the boss intro hook, the case flow (`caseOpening`, `finish` filing to the roster), the game-over text and `startKit`. The seeded generator, contracts and the ledger replace them.
 - `content/stub.js` only exists so the engine boots with no case. It ends at the title and saves nothing.
-- Save keys are `rl.*`, but still Black Lantern's set (`rl.roster`, `rl.draft`, `rl.game`). The slice moves to the Bible's keys (`rl.run`, `rl.ledger`, `rl.draft`) with a save version number, like Black Lantern's `bl.version`.
+- Save keys are `rl.*` (`dev.rl.*` on the site's Dev build, through `RL.key` and `engine/studio.js`), but still Black Lantern's set (`rl.roster`, `rl.draft`, `rl.game`). The slice moves to the Bible's keys (`rl.run`, `rl.ledger`, `rl.draft`) with a save version number, like Black Lantern's `bl.version`.
 - Big Hat, cases, Lantern Boxes, requisition and sound are already gone.
 
 ## Rules for every change
