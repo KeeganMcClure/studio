@@ -1067,7 +1067,7 @@ The game is the "Black Lantern Intake" HTML artifact, played on an iPhone SE ins
 ### Screen and controls
 
 - **GBA shell stays**, on the map and in battle. You reversed the full-screen decision on Nov 15 after playing the demo, and chose the shell for combat on Nov 20.
-- On-screen buttons: D-pad, A (confirm/talk), B (back), L/R (previous/next step in the creator), Start (menu or dossier), Select (cycles the lead agent on the map). Tapping menu rows also works. L and R sit in the middle cluster, in a row above Select and Start (moved from the top edge Nov 21).
+- On-screen buttons: D-pad, A (confirm/talk), B (back), L/R (previous/next step in the creator), Start (menu or dossier), Select (cycles the lead agent on the map). Tapping menu rows also works. L and R are wide shoulder buttons in the top corners of the controls area, right under the screen (moved there from the middle cluster Nov 21, spec 003; see `studio-bible/controls.md`).
 - Keyboard (for testing on a computer): arrows, Z = A, X = B, Q/W = L/R, Enter = Start, Backspace = Select.
 - Target: iPhone SE (375 × 667; the in-app viewer is shorter). Nothing may be cut off. Test at about 375 × 550 and 320 × 480 before publishing (see the playtest checklist in Process).
 
