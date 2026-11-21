@@ -54,6 +54,8 @@ async function fits(page) {
 
 async function checkBlackLantern(page, base) {
   const BL = 'Black Lantern';
+  // the save version this build upgrades to (Black Lantern's creator.js), so a new upgrade step doesn't need a change here
+  const BLV = fs.readFileSync(path.join(repo, 'games/black-lantern/src/creator.js'), 'utf8').match(/const SAVE_V=(\d+)/)[1];
   const save = JSON.parse(fs.readFileSync(path.join(repo, 'games/black-lantern/src/tools/test-saves/2026-11-21-mid-chapter.json'), 'utf8'));
   await page.goto(base);
   await page.evaluate((keys) => { for (const [k, v] of Object.entries(keys)) localStorage.setItem(k, v); }, save.keys);
@@ -64,7 +66,7 @@ async function checkBlackLantern(page, base) {
   await page.waitForURL(/\/studio\/black-lantern\/\?continue=1$/);
   const inCase = await page.waitForSelector('.screen.gaming', { timeout: 5000 }).then(() => true, () => false);
   const rel = await page.evaluate(() => ({ v: localStorage.getItem('bl.version'), game: localStorage.getItem('bl.game'), dev: Object.keys(localStorage).filter((k) => k.startsWith('dev.bl.')) }));
-  ok(inCase && rel.game && rel.v === '2' && rel.dev.length === 0, 'Continue opens the old bl.* checkpoint, upgraded in place, no Dev saves made');
+  ok(inCase && rel.game && rel.v === BLV && rel.dev.length === 0, 'Continue opens the old bl.* checkpoint, upgraded in place, no Dev saves made');
 
   await page.goto(base);
   await page.click('#openSettings'); await page.click('#channel [data-ch=dev]'); await page.click('#closeSettings');
@@ -73,7 +75,7 @@ async function checkBlackLantern(page, base) {
   await page.waitForURL(/\/studio\/dev\/black-lantern\/$/);
   await page.waitForTimeout(500);
   const dev = await page.evaluate(() => ({ v: localStorage.getItem('dev.bl.version'), game: localStorage.getItem('bl.game') }));
-  ok(dev.v === '2' && dev.game === rel.game, 'Dev Black Lantern saves under dev.bl.*, Release save untouched');
+  ok(dev.v === BLV && dev.game === rel.game, 'Dev Black Lantern saves under dev.bl.*, Release save untouched');
   await page.click('#list .row:has-text("Game shelf")');
   await page.waitForURL(base);
   ok(true, 'Game shelf row goes back to the shelf');
