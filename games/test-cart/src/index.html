@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#100c22">
+<title>Test Cart</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+/* Placeholder game for the launcher pipeline: a 240x160 canvas in a small GBA-style shell. */
+:root{--shell:#3a2e78;--hi:#5242a0;--lo:#221a4c;--bezel:#14111f;--btn:#1c1733;--a:#c23a5c;--label:#b9aee8;--px:"Press Start 2P",ui-monospace,monospace;color-scheme:dark}
+html,body{height:100%;margin:0}
+body{background:#100c22;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none}
+.shell{box-sizing:border-box;height:100%;max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:8px;
+  padding:calc(env(safe-area-inset-top,0px) + 6px) 12px calc(env(safe-area-inset-bottom,0px) + 10px);
+  background:linear-gradient(170deg,var(--hi),var(--shell) 40%,var(--lo))}
+.bezel{flex:1;min-height:0;background:var(--bezel);border-radius:10px 10px 26px 10px;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.brand{display:flex;justify-content:space-between;align-items:center;font:7px var(--px);color:#5d5888}
+.brand a{color:var(--label);text-decoration:none;padding:6px 4px;margin:-6px -4px}
+.scr{flex:1;min-height:0;display:flex;align-items:flex-start;justify-content:center}
+canvas{width:100%;max-height:100%;aspect-ratio:3/2;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges;background:#0d1322}
+.pad{flex:none;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:4px 0 6px}
+.dpad{display:grid;grid-template-columns:repeat(3,40px);grid-template-rows:repeat(3,40px)}
+.dpad button{border:0;background:var(--btn);color:var(--label);font:10px var(--px)}
+.dpad .u{grid-area:1/2}.dpad .l{grid-area:2/1;border-radius:6px 0 0 6px}.dpad .r{grid-area:2/3;border-radius:0 6px 6px 0}.dpad .d{grid-area:3/2}
+.dpad .u{border-radius:6px 6px 0 0}.dpad .d{border-radius:0 0 6px 6px}.dpad .c{grid-area:2/2;background:var(--btn)}
+.mid{display:flex;flex-direction:column;align-items:center;gap:10px}
+.row{display:flex;gap:8px}
+.pill{width:52px;height:20px;border:0;border-radius:8px;background:var(--btn);color:var(--label);font:6px var(--px)}
+.ab{justify-self:end;position:relative;width:118px;height:96px}
+.ab button{position:absolute;width:50px;height:50px;border:0;border-radius:50%;background:var(--a);color:#fff;font:12px var(--px);box-shadow:inset 0 -4px 0 rgba(0,0,0,.35)}
+.ab .b{left:0;top:38px;background:#8c2c4a}.ab .a{right:0;top:6px}
+button.on{filter:brightness(1.4)}
+/* Smaller phones (320 wide): step the buttons down so all of them fit */
+@media (max-width:360px){.dpad{grid-template-columns:repeat(3,32px);grid-template-rows:repeat(3,32px)}.pill{width:42px}
+  .ab{width:96px;height:80px}.ab button{width:42px;height:42px}.ab .b{top:32px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="bezel">
+    <div class="brand"><a href="#" id="shelf">◀ SHELF</a><span id="chan">TEST CART</span></div>
+    <div class="scr"><canvas id="c" width="240" height="160"></canvas></div>
+  </div>
+  <div class="pad">
+    <div class="dpad">
+      <button class="u" data-k="up">▲</button><button class="l" data-k="left">◀</button><span class="c"></span>
+      <button class="r" data-k="right">▶</button><button class="d" data-k="down">▼</button>
+    </div>
+    <div class="mid">
+      <div class="row"><button class="pill" data-k="l">L</button><button class="pill" data-k="r">R</button></div>
+      <div class="row"><button class="pill" data-k="select">SELECT</button><button class="pill" data-k="start">START</button></div>
+    </div>
+    <div class="ab"><button class="b" data-k="b">B</button><button class="a" data-k="a">A</button></div>
+  </div>
+</div>
+<script src="../../../engine/studio.js"></script>
+<script src="cart.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "id": "test-cart",
+  "title": "Test Cart",
+  "savePrefix": "tc.",
+  "cover": "cover.js",
+  "channels": ["dev", "release"]
+}

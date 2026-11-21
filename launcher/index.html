@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Game Shelf">
+<meta name="theme-color" content="#100c22">
+<title>Game Shelf</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+/* The launcher: one home screen app with a shelf of covers (studio-bible/launcher.md). */
+:root{--bg:#100c22;--panel:#1c1733;--line:#2d2650;--fg:#ebe5c8;--dim:#7c86a6;--hi:#ffd166;--a:#c23a5c;--dev:#3ff0e8;
+  --px:"Press Start 2P",ui-monospace,monospace;--vt:"VT323",ui-monospace,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg)}
+body{font:20px/1.1 var(--vt);-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;
+  padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 16px) max(16px,env(safe-area-inset-left,0px))}
+button{font:inherit;color:inherit;cursor:pointer}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 0 12px}
+h1{font:10px var(--px);color:var(--hi);margin:0;letter-spacing:.06em}
+.chip{font:7px var(--px);color:var(--bg);background:var(--dev);padding:4px 5px 3px;border-radius:3px;margin-left:8px;vertical-align:middle}
+.chip[hidden]{display:none}
+.gear{border:0;background:var(--panel);border-radius:8px;font:8px var(--px);padding:10px 10px;color:var(--fg)}
+.shelf{display:grid;grid-template-columns:1fr 1fr;gap:14px 12px}
+.game{display:flex;flex-direction:column;gap:6px;min-width:0}
+.cover{display:block;width:100%;padding:0;border:0;background:#0a0812;border-radius:4px;box-shadow:0 0 0 2px #0a0812,0 4px 0 #0a0812}
+.cover canvas{display:block;width:100%;aspect-ratio:3/2;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:3px}
+.cont{border:0;border-radius:6px;background:var(--a);font:7px var(--px);color:#fff;padding:9px 4px 8px;box-shadow:inset 0 -3px 0 rgba(0,0,0,.3)}
+.empty{color:var(--dim);font-size:20px;padding:24px 0;text-align:center}
+.foot{margin-top:24px;color:var(--dim);font-size:16px;text-align:center}
+/* Settings sheet */
+.sheet{position:fixed;inset:0;background:rgba(5,4,12,.7);display:flex;align-items:flex-end;justify-content:center;z-index:5}
+.sheet[hidden]{display:none}
+.panel{width:100%;max-width:460px;max-height:92%;overflow-y:auto;background:var(--panel);border-radius:14px 14px 0 0;
+  padding:16px 16px calc(env(safe-area-inset-bottom,0px) + 18px);display:flex;flex-direction:column;gap:12px;-webkit-user-select:text;user-select:text}
+.panel h2{font:9px var(--px);color:var(--hi);margin:6px 0 0}
+.panel p{margin:0;color:var(--dim);font-size:18px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:#0a0812;border-radius:8px;padding:3px;gap:3px}
+.seg button{border:0;background:transparent;border-radius:6px;font:8px var(--px);padding:11px 0 10px;color:var(--dim)}
+.seg button.on{background:var(--line);color:var(--fg)}
+.seg button.on.dev{color:var(--dev)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:0;border-radius:8px;background:var(--line);font:8px var(--px);padding:11px 12px 10px}
+.btn.warn{background:var(--a);color:#fff}
+textarea{width:100%;min-height:96px;resize:vertical;background:#0a0812;color:var(--fg);border:2px solid var(--line);border-radius:8px;padding:8px;font:16px/1.1 var(--vt);word-break:break-all}
+.note{min-height:1.1em;color:var(--dev);font-size:18px}
+.note.bad{color:#ff5d73}
+.close{align-self:flex-end;border:0;background:transparent;font:8px var(--px);color:var(--dim);padding:8px 0 4px 8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>GAME SHELF<span class="chip" id="chip" hidden>DEV</span></h1>
+  <button class="gear" id="openSettings" aria-label="Settings">SETTINGS</button>
+</header>
+<main class="shelf" id="shelf"></main>
+<div class="empty" id="empty" hidden></div>
+<div class="foot" id="foot"></div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="panel" role="dialog" aria-label="Settings">
+    <button class="close" id="closeSettings">CLOSE ✕</button>
+    <h2>BUILDS</h2>
+    <div class="seg" id="channel">
+      <button data-ch="release">RELEASE</button><button data-ch="dev" class="dev">DEV</button>
+    </div>
+    <p>Dev plays the newest builds with their own saves, so testing never touches your Release saves.</p>
+
+    <h2>SAVE BACKUP</h2>
+    <p>Export copies every game's saves as one text code. Keep it somewhere safe, like Notes, before big updates. Import pastes a code back.</p>
+    <div class="btns"><button class="btn" id="export">EXPORT</button><button class="btn" id="copy" hidden>COPY CODE</button></div>
+    <textarea id="code" placeholder="Paste a save code here to import" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+    <div class="btns"><button class="btn warn" id="import">IMPORT</button></div>
+    <div class="note" id="note"></div>
+  </div>
+</div>
+<script src="launcher.js"></script>
+</body>
+</html>
