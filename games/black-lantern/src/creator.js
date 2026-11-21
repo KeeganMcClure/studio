@@ -46,7 +46,7 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
 // in order, bringing old saves forward before anything reads them. Before upgrading, the old
 // saves are copied to bl.backup. Rules: never change an old step; a new save shape gets a new
 // step and SAVE_V goes up by one. Saves from before numbering count as version 0.
-const SAVE_V=2;
+const SAVE_V=3;
 const fillAgent=a=>{if(!a||typeof a!=='object'||Array.isArray(a))return null;const d=newAgent();
   const o=Object.assign(d,a);o.look=Object.assign(newAgent().look,a.look||{});o.stats=Object.assign(newAgent().stats,a.stats||{});
   if(!o.picks||typeof o.picks!=='object')o.picks={};if(!Array.isArray(o.bonds))o.bonds=[];if(!Array.isArray(o.motives))o.motives=[];return o};
@@ -93,6 +93,15 @@ const UPGRADES={
     if(d!==null)store.set(K('draft'),d&&typeof d==='object'&&'prof' in d?{team:null,a:convertAgent(d),edit:null,tweak:false}:null);
     const g=store.get(K('game'),null);
     if(g!==null){try{const o=JSON.parse(g);o.party.forEach(m=>{m.a=convertAgent(m.a)});store.set(K('game'),JSON.stringify(o))}
+      catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
+  },
+  // 2 → 3 (Nov 21, spec 002 party menu): the checkpoint (bl.game) remembers who leads, as a seat index into its
+  // party. Saves from before had no lead, so seat 1 leads, exactly as before. (The party stays in bl.game for now
+  // rather than moving to bl.party; see the changelog.)
+  3(){
+    const g=store.get(K('game'),null);
+    if(g!==null){try{const o=JSON.parse(g);if(!o||!Array.isArray(o.party)||!o.party.length)throw 0;
+        if(!(Number.isInteger(o.lead)&&o.lead>=0&&o.lead<o.party.length))o.lead=0;store.set(K('game'),JSON.stringify(o))}
       catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
   }
 };

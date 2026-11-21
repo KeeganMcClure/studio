@@ -44,7 +44,7 @@ async function caseOpening(){
    await say('','You never see his eyes. Just the brim, and under it, the toothpick, moving.');
   });
   G.mode='world';goMap('town',14,16,'up');checkpoint();await fade(0);
-  for(const m of party.slice(1))await say(m.name.toUpperCase()+' · '+profOf(m.a).name.toUpperCase(),ROLE_LINE[profOf(m.a).role]||'Let\'s get this over with.');
+  for(const m of squad())await say(m.name.toUpperCase()+' · '+profOf(m.a).name.toUpperCase(),ROLE_LINE[profOf(m.a).role]||'Let\'s get this over with.');
   await say('','OPERATION STILL HARVEST. Talk to people with A. Press START for your notebook and party.');
 }
 
@@ -245,7 +245,7 @@ async function ending(){
  const r=await ask('','Who do you lean on?',opts);
  if(r<bonds.length){const g=roll(1,6);L.san=Math.min(L.msan,L.san+g);L.a.bondDmg[r]=(L.a.bondDmg[r]||0)+1;applySan();await say('',`You spend the day with ${bonds[r].name}. You don't talk about Marrow Creek. You laugh at something stupid. It helps. It costs something too.`);await say('',`+${g} SAN. Your bond with ${bonds[r].name} wears a little thinner.`)}
  else{await say('','You sit in the dark kitchen until the sun comes up. You don\'t call anyone.');await say('','No SAN recovered. Your bonds stay intact. For now.')}
- const sq=party.slice(1).map(m=>`${m.name}${m.dis?' ('+m.dis+')':''}`).join(', ');
+ const sq=squad().map(m=>`${m.name}${m.dis?' ('+m.dis+')':''}`).join(', ');
  await say('',`OPERATION STILL HARVEST · CLOSED\nVictims saved: ${n}/3\n${L.name}'s SAN: ${L.san0} → ${L.san}${L.dis?'\nDisorder: '+L.dis:''}\nSquad: ${sq}`);
  await ask('','Your file has been updated.',['Save agent and return to the file']);
  L.a.cur={san:L.san,dis:L.dis,ch1:true,saved:n};

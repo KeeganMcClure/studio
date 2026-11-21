@@ -17,7 +17,7 @@ Design, story, mockups, Bible reviews and the Asset Library stay in the claude.a
 
 ## The parts
 
-Loaded in this order by `index.html`: the studio's shared `engine/shell.js` (builds the shell around the screen), `engine/input.js` (buttons and keyboard) and `engine/move.js` (grid walking, camera, canvas fit), then `strings.js` (shared strings, `window.BLS`), `creator.js` (agent creator, portraits, and where presses go, `window.BL`), `shelf.js` (Shared Shelf script, copied unchanged), `agent-sprite.js` (agent map sprites, `window.BLA`), `dialog.js` (Lantern Bust box, copied unchanged from the Asset Library, `window.BLD`), `engine.js` (map, dialog, sanity, battle, Big Hat scenes, saves, pause, input, `window.BLG`), then one file per case in `cases/`.
+Loaded in this order by `index.html`: the studio's shared `engine/shell.js` (builds the shell around the screen), `engine/input.js` (buttons and keyboard), `engine/move.js` (grid walking, camera, canvas fit) and `engine/party.js` (who leads, Select cycling, the party card list), then `strings.js` (shared strings, `window.BLS`), `creator.js` (agent creator, portraits, and where presses go, `window.BL`), `shelf.js` (Shared Shelf script, copied unchanged), `agent-sprite.js` (agent map sprites, `window.BLA`), `dialog.js` (Lantern Bust box, copied unchanged from the Asset Library, `window.BLD`), `engine.js` (map, dialog, sanity, battle, Big Hat scenes, saves, pause, input, `window.BLG`), `party-menu.js` (Start → Party, the Dossier and Select on the map), then one file per case in `cases/`.
 
 - `index.html` keeps the screen and Black Lantern's colors; the shell's layout comes from `engine/shell.css`. `npm run build` inlines the `engine/` files, so `dist/index.html` stays one file. A change under `engine/` must pass `npm run check` in every game that uses it.
 - A new case is a new file in `cases/` plus a script line at the end of `index.html`. Each case file opens with its own text block and supplies its maps, enemies, scripts and a `caseOpening` briefing.
@@ -44,5 +44,5 @@ Milestone builds (the finished demo, each finished case) also go to Drive as `Bl
 
 - Target: iPhone SE (375 × 667; the in-app viewer is shorter). Nothing may be cut off.
 - GBA shell stays, on the map and in battle.
-- Buttons: D-pad, A (confirm/talk), B (back), L/R (previous/next creator step), Start (menu or dossier), Select (cycles the lead on the map). Tapping menu rows also works.
+- Buttons: D-pad, A (confirm/talk), B (back), L/R (previous/next creator step), Start (menu or dossier), Select (cycles the lead on the map and in Party). Tapping menu rows also works.
 - Keyboard for testing: arrows, Z = A, X = B, Q/W = L/R, Enter = Start, Backspace = Select.
