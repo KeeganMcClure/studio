@@ -5,7 +5,7 @@
 //   3. 600 random button presses throw no errors
 //   4. after a reload, whatever the game saved still loads with no errors
 //   5. every test save in tools/test-saves/ (real saves from older builds) upgrades to the current
-//      save version, keeps its backup, shows its roster, and its checkpoint continues into the case;
+//      save version, keeps a backup when it was older, shows its roster, and its checkpoint continues into the case;
 //      damaged saves open to the title with no errors
 // Still needs a person: the changed part playing start to finish, text and typos, the fun check.
 // Usage: node tools/build.js && node tools/check.js
@@ -81,7 +81,8 @@ async function checkSaves(browser) {
     await page.waitForTimeout(600);
     const st = await page.evaluate(() => ({ v: localStorage.getItem('bl.version'), backup: !!localStorage.getItem('bl.backup'), roster: JSON.parse(localStorage.getItem('bl.roster') || '[]').length, rows: [...document.querySelectorAll('#list .row')].map(r => r.innerText.replace(/\s+/g, ' ')) }));
     if (+st.v !== want) problems.push(`save version is ${st.v}, should be ${want}`);
-    if (!st.backup) problems.push('no bl.backup of the old saves');
+    const from = +(save.keys['bl.version'] || 0);  // a save already at the current version has nothing to back up
+    if (from < want && !st.backup) problems.push('no bl.backup of the old saves');
     let n = 0; try { n = JSON.parse(save.keys['bl.roster'] || '[]').length; } catch (e) {}
     if (st.roster !== n) problems.push(`roster has ${st.roster} agents, the save had ${n}`);
     if (!st.rows.some(r => r.includes(`Roster ${n} on file`))) problems.push(`title doesn't show "${n} on file"`);

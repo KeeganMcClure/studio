@@ -55,12 +55,9 @@ const BLOCK=new Set('TCB#DLlPHFSVKkYyNpGWIOX'.split(''));
 
 // ================= HELPERS =================
 const fmt=t=>t.replace(/\{code\}/g,lead().a.code||((lead().a.name||'').split(' ').pop()||'?').toUpperCase()).replace(/\{first\}/g,lead().name);
-function weaponFor(a){const p=profOf(a),f=skillVal(a,'Firearms'),m=skillVal(a,'Melee Weapons'),u=skillVal(a,'Unarmed Combat'),sb=a.stats.STR>=17?2:a.stats.STR>=13?1:0;
- const sp=B.specOf(a);if(sp&&sp.weapon){const W=B.WEAP[sp.weapon];return{name:W.name,skill:skillVal(a,W.skill),dmg:W.dmg,bonus:W.melee?sb+1:0,verb:W.verb}}
- const MEL={jan:'mop handle',cop:'baton',ranger:'hatchet',ops:'knife',truck:'ice scoop',mail:'mail bag',mort:'shovel',priest:'candlestick'};
- if(f>=m&&f>=u)return{name:'pistol',skill:f,dmg:[1,10],bonus:0,verb:'fires'};
- if(m>=u)return{name:MEL[p.id]||'tire iron',skill:m,dmg:[1,6],bonus:sb+1,verb:'swings the '+(MEL[p.id]||'tire iron')};
- return{name:'fists',skill:u,dmg:[1,4],bonus:sb,verb:'throws a punch'}}
+// Weapon from the profession (Bible: Starting kit; dice from Combat numbers). STR 13+ adds +1 Melee damage.
+function weaponFor(a){const p=profOf(a),W=B.WEAP[(p&&p.weapon)||'handgun']||B.WEAP.handgun;
+ return{name:W.name,skill:clamp(skillVal(a,W.skill)+(W.hit||0),5,99),dmg:W.dmg,bonus:(W.plus||0)+(W.melee&&a.stats.STR>=13?1:0),verb:W.verb}}
 function member(a){const d=derived(a),c=a.cur||{};return{a,name:(a.name||'Agent').split(' ')[0].slice(0,9)||'Agent',hp:d.HP,mhp:d.HP,wp:d.WP,mwp:d.WP,san:c.san??d.SAN,msan:d.SAN,san0:c.san??d.SAN,bp:d.BP,dis:c.dis||null,dex:a.stats.DEX,w:weaponFor(a),ko:false,stun:0}}
 
 // ================= TILES =================
@@ -522,7 +519,7 @@ function quit(){checkpoint();leave();B.goto('title');B.render()}
 function finish(){
  store.set('bl.game',null);const a=lead().a;
  a.id=a.id||Date.now();const R=B.S.roster,i=R.findIndex(x=>x.id===a.id);const copy=JSON.parse(JSON.stringify(a));if(i>=0)R[i]=copy;else R.unshift(copy);store.set('bl.roster',R);
- B.S.a=a;leave();B.goto('dossier');B.render();B.toast('FILED. CHAPTER ONE CLOSED.');
+ B.S.a=a;B.S.view=true;leave();B.goto('dossier');B.render();B.toast('FILED. CHAPTER ONE CLOSED.');
 }
 function startKit(){const it={aid:1};const add=(k,n)=>{it[k]=(it[k]||0)+n};
  const s=B.specOf(lead().a);if(s)Object.entries(s.items).forEach(([k,n])=>add(k,n));else{add('aid',1);add('coffee',1);add('flare',1)}

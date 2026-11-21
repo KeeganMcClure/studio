@@ -1,8 +1,8 @@
 // Plays the current build like a player and writes what it saved to tools/test-saves/,
 // so npm run check can prove later builds still open these saves.
 // It makes two test saves:
-//   roster.json      two quick-rolled agents filed on the roster, plus a draft
-//   mid-chapter.json the same, plus a Chapter One checkpoint after walking the town
+//   roster.json      a tweaked Field Team agent filed on the roster, plus the team in progress (bl.draft)
+//   mid-chapter.json the team started (all 3 filed), plus a Chapter One checkpoint after walking the town
 // Usage: node tools/build.js && node tools/capture-saves.js <label>   (label goes in the file names, e.g. 2026-11-21)
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -26,16 +26,18 @@ const write = (name, note, keys) => {
   await page.goto(url);
   await page.waitForTimeout(600);
   const row = t => page.locator('#list .row', { hasText: t }).first().click();
-  for (let i = 0; i < 2; i++) {
-    await row('Quick roll'); await page.waitForTimeout(150);
-    await row('Save to roster'); await page.waitForTimeout(150);
-    await page.keyboard.press('Enter'); await page.waitForTimeout(150); // Start: dossier back to title
-  }
-  write('roster', 'Two quick-rolled agents saved to the roster, and the draft, from the build of ' + label, await dump(page));
+  const key = async k => { await page.keyboard.press(k); await page.waitForTimeout(80); };
+  await row('New game'); await page.waitForTimeout(150);
+  await row('FIELD TEAM'); await page.waitForTimeout(150);
+  await key('ArrowDown'); await key('ArrowRight'); await key('z');       // seat 2: Tweak
+  await page.locator('input[data-bind=back]').fill('ER nurse on nights. Stopped asking questions. Started writing them down.');
+  await page.keyboard.press('Enter');
+  await key('Enter');                                                      // Start: jump to the Dossier step
+  await row('File to roster too'); await page.waitForTimeout(150);
+  await row('Done'); await page.waitForTimeout(150);
+  write('roster', 'A tweaked Field Team agent filed on the roster, and the team in progress, from the build of ' + label, await dump(page));
 
-  await row('Quick roll'); await page.waitForTimeout(150);
-  await row('Save to roster'); await page.waitForTimeout(150);
-  await row('Begin Chapter One');
+  await key('Enter');                                                      // Start on Your team: begin Chapter One
   // tap through the briefing until the town checkpoint exists
   for (let i = 0; i < 200; i++) {
     if (await page.evaluate(() => !!localStorage.getItem('bl.game'))) break;

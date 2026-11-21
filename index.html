@@ -70,6 +70,82 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 .card .who .n{font:9px/1.5 var(--px);color:var(--scr-hi);word-break:break-word}
 .stamp{display:inline-block;font:7px var(--px);color:var(--scr-red);border:1px solid var(--scr-red);padding:2px 4px;transform:rotate(-4deg);margin-top:4px}
 .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px 8px;margin-top:6px}
+/* Creator screens, matched to the approved creator mockups (Nov 21): cream-edged boxes on slate, gold cursor, 7-step bar. Game screens keep their own colors. */
+.screen:not(.gaming){--scr-bg:#1b1f33;--scr-fg:#e8dcc0;--scr-dim:#b9a8e0;--scr-hi:#f4c96a;--scr-line:#5a5070;--gold:#d6a43a;--card:#1f2440;--card-on:#2a2f52;--well:#14172a}
+.screen:not(.gaming) .hdr{margin:6px 6px 0;border:2px solid var(--scr-fg);border-radius:3px;background:var(--well);padding:5px 8px;flex-wrap:wrap;row-gap:3px}
+.hdr.steps #hTitle{flex:1;display:flex;justify-content:space-between;font-size:9px}
+.hdr .lr{color:#9a92c8;font-size:8px}
+.sbar{flex-basis:100%;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;padding:0 14px;font:13px/12px var(--vt);text-align:center;color:var(--scr-dim)}
+.sbar span{border-top:3px solid var(--scr-line);min-width:0;overflow:hidden}
+.sbar .done{border-color:#7fbf6a}.sbar .on{border-color:var(--gold);color:var(--scr-hi)}.sbar .lock{opacity:.4}
+.info{display:flex;justify-content:space-between;gap:6px;padding:4px 10px 0;font-size:17px;line-height:1;white-space:nowrap;overflow:hidden}
+.info span:first-child{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pane[hidden],.info[hidden],.sbar[hidden]{display:none!important}
+.screen:not(.gaming) .list{margin:5px 6px;padding:3px 0;border:2px solid var(--scr-line);border-radius:3px;background:var(--card)}
+.screen:not(.gaming) .list.bare{border:0;background:none;padding:0 0 4px}
+.screen:not(.gaming) .pane{margin:0 6px 6px;border:2px solid var(--scr-fg);border-radius:3px;background:var(--well);max-height:36%;padding:5px 8px;line-height:1}
+.screen:not(.gaming) .pane>div{margin-bottom:3px}
+.screen:not(.gaming) .body.side .pane{margin:5px 6px 6px 0;width:auto;flex:none;padding:8px 4px}
+.body.side .row{padding-right:4px;gap:3px}
+.body.side .row .val{gap:1px}
+.screen:not(.gaming) .row.on{background:var(--card-on);box-shadow:inset 0 0 0 2px var(--gold)}
+.screen:not(.gaming) .row input{background:var(--well)}
+.fg{color:var(--scr-fg)}
+.mt{font:7px var(--px);color:#1b1f33;background:var(--gold);padding:2px 3px}
+.row.skill .lab{display:flex;align-items:center;gap:6px;overflow:visible}
+.row.skill .sk{width:96px;flex:none;overflow:hidden;text-overflow:ellipsis}
+.bar{flex:1;min-width:20px;height:6px;background:#2a2030;border:1px solid #120e18}
+.bar i{display:block;height:100%}
+.row.skill .num{width:22px;text-align:right;color:var(--scr-fg)}
+.row.skill .tg{width:30px}
+.row.two{margin:0 0 4px;border:2px solid var(--scr-line);border-radius:3px;background:var(--card);padding:3px 8px 3px 4px}
+.row.two.blank{border-style:dashed}
+.row.two .lab{white-space:normal;line-height:1}
+.tn{display:block;font:8px/1.6 var(--px);color:var(--scr-fg)}
+.row.on .tn{color:var(--scr-hi)}
+.ts{display:block;font-size:16px;color:var(--scr-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row.seat{display:block;margin:0 0 6px;border:2px solid var(--scr-line);border-radius:3px;background:var(--card);padding:5px 6px}
+.screen:not(.gaming) .row.seat.on{border-color:var(--gold);box-shadow:none}
+.row.seat .cur,.row.seat .val{display:none}
+.row.seat .lab{display:block;white-space:normal;overflow:visible}
+.seat-top{display:flex;gap:8px;align-items:center}
+.seat-top .face{width:64px;height:64px;flex:none;border:2px solid var(--scr-fg);border-radius:2px;background:#2a2030;image-rendering:pixelated;image-rendering:crisp-edges}
+.seat-top .face.empty{display:flex;align-items:center;justify-content:center;font:16px var(--px);color:var(--scr-line);border-style:dashed;border-color:var(--scr-line);box-sizing:border-box}
+.seat-top .who{flex:1;min-width:0;display:flex;flex-direction:column;font-size:16px;line-height:14px}
+.seat-top .n{font:10px/14px var(--px);color:var(--scr-fg)}
+.row.seat.on .n{color:var(--scr-hi)}
+.seat-top .n.dim{color:var(--scr-dim)}
+.seat-top .p{color:var(--scr-dim)}
+.opts{display:grid;gap:4px;font-size:16px;text-align:center;margin-top:4px}
+.opt{background:var(--well);border:1px solid var(--scr-line);color:var(--scr-dim);padding:1px 0;white-space:nowrap;overflow:hidden}
+.opt.state{background:#4a4380;color:var(--scr-fg)}
+.row.seat.on .opt.sel{background:var(--gold);border-color:var(--gold);color:#1b1f33}
+.row.start{justify-content:center;margin:2px auto 4px;width:120px;background:#b8532c;border:2px solid #f4c96a;border-radius:3px;font:9px var(--px);color:#fff3d6}
+.row.start .cur{display:none}
+.row.start .lab{text-align:center;flex:none}
+.screen:not(.gaming) .row.start.on{background:#d0663a;box-shadow:0 0 0 2px var(--gold)}
+.row.start.off{opacity:.45}
+.row.chiprow{align-items:flex-start}
+.row.chiprow .lab{display:flex;gap:6px;align-items:flex-start;overflow:visible;white-space:normal}
+.bn{color:var(--scr-hi);font:8px/18px var(--px);flex:none}
+.chips{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}
+.chip{background:var(--well);border:1px solid var(--scr-line);text-align:center;font-size:16px;color:var(--scr-dim);white-space:nowrap;overflow:hidden}
+.chip.on{background:var(--gold);border-color:var(--gold);color:#1b1f33}
+.chip.lock:not(.on){opacity:.5}
+.row.mot .mk{display:inline-block;width:16px;color:var(--scr-hi)}
+.row.mot.picked .lab{color:var(--scr-fg)}
+.row.mot:not(.picked) .lab{color:var(--scr-dim)}
+.screen:not(.gaming) canvas.face,.card img.face{border:2px solid var(--scr-fg);background:#2a2030}
+/* small phones (320 × 480): tighter creator */
+@media (max-width:340px),(max-height:500px){
+ .screen:not(.gaming) .pane{max-height:28%}
+ .row.skill .sk{width:76px}
+ .row.skill .val b{padding:0 1px}
+ .screen:not(.gaming) #pbig{width:64px!important;height:64px!important}
+ .body.side .row .lab{font-size:18px;flex:none}
+ .body.side .row .val{flex:1;min-width:0;justify-content:flex-end;overflow:hidden;white-space:nowrap}
+ .body.side .row .val b[data-act=left]{display:none}
+}
 .squad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:0 8px 8px}
 .squad .m{border:2px solid var(--scr-line);padding:5px;text-align:center;font-size:16px;background:#0f172b;min-width:0}
 .squad .m .p{color:var(--scr-hi);font-size:15px;overflow-wrap:anywhere}
@@ -146,7 +222,8 @@ button:focus-visible{outline:2px solid var(--scr-hi);outline-offset:2px}
     <div class="bezel">
       <div class="brand"><span><span class="led" id="led"></span>BLACK LANTERN</span><span>DOT MATRIX · INTAKE</span></div>
       <div class="screen" id="screen">
-        <div class="hdr"><span id="hTitle"></span><span id="hStep"></span></div>
+        <div class="hdr"><span id="hTitle"></span><span id="hStep"></span><div class="sbar" id="hBar" hidden></div></div>
+        <div class="info" id="info" hidden></div>
         <div class="body" id="body"><div class="list" id="list"></div><div class="pane" id="pane"></div></div>
         <div class="ftr" id="ftr"></div>
         <div id="game"><canvas id="gcv" width="240" height="160"></canvas><div class="gbox" id="gsan" hidden></div><div class="gban" id="gban" hidden></div><div id="gdlg"></div><div class="gbox" id="gmenu" hidden></div><div id="ghud" hidden></div><div id="gfade"></div></div>
@@ -170,7 +247,7 @@ button:focus-visible{outline:2px solid var(--scr-hi);outline-offset:2px}
         </div>
         <div class="ss">
           <div><button id="bSel" aria-label="Select"></button><span>SELECT</span></div>
-          <div><button id="bStart" aria-label="Start: jump to dossier"></button><span>START</span></div>
+          <div><button id="bStart" aria-label="Start: dossier, done, or begin"></button><span>START</span></div>
         </div>
       </div>
       <div class="ab">
