@@ -134,7 +134,7 @@ Claude read every tab looking for holes a builder would trip on. Nothing contrad
 
 Problems found in playtests. Each line: what happened · where · how to make it happen again. Claude ticks a bug when it's fixed and notes the fix in the Changelog.
 
-- [ ] Backspace acts as B, not Select · keyboard, every screen · press Backspace on the map: it backs out instead of cycling the lead. The Bible and CLAUDE.md say Backspace = Select; the game maps Select to Shift. Fix when Select gets its job in Demo 2 of 6.
+- [x] Backspace acts as B, not Select · keyboard, every screen · press Backspace on the map: it backs out instead of cycling the lead. The Bible and CLAUDE.md say Backspace = Select; the game maps Select to Shift. Fixed Nov 21 by spec 001 (studio PR #14): Backspace = Select, Shift stays a second Select key, X stays B.
 
 ## Ideas inbox
 
