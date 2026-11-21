@@ -4,7 +4,7 @@ The launcher is the one home screen app. It opens to a shelf of covers; tap one 
 
 ## Covers
 
-- Each game has GBA box art at **120 × 80**, half the 240 × 160 screen (set Nov 21, 2026).
+- Each game has GBA box art at **120 × 80**, half of a 240 × 160 screen (set Nov 21, 2026).
 - Drawn in code like all other art, following `art-style.md`, in the game's own palette.
 - The shelf shows two covers per row and scales them up with crisp pixels, like the games.
 - The cover code lives in the game's `assets/` folder.

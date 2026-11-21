@@ -5,7 +5,7 @@ House rules for every game. Sources: Black Lantern Tech (Screen and controls) an
 ## Shell
 
 - Every game plays inside the GBA-style shell, on the map and in battle. No full-screen layouts. (Both games tried full screen first and reversed it.)
-- The game draws on a 240 × 160 canvas, scaled up with crisp pixels inside the shell's screen.
+- The game draws on a canvas 240 px wide, as tall as the screen allows (up to 320 px), scaled up with crisp pixels inside the shell's screen (set Nov 21, 2026; replaces 240 × 160).
 
 ## Buttons
 
