@@ -81,6 +81,33 @@ async function checkBlackLantern(page, base) {
   await page.evaluate(() => Object.keys(localStorage).filter((k) => /^(dev\.)?bl\./.test(k)).forEach((k) => localStorage.removeItem(k)));
 }
 
+async function checkRushlight(page, base) {
+  const RL = 'Rushlight';
+  await page.goto(base);
+  ok(!(await page.isVisible(cover(RL))), 'Rushlight is not on the Release shelf (Dev only)');
+  await page.click('#openSettings'); await page.click('#channel [data-ch=dev]'); await page.click('#closeSettings');
+  ok(await page.isVisible(cover(RL)), 'Rushlight is on the Dev shelf');
+  ok(!(await page.isVisible(cont(RL))), 'Dev Rushlight has no Continue before a save');
+  await page.click(cover(RL));
+  await page.waitForURL(/\/studio\/dev\/rushlight\/$/);
+  await page.waitForTimeout(500);
+  // Start a draft agent the way Quick roll does, so the game writes its own save
+  await page.evaluate(() => { RL.S.a = RL.randomAgent(); RL.store.set(RL.key('draft'), RL.S.a); });
+  const keys = await page.evaluate(() => Object.keys(localStorage).filter((k) => /^(dev\.)?rl\./.test(k)));
+  ok(keys.includes('dev.rl.draft') && !keys.some((k) => k.startsWith('rl.')), 'Dev Rushlight saves under dev.rl.*, nothing under rl.*');
+  await page.click('#list .row:has-text("Game shelf")');
+  await page.waitForURL(base);
+  ok(true, 'Game shelf row goes back to the shelf');
+  ok(await page.isVisible(cont(RL)), 'Continue appears for Rushlight after a Dev save');
+  await page.click(cont(RL));
+  await page.waitForURL(/\/studio\/dev\/rushlight\/\?continue=1$/);
+  const step = await page.waitForFunction(() => window.RL && RL.S.step === 'dossier', null, { timeout: 5000 }).then(() => true, () => false);
+  ok(step, 'Continue opens straight into the draft agent');
+  await page.goto(base);
+  await page.click('#openSettings'); await page.click('#channel [data-ch=release]'); await page.click('#closeSettings');
+  await page.evaluate(() => Object.keys(localStorage).filter((k) => /^(dev\.)?rl\./.test(k)).forEach((k) => localStorage.removeItem(k)));
+}
+
 (async () => {
   build('check1');
   await new Promise((r) => server.listen(0, r));
@@ -155,6 +182,8 @@ async function checkBlackLantern(page, base) {
 
     // Black Lantern: old Release saves (bl.*) still load, Dev saves under dev.bl.*, and the way back to the shelf
     if (w === 375 && h === 667) await checkBlackLantern(page, base);
+    // Rushlight (Dev only): Dev saves under dev.rl.*, Continue on the Dev shelf, and the way back
+    if (w === 375 && h === 667) await checkRushlight(page, base);
 
     // A new build takes over on next open
     if (w === 375 && h === 667) {

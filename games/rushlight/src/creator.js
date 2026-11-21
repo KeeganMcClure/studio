@@ -31,8 +31,11 @@ const randomLook=()=>({skin:rnd(6),hair:rnd(7),hairC:rnd(7),eyes:rnd(3),acc:rnd(
 function autoPicks(a){let n=8,g=0;const p=profOf(a),keys=Object.keys(p.skills).concat(Object.keys(p.skills),Object.keys(SKILLS));while(n>0&&g++<300){const k=pick(keys);if(skillVal(a,k)+20<=80){a.picks[k]=(a.picks[k]||0)+1;n--}}}
 function randomAgent(){const a=newAgent();a.method='roll';a.stats=rollStats();a.code=genCode();setProf(a,randomProf());a.spec=pick(SPECS[a.prof]).id;a.bonds.forEach(b=>b.name=pick(FIRST));a.look=randomLook();a.name=pick(FIRST)+' '+pick(LAST);a.age=24+rnd(36);a.motives=shuffle(MOTIVES).slice(0,3);autoPicks(a);return a}
 
+// Save keys start with rl. on Release and dev.rl. on Dev (engine/studio.js), so testing never touches the
+// stable saves. Outside the site (the checks, a published artifact) there is no Dev build, so it stays rl.
+const RLP=window.Studio?Studio.savePrefix('rl.'):'rl.',K=k=>RLP+k;
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const S={step:'title',sel:{},a:store.get('rl.draft',null)||newAgent(),roster:store.get('rl.roster',[]),san:99,swap:null,squad:null,clearArm:false,saved:false};
+const S={step:'title',sel:{},a:store.get(K('draft'),null)||newAgent(),roster:store.get(K('roster'),[]),san:99,swap:null,squad:null,clearArm:false,saved:false};
 
 
 // ---------- PIXEL PORTRAIT ----------
@@ -107,17 +110,19 @@ V.title=()=>{
   const n=S.roster.length,has=!!S.a.prof;
   return{rows:[
     ST(`<canvas class="lantern pix" id="lantern" width="96" height="96" style="border:0;background:transparent"></canvas><div class="logo">RUSHLIGHT<small>BUILD SETUP · NOT THE GAME YET</small></div><div class="static small" style="text-align:center;padding-top:0">Build an agent. Lose them later.</div>`),
-    ...(store.get('rl.game',null)?[R('Continue',{cls:'go',a:()=>{if(window.RLG)RLG.resume()}})]:[]),
+    ...(store.get(K('game'),null)?[R('Continue',{cls:'go',a:()=>{if(window.RLG)RLG.resume()}})]:[]),
     ...(has?[R('Continue draft',{val:esc(profOf(S.a).name),a:()=>{goto('dossier')}})]:[]),
     R('New agent',{a:()=>{S.a=newAgent();goto('profession')}}),
     R('Quick roll',{val:'random',a:()=>{S.a=randomAgent();goto('dossier');toast('A NEW FILE LANDS ON YOUR DESK')}}),
     R('Roster',{val:n+' on file',a:()=>{goto('roster')}}),
+    // Back to the studio's game shelf, only when the game was opened from it (studio-bible/launcher.md)
+    ...(window.Studio&&Studio.fromShelf?[R('Game shelf',{val:'◀',a:()=>Studio.toShelf()})]:[]),
     ST(`<div class="small" style="text-align:center;margin-top:6px">Keyboard: arrows · Z = A · X = B · Q/W = L/R · Enter = Start</div>`)
   ],foot:'A: SELECT'};
 };
 V.roster=()=>{
   const rows=S.roster.length?S.roster.map((a,i)=>R(esc(a.name||'Unnamed'),{val:esc(profOf(a)?.name||''),a:()=>{S.a=JSON.parse(JSON.stringify(a));goto('dossier')}})):[ST('No agents on file yet. Save one from the dossier screen.')];
-  if(S.roster.length)rows.push(R(S.clearArm?'Press A again to shred all':'Shred roster',{cls:'warn',a:()=>{if(S.clearArm){S.roster=[];store.set('rl.roster',[]);S.clearArm=false;toast('ROSTER SHREDDED')}else{S.clearArm=true}}}));
+  if(S.roster.length)rows.push(R(S.clearArm?'Press A again to shred all':'Shred roster',{cls:'warn',a:()=>{if(S.clearArm){S.roster=[];store.set(K('roster'),[]);S.clearArm=false;toast('ROSTER SHREDDED')}else{S.clearArm=true}}}));
   return{rows,foot:'A: OPEN FILE · B: BACK'};
 };
 V.profession=()=>{
@@ -232,7 +237,7 @@ V.dossier=()=>{
   const a=S.a;
   const rows=[ST(dossierCard(a)),
     R('Begin ▶',{cls:'go',val:'Setup stub',a:()=>{const sq=S.squad||[randomAgent(),randomAgent(),randomAgent()];S.squad=null;window.RLG&&RLG.start(S.a,sq)}}),
-    R(S.saved?'Saved ✓':'Save to roster',{cls:'go',a:()=>{const i=S.roster.findIndex(x=>x.id===a.id);a.id=a.id||Date.now();const copy=JSON.parse(JSON.stringify(a));if(i>=0)S.roster[i]=copy;else S.roster.unshift(copy);store.set('rl.roster',S.roster);S.saved=true;toast('FILED UNDER '+(a.code||'?'))}}),
+    R(S.saved?'Saved ✓':'Save to roster',{cls:'go',a:()=>{const i=S.roster.findIndex(x=>x.id===a.id);a.id=a.id||Date.now();const copy=JSON.parse(JSON.stringify(a));if(i>=0)S.roster[i]=copy;else S.roster.unshift(copy);store.set(K('roster'),S.roster);S.saved=true;toast('FILED UNDER '+(a.code||'?'))}}),
     R('Roll a squad',{val:'3 agents',a:()=>{S.squad=[randomAgent(),randomAgent(),randomAgent()]}}),
     R('Copy agent code',{a:()=>copyCode(a)}),
     R('Edit agent',{a:()=>{goto('profession');S.sel.profession=PROFS.indexOf(profOf(a))+1+(profOf(a).odd?1:0)}}),
@@ -275,7 +280,7 @@ function render(scroll=true){
   const ft=$('#ftr');
   if(S.san<25&&Math.random()<.3){ft.textContent=pick(CREEP);ft.classList.add('creep')}else{ft.textContent=cur.foot||'';ft.classList.remove('creep')}
   if(scroll){const el=list.querySelector('.row.on');if(el)el.scrollIntoView({block:'nearest'});if(s===selectable(cur.rows)[0])list.scrollTop=0}
-  store.set('rl.draft',S.a);
+  store.set(K('draft'),S.a);
 }
 function drawBig(blink){const c=$('#pbig');if(c){drawPortrait(c,S.a,5,blink);c.style.width='120px';c.style.height='120px'}}
 function drawLantern(){const c=$('#lantern');if(!c)return;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.setTransform(6,0,0,6,0,0);x.clearRect(0,0,16,16);const p=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h)};
@@ -309,7 +314,7 @@ list.addEventListener('click',e=>{
   render(false);
 });
 list.addEventListener('input',e=>{const t=e.target,b=t.dataset.bind;if(!b)return;
-  if(b==='name')S.a.name=t.value;else if(b==='code')S.a.code=t.value.toUpperCase();else if(b==='newMot'){S.newMot=t.value;return}else if(b.startsWith('bond'))S.a.bonds[+b.slice(4)].name=t.value;store.set('rl.draft',S.a)});
+  if(b==='name')S.a.name=t.value;else if(b==='code')S.a.code=t.value.toUpperCase();else if(b==='newMot'){S.newMot=t.value;return}else if(b.startsWith('bond'))S.a.bonds[+b.slice(4)].name=t.value;store.set(K('draft'),S.a)});
 list.addEventListener('focusout',e=>{if(e.target.tagName==='INPUT')setTimeout(()=>{if(!list.contains(document.activeElement)||document.activeElement.tagName!=='INPUT')render(false)},0)});
 list.addEventListener('keydown',e=>{if(e.target.dataset&&e.target.dataset.bind==='newMot'&&e.key==='Enter'){e.preventDefault();addMotive();render(false);const el=list.querySelector('input[data-bind="newMot"]');if(el)el.focus();return}});  // any other Enter or Escape in a text field just closes the keyboard (engine/input.js)
 
@@ -317,6 +322,6 @@ list.addEventListener('keydown',e=>{if(e.target.dataset&&e.target.dataset.bind==
 setInterval(()=>{if(S.step==='look'){drawBig(true);setTimeout(()=>drawBig(false),140)}},3200);
 setInterval(()=>{if(S.step==='title')drawLantern()},180);
 
-window.RL={S,PROFS,ITEMDEF,WEAP,specOf,profOf,derived,skillVal,randomAgent,drawPortrait,store,render,goto,toast,esc,pick,rnd,SKILLS,HAIRC,SKIN,OUTC};
+window.RL={key:K,S,PROFS,ITEMDEF,WEAP,specOf,profOf,derived,skillVal,randomAgent,drawPortrait,store,render,goto,toast,esc,pick,rnd,SKILLS,HAIRC,SKIN,OUTC};
 render();
 })();

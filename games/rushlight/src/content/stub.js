@@ -8,5 +8,5 @@ async function bossIntro(){}
 async function caseOpening(){
  await say('','Rushlight. The build is set up; the vertical slice starts here.');
  // No map yet, so nothing to checkpoint: back to the title without saving.
- store.set('rl.game',null);leave();B.goto('title');B.render();
+ store.set(B.key('game'),null);leave();B.goto('title');B.render();
 }
