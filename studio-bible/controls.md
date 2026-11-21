@@ -17,7 +17,7 @@ House rules for every game. Sources: Black Lantern Tech (Screen and controls) an
 | B | Back |
 | L / R | Previous / next (each game says what it steps through) |
 | Start | Menu |
-| Select | Cycles the lead character on the map |
+| Select | Cycles the lead character on the map (see `ui.md`, Party menu) |
 
 - Tapping a menu row also works.
 - Holding a D-pad button repeats it in menus: once on press, again after 320 ms, then every 85 ms.

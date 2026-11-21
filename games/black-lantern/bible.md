@@ -883,7 +883,7 @@ The agents work in secret. Breaking the rules on the job (breaking in, roughing 
 Press Start on the map to open it. It's the same navy list box as the battle command menu; D-pad or tap.
 
 - **Rows:** Party, Skills, Items, Case file, Log, Settings, Save.
-- **Party:** three agent cards stacked, Pokémon-style, each showing HP, SAN, WP and status icons, with the lead marked. Tap a card for Make lead, Dossier or Give item. Open anytime except during a fight or cutscene.
+- **Party:** three agent cards stacked, Pokémon-style, each showing HP, SAN, WP and status icons, with the lead marked. Tap a card for Make lead, Dossier or Give item. Open anytime except during a fight or cutscene. Cards stay in seat order and the LEAD tag moves; Give item shows greyed with a one-line reason until Demo 5 brings item slots (set Nov 21, spec 002).
 - **Party card faces (noted Nov 20):** the faces in the approved party menu mockup are too rough and hard to read. Make them clearer when the menu is built; no new mockup needed.
 - **Skills:** the lead's skills usable away from hotspots: First Aid and Medicine, plus Survival's Make camp and Science's Analyze once unlocked. Skills the lead lacks show greyed out with the skill name, as at hotspots.
 - **Items:** see Item display in the Agents and items tab.
@@ -891,7 +891,7 @@ Press Start on the map to open it. It's the same navy list box as the battle com
 - **Log:** rereads the last 30 or so dialog boxes, since clues hide in what people ramble about.
 - **Settings:** one toggle, Fast battles, that speeds up battle animations and result lines. It's the only setting for now.
 - **Save:** saves to the one slot. Autosaves still happen.
-- **Select button:** cycles the lead agent on the map without opening the menu.
+- **Select button:** cycles the lead agent on the map without opening the menu, in seat order; it works inside Party too (set Nov 21, spec 002).
 
 ### Quality of life (set Nov 19)
 
@@ -914,7 +914,7 @@ Small comforts for short phone sittings. None of them change a rule; they save t
 - **Low-health pulse:** on the map, an agent's card blinks at 3 HP or less, or while Bleeding or Poisoned.
 - **Odds on home scenes:** each home scene option shows the agent's roll chance and the Bond's current mood before you pick.
 - **Case wrap-up card:** at the debrief, one card shows clues found (4/5), victims saved and SAN lost per agent.
-- **L/R flips agents:** in a dossier, Items or Give item, L and R jump to the previous or next agent instead of backing out.
+- **L/R flips agents:** in Items or Give item, L and R jump to the previous or next agent instead of backing out. In a dossier, L and R change tabs (INFO, SKILLS, BONDS) and Up/Down moves to the previous or next agent, as in the approved dossier mockup (changed Nov 21, spec 002).
 - **Turned down (Nov 19):** text speed setting, repeat last round (brings back Attack-spamming), quick travel, restock button, calmer-flashes setting; boss wind-up tells, danger-zone edge tint, tap to walk, "fight ahead" warning, left-handed layout, randomize in creator.
 
 ## Combat
