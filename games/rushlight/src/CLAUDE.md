@@ -25,12 +25,12 @@ Design, mockups, Bible reviews, the Text Library and the Asset Library stay in t
 
 ## The parts
 
-Loaded in this order by `index.html`: the shared `engine/shell.js` (builds the shell around the screen), `engine/input.js` (buttons and keyboard) and `engine/move.js` (grid walking, camera, canvas fit), then `strings.js` (shared strings, `window.RLS`), `creator.js` (the creator, portraits, and where presses go, `window.RL`), `shelf.js` (Shared Shelf script, copied unchanged), `agent-sprite.js` (map sprites, `window.RLA`), `dialog.js` (the dialog box, copied unchanged, `window.BLD`), `engine.js` (map, dialog, sanity, battle, saves, pause, input, `window.RLG`), then `content/stub.js`.
+Loaded in this order by `index.html`: the shared `engine/shell.js` (builds the shell around the screen), `engine/input.js` (buttons and keyboard) and `engine/move.js` (grid walking, camera, canvas fit), then `strings.js` (shared strings, `window.RLS`), `creator.js` (the creator, portraits, and where presses go, `window.RL`), `engine/shelf.js` (Shared Shelf script, copied unchanged), `agent-sprite.js` (map sprites, `window.RLA`), `engine/dialog.js` (the dialog box, copied unchanged, `window.BLD`), `engine.js` (map, dialog, sanity, battle, saves, pause, input, `window.RLG`), then `content/stub.js`.
 
 - `index.html` keeps the screen and Rushlight's colors; the shell's layout comes from `engine/shell.css`. `npm run build` inlines the `engine/` files, so `dist/index.html` stays one file.
 - Planned split (Bible, Tech, Code): shell, engine, generator, content data and art in separate parts. Content batches touch only the data parts, so a new creature can't break combat.
 - No outside assets except Google Fonts (Press Start 2P, VT323). All art is drawn in code. No sound.
-- `shelf.js` and `dialog.js` are hand copies. Don't edit them here; change the source and copy it in again. They keep their library names (`SHELF`, `BLD`).
+- `engine/shelf.js` and `engine/dialog.js` are shared copies of the Shared Shelf script and Black Lantern's Asset Library dialog box. Don't edit them here: change the source, then run `node engine/tools/sync-shared.js` (`npm run check` fails if a copy was edited by hand). They keep their library names (`SHELF`, `BLD`).
 
 ### Still Black Lantern's (replace as the vertical slice reaches each)
 

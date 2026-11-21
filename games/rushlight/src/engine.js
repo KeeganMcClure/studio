@@ -143,7 +143,7 @@ async function stepBack(){const [dx,dy]=DIRS[G.dir];if(passable(G.x+dx,G.y+dy)){
 function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 
 // ================= DIALOG / MENU =================
-// Lantern Bust box (dialog.js, copied unchanged from the Asset Library). `box` holds what the box shows;
+// Lantern Bust box (engine/dialog.js, copied unchanged from the Asset Library). `box` holds what the box shows;
 // drawBox() runs every frame and redraws the box only when something visible changed.
 let box=null,boxKey='';
 const PORTRAITS={}; // speaker name -> (ctx, frame, shouting) 64 x 64
