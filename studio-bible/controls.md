@@ -5,7 +5,8 @@ House rules for every game. Sources: Black Lantern Tech (Screen and controls) an
 ## Shell
 
 - Every game plays inside the GBA-style shell, on the map and in battle. No full-screen layouts. (Both games tried full screen first and reversed it.)
-- The game draws on a canvas 240 px wide, as tall as the screen allows (up to 320 px), scaled up with crisp pixels inside the shell's screen (set Nov 21, 2026; replaces 240 × 160).
+- The game draws on a canvas 240 px wide and as tall as the shell's screen allows (130 to 320 px), scaled up with crisp pixels to fill the screen (set Nov 21, matching what both games already do; it shows more of the map on a phone than 240 × 160 would).
+- The shell's layout and buttons are shared by every game. Each game paints it in its own colors and brand.
 
 ## Buttons
 
@@ -19,12 +20,14 @@ House rules for every game. Sources: Black Lantern Tech (Screen and controls) an
 | Select | Cycles the lead character on the map |
 
 - Tapping a menu row also works.
+- Holding a D-pad button repeats it in menus: once on press, again after 320 ms, then every 85 ms.
+- On the map, the last direction pressed wins.
 - L and R sit in the middle cluster, in a row above Select and Start.
 - Keep every control in the bottom half of the phone so thumbs reach them.
 
 ## Keyboard (testing on a computer)
 
-Arrows, Z = A, X = B, Q / W = L / R, Enter = Start, Backspace = Select.
+Arrows, Z = A, X = B, Q / W = L / R, Enter = Start, Backspace = Select. Space also works as A and Shift as Select (Backspace confirmed as Select Nov 21).
 
 ## Target screen
 
