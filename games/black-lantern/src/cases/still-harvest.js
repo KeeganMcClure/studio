@@ -6,6 +6,15 @@
 // This case's text block. Empty for now: the Still Harvest rebuild moves its dialog, case text and line pools here.
 // Until then the demo's lines stay inline in the scripts below.
 const TEXT={};
+// The case board card (spec 004, step 3). Teaser lines only: no twist, no solution.
+const caseCard={
+ file:1,
+ title:'STILL HARVEST',
+ town:'MARROW CREEK',
+ place:'LANTERN WALK · MARROW CREEK, OR',
+ hook:['Three townsfolk went missing on the','Lantern Walk. The corn knows where.'],
+ pin:'#d6a43a'
+};
 
 // ================= CASE DATA =================
 const EN={
@@ -251,3 +260,7 @@ async function ending(){
  L.a.cur={san:L.san,dis:L.dis,ch1:true,saved:n};
  finish();
 }
+
+// ================= ON THE CASE BOARD =================
+// A on this card plays caseOpening as Big Hat's briefing (spec 004, step 4; Demo 5 replaces it).
+registerCase({id:'still-harvest',card:caseCard,opening:caseOpening});

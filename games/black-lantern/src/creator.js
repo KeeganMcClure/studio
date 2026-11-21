@@ -46,7 +46,7 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
 // in order, bringing old saves forward before anything reads them. Before upgrading, the old
 // saves are copied to bl.backup. Rules: never change an old step; a new save shape gets a new
 // step and SAVE_V goes up by one. Saves from before numbering count as version 0.
-const SAVE_V=3;
+const SAVE_V=4;
 const fillAgent=a=>{if(!a||typeof a!=='object'||Array.isArray(a))return null;const d=newAgent();
   const o=Object.assign(d,a);o.look=Object.assign(newAgent().look,a.look||{});o.stats=Object.assign(newAgent().stats,a.stats||{});
   if(!o.picks||typeof o.picks!=='object')o.picks={};if(!Array.isArray(o.bonds))o.bonds=[];if(!Array.isArray(o.motives))o.motives=[];return o};
@@ -102,6 +102,16 @@ const UPGRADES={
     const g=store.get(K('game'),null);
     if(g!==null){try{const o=JSON.parse(g);if(!o||!Array.isArray(o.party)||!o.party.length)throw 0;
         if(!(Number.isInteger(o.lead)&&o.lead>=0&&o.lead<o.party.length))o.lead=0;store.set(K('game'),JSON.stringify(o))}
+      catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
+  },
+  // 3 → 4 (Nov 21, spec 004 case board): the season save, bl.season. Every older save gets a fresh Season 1 with
+  // Still Harvest open (the only case before this version). A checkpoint in progress keeps working and is marked
+  // as a Still Harvest checkpoint, so finishing it closes the right card.
+  4(){
+    if(store.get(K('season'),null)===null)store.set(K('season'),{season:1,cases:{'still-harvest':{file:1,state:'open',ending:null}},closed:0,overstep:0});
+    const g=store.get(K('game'),null);
+    if(g!==null){try{const o=JSON.parse(g);if(!o||!Array.isArray(o.party)||!o.party.length)throw 0;
+        if(!o.case)o.case='still-harvest';store.set(K('game'),JSON.stringify(o))}
       catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
   }
 };
@@ -210,13 +220,15 @@ function problem(a,step){const g=gate(a,step);if(g)return g;
   if(step==='bonds'&&a.bonds.some(b=>!b.name.trim()))return'NAME BOTH BONDS';
   if(step==='motives'&&a.motives.length<2)return'PICK 2 MOTIVATIONS';return null}
 const nextStep=()=>{if(S.view)return;const L=steps(),i=L.indexOf(S.step);if(i<0||i>=L.length-1)return;const g=gate(S.a,S.step);if(g)return toast(g);goto(L[i+1])};
+// After a case the dossier leads on to the case board (spec 004, step 5); B there goes to the title.
+const leaveView=()=>{S.view=false;if(S.afterCase){S.afterCase=false;S.a=newAgent();goto('title');if(window.BLG)BLG.board({from:'finish'});return}goto('roster')};
 const prevStep=()=>{
-  if(S.view){S.view=false;goto('roster');return}
+  if(S.view){leaveView();return}
   const L=steps(),i=L.indexOf(S.step);
   if(i>0)return goto(L[i-1]);
   if(i===0)return leaveEdit();
   if(S.step==='roster'){const back=S.seatPick!==null?'team':'title';S.seatPick=null;return goto(back)}
-  if(S.step==='team'||S.step==='pick'||S.step==='title')return goto('title');
+  if(S.step==='team'||S.step==='pick'||S.step==='title'||S.step==='confirm')return goto('title');
 };
 function leaveEdit(){if(!S.leaveArm){S.leaveArm=true;return toast('B AGAIN TO DROP THIS EDIT')}S.a=newAgent();S.edit=null;S.tweak=false;goto(S.team?'team':'title');toast('EDIT DROPPED')}
 const nextRow=lab=>R(lab||'Next ▶',{cls:'go',a:nextStep});
@@ -228,12 +240,20 @@ V.title=()=>{
     ST(`<canvas class="lantern pix" id="lantern" width="96" height="96" style="border:0;background:transparent"></canvas><div class="logo">BLACK LANTERN<small>PERSONNEL INTAKE · FORM 7-B</small></div><div class="static small" style="text-align:center;padding-top:0">Build a team. Lose them later.</div>`),
     ...(store.get(K('game'),null)?[R('Continue Chapter One',{cls:'go',a:()=>{if(window.BLG)BLG.resume()}})]:[]),
     ...(S.team?[R('Continue team',{val:esc(S.team.name||''),a:()=>{goto(S.edit!==null?(S.tweak?'identity':'profession'):'team')}})]:[]),
-    R('New game',{a:()=>goto('pick')}),
+    R('New game',{a:newGame}),
     R('Roster',{val:n+' on file',a:()=>{S.seatPick=null;goto('roster')}}),
     // Back to the studio's game shelf, only when the game was opened from it (launcher.md)
     ...(window.Studio&&Studio.fromShelf?[R('Game shelf',{val:'◀',a:()=>Studio.toShelf()})]:[]),
     ST(`<div class="small" style="text-align:center;margin-top:6px">Keyboard: arrows · Z = A · X = B · Q/W = L/R · Enter = Start</div>`)
   ],foot:'A: SELECT',bare:true};
+};
+// New game starts a fresh season and keeps the roster (spec 004, step 1). With a closed case on the board it asks first.
+function newGame(){if(window.BLG&&BLG.seasonClosed()>0){S.sel.confirm=2;goto('confirm')}else goto('pick')}
+V.confirm=()=>{
+  const W=window.BLS.BOARD;
+  return{rows:[ST(`<div class="hi" style="text-align:center">${esc(W.sure)}</div><div style="text-align:center">${esc(W.resetLine)}</div>`),
+    R(esc(W.yes),{cls:'warn',a:()=>{BLG.newSeason();goto('pick')}}),
+    R(esc(W.no),{a:()=>goto('title')})],foot:'A: CHOOSE · B: TITLE',bare:true};
 };
 V.pick=()=>{
   const rows=TEAMS.map(t=>R(`<span class="tn"><span>${esc(t.name.toUpperCase())}</span><span class="tt small">${esc(t.tag)}</span></span><span class="ts">${t.seats.map(s=>`<span>${esc(profOf(s).name)}</span>`).join(' · ')}</span>`,{cls:'two',t,a:()=>chooseTeam(t)}));
@@ -272,9 +292,15 @@ function seatAction(i,j){
 function fileToRoster(a){a.id=a.id||newId();const i=S.roster.findIndex(x=>x.id===a.id);const c=clone(a);if(i>=0)S.roster[i]=c;else S.roster.unshift(c);store.set(K('roster'),S.roster)}
 function startGame(){
   if(!filled())return toast('FILL ALL 3 SEATS FIRST');
-  const seats=S.team.seats.map(clone);seats.forEach(fileToRoster);
+  S.team.seats.map(clone).forEach(fileToRoster);saveDraft();
+  if(window.BLG)BLG.board({from:'team'});
+}
+// A on an open card (case-board.js): the case starts with the team from Your team, seat 1 leading, as START did before.
+function beginCase(id){
+  if(!filled())return false;
+  const seats=S.team.seats.map(clone);
   S.team=null;S.edit=null;S.tweak=false;S.a=newAgent();saveDraft();
-  if(window.BLG)BLG.start(seats[0],seats.slice(1));
+  BLG.start(seats[0],seats.slice(1),id);return true;
 }
 const info=(l,r)=>`<span>${l}</span><span>${r}</span>`;
 const whoLine=a=>`<span class="hi">${esc(a.name?surname(a):'NEW AGENT')}</span>${profOf(a)?' · '+esc(profOf(a).name):''}`;
@@ -399,14 +425,14 @@ V.dossier=()=>{
   const rows=[ST(dossierCard(a))];
   if(S.view){
     rows.push(R('Copy agent code',{a:()=>copyCode(a)}));
-    rows.push(R(S.clearArm?'Press A again to shred':'Shred this file',{cls:'warn',a:()=>{if(!S.clearArm){S.clearArm=true;return}S.roster=S.roster.filter(x=>x.id!==a.id);store.set(K('roster'),S.roster);S.view=false;goto('roster');toast('FILE SHREDDED')}}));
-    rows.push(R('Back to roster',{a:()=>{S.view=false;goto('roster')}}));
+    rows.push(R(S.clearArm?'Press A again to shred':'Shred this file',{cls:'warn',a:()=>{if(!S.clearArm){S.clearArm=true;return}S.roster=S.roster.filter(x=>x.id!==a.id);store.set(K('roster'),S.roster);leaveView();toast('FILE SHREDDED')}}));
+    rows.push(R(S.afterCase?'Back to the case board':'Back to roster',{a:leaveView}));
   }else{
     rows.push(R('Done ▶',{cls:'go',val:`seat ${S.edit+1}`,a:done}));
     rows.push(R(S.saved?'Filed ✓':'File to roster too',{a:()=>{const pr=steps().map(st=>problem(a,st)).find(Boolean);if(pr)return toast(pr);a.id=a.id||newId();fileToRoster(a);S.saved=true;toast('FILED UNDER '+(a.code||'?'))}}));
     rows.push(R('Copy agent code',{a:()=>copyCode(a)}));
   }
-  return{rows,info:info(whoLine(a),S.view?'ROSTER FILE':'REVIEW'),foot:S.view?'A: SELECT · B: ROSTER':'A: SELECT · START: DONE · L: BACK',bare:true};
+  return{rows,info:info(whoLine(a),S.view?'ROSTER FILE':'REVIEW'),foot:S.view?(S.afterCase?'A: SELECT · B: CASE BOARD':'A: SELECT · B: ROSTER'):'A: SELECT · START: DONE · L: BACK',bare:true};
 };
 V.roster=()=>{
   const picking=S.seatPick!==null,onTeam=id=>S.team&&S.team.seats.some(x=>x&&x.id===id);
@@ -506,6 +532,6 @@ list.addEventListener('focusout',e=>{if(e.target.tagName==='INPUT')setTimeout(()
 setInterval(()=>{if(S.step==='identity'&&!(window.BLG&&BLG.active)){drawBig(true);setTimeout(()=>drawBig(false),140)}},3200);
 setInterval(()=>{if(S.step==='title'&&!(window.BLG&&BLG.active))drawLantern()},180);
 
-window.BL={key:K,S,PROFS,ITEMDEF,WEAP,specOf,profOf,derived,skillVal,newAgent,fromTemplate,drawPortrait,portraitURL,store,render,goto,toast,esc,pick,rnd,SKILLS,HAIRC,SKIN,OUTC};
+window.BL={key:K,S,beginCase,PROFS,ITEMDEF,WEAP,specOf,profOf,derived,skillVal,newAgent,fromTemplate,drawPortrait,portraitURL,store,render,goto,toast,esc,pick,rnd,SKILLS,HAIRC,SKIN,OUTC};
 render();
 })();

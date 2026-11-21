@@ -493,7 +493,7 @@ async function bigHatScene(fn){await fade(1);G.mode='scene';G.scene='bighat';awa
 function drawScene(){if(G.scene==='bighat')return drawOffice();cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+rnd(20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
 // Logic runs at 60 ticks a second on any screen (engine/clock.js); frames with no tick due are skipped.
 const clock=StudioClock.make();
-function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(G.mode==='battle'&&Bt)drawBattle();else if(PM)drawParty();else if(G.mode==='world')drawWorld();else drawScene();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
+function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(CB)drawBoard();else if(G.mode==='battle'&&Bt)drawBattle();else if(PM)drawParty();else if(G.mode==='world')drawWorld();else drawScene();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
 function fit(){const v=StudioMove.fit(gEl,cv);if(!v)return;VW=v.w;VH=v.h;gEl.style.setProperty('--pu',(64*v.boxW/VW)+'px');boxKey='';posMenu()}
 window.addEventListener('resize',()=>{if(G.active)fit()});
 
@@ -506,25 +506,29 @@ async function gameOver(){
 }
 
 // ================= SAVE / FLOW =================
-function snap(){return JSON.stringify({map:G.map,x:G.x,y:G.y,dir:G.dir,party,lead:G.lead|0,flags:G.flags,clues:G.clues,items:G.items,fights:G.fights,enc:G.enc,rescued:G.rescued})}
+function snap(){return JSON.stringify({case:G.case,map:G.map,x:G.x,y:G.y,dir:G.dir,party,lead:G.lead|0,flags:G.flags,clues:G.clues,items:G.items,fights:G.fights,enc:G.enc,rescued:G.rescued})}
 function checkpoint(){G.cp=snap();store.set(B.key('game'),G.cp)}
-function restore(s){const o=JSON.parse(s);party=o.party;G.lead=o.lead>=0&&o.lead<party.length?o.lead|0:0;G.flags=o.flags;G.clues=o.clues;G.items=o.items;G.fights=o.fights;G.enc=o.enc;G.rescued=o.rescued||0;G.mode='world';goMap(o.map,o.x,o.y,o.dir);applySan()}
+function restore(s){const o=JSON.parse(s);G.case=o.case||(CASES[0]&&CASES[0].id);party=o.party;G.lead=o.lead>=0&&o.lead<party.length?o.lead|0:0;G.flags=o.flags;G.clues=o.clues;G.items=o.items;G.fights=o.fights;G.enc=o.enc;G.rescued=o.rescued||0;G.mode='world';goMap(o.map,o.x,o.y,o.dir);applySan()}
 function enter(){G.active=true;scr.classList.add('gaming');sanEl.hidden=false;fit();cancelAnimationFrame(raf);clock.reset();raf=requestAnimationFrame(loop)}
-function leave(){G.active=false;PM=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
+function leave(){G.active=false;PM=null;CB=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
 function quit(){checkpoint();leave();B.goto('title');B.render()}
-function finish(){
- store.set(B.key('game'),null);const a=lead().a;
+// The end of a case (spec 004, step 5): the case is stamped closed in bl.season, then the lead's dossier opens as
+// before, and leaving the dossier opens the case board. The demo's one ending saves as "closed".
+function finish(ending){
+ store.set(B.key('game'),null);const a=lead().a;const id=G.case;closeCase(id,ending);B.S.afterCase=true;B.S.stampCase=id;
  a.id=a.id||Date.now();const R=B.S.roster,i=R.findIndex(x=>x.id===a.id);const copy=JSON.parse(JSON.stringify(a));if(i>=0)R[i]=copy;else R.unshift(copy);store.set(B.key('roster'),R);
  B.S.a=a;B.S.view=true;leave();B.goto('dossier');B.render();B.toast('FILED. CHAPTER ONE CLOSED.');
 }
 function startKit(){const it={aid:1};const add=(k,n)=>{it[k]=(it[k]||0)+n};
  const s=B.specOf(lead().a);if(s)Object.entries(s.items).forEach(([k,n])=>add(k,n));else{add('aid',1);add('coffee',1);add('flare',1)}
  party.slice(1).forEach(m=>{const t=B.specOf(m.a);if(t)add(Object.keys(t.items)[0],1)});return it}
-async function start(agent,squad){
+// Starts a case (A on its card): its briefing (the case's opening) plays first. Seat 1 leads.
+async function start(agent,squad,id){
+ const c=caseById(id)||CASES[0];
  party=[member(agent),...squad.map(member)];
- G=Object.assign(G,{active:true,lead:0,flags:{},clues:[],items:startKit(),fights:0,enc:10,rescued:0,busy:0,mode:'scene',scene:null});
+ G=Object.assign(G,{active:true,case:c.id,lead:0,flags:{},clues:[],items:startKit(),fights:0,enc:10,rescued:0,busy:0,mode:'scene',scene:null});
  MAZE=null;enter();applySan();
- run(caseOpening);
+ run(c.opening);
 }
 function resume(){const s=store.get(B.key('game'),null);if(!s)return false;G=Object.assign(G,{active:true,busy:0,mode:'world'});MAZE=null;enter();
  // a checkpoint that won't open goes back to the title with a message instead of freezing; the save is kept
@@ -547,6 +551,7 @@ async function pauseMenu(){
 // ================= INPUT =================
 function input(k){
  if(!G.active)return;
+ if(CB){boardPress(k);return}
  if(dlg){if(k==='a'||k==='b'){if(!dlg.done)finishType();else closeDlg()}return}
  if(PM){partyPress(k);return}
  if(menu){const n=menu.items.length;
@@ -565,4 +570,5 @@ menuEl.addEventListener('click',e=>{const el=e.target.closest('.gi');if(!el||!me
 // The shelf's Continue button opens straight into the case checkpoint (launcher.md, Title cards).
 // With no checkpoint (only agents on the roster) the title screen opens as usual.
 window.addEventListener('load',()=>{if(window.Studio&&Studio.continued&&!G.active)resume()});
-window.BLG={start,resume,input,hold,get active(){return G.active},_t:{hp:(i,n)=>{party[i].hp=n},status:(i,k)=>{const m=party[i];m.st=m.st||[];if(!m.st.includes(k))m.st.push(k)},lead:()=>G.lead|0,fight:t=>run(async()=>{const r=await battle(t);if(r==='lose')await gameOver()}),go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,boss:()=>run(bossIntro)}};
+window.BLG={start,resume,input,hold,get active(){return G.active},
+ board:o=>board(Object.assign({stamp:o&&o.from==='finish'?B.S.stampCase:null},o)),seasonClosed:()=>seasonClosed(),newSeason:()=>newSeason(),_t:{hp:(i,n)=>{party[i].hp=n},status:(i,k)=>{const m=party[i];m.st=m.st||[];if(!m.st.includes(k))m.st.push(k)},lead:()=>G.lead|0,fight:t=>run(async()=>{const r=await battle(t);if(r==='lose')await gameOver()}),go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,boss:()=>run(bossIntro),finish:()=>finish(),board:()=>CB}};
