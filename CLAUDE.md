@@ -29,8 +29,8 @@ Loaded in this order by `index.html`: `strings.js` (shared strings, `window.BLS`
 1. Read the Bible tab the task needs. One task per chat, named up front.
 2. Ask decisions as multiple choice, with your pick marked. Ask before big or hard-to-undo changes.
 3. Edit the existing files; never rewrite a part from scratch.
-4. Keep saves backward compatible (keys are in Bible, Tech, Saving). Flag anything that would break an old save before doing it.
-5. Run `npm run check` (builds `dist/index.html`, then checks it at 320 × 480, 375 × 550 and 375 × 667: loads, no errors, every button on screen and working, 600 random presses, a reload with saves). Then playtest the changed part yourself, start to finish.
+4. Keep saves backward compatible (keys are in Bible, Tech, Saving). Flag anything that would break an old save before doing it. A change to what a save holds gets a new upgrade step in `creator.js` (Save versions: never edit an old step, raise `SAVE_V` by one), then `node tools/capture-saves.js YYYY-MM-DD` adds fresh test saves to `tools/test-saves/`. Never delete old test saves.
+5. Run `npm run check` (builds `dist/index.html`, then checks it at 320 × 480, 375 × 550 and 375 × 667: loads, no errors, every button on screen and working, 600 random presses, a reload with saves, then every test save in `tools/test-saves/` upgrades, shows its roster and continues its checkpoint, and damaged saves open cleanly). Then playtest the changed part yourself, start to finish.
 6. Copy any newly drawn art into the Asset Library (Bible, Art, Save every asset).
 7. Commit with a plain-language message and push.
 8. Publish: `npm run build`, then publish `dist/index.html` to the Intake artifact as its page, with the label `Build YYYY-MM-DD` (plus a short note if more than one build that day).

@@ -32,6 +32,41 @@ function autoPicks(a){let n=8,g=0;const p=profOf(a),keys=Object.keys(p.skills).c
 function randomAgent(){const a=newAgent();a.method='roll';a.stats=rollStats();a.code=genCode();setProf(a,randomProf());a.spec=pick(SPECS[a.prof]).id;a.bonds.forEach(b=>b.name=pick(FIRST));a.look=randomLook();a.name=pick(FIRST)+' '+pick(LAST);a.age=24+rnd(36);a.motives=shuffle(MOTIVES).slice(0,3);autoPicks(a);return a}
 
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+// ---------- SAVE VERSIONS ----------
+// bl.version holds the save version. On load, every upgrade step above the stored version runs
+// in order, bringing old saves forward before anything reads them. Before upgrading, the old
+// saves are copied to bl.backup. Rules: never change an old step; a new save shape gets a new
+// step and SAVE_V goes up by one. Saves from before numbering count as version 0.
+const SAVE_V=1;
+const fillAgent=a=>{if(!a||typeof a!=='object'||Array.isArray(a))return null;const d=newAgent();
+  const o=Object.assign(d,a);o.look=Object.assign(newAgent().look,a.look||{});o.stats=Object.assign(newAgent().stats,a.stats||{});
+  if(!o.picks||typeof o.picks!=='object')o.picks={};if(!Array.isArray(o.bonds))o.bonds=[];if(!Array.isArray(o.motives))o.motives=[];return o};
+const UPGRADES={
+  // 0 → 1 (Nov 21): first numbered version. Drops the retired sound key, fills any missing agent
+  // fields with creator defaults, and sets aside a checkpoint that can't be read.
+  1(){
+    try{localStorage.removeItem('bl.sound')}catch(e){}
+    const r=store.get('bl.roster',[]);store.set('bl.roster',(Array.isArray(r)?r:[]).map(fillAgent).filter(Boolean));
+    const d=store.get('bl.draft',null);if(d!==null){const f=fillAgent(d);f?store.set('bl.draft',f):localStorage.removeItem('bl.draft')}
+    let g=store.get('bl.game',null);
+    if(g!==null){try{const o=typeof g==='string'?JSON.parse(g):g;if(!o||!o.map||!Array.isArray(o.party)||!o.party.length)throw 0;
+        o.party.forEach(m=>{m.a=fillAgent(m.a)||newAgent()});store.set('bl.game',JSON.stringify(o))}
+      catch(e){localStorage.setItem('bl.broken',localStorage.getItem('bl.game'));localStorage.removeItem('bl.game')}}
+  }
+};
+function upgradeSaves(){
+  try{
+    const keys=Object.keys(localStorage).filter(k=>k.startsWith('bl.')&&k!=='bl.backup'&&k!=='bl.version');
+    let v=+(localStorage.getItem('bl.version')||0);
+    if(!keys.length){localStorage.setItem('bl.version',SAVE_V);return}  // fresh phone: nothing to upgrade
+    if(v>=SAVE_V)return;  // up to date (or saved by a newer build: leave it alone)
+    const old=store.get('bl.backup',null);  // a retry after a failed upgrade keeps the first, untouched copy
+    if(!old||old.from!==v)localStorage.setItem('bl.backup',JSON.stringify({from:v,at:new Date().toISOString(),keys:Object.fromEntries(keys.map(k=>[k,localStorage.getItem(k)]))}));
+    for(v=v+1;v<=SAVE_V;v++){UPGRADES[v]();localStorage.setItem('bl.version',v)}
+  }catch(e){console.warn('Save upgrade stopped:',e)}
+}
+upgradeSaves();
 const S={step:'title',sel:{},a:store.get('bl.draft',null)||newAgent(),roster:store.get('bl.roster',[]),san:99,swap:null,squad:null,clearArm:false,saved:false};
 
 

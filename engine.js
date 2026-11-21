@@ -533,7 +533,10 @@ async function start(agent,squad){
  MAZE=null;enter();applySan();
  run(caseOpening);
 }
-function resume(){const s=store.get('bl.game',null);if(!s)return false;G=Object.assign(G,{active:true,busy:0,mode:'world'});MAZE=null;enter();restore(s);G.cp=s;return true}
+function resume(){const s=store.get('bl.game',null);if(!s)return false;G=Object.assign(G,{active:true,busy:0,mode:'world'});MAZE=null;enter();
+ // a checkpoint that won't open goes back to the title with a message instead of freezing; the save is kept
+ try{restore(s)}catch(e){console.warn('Checkpoint would not open:',e);leave();B.goto('title');B.render();B.toast('CHECKPOINT WON\'T OPEN');return false}
+ G.cp=s;return true}
 
 // ================= PAUSE =================
 async function pauseMenu(){
