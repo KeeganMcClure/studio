@@ -455,7 +455,6 @@ let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add
 function rowAt(i){return cur.rows[i]}
 const inCreator=()=>STEPS.includes(S.step)&&!S.view;
 function act(kind){
-  if(window.BLG&&BLG.active){BLG.input(kind);return}
   const r=rowAt(S.sel[S.step]);
   if(kind!=='b')S.leaveArm=false;
   if(kind==='up'||kind==='down'){const ok=selectable(cur.rows),k=ok.indexOf(S.sel[S.step]);const nk=kind==='up'?Math.max(0,k-1):Math.min(ok.length-1,k+1);if(nk!==k){S.sel[S.step]=ok[nk]}render();return}
@@ -472,12 +471,8 @@ function act(kind){
     if(!(window.BLG&&BLG.active))render();return}
 }
 function focusInput(i){const el=list.querySelector(`.row[data-i="${i}"] input`);if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(e){}}}
-// D-pad with hold-repeat
-document.querySelectorAll('[data-pad]').forEach(b=>{let t1,t2;const stop=()=>{clearTimeout(t1);clearInterval(t2);b.classList.remove('down');if(window.BLG&&BLG.active)BLG.hold(b.dataset.pad,false)};
-  b.addEventListener('pointerdown',e=>{e.preventDefault();if(document.activeElement&&document.activeElement.tagName==='INPUT')document.activeElement.blur();b.classList.add('down');if(window.BLG&&BLG.active)BLG.hold(b.dataset.pad,true);act(b.dataset.pad);t1=setTimeout(()=>{t2=setInterval(()=>act(b.dataset.pad),85)},320)});
-  ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,stop));b.addEventListener('contextmenu',e=>e.preventDefault())});
-const btn=(id,k)=>$(id).addEventListener('click',()=>act(k));
-btn('#bA','a');btn('#bB','b');btn('#bL','l');btn('#bR','r');btn('#bStart','start');btn('#bSel','select');
+// Buttons and keyboard are shared (engine/input.js). While the game screen is up every press goes to the engine; otherwise to the creator.
+StudioInput.start({press:k=>window.BLG&&BLG.active?BLG.input(k):act(k),walking:()=>!!(window.BLG&&BLG.active),hold:(d,on)=>{if(window.BLG)BLG.hold(d,on)}});
 // taps on rows
 list.addEventListener('click',e=>{
   const row=e.target.closest('.row');if(!row)return;const i=+row.dataset.i;const r=rowAt(i);if(!r)return;
@@ -492,12 +487,6 @@ list.addEventListener('click',e=>{
 list.addEventListener('input',e=>{const t=e.target,b=t.dataset.bind;if(!b)return;
   if(b==='name')S.a.name=t.value;else if(b==='code')S.a.code=t.value.toUpperCase();else if(b==='back')S.a.backstory=t.value;else if(b.startsWith('bond'))S.a.bonds[+b.slice(4)].name=t.value;saveDraft()});
 list.addEventListener('focusout',e=>{if(e.target.tagName==='INPUT')setTimeout(()=>{if(!list.contains(document.activeElement)||document.activeElement.tagName!=='INPUT')render(false)},0)});
-// Enter (the phone keyboard's Go) or Escape only closes the keyboard; it must not also count as Start
-list.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'&&(e.key==='Enter'||e.key==='Escape')){e.preventDefault();e.stopPropagation();e.target.blur()}});
-const KEYS={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',z:'a',Z:'a',' ':'a',x:'b',X:'b',Backspace:'b',q:'l',Q:'l',w:'r',W:'r',Enter:'start',Shift:'select'};
-document.addEventListener('keydown',e=>{if(document.activeElement&&document.activeElement.tagName==='INPUT')return;const k=KEYS[e.key];if(!k)return;e.preventDefault();if(window.BLG&&BLG.active&&['up','down','left','right'].includes(k)){if(e.repeat)return;BLG.hold(k,true)}act(k)});
-document.addEventListener('keyup',e=>{const k=KEYS[e.key];if(k&&window.BLG&&['up','down','left','right'].includes(k))BLG.hold(k,false)});
-window.addEventListener('blur',()=>{if(window.BLG)['up','down','left','right'].forEach(d=>BLG.hold(d,false))});
 
 // ambient: blink + lantern flicker
 setInterval(()=>{if(S.step==='identity'&&!(window.BLG&&BLG.active)){drawBig(true);setTimeout(()=>drawBig(false),140)}},3200);

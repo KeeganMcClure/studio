@@ -12,11 +12,10 @@ const dice=s=>{s=String(s);if(/^\d+$/.test(s))return +s;const m=s.match(/(\d+)d(
 const d100=()=>1+rnd(100);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const STEPF=10;
 let VW=240,VH=160;
 let G={active:false},Bt=null,party=[],raf=0,dlg=null,menu=null,held=[];
 const lead=()=>party[0];
-const DIRS={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+const DIRS=StudioMove.DIRS;  // walking, the camera and the canvas fit are shared: engine/move.js
 
 // ================= DATA =================
 const ABIL={
@@ -337,35 +336,28 @@ async function hurtMember(m,d){m.hp=Math.max(0,m.hp-d);hud.classList.add('shake'
 
 // ================= WORLD =================
 function passable(x,y){const M=G.M;if(x<0||y<0||x>=M.w||y>=M.h)return false;if(BLOCK.has(M.g[y][x]))return false;if(M.npcs.some(n=>(!n.on||n.on())&&n.x===x&&n.y===y))return false;return true}
-function goMap(name,x,y,dir){hud.hidden=true;gEl.classList.remove('battle');G.map=name;G.M=MAPS[name]();G.x=x;G.y=y;G.dir=dir||'down';G.px=x*16;G.py=y*16;G.mv=null;
- const [dx,dy]=DIRS[G.dir];G.hist=[];for(let i=0;i<60;i++){const k=i/STEPF;G.hist.push([G.px-dx*16*k,G.py-dy*16*k,G.dir])}
+function goMap(name,x,y,dir){hud.hidden=true;gEl.classList.remove('battle');G.map=name;G.M=MAPS[name]();StudioMove.place(G,x,y,dir);
  banner(G.M.name);}
 function update(){
  if(G.mode!=='world')return;
- const mv=G.mv;
- if(mv){mv.t++;const k=mv.t/STEPF;G.px=Math.round((mv.fx+(mv.tx-mv.fx)*k)*16);G.py=Math.round((mv.fy+(mv.ty-mv.fy)*k)*16);G.hist.unshift([G.px,G.py,G.dir]);if(G.hist.length>60)G.hist.pop();G.anim=(G.anim||0)+1;
-  if(mv.t>=STEPF){G.x=mv.tx;G.y=mv.ty;G.mv=null;run(onStep)}return}
- if(G.busy||dlg||menu)return;
- const d=held[held.length-1];if(!d)return;
- G.dir=d;const [dx,dy]=DIRS[d],nx=G.x+dx,ny=G.y+dy;
- if(passable(nx,ny))G.mv={fx:G.x,fy:G.y,tx:nx,ty:ny,t:0};
+ StudioMove.update(G,StudioMove.last(held),{passable,busy:()=>G.busy||dlg||menu,arrive:()=>run(onStep)});
 }
 async function onStep(){const M=G.M,k=G.x+','+G.y;if(M.warps&&M.warps[k]){held=[];return M.warps[k]()}if(M.onStep)await M.onStep()}
 async function interact(){
- const [dx,dy]=DIRS[G.dir],tx=G.x+dx,ty=G.y+dy,M=G.M,k=tx+','+ty;
+ const [tx,ty]=StudioMove.ahead(G),M=G.M,k=tx+','+ty;
  const n=M.npcs.find(n=>(!n.on||n.on())&&n.x===tx&&n.y===ty);
  if(n){n.dir={up:'down',down:'up',left:'right',right:'left'}[G.dir];held=[];await n.talk(n);return}
  if(M.O[k]){held=[];await M.O[k]();return}
  const ch=M.g[ty]&&M.g[ty][tx];if(ch&&TILEDESC[ch]){held=[];await say('',TILEDESC[ch])}
 }
-function cam(){const M=G.M,mw=M.w*16,mh=M.h*16;const x=mw<=VW?(mw-VW)/2:clamp(G.px+8-VW/2,0,mw-VW),y=mh<=VH?(mh-VH)/2:clamp(G.py+8-VH/2,0,mh-VH);return[Math.round(x),Math.round(y)]}
+function cam(){return StudioMove.camera(G,G.M.w,G.M.h,VW,VH)}
 function drawWorld(){
  const M=G.M,[camx,camy]=cam();cx.fillStyle='#0a0710';cx.fillRect(0,0,VW,VH);
  const x0=Math.floor(camx/16),y0=Math.floor(camy/16);
  for(let ty=y0;ty<=y0+Math.ceil(VH/16)+1;ty++)for(let tx=x0;tx<=x0+Math.ceil(VW/16)+1;tx++){const ch=M.g[ty]&&M.g[ty][tx];if(!ch)continue;let v=(tx*7+ty*13)%4;if(ch==='V')v=M.vv[tx+','+ty];if(ch==='T')v=(tx*3+ty*5)%3;cx.drawImage(tile(ch,v),tx*16-camx,ty*16-camy)}
  const spr=[];
  M.npcs.forEach(n=>{if(n.on&&!n.on())return;spr.push({y:n.y*16,f:()=>drawChar(n.x*16-camx,n.y*16-camy-3,n.look,n.oc,n.dir,0,{sack:n.sack,hat:n.hat})})});
- const moving=!!G.mv,fr=moving?(Math.floor((G.anim||0)/5)%2)+1:0;
+ const moving=!!G.mv,fr=StudioMove.walkFrame(G);
  // Only the lead walks the map (Bible, Art, Maps). Agent sprites from agent-sprite.js; lantern at night only; a blink every few seconds.
  const blink=!moving&&(performance.now()%3400)<150?1:0;
  spr.push({y:G.py,f:()=>BLA.draw(cx,lead().a,G.px+8-camx,G.py+13-camy,G.dir,fr,blink,!!M.dark)});
@@ -498,7 +490,7 @@ async function shout(text){G.shout=performance.now()+750;G.shoutPor=true;try{ret
 async function bigHatScene(fn){await fade(1);G.mode='scene';G.scene='bighat';await fade(0);await sleep(400);await fn();await fade(1);G.scene=null}
 function drawScene(){if(G.scene==='bighat')return drawOffice();cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+rnd(20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
 function loop(){if(!G.active)return;try{update();if(G.mode==='battle'&&Bt)drawBattle();else if(G.mode==='world')drawWorld();else drawScene();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
-function fit(){const r=gEl.getBoundingClientRect();if(!r.width||!r.height)return;VW=240;VH=clamp(Math.round(240*r.height/r.width),130,320);cv.width=VW;cv.height=VH;cx.imageSmoothingEnabled=false;gEl.style.setProperty('--pu',(64*r.width/VW)+'px');boxKey='';posMenu()}
+function fit(){const v=StudioMove.fit(gEl,cv);if(!v)return;VW=v.w;VH=v.h;gEl.style.setProperty('--pu',(64*v.boxW/VW)+'px');boxKey='';posMenu()}
 window.addEventListener('resize',()=>{if(G.active)fit()});
 
 async function gameOver(){
@@ -560,7 +552,7 @@ function input(k){
   return}
  if(G.mode==='world'&&!G.busy&&!G.mv){if(k==='a')run(interact);else if(k==='start')run(pauseMenu)}
 }
-function hold(d,on){held=held.filter(x=>x!==d);if(on)held.push(d)}
+function hold(d,on){held=StudioMove.hold(held,d,on)}
 dhost.addEventListener('click',e=>{if(!e.target.closest('.bld'))return;const li=e.target.closest('.bld-c li');
  if(menu){if(!li||!menu.inBox)return;const i=[...li.parentNode.children].indexOf(li);if(menu.sel!==i){menu.sel=i;renderMenu()}}input('a')});
 menuEl.addEventListener('click',e=>{const el=e.target.closest('.gi');if(!el||!menu)return;const i=+el.dataset.i;if(menu.sel!==i){menu.sel=i;renderMenu()}input('a')});

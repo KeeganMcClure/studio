@@ -17,8 +17,9 @@ Design, story, mockups, Bible reviews and the Asset Library stay in the claude.a
 
 ## The parts
 
-Loaded in this order by `index.html`: `strings.js` (shared strings, `window.BLS`), `creator.js` (agent creator plus shared shell input and portraits, `window.BL`), `shelf.js` (Shared Shelf script, copied unchanged), `agent-sprite.js` (agent map sprites, `window.BLA`), `dialog.js` (Lantern Bust box, copied unchanged from the Asset Library, `window.BLD`), `engine.js` (map, dialog, sanity, battle, Big Hat scenes, saves, pause, input, `window.BLG`), then one file per case in `cases/`.
+Loaded in this order by `index.html`: the studio's shared `engine/shell.js` (builds the shell around the screen), `engine/input.js` (buttons and keyboard) and `engine/move.js` (grid walking, camera, canvas fit), then `strings.js` (shared strings, `window.BLS`), `creator.js` (agent creator, portraits, and where presses go, `window.BL`), `shelf.js` (Shared Shelf script, copied unchanged), `agent-sprite.js` (agent map sprites, `window.BLA`), `dialog.js` (Lantern Bust box, copied unchanged from the Asset Library, `window.BLD`), `engine.js` (map, dialog, sanity, battle, Big Hat scenes, saves, pause, input, `window.BLG`), then one file per case in `cases/`.
 
+- `index.html` keeps the screen and Black Lantern's colors; the shell's layout comes from `engine/shell.css`. `npm run build` inlines the `engine/` files, so `dist/index.html` stays one file. A change under `engine/` must pass `npm run check` in every game that uses it.
 - A new case is a new file in `cases/` plus a script line at the end of `index.html`. Each case file opens with its own text block and supplies its maps, enemies, scripts and a `caseOpening` briefing.
 - All in-game text stays in the game files. Menus, items and names share `strings.js`; case dialog lives in its case file.
 - No outside assets except Google Fonts (Press Start 2P, VT323). All art is drawn in code. No sound or music.

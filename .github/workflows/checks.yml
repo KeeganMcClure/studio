@@ -1,0 +1,39 @@
+# Runs every game's automatic checks (npm run check) on each pull request that touches the shared
+# engine or a game, so a fix for one game can't quietly break another (studio-bible/rules-checks.md, Across games).
+name: Game checks
+
+on:
+  pull_request:
+    paths:
+      - 'engine/**'
+      - 'games/**'
+      - '.github/workflows/checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install the headless browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: npm run check in every game that has one
+        run: |
+          status=0
+          for pkg in games/*/src/package.json; do
+            dir="$(dirname "$pkg")"
+            if node -e "process.exit(require('./$pkg').scripts?.check ? 0 : 1)"; then
+              echo "::group::$dir"
+              (cd "$dir" && npm run check) || status=1
+              echo "::endgroup::"
+            fi
+          done
+          exit $status
