@@ -1,6 +1,6 @@
 # Spec 001: Shared core movement and controls
 
-Status: draft for Keegan's review · Written 2026-11-21 by the Game Designer · Games: Black Lantern and Rushlight
+Status: built (studio PR #14, Nov 21) and rules-checked: Pass (Nov 21) · Written 2026-11-21 by the Game Designer · Games: Black Lantern and Rushlight
 
 ## In plain words
 
