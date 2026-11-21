@@ -26,7 +26,7 @@ Add `games/<id>/game.json` (fields in `studio-bible/launcher.md`) and a cover in
 
 - The cover file sets `window.StudioCovers['<id>'] = function (ctx) { ... }` and draws on a 120 × 80 canvas.
 - If `src/package.json` has a `build` script, the site ships `src/dist/`. Otherwise `src/index.html` is bundled into one file.
-- Games load `engine/studio.js` for `Studio.channel`, `Studio.savePrefix('bl.')`, `Studio.settings()` and `Studio.toShelf()`.
+- Games load `engine/studio.js` for `Studio.channel`, `Studio.savePrefix('bl.')`, `Studio.settings()`, `Studio.toShelf()` and `Studio.fromShelf` (true when opened from the shelf, so a game only offers a way back where there is one).
 - A Continue button shows when any save key with the game's prefix exists, and opens the game with `?continue=1`.
 
 ## Offline

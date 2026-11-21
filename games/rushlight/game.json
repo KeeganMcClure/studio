@@ -1,0 +1,7 @@
+{
+  "id": "rushlight",
+  "title": "Rushlight",
+  "savePrefix": "rl.",
+  "cover": "cover.js",
+  "channels": ["dev"]
+}
