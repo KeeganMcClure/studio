@@ -1,0 +1,8 @@
+{
+  "name": "black-lantern",
+  "private": true,
+  "scripts": {
+    "build": "node tools/build.js",
+    "check": "node tools/build.js && node tools/check.js"
+  }
+}
