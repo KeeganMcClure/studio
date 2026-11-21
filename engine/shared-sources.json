@@ -1,0 +1,21 @@
+{
+  "note": "Copies of art code whose source lives outside this repo. Never edit them here: change the source, then run engine/tools/sync-shared.js. npm run check fails if a file stops matching its fingerprint.",
+  "files": {
+    "shelf.js": {
+      "from": "Shared Shelf",
+      "url": "https://claude.ai/artifact/Jmv2FBeGHXczqy7juZW8dL",
+      "takes": "the page's <script id=\"shelf-src\"> block, unchanged (the Asset Library core page carries the same file as shelf.js)",
+      "version": "1795241732-adb0",
+      "synced": "2026-11-21",
+      "sha256": "303e5188ba0a6dbc02a538a70ce389b1673e2cdf7dcd58da7b21058983db0e83"
+    },
+    "dialog.js": {
+      "from": "Asset Library core page",
+      "url": "https://claude.ai/artifact/3urWxdTcEECQ57KKNaz7Z1",
+      "takes": "its published file dialog.js, unchanged",
+      "version": "1795278788-111e",
+      "synced": "2026-11-21",
+      "sha256": "c0e26ed4497b06a34b469529fb482e30e8dc5e686de588262954ff5ab516e75c"
+    }
+  }
+}
