@@ -1,6 +1,6 @@
 # Spec 002: Party menu and Select cycling the lead
 
-Status: draft, waiting on Keegan · Written 2026-11-21 by the Game Designer · Game: Black Lantern · To do item: Demo 2 of 6
+Status: approved (studio PR #27, Nov 21), ready to build · Written 2026-11-21 by the Game Designer · Game: Black Lantern · To do item: Demo 2 of 6
 
 ## In plain words
 
@@ -177,3 +177,5 @@ Both games share these rules word for word today, so I propose a separate PR, on
 4. **Moving the shared party-menu parts into `engine/`.**
    - A. Yes: lead tracking, Select cycling and the card list go in `engine/` now; Rushlight adopts them when it builds its party menu. (Recommended) It's the studio rule, and Rushlight's bible asks for the same screen.
    - B. Build it inside Black Lantern now, and move it when Rushlight needs it.
+
+**Answers (Keegan, Nov 21):** 1 A, 2 A, 3 A, 4 A. Cards stay in seat order and the LEAD tag moves; Give item is greyed with its reason until Demo 5; in the Dossier, L/R change tabs and Up/Down change agent (Quality of life reworded to match); lead tracking, Select cycling and the card list go in `engine/`. The bible and `studio-bible/ui.md` were updated to match in the follow-up PR.
