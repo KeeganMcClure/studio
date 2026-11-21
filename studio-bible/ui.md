@@ -17,7 +17,19 @@ Sources: Black Lantern Art (Faces and sprites, Light and mood) and Rushlight Art
 - Menus are list boxes with a cursor, worked with the D-pad or by tapping a row.
 - Start opens the map menu.
 
+## Party menu
+
+Set Nov 21, 2026 from Black Lantern spec 002; Rushlight's Map menu sets the same screen.
+
+- Start → Party shows the party as cards stacked Pokémon-style, in seat order, with the lead marked. The cards don't move when the lead changes; the lead marker does.
+- Each card opens Make lead, a details page (Dossier in Black Lantern, Merc card in Rushlight) and Give item.
+- Select cycles the lead in seat order, on the map and in the party menu, never in battle, dialog or cutscenes. The new lead takes the old lead's tile and facing, and a short banner names them.
+- Each game's bible sets what a card and its details page show.
+- The shared parts (who leads, Select cycling, the card list) live in `engine/`.
+
 ## Battle screen
+
+For games that cut to a battle screen. A game that fights on the map instead (Life After, set Nov 21, 2026) skips this section, and its `bible.md` says how fights show on the map.
 
 - Inside the shell, with the D-pad shown.
 - Head-on: big enemy sprites over a still background drawn from the spot where the fight started. The party is seen from behind.

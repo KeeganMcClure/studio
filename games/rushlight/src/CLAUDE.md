@@ -25,19 +25,19 @@ Design, mockups, Bible reviews, the Text Library and the Asset Library stay in t
 
 ## The parts
 
-Loaded in this order by `index.html`: the shared `engine/shell.js` (builds the shell around the screen), `engine/input.js` (buttons and keyboard) and `engine/move.js` (grid walking, camera, canvas fit), then `strings.js` (shared strings, `window.RLS`), `creator.js` (the creator, portraits, and where presses go, `window.RL`), `shelf.js` (Shared Shelf script, copied unchanged), `agent-sprite.js` (map sprites, `window.RLA`), `dialog.js` (the dialog box, copied unchanged, `window.BLD`), `engine.js` (map, dialog, sanity, battle, saves, pause, input, `window.RLG`), then `content/stub.js`.
+Loaded in this order by `index.html`: the shared `engine/shell.js` (builds the shell around the screen), `engine/input.js` (buttons and keyboard) and `engine/move.js` (grid walking, camera, canvas fit), then `strings.js` (shared strings, `window.RLS`), `creator.js` (the creator, portraits, and where presses go, `window.RL`), `engine/shelf.js` (Shared Shelf script, copied unchanged), `agent-sprite.js` (map sprites, `window.RLA`), `engine/dialog.js` (the dialog box, copied unchanged, `window.BLD`), `engine.js` (map, dialog, sanity, battle, saves, pause, input, `window.RLG`), then `content/stub.js`.
 
 - `index.html` keeps the screen and Rushlight's colors; the shell's layout comes from `engine/shell.css`. `npm run build` inlines the `engine/` files, so `dist/index.html` stays one file.
 - Planned split (Bible, Tech, Code): shell, engine, generator, content data and art in separate parts. Content batches touch only the data parts, so a new creature can't break combat.
 - No outside assets except Google Fonts (Press Start 2P, VT323). All art is drawn in code. No sound.
-- `shelf.js` and `dialog.js` are hand copies. Don't edit them here; change the source and copy it in again. They keep their library names (`SHELF`, `BLD`).
+- `engine/shelf.js` and `engine/dialog.js` are shared copies of the Shared Shelf script and Black Lantern's Asset Library dialog box. Don't edit them here: change the source, then run `node engine/tools/sync-shared.js` (`npm run check` fails if a copy was edited by hand). They keep their library names (`SHELF`, `BLD`).
 
 ### Still Black Lantern's (replace as the vertical slice reaches each)
 
 - `creator.js` and `strings.js`: Black Lantern's agent creator, professions, specialties and items. Pick a company replaces them.
 - `engine.js`: the notebook, clues, the maze, the boss intro hook, the case flow (`caseOpening`, `finish` filing to the roster), the game-over text and `startKit`. The seeded generator, contracts and the ledger replace them.
 - `content/stub.js` only exists so the engine boots with no case. It ends at the title and saves nothing.
-- Save keys are `rl.*`, but still Black Lantern's set (`rl.roster`, `rl.draft`, `rl.game`). The slice moves to the Bible's keys (`rl.run`, `rl.ledger`, `rl.draft`) with a save version number, like Black Lantern's `bl.version`.
+- Save keys are `rl.*` (`dev.rl.*` on the site's Dev build, through `RL.key` and `engine/studio.js`), but still Black Lantern's set (`rl.roster`, `rl.draft`, `rl.game`). The slice moves to the Bible's keys (`rl.run`, `rl.ledger`, `rl.draft`) with a save version number, like Black Lantern's `bl.version`.
 - Big Hat, cases, Lantern Boxes, requisition and sound are already gone.
 
 ## Rules for every change

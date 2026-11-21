@@ -92,6 +92,28 @@ const ITEMDEF={aid:{name:'First Aid Kit',desc:'Heal 1d8+3. Gets a downed agent b
 const WEAP={handgun:{name:'handgun',skill:'Firearms',dmg:[1,8],verb:'fires the handgun'},rifle:{name:'assault rifle',skill:'Firearms',dmg:[2,4],plus:1,loud:1,verb:'fires the assault rifle'},shotgun:{name:'shotgun',skill:'Firearms',dmg:[2,6],hit:-20,verb:'fires the shotgun'},huntrifle:{name:'hunting rifle',skill:'Firearms',dmg:[1,12],plus:2,verb:'fires the hunting rifle'},
  bow:{name:'compound bow',skill:'Firearms',dmg:[1,8],verb:'looses an arrow'},bat:{name:'baseball bat',skill:'Melee',dmg:[1,10],melee:1,verb:'swings the bat'},stick:{name:'hockey stick',skill:'Melee',dmg:[1,8],melee:1,verb:'swings the hockey stick'}};
 const WEAPTXT={handgun:'1d8',rifle:'2d4+1 · Loud',shotgun:'2d6 · −20% to hit',huntrifle:'1d12+2 · can\'t fire two turns in a row',bow:'1d8 · silent',bat:'1d10 · quiet',stick:'1d8 · quiet · Stuns on a crit'};
+// ---------- PARTY MENU (Bible: Skills and menus, Map menu and Quality of life; Systems, Statuses; spec 002) ----------
+// Status chips and their detail lines, worded from the Statuses table. Map statuses arrive with their causes (later demos).
+const STATUS={
+ bleed:{chip:'BLEED',name:'Bleeding',line:'-1 HP each area change. First Aid, Treat or a rest ends it.',col:'#b5532e',pulse:1},
+ poison:{chip:'POISON',name:'Poisoned',line:'-20% to all rolls, -1 HP every 2 area changes. Only Antitoxin or Treat ends it.',col:'#6a8a2a',pulse:1},
+ sick:{chip:'SICK',name:'Sickened',line:'-20% to Athletics, Stealth, Melee, Firearms and Dodge. A rest or Retch ends it.',col:'#7a8a3a'},
+ drunk:{chip:'DRUNK',name:'Drunk',line:'Each SAN loss is 1 smaller. -20% to Search, Forensics, Firearms, Computers. Wears off after 4 area changes.',col:'#8a4a6a'},
+ high:{chip:'HIGH',name:'High',line:'-20% to rolls the drug doesn\'t help. Wears off after 4 area changes.',col:'#4a6a9a'},
+ tired:{chip:'TIRED',name:'Exhausted',line:'WP doesn\'t refill and bracing costs double. A rest ends it.',col:'#5a5070'},
+ shaken:{chip:'SHAKEN',name:'Shaken',line:'-20% to all rolls for the rest of the scene. The scene ending or Empathy\'s Calm ends it.',col:'#9a3a5a'}
+};
+const PARTY={
+ title:'PARTY',hint:'SELECT swaps the lead',lead:'LEAD',banner:'LEAD · ',
+ makeLead:'MAKE LEAD',dossier:'DOSSIER',give:'GIVE ITEM',
+ isLead:'Already the lead.',giveWhy:'Item slots arrive with the Still Harvest rebuild.',
+ none:'No conditions.',lowHP:'HP 3 or less: card blinks',
+ tabs:['INFO','SKILLS','BONDS'],main:'MAIN MOTIVATION',noBack:'No backstory on file.',
+ equipped:'EQUIPPED',toHit:'TO-HIT',disorder:'DISORDER',noDis:'None',bp:'BP',
+ keys:['L/R: tabs · Up/Down: next agent','B: back to Party'],
+ noBonds:'No Bonds on file.',score:'Score',
+ moods:{close:'Close',strained:'Strained',fraying:'Fraying',broken:'Broken'}
+};
 // ---------- DISORDERS (names) ----------
 const DIS=['Jumpy','Night terrors','Counting compulsion','Hypervigilance','Hollow stare','Can\'t stop smiling'];
 // ---------- CREATOR STEP NAMES ----------
@@ -100,5 +122,5 @@ const STATJOB={STR:'HP = (STR + CON) ÷ 2. STR 13+ adds +1 Melee damage.',CON:'H
 const HOBBY={'Firearms':'shoots skeet on Sundays','Melee':'boxes on weekends','Dodge':'has never been tagged at dodgeball','Athletics':'runs marathons','Search':'finds everyone\'s lost keys','Persuade':'could sell sand at the beach','Forensics':'watches true crime with a notebook','Occult':'reads tarot','History':'haunts the county archive','Science':'keeps a lab in the basement','Empathy':'can tell when you\'re lying','Bureaucracy':'loves a form in triplicate','Stealth':'never makes the floorboards creak','Survival':'hunts every fall','First Aid':'carries bandages for everyone','Medicine':'almost finished med school','Computers':'builds their own computers','Craft':'fixes anything with a wrench'};
 const STEPNAME={profession:'JOB',stats:'STATS',skills:'SKILLS',identity:'IDENTITY',bonds:'BONDS',motives:'MOTIVATIONS',dossier:'DOSSIER',title:'BLACK LANTERN',roster:'ROSTER',team:'YOUR TEAM',pick:'PICK A TEAM'};
 const STEPSHORT={profession:'JOB',stats:'STATS',skills:'SKILL',identity:'ID',bonds:'BOND',motives:'WHY',dossier:'FILE'};
-return {SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY};
+return {SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY};
 })();

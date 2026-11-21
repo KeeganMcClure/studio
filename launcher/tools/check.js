@@ -54,6 +54,8 @@ async function fits(page) {
 
 async function checkBlackLantern(page, base) {
   const BL = 'Black Lantern';
+  // the save version this build upgrades to (Black Lantern's creator.js), so a new upgrade step doesn't need a change here
+  const BLV = fs.readFileSync(path.join(repo, 'games/black-lantern/src/creator.js'), 'utf8').match(/const SAVE_V=(\d+)/)[1];
   const save = JSON.parse(fs.readFileSync(path.join(repo, 'games/black-lantern/src/tools/test-saves/2026-11-21-mid-chapter.json'), 'utf8'));
   await page.goto(base);
   await page.evaluate((keys) => { for (const [k, v] of Object.entries(keys)) localStorage.setItem(k, v); }, save.keys);
@@ -64,7 +66,7 @@ async function checkBlackLantern(page, base) {
   await page.waitForURL(/\/studio\/black-lantern\/\?continue=1$/);
   const inCase = await page.waitForSelector('.screen.gaming', { timeout: 5000 }).then(() => true, () => false);
   const rel = await page.evaluate(() => ({ v: localStorage.getItem('bl.version'), game: localStorage.getItem('bl.game'), dev: Object.keys(localStorage).filter((k) => k.startsWith('dev.bl.')) }));
-  ok(inCase && rel.game && rel.v === '2' && rel.dev.length === 0, 'Continue opens the old bl.* checkpoint, upgraded in place, no Dev saves made');
+  ok(inCase && rel.game && rel.v === BLV && rel.dev.length === 0, 'Continue opens the old bl.* checkpoint, upgraded in place, no Dev saves made');
 
   await page.goto(base);
   await page.click('#openSettings'); await page.click('#channel [data-ch=dev]'); await page.click('#closeSettings');
@@ -73,12 +75,39 @@ async function checkBlackLantern(page, base) {
   await page.waitForURL(/\/studio\/dev\/black-lantern\/$/);
   await page.waitForTimeout(500);
   const dev = await page.evaluate(() => ({ v: localStorage.getItem('dev.bl.version'), game: localStorage.getItem('bl.game') }));
-  ok(dev.v === '2' && dev.game === rel.game, 'Dev Black Lantern saves under dev.bl.*, Release save untouched');
+  ok(dev.v === BLV && dev.game === rel.game, 'Dev Black Lantern saves under dev.bl.*, Release save untouched');
   await page.click('#list .row:has-text("Game shelf")');
   await page.waitForURL(base);
   ok(true, 'Game shelf row goes back to the shelf');
   await page.click('#openSettings'); await page.click('#channel [data-ch=release]'); await page.click('#closeSettings');
   await page.evaluate(() => Object.keys(localStorage).filter((k) => /^(dev\.)?bl\./.test(k)).forEach((k) => localStorage.removeItem(k)));
+}
+
+async function checkRushlight(page, base) {
+  const RL = 'Rushlight';
+  await page.goto(base);
+  ok(!(await page.isVisible(cover(RL))), 'Rushlight is not on the Release shelf (Dev only)');
+  await page.click('#openSettings'); await page.click('#channel [data-ch=dev]'); await page.click('#closeSettings');
+  ok(await page.isVisible(cover(RL)), 'Rushlight is on the Dev shelf');
+  ok(!(await page.isVisible(cont(RL))), 'Dev Rushlight has no Continue before a save');
+  await page.click(cover(RL));
+  await page.waitForURL(/\/studio\/dev\/rushlight\/$/);
+  await page.waitForTimeout(500);
+  // Start a draft agent the way Quick roll does, so the game writes its own save
+  await page.evaluate(() => { RL.S.a = RL.randomAgent(); RL.store.set(RL.key('draft'), RL.S.a); });
+  const keys = await page.evaluate(() => Object.keys(localStorage).filter((k) => /^(dev\.)?rl\./.test(k)));
+  ok(keys.includes('dev.rl.draft') && !keys.some((k) => k.startsWith('rl.')), 'Dev Rushlight saves under dev.rl.*, nothing under rl.*');
+  await page.click('#list .row:has-text("Game shelf")');
+  await page.waitForURL(base);
+  ok(true, 'Game shelf row goes back to the shelf');
+  ok(await page.isVisible(cont(RL)), 'Continue appears for Rushlight after a Dev save');
+  await page.click(cont(RL));
+  await page.waitForURL(/\/studio\/dev\/rushlight\/\?continue=1$/);
+  const step = await page.waitForFunction(() => window.RL && RL.S.step === 'dossier', null, { timeout: 5000 }).then(() => true, () => false);
+  ok(step, 'Continue opens straight into the draft agent');
+  await page.goto(base);
+  await page.click('#openSettings'); await page.click('#channel [data-ch=release]'); await page.click('#closeSettings');
+  await page.evaluate(() => Object.keys(localStorage).filter((k) => /^(dev\.)?rl\./.test(k)).forEach((k) => localStorage.removeItem(k)));
 }
 
 (async () => {
@@ -155,6 +184,8 @@ async function checkBlackLantern(page, base) {
 
     // Black Lantern: old Release saves (bl.*) still load, Dev saves under dev.bl.*, and the way back to the shelf
     if (w === 375 && h === 667) await checkBlackLantern(page, base);
+    // Rushlight (Dev only): Dev saves under dev.rl.*, Continue on the Dev shelf, and the way back
+    if (w === 375 && h === 667) await checkRushlight(page, base);
 
     // A new build takes over on next open
     if (w === 375 && h === 667) {

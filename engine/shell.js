@@ -7,8 +7,9 @@
 //   <script src="../../../engine/shell.js"></script>   (first script, before any game code)
 // Optional labels (spoken by screen readers): data-label-l, -r, -start, -select, -a, -b.
 //
-// It wraps the screen in the bezel with the brand strip and the LED (#led), then adds the controls row:
-// D-pad ([data-pad]), L and R (#bL #bR) above Select and Start (#bSel #bStart), and A and B (#bA #bB).
+// It wraps the screen in the bezel with the brand strip and the LED (#led), then the shoulder row with
+// L top left and R top right (#bL #bR, spec 003), then the controls row: D-pad ([data-pad]),
+// Select and Start (#bSel #bStart), and A and B (#bA #bB).
 // engine/input.js makes the buttons work.
 (function () {
   var screen = document.getElementById('screen');
@@ -19,11 +20,16 @@
 
   var wrap = document.createElement('div');
   wrap.className = 'wrap';
-  // Same markup, spacing included, as the hand-copied shell it replaced (Nov 21, 2026), so nothing moves by a pixel.
+  // Same markup, spacing included, as the hand-copied shell it replaced (Nov 21, 2026), apart from L and R,
+  // which moved from the middle cluster into their own shoulder row under the screen (spec 003, Nov 21).
   wrap.innerHTML =
     '\n  <div class="shell">\n    <div class="bezel">\n' +
     '      <div class="brand"><span><span class="led" id="led"></span>' + esc(d.brand || '') + '</span><span>' + esc(d.brandSub || '') + '</span></div>\n' +
     '      <i data-screen></i>\n    </div>\n' +
+    '    <div class="shoulders">\n' +
+    '      <button class="sh l" id="bL" aria-label="' + lab('L', 'L: previous') + '">L</button>\n' +
+    '      <button class="sh r" id="bR" aria-label="' + lab('R', 'R: next') + '">R</button>\n' +
+    '    </div>\n' +
     '    <div class="ctrls">\n' +
     '      <div class="dpad">\n' +
     '        <button class="u" data-pad="up" aria-label="Up">▲</button>\n' +
@@ -33,10 +39,6 @@
     '        <button class="d" data-pad="down" aria-label="Down">▼</button>\n' +
     '      </div>\n' +
     '      <div class="mid">\n' +
-    '        <div class="lr">\n' +
-    '          <button class="sh" id="bL" aria-label="' + lab('L', 'L: previous') + '">L</button>\n' +
-    '          <button class="sh" id="bR" aria-label="' + lab('R', 'R: next') + '">R</button>\n' +
-    '        </div>\n' +
     '        <div class="ss">\n' +
     '          <div><button id="bSel" aria-label="' + lab('Select', 'Select') + '"></button><span>SELECT</span></div>\n' +
     '          <div><button id="bStart" aria-label="' + lab('Start', 'Start: menu') + '"></button><span>START</span></div>\n' +

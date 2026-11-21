@@ -5,7 +5,8 @@
 //   3. 600 random button presses throw no errors
 //   4. after a reload, whatever the game saved still loads with no errors
 //   5. every test save in tools/test-saves/ (real saves from older builds) upgrades to the current
-//      save version, keeps a backup when it was older, shows its roster, and its checkpoint continues into the case;
+//      save version, keeps a backup when it was older, shows its roster, and its checkpoint continues into the case
+//      with its saved lead (seat 1 for older saves), Select cycles the lead and Start → Party opens and closes;
 //      damaged saves open to the title with no errors
 // Still needs a person: the changed part playing start to finish, text and typos, the fun check.
 // Usage: node tools/build.js && node tools/check.js
@@ -94,6 +95,19 @@ async function checkSaves(browser) {
       await page.waitForTimeout(500);
       const inCase = await page.evaluate(() => !!(window.BLG && BLG.active && document.querySelector('.screen.gaming')));
       if (!inCase) problems.push('Continue Chapter One did not open the case');
+      // who leads (spec 002): a saved lead comes back; saves from before version 3 lead with seat 1
+      let want = 0; try { const g = JSON.parse(JSON.parse(save.keys['bl.game'])); if (Number.isInteger(g.lead)) want = g.lead; } catch (e) {}
+      const lead = await page.evaluate(() => BLG._t.lead());
+      if (lead !== want) problems.push(`seat ${lead + 1} leads, the save had seat ${want + 1}`);
+      // Select on the map moves the lead to the next seat, and Start → Party opens and closes
+      await page.keyboard.press('Backspace'); await page.waitForTimeout(100);
+      const n = await page.evaluate(() => BLG._t.party().length), after = await page.evaluate(() => BLG._t.lead());
+      if (n > 1 && after !== (want + 1) % n) problems.push(`Select on the map: seat ${after + 1} leads, should be seat ${(want + 1) % n + 1}`);
+      await page.keyboard.press('Enter'); await page.waitForTimeout(150); await page.keyboard.press('z'); await page.waitForTimeout(150);
+      if (!await page.evaluate(() => typeof PM !== 'undefined' && !!PM)) problems.push('Start → Party did not open the party screen');
+      for (const k of ['ArrowDown', 'z', 'ArrowDown', 'z', 'w', 'w', 'ArrowDown', 'Backspace', 'x', 'x', 'x']) { await page.keyboard.press(k); await page.waitForTimeout(80); }
+      if (await page.evaluate(() => typeof PM !== 'undefined' && !!PM)) problems.push('B did not close the party screen');
+      for (const k of ['x', 'x']) { await page.keyboard.press(k); await page.waitForTimeout(80); }
       for (const k of ['ArrowUp', 'ArrowLeft', 'z', 'x', 'ArrowDown', 'z', 'x']) { await page.keyboard.down(k); await page.waitForTimeout(150); await page.keyboard.up(k); }
       await page.screenshot({ path: path.join(__dirname, '..', 'dist', `check-save-${name.replace(/\.json$/, '')}.png`) });
     }

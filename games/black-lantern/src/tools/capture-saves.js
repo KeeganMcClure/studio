@@ -2,7 +2,8 @@
 // so npm run check can prove later builds still open these saves.
 // It makes two test saves:
 //   roster.json      a tweaked Field Team agent filed on the roster, plus the team in progress (bl.draft)
-//   mid-chapter.json the team started (all 3 filed), plus a Chapter One checkpoint after walking the town
+//   mid-chapter.json the team started (all 3 filed), plus a Chapter One checkpoint after walking the town,
+//                    with Select pressed once so seat 2 leads (since save version 3)
 // Usage: node tools/build.js && node tools/capture-saves.js <label>   (label goes in the file names, e.g. 2026-11-21)
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -48,6 +49,8 @@ const write = (name, note, keys) => {
   for (let i = 0; i < 30; i++) { await page.keyboard.press('z'); await page.waitForTimeout(80); }
   for (const k of walk) { await page.keyboard.down(k); await page.waitForTimeout(260); await page.keyboard.up(k); await page.waitForTimeout(120); }
   for (let i = 0; i < 20; i++) { await page.keyboard.press('x'); await page.waitForTimeout(80); } // close any open line or menu
+  // Select once, so seat 2 leads in the saved checkpoint (spec 002: the lead is saved)
+  await page.keyboard.press('Backspace'); await page.waitForTimeout(200);
   // Start, then Save & quit
   await page.keyboard.press('Enter'); await page.waitForTimeout(300);
   for (let i = 0; i < 3; i++) { await page.keyboard.press('ArrowDown'); await page.waitForTimeout(80); }
@@ -55,8 +58,8 @@ const write = (name, note, keys) => {
   const keys = await dump(page);
   if (!keys['bl.game']) throw new Error('No checkpoint was saved');
   const g = JSON.parse(JSON.parse(keys['bl.game']));
-  console.log('checkpoint: map', g.map, 'at', g.x + ',' + g.y, '· clues', g.clues.length, '· party', g.party.map(m => m.name).join(', '));
-  write('mid-chapter', `Roster plus a Chapter One checkpoint (Save & quit on the ${g.map} map) from the build of ${label}`, keys);
+  console.log('checkpoint: map', g.map, 'at', g.x + ',' + g.y, '· lead seat', (g.lead | 0) + 1, '· clues', g.clues.length, '· party', g.party.map(m => m.name).join(', '));
+  write('mid-chapter', `Roster plus a Chapter One checkpoint (Save & quit on the ${g.map} map, seat ${(g.lead | 0) + 1} leading) from the build of ${label}`, keys);
   if (errors.length) { console.log('errors while playing:', errors); process.exit(1); }
   await browser.close();
 })();

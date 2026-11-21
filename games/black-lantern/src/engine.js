@@ -14,7 +14,9 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 let VW=240,VH=160;
 let G={active:false},Bt=null,party=[],raf=0,dlg=null,menu=null,held=[];
-const lead=()=>party[0];
+// Who leads: a seat index into party (seat order never changes). Spec 002: Select and Make lead move it (party-menu.js).
+const lead=()=>party[G.lead|0]||party[0];
+const squad=()=>party.filter(m=>m!==lead());
 const DIRS=StudioMove.DIRS;  // walking, the camera and the canvas fit are shared: engine/move.js
 
 // ================= DATA =================
@@ -140,7 +142,7 @@ async function stepBack(){const [dx,dy]=DIRS[G.dir];if(passable(G.x+dx,G.y+dy)){
 function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 
 // ================= DIALOG / MENU =================
-// Lantern Bust box (dialog.js, copied unchanged from the Asset Library). `box` holds what the box shows;
+// Lantern Bust box (engine/dialog.js, copied unchanged from the Asset Library). `box` holds what the box shows;
 // drawBox() runs every frame and redraws the box only when something visible changed.
 let box=null,boxKey='';
 const PORTRAITS={'BIG HAT':(c,f,sh)=>drawBigHatPortrait(c,sh,f)}; // speaker name -> (ctx, frame, shouting) 64 x 64
@@ -193,7 +195,7 @@ function posMenu(){if(menuEl.hidden)return;let b=6;const bx=dhost.querySelector(
 function choose(items,o={}){return new Promise(res=>{menu={items,sel:o.sel||0,res,cancel:o.cancel,title:o.title,desc:o.desc,onSel:o.onSel,inBox:o.inBox};renderMenu()})}
 function closeMenu(v){const m=menu;menu=null;menuEl.hidden=true;if(m.inBox&&box)box.choices=null;if(Bt)Bt.hover=-1;m.res(v)}
 async function ask(name,text,opts){await say(name,text,{keep:true,instant:false});const r=await choose(opts,{cancel:true,inBox:true});hideTB();return r<0?opts.length-1:r}
-function banner(t){ban.textContent=t;ban.hidden=false;clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,2200)}
+function banner(t,ms=2200){ban.textContent=t;ban.hidden=false;clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,ms)}
 function fade(on){fadeEl.style.opacity=on?1:0;return sleep(340)}
 async function run(fn){G.busy=(G.busy||0)+1;try{await fn()}catch(e){console.error(e)}finally{G.busy--}}
 function clue(id,text){if(G.clues.some(c=>c.id===id))return;G.clues.push({id,text});banner('NOTEBOOK UPDATED')}
@@ -205,7 +207,7 @@ function applySan(){const m=lead();if(!m)return;const fr=clamp(m.san/m.msan,0,1)
  sanEl.innerHTML=`SAN <b class="${fr<.4?'red':''}">${m.san}</b>`;}
 async function sanCheck(spec,label,who){
  if(Bt&&Bt.ward){Bt.ward=false;await say('',`${label}... but the ward holds. No one loses SAN.`,{auto:1100});return}
- const parts=[];(who||party).forEach(m=>{const r=d100(),loss=r<=m.san?dice(spec[0]):dice(spec[1]);m.san=Math.max(0,m.san-loss);if(loss)parts.push(`${m.name} -${loss}`)});
+ const parts=[];(who||(G.mode==='world'&&!Bt?[lead()]:party)).forEach(m=>{const r=d100(),loss=r<=m.san?dice(spec[0]):dice(spec[1]);m.san=Math.max(0,m.san-loss);if(loss)parts.push(`${m.name} -${loss}`)});
  applySan();if(Bt)updHUD();
  await say('',`${label}. `+(parts.length?'SAN: '+parts.join(', ')+'.':'Everyone keeps it together.'),{auto:1400});
  for(const m of party){if(m.san<=m.bp&&!m.dis&&m.san>0){m.dis=pick(DIS);await say('',`${m.name} hits a breaking point. Something cracks for good. New disorder: ${m.dis}.`,{auto:1800})}}
@@ -489,7 +491,7 @@ function drawBigHatPortrait(c,shout,frame){
 async function shout(text){G.shout=performance.now()+750;G.shoutPor=true;try{return await say('BIG HAT',text)}finally{G.shoutPor=false}}
 async function bigHatScene(fn){await fade(1);G.mode='scene';G.scene='bighat';await fade(0);await sleep(400);await fn();await fade(1);G.scene=null}
 function drawScene(){if(G.scene==='bighat')return drawOffice();cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+rnd(20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
-function loop(){if(!G.active)return;try{update();if(G.mode==='battle'&&Bt)drawBattle();else if(G.mode==='world')drawWorld();else drawScene();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
+function loop(){if(!G.active)return;try{update();if(G.mode==='battle'&&Bt)drawBattle();else if(PM)drawParty();else if(G.mode==='world')drawWorld();else drawScene();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
 function fit(){const v=StudioMove.fit(gEl,cv);if(!v)return;VW=v.w;VH=v.h;gEl.style.setProperty('--pu',(64*v.boxW/VW)+'px');boxKey='';posMenu()}
 window.addEventListener('resize',()=>{if(G.active)fit()});
 
@@ -502,11 +504,11 @@ async function gameOver(){
 }
 
 // ================= SAVE / FLOW =================
-function snap(){return JSON.stringify({map:G.map,x:G.x,y:G.y,dir:G.dir,party,flags:G.flags,clues:G.clues,items:G.items,fights:G.fights,enc:G.enc,rescued:G.rescued})}
+function snap(){return JSON.stringify({map:G.map,x:G.x,y:G.y,dir:G.dir,party,lead:G.lead|0,flags:G.flags,clues:G.clues,items:G.items,fights:G.fights,enc:G.enc,rescued:G.rescued})}
 function checkpoint(){G.cp=snap();store.set(B.key('game'),G.cp)}
-function restore(s){const o=JSON.parse(s);party=o.party;G.flags=o.flags;G.clues=o.clues;G.items=o.items;G.fights=o.fights;G.enc=o.enc;G.rescued=o.rescued||0;G.mode='world';goMap(o.map,o.x,o.y,o.dir);applySan()}
+function restore(s){const o=JSON.parse(s);party=o.party;G.lead=o.lead>=0&&o.lead<party.length?o.lead|0:0;G.flags=o.flags;G.clues=o.clues;G.items=o.items;G.fights=o.fights;G.enc=o.enc;G.rescued=o.rescued||0;G.mode='world';goMap(o.map,o.x,o.y,o.dir);applySan()}
 function enter(){G.active=true;scr.classList.add('gaming');sanEl.hidden=false;fit();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
-function leave(){G.active=false;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
+function leave(){G.active=false;PM=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
 function quit(){checkpoint();leave();B.goto('title');B.render()}
 function finish(){
  store.set(B.key('game'),null);const a=lead().a;
@@ -518,7 +520,7 @@ function startKit(){const it={aid:1};const add=(k,n)=>{it[k]=(it[k]||0)+n};
  party.slice(1).forEach(m=>{const t=B.specOf(m.a);if(t)add(Object.keys(t.items)[0],1)});return it}
 async function start(agent,squad){
  party=[member(agent),...squad.map(member)];
- G=Object.assign(G,{active:true,flags:{},clues:[],items:startKit(),fights:0,enc:10,rescued:0,busy:0,mode:'scene',scene:null});
+ G=Object.assign(G,{active:true,lead:0,flags:{},clues:[],items:startKit(),fights:0,enc:10,rescued:0,busy:0,mode:'scene',scene:null});
  MAZE=null;enter();applySan();
  run(caseOpening);
 }
@@ -532,7 +534,7 @@ async function pauseMenu(){
  held=[];
  for(;;){
   const r=await choose(['Party','Items','Notebook','Save & quit','Close'],{cancel:true,title:'MENU · '+G.M.name});
-  if(r===0){for(const m of party)await say(m.name.toUpperCase(),`${profOf(m.a).name}\nHP ${m.hp}/${m.mhp}   WP ${m.wp}/${m.mwp}\nSAN ${m.san}/${m.msan}   Breaking Point ${m.bp}${m.dis?'\nDisorder: '+m.dis:''}\nWeapon: ${m.w.name} (${m.w.skill}%)`)}
+  if(r===0)await openParty();
   else if(r===1){await itemMenu(lead(),false);hideTB()}
   else if(r===2){if(!G.clues.length)await say('NOTEBOOK','Nothing yet. Talk to the townsfolk.');for(const c of G.clues)await say('NOTEBOOK',c.text);if(!G.flags.key)await say('NOTEBOOK',`Deputy Ross wants proof: ${townClues()}/3 town clues.`)}
   else if(r===3){quit();return}
@@ -544,6 +546,7 @@ async function pauseMenu(){
 function input(k){
  if(!G.active)return;
  if(dlg){if(k==='a'||k==='b'){if(!dlg.done)finishType();else closeDlg()}return}
+ if(PM){partyPress(k);return}
  if(menu){const n=menu.items.length;
   if(k==='up'){menu.sel=(menu.sel-1+n)%n;renderMenu()}
   else if(k==='down'){menu.sel=(menu.sel+1)%n;renderMenu()}
@@ -551,6 +554,7 @@ function input(k){
   else if(k==='b'&&menu.cancel){closeMenu(-1)}
   return}
  if(G.mode==='world'&&!G.busy&&!G.mv){if(k==='a')run(interact);else if(k==='start')run(pauseMenu)}
+ if(k==='select')mapSelect();
 }
 function hold(d,on){held=StudioMove.hold(held,d,on)}
 dhost.addEventListener('click',e=>{if(!e.target.closest('.bld'))return;const li=e.target.closest('.bld-c li');
@@ -559,4 +563,4 @@ menuEl.addEventListener('click',e=>{const el=e.target.closest('.gi');if(!el||!me
 // The shelf's Continue button opens straight into the case checkpoint (launcher.md, Title cards).
 // With no checkpoint (only agents on the roster) the title screen opens as usual.
 window.addEventListener('load',()=>{if(window.Studio&&Studio.continued&&!G.active)resume()});
-window.BLG={start,resume,input,hold,get active(){return G.active},_t:{fight:t=>run(async()=>{const r=await battle(t);if(r==='lose')await gameOver()}),go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,boss:()=>run(bossIntro)}};
+window.BLG={start,resume,input,hold,get active(){return G.active},_t:{hp:(i,n)=>{party[i].hp=n},status:(i,k)=>{const m=party[i];m.st=m.st||[];if(!m.st.includes(k))m.st.push(k)},lead:()=>G.lead|0,fight:t=>run(async()=>{const r=await battle(t);if(r==='lose')await gameOver()}),go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,boss:()=>run(bossIntro)}};
