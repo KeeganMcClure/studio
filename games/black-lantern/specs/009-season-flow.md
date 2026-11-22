@@ -54,7 +54,7 @@ From the changelog and specs 004, 007 and 008, once they're built:
 - The board reads the season's cases from it. A case file that's loaded but not listed in the current season doesn't pin (so a later season's case can ship early without showing).
 - Still Harvest is listed in Season 1 as a regular case. Whether the demo case counts toward Season 1's unlocks is the arc file's call.
 
-### 2. The board for a full season (Keegan's pick on the PR thread; recommended below)
+### 2. The board for a full season (Keegan picked Nov 22: closed cases go to a pile)
 
 - **Six card spots** for open cases, two rows of three, as in the rough. Cards fill them in file order, regular and agency cases alike.
 - **Closed cases leave their spot** for a **CLOSED pile** in the bottom-left corner: a short stack of greyed cards with the rust CLOSED stamp and the count. When a case closes, its card stamps CLOSED in its spot as today (spec 004, step 5), then slides onto the pile, and the next open case, if any, takes the free spot.
@@ -133,6 +133,6 @@ The season machinery is Black Lantern's own (`season.js`, loaded with `case-boar
 
 ## Bible notes for the Designer (no change made here)
 
-- Story → Case board says closed cases stay pinned, stamped CLOSED, and that the board has 5 spots with a 6th drawn when needed. A full season holds more cards than that. This spec follows Keegan's pick on the PR thread; the same PR updates that paragraph to match once it's picked.
+- Story → Case board says closed cases stay pinned, stamped CLOSED, and that the board has 5 spots with a 6th drawn when needed. A full season holds more cards than that. Keegan picked on Nov 22 that closed cases go to a CLOSED pile, and this PR updates that paragraph to match.
 - Story → Agency arc doesn't say what happens to regular cases still open when the finale closes. Keegan is asked on the PR thread.
 - Tech → Saving says to export agent codes before big updates. The launcher's full save export now covers every key; that line could point there instead. The Intake artifact, which has no launcher, still only has agent codes.
