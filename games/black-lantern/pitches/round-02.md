@@ -2,6 +2,8 @@
 
 Written 2026-11-22 by the Game Designer (Story → Adding a new case, step 2). Three options for the next board spot. Keegan picks one; the other two stay here and can come back in a later round.
 
+**Picked: A · Lot 83** (Keegan, Nov 22). Larkspur and Tracking stay available for later rounds.
+
 Round 1 picked Good Manners. Its two unpicked pitches, Lot 83 and Tracking, come back here unchanged, beside one new pitch, Larkspur.
 
 Public-safe: no twist, no culprit, no solution, no arc touches. Every name is original.
