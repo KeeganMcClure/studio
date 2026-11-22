@@ -99,12 +99,15 @@ function drawBox(){
 function renderMenu(){const m=menu;if(!m)return;
  if(m.inBox){if(box){box.choices=m.items.map(it=>typeof it==='string'?it:it.label);box.dis=m.items.some(it=>it&&it.dis)?m.items.map(it=>it&&it.dis?1:0):null;box.sel=m.sel;box.more=false}if(m.onSel)m.onSel(m.sel);return}
  menuEl.hidden=false;
- menuEl.innerHTML=(m.title?`<div class="mt">${esc(m.title)}</div>`:'')+m.items.map((it,i)=>{const o=typeof it==='string'?{label:it}:it;return`<div class="gi ${i===m.sel?'on':''} ${o.dis?'dis':''}" data-i="${i}"><span class="gc">${i===m.sel?'▶':''}</span>${esc(o.label)}</div>`}).join('')+(m.desc&&m.desc[m.sel]?`<div class="md">${esc(m.desc[m.sel])}</div>`:'');
+ const rows=sel=>(m.title?`<div class="mt">${esc(m.title)}</div>`:'')+m.items.map((it,i)=>{const o=typeof it==='string'?{label:it}:it;return`<div class="gi ${i===sel?'on':''} ${o.dis?'dis':''}" data-i="${i}"><span class="gc">${i===sel?'▶':''}</span>${esc(o.label)}</div>`}).join('');
+ // one fixed width, measured once when the menu opens from its widest row plus the cursor, never from the selected row
+ if(!m.w)m.w=StudioMenu.lockWidth(menuEl,rows(-1));
+ menuEl.innerHTML=rows(m.sel)+(m.desc&&m.desc[m.sel]?`<div class="md">${esc(m.desc[m.sel])}</div>`:'');
  if(m.onSel)m.onSel(m.sel);posMenu();const on=menuEl.querySelector('.gi.on');if(on)on.scrollIntoView({block:'nearest'})}
 function posMenu(){if(menuEl.hidden)return;let b=6;const bx=dhost.querySelector('.bld'),tab=bx&&bx.querySelector('.bld-tab');
  if(G.mode==='battle'&&!hud.hidden)b=hud.offsetHeight+8;else if(bx)b=bx.offsetHeight+(tab?tab.offsetHeight:0)+10;menuEl.style.bottom=b+'px'}
 function choose(items,o={}){const first=Math.max(0,items.findIndex(it=>!(it&&it.dis)));return new Promise(res=>{menu={items,sel:o.sel??first,res,cancel:o.cancel,title:o.title,desc:o.desc,onSel:o.onSel,inBox:o.inBox};renderMenu()})}
-function closeMenu(v){const m=menu;menu=null;menuEl.hidden=true;if(m.inBox&&box){box.choices=null;box.dis=null}if(Bt)Bt.hover=-1;m.res(v)}
+function closeMenu(v){const m=menu;menu=null;menuEl.hidden=true;StudioMenu.unlock(menuEl);if(m.inBox&&box){box.choices=null;box.dis=null}if(Bt)Bt.hover=-1;m.res(v)}
 async function ask(name,text,opts){await say(name,text,{keep:true,instant:false});const r=await choose(opts,{cancel:true,inBox:true});hideTB();return r<0?opts.length-1:r}
 function banner(t,ms=2200){ban.textContent=t;ban.hidden=false;clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,ms)}
 function fade(on){fadeEl.style.opacity=on?1:0;return sleep(340)}
@@ -371,7 +374,7 @@ function drawScene(){if(G.scene==='bighat'){drawOffice();if(G.db)dbCard();return
 // Logic runs at 60 ticks a second on any screen (engine/clock.js); frames with no tick due are skipped.
 const clock=StudioClock.make();
 function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(CB)drawBoard();else if(G.mode==='battle'&&Bt)drawBattle();else if(SCR)drawScr();else if(PM)drawParty();else if(G.mode==='world')drawWorld();else drawScene();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
-function fit(){const v=StudioMove.fit(gEl,cv);if(!v)return;VW=v.w;VH=v.h;gEl.style.setProperty('--pu',(64*v.boxW/VW)+'px');boxKey='';posMenu()}
+function fit(){const v=StudioMove.fit(gEl,cv);if(!v)return;VW=v.w;VH=v.h;gEl.style.setProperty('--pu',(64*v.boxW/VW)+'px');boxKey='';if(menu&&!menu.inBox){menu.w=0;renderMenu()}posMenu()}
 window.addEventListener('resize',()=>{if(G.active)fit()});
 
 async function gameOver(){
