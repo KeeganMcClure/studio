@@ -30,8 +30,8 @@ function loadSeason(){
  return s;
 }
 // Finishing a case closes it, raises cases closed by one, and saves. How it ended is saved but not shown on the card.
-function closeCase(id,ending){const s=loadSeason(),e=s.cases[id];if(!e||e.state==='closed')return false;
- e.state='closed';e.ending=ending||'closed';s.closed++;store.set(seasonKey(),s);return true}
+function closeCase(id,ending,facts){const s=loadSeason(),e=s.cases[id];if(!e||e.state==='closed')return false;
+ e.state='closed';e.ending=ending||'closed';if(facts)e.facts=facts;s.closed++;store.set(seasonKey(),s);return true}
 const seasonClosed=()=>{const s=loadSeason();return Math.max(s.closed,Object.values(s.cases).filter(e=>e&&e.state==='closed').length)};
 // New game: a fresh Season 1 over bl.season. The roster is never touched.
 function newSeason(){store.set(seasonKey(),freshSeason())}

@@ -297,6 +297,17 @@ const MAPMENU={title:'MENU',rows:['Party','Skills','Items','Case file','Log','Se
 // Overstepping steps (Skills and menus, Overstepping and cover stories; set Nov 20). Quiet cases start at Noticed.
 const OVERSTEP={open:['Clean','Local chief','Agency call','Federal agents'],quiet:['Clean','Noticed','Local chief','Agency call','Federal agents'],
  climb:{Noticed:'Word gets around: strangers are asking questions.','Local chief':'Somebody called the chief.','Agency call':'Your phone buzzes. Big Hat.','Federal agents':'Black cars at the edge of town.'}};
+// ---------- ROAMERS, LOOT, LANTERN BOXES, REQUISITION (spec 006 part C; Gameplay loop, Where items come from) ----------
+const ROAMW={fight:'Fight',salt:'Lay a salt line',caught:'The {e} has you!',slipped:'{n} twists free. The {e} loses you in the corn.',
+ snuck:'{n} slips past the {e}. It never turns its head.',spotted:'The {e} turns. It saw you.',jumped:'{n} hits the {e} from behind!',
+ warded:'{n} marks a line in the dirt. The {e} won\'t cross it. It backs off to the far end of its beat.',wardFail:'The mark doesn\'t take. The line is just a line.',
+ salted:'{n} pours a line of salt across the path. The {e} stops at it, and backs away.',crackers:'Black Cats pop and spit. The {e} goes crashing off into the corn after them.',
+ snarePast:'Snare it and slip past',snareFight:'Snare it and fight (it starts Stunned)',snared:'The snare bites. The {e} thrashes in place while {n} walks right by.',
+ ghost:'Ghost: on the way past, you lift what it was guarding.',none:'No roamer close enough to use it on.',drawn:'SOMETHING HEARD THAT',
+boxEmpty:'The Lantern Box is empty. You already took what Big Hat left.',
+ reqAsk:'Before you go. Anything you want from the cage, ask now. I\'ll say no to most of it.',reqYes:'Requisition',reqNo:'We\'re fine',
+ reqWho:'{n} ASKS FOR',reqSkip:'Nothing',reqOk:'{i}. Sign here. Bring it back or don\'t, but don\'t lose it.',reqNoLine:'{i}? No.',
+ reqRefused:'And before you ask: no gear. Not after last time. You know what you did.'};
 // ---------- RECRUITS (Systems, Losing an agent; spec 006 A6) ----------
 // One ready-made recruit per profession, built like team-template agents; Big Hat offers three. first: the arrival line.
 const RECRUITS=[
@@ -406,5 +417,5 @@ const INJURIES=[null,
  {name:'Done with field work',tier:'career',pen:{},line:'Leaves the party'}];
 const STEPNAME={profession:'JOB',stats:'STATS',skills:'SKILLS',identity:'IDENTITY',bonds:'BONDS',motives:'MOTIVATIONS',dossier:'DOSSIER',title:'BLACK LANTERN',roster:'ROSTER',team:'YOUR TEAM',pick:'PICK A TEAM',confirm:'NEW GAME'};
 const STEPSHORT={profession:'JOB',stats:'STATS',skills:'SKILL',identity:'ID',bonds:'BOND',motives:'WHY',dossier:'FILE'};
-return {SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,diceOf,ITEMS,KIT,KITUSES,ITEMUI,DISORDERS,SANW,TIERS,KINDS,SKILLOPT,AUTOPERK,SKILLW,MAPMENU,OVERSTEP,RECRUITS,RECRUITW,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD,MAPHUD,BATTLEW,MOVES,INJURIES};
+return {ROAMW,SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,diceOf,ITEMS,KIT,KITUSES,ITEMUI,DISORDERS,SANW,TIERS,KINDS,SKILLOPT,AUTOPERK,SKILLW,MAPMENU,OVERSTEP,RECRUITS,RECRUITW,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD,MAPHUD,BATTLEW,MOVES,INJURIES};
 })();

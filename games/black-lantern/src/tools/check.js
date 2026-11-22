@@ -115,10 +115,15 @@ async function checkSaves(browser) {
       let want = 0; try { const g = JSON.parse(JSON.parse(save.keys['bl.game'])); if (Number.isInteger(g.lead)) want = g.lead; } catch (e) {}
       const lead = await page.evaluate(() => BLG._t.lead());
       if (lead !== want) problems.push(`seat ${lead + 1} leads, the save had seat ${want + 1}`);
-      // the Last time box (spec 006 A5) opens first: it must name the map and the Case file's Next goal, then close
+      // the Last time box (spec 006 A5) opens first: it must name the map and the Case file's Next goal, then close.
+      // A Still Harvest checkpoint from before save version 7 (spec 006 part C rewrote the case) restarts the case from
+      // its briefing with the same team instead, and says so in its first box; the in-case checks below then don't apply.
       const last = await page.evaluate(() => BLG._t.box());
-      if (!/LAST TIME/.test(last) || !/NEXT/.test(last)) problems.push('no Last time box with the Next goal after Continue');
+      const rewrote = from < 7;
+      if (rewrote && !/rewritten/.test(last)) problems.push('an old Still Harvest checkpoint should restart from the briefing with the rewritten line');
+      if (!rewrote && (!/LAST TIME/.test(last) || !/NEXT/.test(last))) problems.push('no Last time box with the Next goal after Continue');
       await page.evaluate(() => BLG._t.skipBox()); await page.waitForTimeout(150);
+      if (!rewrote) {
       // Select on the map moves the lead to the next seat, and Start → Party opens and closes
       await page.keyboard.press('Backspace'); await page.waitForTimeout(100);
       const n = await page.evaluate(() => BLG._t.party().length), after = await page.evaluate(() => BLG._t.lead());
@@ -129,6 +134,7 @@ async function checkSaves(browser) {
       if (await page.evaluate(() => typeof PM !== 'undefined' && !!PM)) problems.push('B did not close the party screen');
       for (const k of ['x', 'x']) { await page.keyboard.press(k); await page.waitForTimeout(80); }
       for (const k of ['ArrowUp', 'ArrowLeft', 'z', 'x', 'ArrowDown', 'z', 'x']) { await page.keyboard.down(k); await page.waitForTimeout(150); await page.keyboard.up(k); }
+      }
       await page.screenshot({ path: path.join(__dirname, '..', 'dist', `check-save-${name.replace(/\.json$/, '')}.png`) });
     }
     problems.push(...await checkBoard(page, name, save, hasGame && cont, from));

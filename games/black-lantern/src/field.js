@@ -247,7 +247,7 @@ async function overstep(seen){
  const s=loadSeason(),steps=stepsOf();s.overstep=Math.min(steps.length-1,(s.overstep|0)+1);store.set(seasonKey(),s);
  await say('',BLS.OVERSTEP.climb[steps[s.overstep]]||'');return true}
 function stepsOf(){const c=caseById(G.case);return c&&c.quiet?BLS.OVERSTEP.quiet:BLS.OVERSTEP.open}
-function noise(){const M=G.M;if(M&&M.onLoud)run(M.onLoud)}
+function noise(){roamLoud();const M=G.M;if(M&&M.onLoud)run(M.onLoud)}
 
 // ================= HOTSPOTS (A2) =================
 // A case's hotspot (M.O[x,y]) is a function (a person, a scripted moment) or data:
@@ -287,6 +287,105 @@ function hotUsed(h,key){if(typeof h==='function')return false;if(h.used)return !
 // talked out: a townsperson with nothing new (case npc.out(), else talked to since the last new clue)
 function talkedOut(n){if(n.out)return !!n.out();return G.fs.talked[n.id]===G.clues.length}
 
+// ================= ROAMERS (spec 006 C4; Systems, Gameplay loop; Combat, Enemies and difficulty) =================
+// A danger zone's roamers walk a short beat in plain sight with their threat skulls, each guarding something.
+// A map lists them: M.roamers = [{id, types: ['hound'], path: [[x, y], ...], name, look, skulls, sprite, guard: async fn}].
+// Their state saves with the checkpoint in G.fs.roam[id]: the walker (engine/patrol.js), what it's doing, and how it
+// was dealt with: beaten (won the fight), passed (snuck past: ignores you this visit), held (a ward or salt line: it
+// backs off and stays put), away (firecrackers: gone for a while). Passed, held and away end at the next area change.
+// Fight it, sneak past with a roll, or go another way. Loud actions within 8 tiles draw it (noise → M.onLoud).
+const RW_=BLS.ROAMW;
+const SP=StudioPatrol;
+function roamSt(r){G.fs.roam=G.fs.roam||{};let s=G.fs.roam[r.id];if(!s||!s.w){s=G.fs.roam[r.id]={w:SP.beat(r.path),st:'patrol',t:0}}return s}
+const roamLive=(r,s=roamSt(r))=>!s.beaten&&!s.away;
+const roamOn=(r,s=roamSt(r))=>roamLive(r,s)&&!s.passed&&!s.held;
+function roamers(){const M=G.M;return M&&M.roamers?M.roamers:[]}
+function roamAt(x,y){return roamers().find(r=>{const s=roamSt(r);return roamLive(r,s)&&s.w.x===x&&s.w.y===y})}
+// tiles a roamer can walk: the map's open ground, not the lead, not another roamer
+function roamOk(r){const M=G.M;return(x,y)=>x>=0&&y>=0&&x<M.w&&y<M.h&&!BLOCK.has(M.g[y][x])&&!(x===G.x&&y===G.y)&&!roamers().some(o=>o!==r&&roamLive(o)&&roamSt(o).w.x===x&&roamSt(o).w.y===y)}
+const near=(s,n=1)=>Math.abs(s.w.x-G.x)+Math.abs(s.w.y-G.y)<=n;
+// the engine calls this once a tick while the lead is free on the map. Patrol steps every 36 ticks; on sight
+// (a straight line within 3 tiles) it stops with a "!" for 50 ticks, then chases every 18; next to the lead, it catches them.
+// More than 10 tiles off its beat, or after losing the lead for a while, it walks home.
+function roamTick(){
+ for(const r of roamers()){const s=roamSt(r);if(!roamOn(r,s))continue;s.t=(s.t|0)+1;const ok=roamOk(r);
+  if(s.st==='patrol'){
+   if(SP.sees(s.w,G.x,G.y,3,ok)||near(s)){s.st='alert';s.t=0;continue}
+   if(s.t>=36){s.t=0;const [nx,ny]=s.w.path[(s.w.i+s.w.dir+s.w.path.length)%s.w.path.length]||[];if(ok(nx,ny)||s.w.path.length<2)SP.next(s.w)}}
+  else if(s.st==='alert'){if(s.t>=50){s.st='chase';s.t=0;s.lost=0}}
+  else if(s.st==='chase'){
+   if(near(s)){s.st='patrol';s.t=0;held=[];run(()=>roamCaught(r));return}
+   if(s.t>=18){s.t=0;const far=Math.abs(s.w.x-G.x)+Math.abs(s.w.y-G.y)>10;
+    if(far||(s.lost|0)>8){s.st='home';continue}
+    if(!SP.toward(s.w,G.x,G.y,ok))s.lost=(s.lost|0)+1;
+    if(near(s)){s.st='patrol';held=[];run(()=>roamCaught(r));return}}}
+  else if(s.st==='home'){if(s.t>=24){s.t=0;if(SP.home(s.w,ok))s.st='patrol'}}
+ }
+}
+// Loud actions draw every roamer within 8 tiles (Skill unlocks: Loud actions draw nearby roamers)
+function roamLoud(){let any=false;for(const r of roamers()){const s=roamSt(r);if(!roamOn(r,s))continue;
+ if(Math.abs(s.w.x-G.x)+Math.abs(s.w.y-G.y)<=8){s.st='chase';s.t=0;s.lost=0;any=true}}
+ if(any)banner(RW_.drawn,1400)}
+// it caught the lead: Dodge's Slip free (75%) can break away before the fight starts
+async function roamCaught(r){
+ const L=lead(),s=roamSt(r);await say('',fillT(RW_.caught,{e:r.name}),{auto:1000});
+ if(skillVal(L.a,'Dodge')>=75){const p=chanceOf(L,'Dodge');const i=await choose([`${SOPT.slipfree.label} · Dodge ${p}%`,RW_.fight],{title:r.name.toUpperCase()});
+  if(i===0){const x=SR.pct(p);await say('',resultLine('SLIP FREE · DODGE',x),{auto:1000});
+   if(x.ok){s.st='home';s.t=-90;await say('',fillT(RW_.slipped,{n:L.name,e:r.name}));return}tried(L,'Dodge')}}
+ return roamFight(r)}
+// a roamer fight: Flee works; a win leaves it beaten, a flee sends it home a while, a loss is the usual game over
+async function roamFight(r,o={}){
+ const s=roamSt(r);const res=await battle(r.types,{roamer:true,intro:r.intro,onStart:o.onStart});
+ if(res==='lose')return gameOver();
+ if(res==='win'){s.beaten=1;checkpoint();if(r.won)await r.won()}
+ else{s.st='home';s.t=-120;s.w.x=s.w.path[s.w.path.length-1][0];s.w.y=s.w.path[s.w.path.length-1][1];s.w.i=s.w.path.length-1}
+ return res}
+// the roamer ahead (A on it), or next to the lead (an item used from the menu)
+function roamNear(){const [tx,ty]=StudioMove.ahead(G);return roamAt(tx,ty)||roamers().find(r=>{const s=roamSt(r);return roamLive(r,s)&&near(s)})}
+// A on a roamer: the lead's options, through the same hotspot menu (odds, greyed options naming the skill)
+async function roamMenu(r){
+ const s=roamSt(r),ghost=()=>skillVal(lead().a,'Stealth')>=90;
+ const pass=async(line)=>{s.passed=1;s.st='patrol';await say('',fillT(line,{n:lead().name,e:r.name}));if(ghost()&&r.guard&&!s.lifted){s.lifted=1;await say('',RW_.ghost);await r.guard()}checkpoint()};
+ const hold=async(line)=>{s.held=1;s.st='home';await say('',fillT(line,{n:lead().name,e:r.name}));checkpoint()};
+ const flare=G.fs.flareMap===G.map?-20:0;  // a road flare lights the area, so Stealth there gets harder
+ const h={name:r.name.toUpperCase(),look:r.look,opts:[
+  {label:RW_.fight,run:()=>roamFight(r)},
+  {use:'sneak',mod:flare,ok:()=>pass(RW_.snuck),fail:async()=>{await say('',fillT(RW_.spotted,{e:r.name}));return roamFight(r)}},
+  {use:'jump',ok:()=>roamFight(r,{onStart:async()=>{const e=Bt.en[0];await bsay(fillT(RW_.jumped,{n:lead().name,e:e.name}),900);await attack(lead(),e,{fight:true})}}),fail:async()=>{await say('',fillT(RW_.spotted,{e:r.name}));return roamFight(r)}},
+  {use:'ward',show:()=>(r.tags||[]).includes('unnatural'),ok:()=>hold(RW_.warded),fail:async()=>say('',RW_.wardFail)},
+  {item:'salt',label:RW_.salt,show:()=>(r.tags||[]).includes('unnatural'),run:()=>hold(RW_.salted)},
+  {item:'firecrackers',run:async()=>{s.away=1;await say('',fillT(RW_.crackers,{e:r.name}));checkpoint()}},
+  {item:'snare',run:async()=>{const i=await choose([RW_.snarePast,RW_.snareFight],{title:'SNARE TRAP'});
+   if(i===1)return roamFight(r,{onStart:async()=>{await foeStatus(Bt.en[0],'stun')}});return pass(RW_.snared)}}
+ ]};
+ await hotspot(h,'roam:'+r.id);
+}
+// the next area change: snuck-past, warded and scared-off roamers are back at their posts
+function roamReset(){if(!G.fs.roam)return;Object.values(G.fs.roam).forEach(s=>{if(s.beaten)return;s.passed=0;s.held=0;s.away=0;s.st='patrol';s.t=0;
+ s.w.i=0;s.w.dir=1;s.w.x=s.w.path[0][0];s.w.y=s.w.path[0][1];s.w.off=false})}
+// a roamer fight's drop: 20% from the case's loot table of 4–6 field items (Where items come from, Loot)
+async function lootDrop(){const c=caseById(G.case),t=c&&c.loot;if(!t||!t.length||Math.random()>=.2)return;await pickup(pick(t))}
+// a Lantern Box: a stash site with 2–3 catalog items, opened once (Where items come from)
+async function lanternBox(id,items,line){if(G.fs.used['box:'+id]){await say('',RW_.boxEmpty);return}G.fs.used['box:'+id]=1;
+ if(line)await say('',line);for(const k of items)await pickup(k);checkpoint()}
+// Requisition at the briefing: every agent may roll Bureaucracy once for one catalog item; easy items +20%,
+// throwables +0, heavy gear −20 (Where items come from). Items go in the backpack. After an Agency call, Big Hat says no.
+async function requisition(){
+ const s=loadSeason(),steps=stepsOf();if(steps[s.overstep|0]==='Agency call'||steps[s.overstep|0]==='Federal agents'){await say('BIG HAT',RW_.reqRefused);return}
+ const cat=Object.entries(FI).filter(([k,x])=>x.lb&&x.req!=null);
+ if((await ask('BIG HAT',RW_.reqAsk,[RW_.reqYes,RW_.reqNo]))!==0)return;
+ for(const m of live()){
+  const p=k=>chanceOf(m,'Bureaucracy',FI[k].req||0);
+  const i=await choose(cat.map(([k,x])=>`${x.name} · ${p(k)}%`).concat([RW_.reqSkip]),{cancel:true,title:fillT(RW_.reqWho,{n:m.name.toUpperCase()}),desc:cat.map(([k,x])=>x.desc).concat([''])});
+  if(i<0||i>=cat.length)continue;
+  const [k,x]=cat[i],o=SR.pct(p(k));await say('',resultLine('BUREAUCRACY',o),{auto:1000});
+  if(!o.ok){tried(m,'Bureaucracy');await say('BIG HAT',fillT(RW_.reqNoLine,{i:x.name}));continue}
+  G.fs.pack.push(newItem(k));await say('BIG HAT',fillT(RW_.reqOk,{i:x.name,n:m.name}));
+ }
+}
+// map trail dots (On guard routes, Pathfinder's safe route, Track's drag marks): [[x, y], ...] per map, drawn by the engine
+function setTrail(pts,kind){G.fs.trail=G.fs.trail||{};const t=G.fs.trail[G.map]=G.fs.trail[G.map]||{};t[kind]=pts}
+
 // ================= CASE STATE, START, AREA CHANGES =================
 function freshFs(){return{pack:[],used:{},talked:{},perk:{},log:[],jam:{},uv:{},recruit:[],hunch:0,night:0,ident:[],samples:[],camped:0,charm:0,start:1,flareMap:null,fight:0}}
 function fillMember(m){
@@ -314,7 +413,8 @@ async function fieldTick(){
  if(G.fs.start){G.fs.start=0;await trigger('start')}
  if(G.fs.area){G.fs.area=0;sceneEnd();await tickStatuses();
   if(G.M.light==='night'){if(!G.fs.night){G.fs.night=1;await trigger('night')}await trigger('subject','the dark')}
-  if(G.fs.recruit.length)await offerRecruit()}
+  if(G.fs.recruit.length)await offerRecruit();
+  roamReset();const c=caseById(G.case);if(c&&c.onArea)await c.onArea()}
 }
 const fieldDue=()=>G.fs&&(G.fs.start||G.fs.area);
 
@@ -442,7 +542,8 @@ async function useItem(m,it){
    await say('',`${t.name} takes the ${d.name.toLowerCase()}. High.`);return true}
   case 'flare':if(G.M.light!=='night'){await say('','It isn\'t dark enough here to need it.');return false}
    G.fs.flareMap=G.map;await say('','The road flare hisses red. The dark backs off.');return true
-  case 'roamer':await say('','No roamer here to use it on.');return false
+  case 'roamer':{const r=roamNear();if(!r){await say('',RW_.none);return false}
+   await roamMenu(r);return false}  // the roamer's own menu spends the item if it's used
   case 'sedative':{const t=await who(null,flaringAny,MMW.sedateWhy);if(!t)return false;calmFlare(t);await say('',fillT(MMW.sedated,{n:t.name}));return true}
   case 'jammer':G.fs.jam[G.map]=1;await say('','Phones and cameras die all around you.');return true
   case 'uv':G.fs.uv[G.map]=1;await say('','The UV lamp sweeps the area. Nothing hidden glows here.');return true

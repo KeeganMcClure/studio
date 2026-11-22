@@ -404,7 +404,7 @@ async function foeHits(e,t,dmgS,o={}){
 
 // ================= THE END OF A FIGHT =================
 async function endBattle(res){
- const boss=Bt.boss;Bt.ui=null;Bt.active=null;
+ const boss=Bt.boss,roamer=Bt.roamer;Bt.ui=null;Bt.active=null;
  if(res==='win')await bsay(BL_.win,900);
  const dead=party.filter(m=>m.dead),hurt=party.filter(m=>m.wasDowned&&!m.dead&&!m.out&&!m.gone);
  party.forEach(m=>{if(m.ko&&!m.dead){m.ko=false;m.hp=Math.max(1,m.hp)}m.stun=0;m.defend=m.slip=m.drawFire=m.vanish=m.vanishHit=m.tripwire=false;m.grap=null;m.braceB=false;if(m.bcur)delete m.bcur.foe;
@@ -418,8 +418,8 @@ async function endBattle(res){
  for(const m of hurt){if(party.includes(m))await injuryRoll(m,boss);if(!party.length)return'lose'}
  // agents who hit 0 SAN in the fight leave when it ends (Losing an agent)
  for(const m of party.filter(m=>m.out||m.san<=0)){await say('',fillT(SW.zero,{n:m.name}));await loseAgent(m,'0 SAN');if(!party.length)return'lose'}
- // a stand-in drop until Part C's loot tables: one field item, found the Pickups way
- if(res==='win'&&!boss&&Math.random()<.35)await pickup(pick(['firstaid','energy','firstaid']));
+ // a roamer's drop: 20% from the case's loot table (field.js lootDrop; spec 006 C4)
+ if(res==='win'&&roamer)await lootDrop();
  if(res==='win')G.fights=(G.fights||0)+1;
  return res}
 function clearStatusAll(k){party.forEach(m=>clearStatus(m,k))}

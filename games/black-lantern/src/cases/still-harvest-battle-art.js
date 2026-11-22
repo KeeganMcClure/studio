@@ -3,7 +3,7 @@
 // Gleaner's 64 × 64 talking portrait (it speaks in the case). Crowling, Husk Scout, Bale Hound and Long Man are the
 // Asset Library's Demo 5 drafts (C1.B), copied unchanged; the Volunteer and the Gleaner sprites are new here, drawn the
 // same way, and go back to the Asset Library's Still Harvest page. Exposes window.SHB.
-//   SHB.sprite(key, frame) -> cached canvas; frame 0/1 is the idle. key: crow, husk, hound, long, vol, gleaner, gleaner2
+//   SHB.sprite(key, frame) -> cached canvas; frame 0/1 is the idle. key: crow, husk, hound, long, vol, fed, gleaner, gleaner2
 //   SHB.size(key) -> [w, h]   SHB.portrait(ctx, open) draws THE GLEANER's face
 const SHB=(()=>{
 const OL='#120c1c',D='#24141e',W='#f4efe6',MR='#5a1a22';
@@ -81,6 +81,17 @@ long:{name:'Long Man',w:40,h:100,trait:'Arms past his knees. He bends down to lo
  L.e(17+lean,12,1.5,2,'#000000');L.e(23+lean,12,1.5,2,'#000000');L.p(17+lean,11,'#fff8e0');
  L.r(19+lean,16,2,4+f,'#000000')}}
 ,
+// the Clean-up agent (spec 006 part C): only if overstepping reaches Federal agents. A man in a black suit and shades,
+// too neat for a corn town at night; the one wrong detail is that his tie clip is the same lantern on every one of them.
+fed:{name:'Clean-up agent',w:40,h:70,trait:'Black suit, black shades at night, an earpiece, and a sidearm he has clearly used.',f(L,f){const s='#151319',sd='#0c0b10',sk='#c99a78',sh2='#e9e6ee',gl='#0a0a0c';
+ L.r(11,48,8,20,s);L.r(21,48,8,20,sd);L.r(10,66,9,4,'#050507');L.r(21,66,9,4,'#050507');
+ L.r(8,22,24,28,s);L.r(22,22,10,28,sd);L.r(17,22,6,16,sh2);L.r(19,23,2,14,'#241f2c');L.p(19,30,'#d6a43a');L.p(20,30,'#d6a43a');
+ L.r(4,24+f,5,22,s);L.r(31,24-f,5,20,sd);L.r(4,46+f,5,4,sk);L.r(31,44-f,5,4,sh(sk,-25));
+ L.r(32,46-f,8,3,'#2a2a30');L.r(36,44-f,3,3,'#2a2a30');
+ L.r(16,17,8,6,sh(sk,-20));head(L,20,10,9,10,sk);
+ L.r(11,1,18,5,'#1a1418');L.r(10,3,3,6,'#1a1418');
+ L.r(12,8,7,4,gl);L.r(21,8,7,4,gl);L.r(19,9,2,1,gl);L.p(13,9,'#5a5f70');L.p(22,9,'#5a5f70');
+ L.r(16,15,8,1,sh(sk,-45));L.r(28,10,2,4,'#2a2a30');L.r(29,14,1,6,'#3a3a44')}},
 vol:{name:'Volunteer',w:46,h:66,trait:'Harvest Committee vest, a clipboard of names, and a sack for a head that smiles wider when it means it.',f(L,f){const b='#c9a36a',bd='#9c7a44',v='#ff7a1a',vd='#c85a10',sh1='#e8dcc0',j='#3b4a6b',st='#e0c25a';
  L.r(13,48,8,16,j);L.r(25,48,8,16,sh(j,-25));L.r(12,62,9,4,'#2a1e18');L.r(25,62,9,4,'#2a1e18');
  L.r(10,24,26,26,sh1);L.r(10,24,8,26,v);L.r(28,24,8,26,vd);L.r(10,36,8,3,'#e6e6e6');L.r(28,36,8,3,'#d0d0d0');L.r(14,27,3,3,st);
