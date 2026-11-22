@@ -1,0 +1,300 @@
+<title>Briefing Rework Mockup</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+/* Layout: phone frames stacked in play order, each a 375x667 iPhone SE GBA shell with a caption. Single dark look on purpose. */
+:root{
+  --page:#0e1020; --shell:#34305c; --bezel:#14121e; --screen:#1b1f33;
+  --panel:#1f2440; --panel-hi:#2a2f52; --panel-lo:#14172a; --line:#5a5070;
+  --cream:#e8dcc0; --gold:#f4c96a; --mustard:#d6a43a; --lav:#b9a8e0; --dim:#9a92c8;
+  --pink:#ff4fa3; --cyan:#3ff0e8; --rust:#b5532e;
+  --px:'Press Start 2P',ui-monospace,Menlo,monospace; --vt:'VT323',ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+body{background:var(--page);color:var(--cream);font-family:var(--vt);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font-family:var(--px);font-size:13px;line-height:1.6;color:var(--gold);margin:0;letter-spacing:.04em}
+.intro{font-size:20px;line-height:1.15;color:var(--lav);margin:0}
+figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:10px}
+figcaption{font-size:19px;line-height:1.15;color:var(--cream);max-width:375px}
+figcaption b{font-family:var(--px);font-size:9px;color:var(--gold);font-weight:400;letter-spacing:.05em;display:block;margin-bottom:4px}
+@media (max-width:400px){.phone{zoom:.9}}
+
+/* shell */
+.phone{position:relative;width:375px;height:667px;overflow:hidden;background:var(--shell);color:var(--cream);font-family:var(--vt);flex:none;border-radius:6px}
+.phone .topbar{position:absolute;left:0;right:0;top:0;height:4px;background:#4a4380}
+.phone .bezel{position:absolute;left:7px;top:10px;width:361px;height:466px;background:var(--bezel);border-radius:10px 10px 28px 10px}
+.scr{position:absolute;left:17px;top:22px;width:340px;height:442px;overflow:hidden;background:var(--screen);box-sizing:border-box}
+.scr.pad{padding:6px;display:flex;flex-direction:column;gap:5px}
+.brand{position:absolute;left:0;right:0;top:482px;display:flex;justify-content:center;align-items:center;gap:8px;font-family:var(--px);font-size:9px;letter-spacing:1px;color:var(--dim)}
+.brand i{width:6px;height:6px;background:var(--mustard);box-shadow:0 0 6px var(--mustard)}
+.dpad{position:absolute;left:25px;top:508px;width:106px;height:106px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr)}
+.dpad span{background:#1a1824;color:#4a4560;font-size:12px;display:grid;place-items:center}
+.btn{position:absolute;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-family:var(--px);font-size:14px}
+.btn.b{left:228px;top:548px;background:#6e2e24;box-shadow:inset 0 -4px 0 #4a1e18,0 2px 0 #241f40;color:#e8c8b8}
+.btn.a{left:294px;top:516px;background:var(--rust);box-shadow:inset 0 -4px 0 #7a3520,0 2px 0 #241f40;color:#fbe8d8}
+.pills{position:absolute;left:0;right:0;top:626px;display:flex;justify-content:center;gap:14px}
+.pills span{height:26px;border-radius:13px;background:#1a1824;color:var(--dim);font-family:var(--px);font-size:7px;display:grid;place-items:center;width:72px}
+.pills span.lr{width:54px;background:#24213c;font-size:9px}
+
+/* shared UI pieces, matching the creator mockups */
+.hdr{display:flex;align-items:center;justify-content:space-between;height:26px;padding:0 8px;background:var(--panel-lo);border:2px solid var(--cream);border-radius:3px;flex:none}
+.hdr .t{font-family:var(--px);font-size:9px;color:var(--gold)}
+.hdr .s{font-size:15px;color:var(--lav)}
+.row{display:flex;align-items:center;gap:6px;min-height:30px;padding:2px 6px;background:var(--panel);border:2px solid var(--line);border-radius:3px;box-sizing:border-box}
+.row.on{background:var(--panel-hi);border-color:var(--mustard)}
+.row .cur{width:10px;color:var(--gold);font-size:16px;flex:none}
+.row .main{flex:1;min-width:0;display:flex;flex-direction:column}
+.row .n{font-size:18px;line-height:15px}
+.row.on .n{color:var(--gold)}
+.row .sub{font-size:14px;line-height:12px;color:var(--lav)}
+.chip{font-family:var(--px);font-size:7px;padding:4px 5px 3px;border-radius:2px;flex:none;letter-spacing:.03em}
+.chip.bag{background:#2e3a5e;color:var(--cream)}
+.chip.keep{background:#3a3424;color:var(--mustard)}
+.chip.hide{background:#4a1e38;color:var(--pink);box-shadow:0 0 0 1px var(--pink)}
+.odds{font-size:20px;color:var(--cream);flex:none;font-variant-numeric:tabular-nums}
+.row.on .odds{color:var(--gold)}
+.weak{color:var(--dim)}
+.detail{box-sizing:border-box;background:var(--panel);border:3px solid var(--cream);border-radius:3px;padding:5px 8px;display:flex;flex-direction:column;gap:2px;font-size:17px;line-height:16px}
+.detail .help{color:var(--lav)}
+.unn{color:var(--pink)}
+.pin{width:7px;height:9px;flex:none}
+canvas.pxl{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+
+/* screen 1 */
+.wrapup{position:absolute;left:6px;right:6px;top:6px;background:rgba(13,19,34,.94);border:2px solid var(--cream);box-shadow:0 0 0 2px #05040a;border-radius:2px;padding:6px 8px 7px;display:flex;flex-direction:column;gap:5px}
+.wrapup .top{display:flex;justify-content:space-between;align-items:baseline}
+.wrapup .top .t{font-family:var(--px);font-size:9px;color:var(--gold)}
+.wrapup .top .s{font-size:16px;color:var(--lav)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-size:18px;line-height:16px}
+.stats span b{font-weight:400;color:var(--gold);font-variant-numeric:tabular-nums}
+.sanrow{display:flex;gap:4px;border-top:1px solid var(--line);padding-top:5px}
+.sanrow div{flex:1;display:flex;flex-direction:column;align-items:center;font-size:15px;line-height:14px;color:var(--lav)}
+.sanrow div b{font-weight:400;font-size:19px;color:var(--pink);font-variant-numeric:tabular-nums}
+
+/* screen 3 */
+.steps{display:flex;gap:3px;flex:none}
+.steps span{flex:1;text-align:center;font-family:var(--px);font-size:6px;padding:5px 0 4px;background:var(--panel-lo);color:var(--dim);border:1px solid var(--line);border-radius:2px}
+.steps span.lit{background:#4a2418;color:#ffd0b0;border-color:var(--rust)}
+.label{font-family:var(--px);font-size:7px;color:var(--lav);letter-spacing:.05em;padding:2px 2px 0}
+.who{display:flex;gap:5px}
+.who .a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0 3px;background:var(--panel);border:2px solid var(--line);border-radius:3px}
+.who .a.on{border-color:var(--mustard);background:var(--panel-hi)}
+.who .a .nm{font-size:16px;line-height:14px}
+.who .a.on .nm,.who .a.on .pc{color:var(--gold)}
+.who .a .pc{font-size:19px;line-height:15px;font-variant-numeric:tabular-nums}
+.who .a .sk{font-size:13px;line-height:11px;color:var(--lav)}
+
+/* screen 4 */
+.agent{display:flex;gap:7px;padding:5px;background:var(--panel);border:2px solid var(--line);border-radius:3px}
+.agent .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.agent .nm{font-size:19px;line-height:15px;color:var(--cream);display:flex;justify-content:space-between}
+.agent .nm small{font-size:14px;color:var(--lav)}
+.gain{display:flex;align-items:center;gap:6px;font-size:17px;line-height:15px;font-variant-numeric:tabular-nums}
+.gain .sk{flex:1}
+.gain .die{font-family:var(--px);font-size:6px;background:#2e3a5e;color:var(--cyan);padding:3px 4px 2px;border-radius:2px}
+.gain .up{color:var(--gold)}
+.unlock{font-family:var(--px);font-size:6px;color:#1b1f33;background:var(--gold);align-self:flex-start;padding:3px 4px 2px;border-radius:2px;letter-spacing:.04em}
+.none{font-size:15px;color:var(--dim)}
+</style>
+
+
+<div class="wrap">
+  <h1>BIG HAT'S BRIEFING, REWORKED</h1>
+  <p class="intro">Rough mockup at iPhone SE size, inside the GBA shell. Big Hat is drawn from his approved portrait, large and center behind the desk. While he's on screen, the text box shows only his name tab, no corner portrait. Lines are the draft in the spec.</p>
+
+  <figure>
+    <div class="phone" id="p1"></div>
+    <figcaption><b>1 · HE TALKS IN THE SCENE</b>Same back room. Big Hat is his portrait art drawn at double size: ten-gallon hat, brim shadow, horseshoe mustache, leather vest, turquoise bolo. His mouth flaps while the line types. No portrait over the box.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="phone" id="p2"></div>
+    <figcaption><b>2 · TWO QUESTIONS</b>Four topics, pick two. Each answer writes an INTEL note in the Case file and gives one small edge in the case. After two, he's done. (In the build the list sits lower so his face stays in view.)</figcaption>
+  </figure>
+
+  <figure>
+    <div class="phone" id="p3"></div>
+    <figcaption><b>3 · THE SHOUT</b>The shout face in the scene itself: the screen shakes and flashes red, the toothpick flies. Still no corner portrait.</figcaption>
+  </figure>
+</div>
+
+<script>
+/* ---- Big Hat portrait, copied from the Asset Library (bighat.js, approved Nov 15) ---- */
+function drawBigHat(c,shout,frame,noBg){
+  const SK='#c98a62',SS='#a86a46',SD='#7a4a30',MU='#4a2e1c',MH='#6e4630',MS='#341e12',DK='#0c0a10',TP='#e6c98a',TD='#b8955a';
+  const H='#7a5a34',HL='#a07a48',HS='#5a4024',HD='#3a2814',HX='#24180c';
+  const V='#6b3a22',VL='#8e522e',VS='#4a2616',CR='#d8cdb4',CS='#b0a68e';
+  const sh=shout,f=frame;const ox=sh?(f%2?1:-1):0,oy=0;
+  const r=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x+ox,y+oy,w,h)};
+  const px=(a,col)=>a.forEach(p=>r(p[0],p[1],1,1,col));
+  if(!noBg){c.fillStyle='#2b2a35';c.fillRect(0,0,64,64);c.fillStyle='#25242e';c.fillRect(0,52,64,12);}
+  const open=sh?true:f;
+  r(18,50,28,1,V);r(15,51,34,1,V);r(14,52,36,12,V);
+  r(14,52,3,12,VL);r(15,51,3,1,VL);r(46,52,4,12,VS);r(45,51,4,1,VS);
+  for(let y=52;y<64;y++){const w=Math.max(2,6-((y-52)>>1));r(32-w-1,y,1,1,VS);r(32+w,y,1,1,VS);r(32-w,y,w*2,1,CR)}
+  r(26,49,12,2,CR);r(25,50,3,2,CR);r(36,50,3,2,CR);r(26,51,2,1,CS);r(36,51,2,1,CS);
+  r(29,49,1,12,'#1a1210');r(34,49,1,12,'#1a1210');r(29,61,1,2,'#c0c0c8');r(34,61,1,2,'#c0c0c8');
+  r(28,54,8,5,'#c0c0c8');r(28,54,8,1,'#e0e0e8');r(29,55,6,3,'#2e9a8a');r(30,55,4,2,'#3fb8a6');r(30,55,1,1,'#9af0e0');r(28,58,8,1,'#8a8a94');
+  px([[18,55],[18,58],[18,61],[46,56],[46,59],[46,62]],'#7e4628');
+  r(27,47,11,3,SD);
+  const end=sh?51:48;
+  for(let y=26;y<=end;y++){let a=22,b=42;if(y===end-2){a=23;b=41}if(y===end-1){a=24;b=40}if(y===end){a=26;b=38}
+    r(a,y,b-a+1,1,SK);r(a,y,2,1,SS);r(b-1,y,2,1,SS);if(y>40&&y<end-1){r(a,y,1,1,SD);r(b,y,1,1,SD)}}
+  r(22,26,21,11,DK);for(let x=22;x<43;x++){r(x,37,1,1,x%2?DK:SD)}for(let x=22;x<43;x+=2)r(x,38,1,1,SD);
+  r(24,38,17,3,MU);r(25,38,15,1,MH);r(32,38,1,1,MS);px([[27,39],[30,40],[35,40],[38,39]],MS);
+  r(23,40,2,4,MU);r(40,40,2,4,MU);r(23,44,1,2,MU);r(41,44,1,2,MU);r(23,40,1,5,MS);r(41,40,1,5,MS);
+  if(open){r(28,42,9,3,'#2a0c0a');r(29,42,7,1,'#f0e8d8');r(30,44,5,1,'#a03a32');r(28,45,9,1,'#a85a4a')}
+  else{r(27,42,11,1,'#3a1a14');r(28,43,9,1,'#a85a4a')}
+  r(37,42,1,1,'#5a3a2a');r(38,41,2,1,TP);r(40,40,2,1,TP);r(42,39,1,1,TP);r(43,38,1,1,TD);
+  px([[25,46],[27,47],[29,46],[35,46],[37,47],[39,46],[26,44],[38,44],[31,47],[33,47],[30,48],[34,48]],SS);
+  r(32,47,1,2,SD);
+  r(21,3,9,1,H);r(35,3,9,1,H);r(29,4,7,1,HS);r(30,3,5,1,HD);
+  for(let y=4;y<19;y++){const i=y<7?7-y:0;const a=19+i,b=45-i;r(a,y,b-a+1,1,H);r(a,y,3,1,HL);r(b-5,y,4,1,HS);r(b-1,y,2,1,HD)}
+  for(let y=5;y<18;y++){r(32,y,1,1,HS);r(31,y,1,1,HL)}
+  px([[24,8],[27,11],[36,7],[38,13],[25,15],[40,10],[34,16],[22,12]],HS);px([[26,6],[35,10],[29,14]],HL);
+  r(19,18,27,4,HD);r(19,18,27,1,HX);r(19,21,27,1,HX);
+  r(28,18,9,4,'#c0c0c8');r(29,19,7,2,'#2e9a8a');r(30,19,4,1,'#3fb8a6');r(30,19,1,1,'#9af0e0');r(28,21,9,1,'#8a8a94');
+  [[17,0,2],[18,0,3],[19,0,4],[20,0,6],[21,0,9]].forEach(([y,a,w])=>{r(a,y,w,1,H);r(64-a-w,y,w,1,H)});
+  r(0,17,1,4,HL);r(1,17,1,2,HL);r(63,17,1,5,HS);r(62,17,1,2,HD);
+  r(9,22,46,1,H);r(0,23,64,3,H);r(3,23,58,1,HL);r(0,25,64,1,HS);
+  r(4,26,56,1,HS);r(10,27,44,1,HD);r(16,28,32,1,HX);
+  px([[12,24],[20,24],[44,24],[52,24],[6,24],[58,24]],HS);
+}
+
+/* ---- Lantern Bust dialog box, copied from the Asset Library (dialog.js, chosen Nov 15) ---- */
+const BLD=(()=>{
+const C={box:'rgba(13,19,34,.94)',boxSolid:'#0d1322',edge:'#ebe5c8',ring:'#05040a',text:'#ebe5c8',name:'#ffd166',narr:'#b9aee8',prompt:'#9a93c4',cursorBg:'#22305a'};
+const F={px:'"Press Start 2P",ui-monospace,Menlo,monospace',vt:'"VT323",ui-monospace,Menlo,monospace'};
+const U=n=>`calc(var(--u) * ${n})`;
+const CSS=`
+.bld{--u:2px;position:absolute;left:${U(2)};right:${U(2)};bottom:${U(2)};box-sizing:border-box;background:${C.box};border:var(--u) solid ${C.edge};box-shadow:0 0 0 var(--u) ${C.ring};border-radius:var(--u);padding:${U(4)} ${U(5)} ${U(7)};color:${C.text};font:${U(9.5)}/1 ${F.vt};text-align:left;-webkit-font-smoothing:none}
+.bld-bust{position:absolute;left:${U(2)};bottom:100%;margin-bottom:calc(var(--u) * -1);border:var(--u) solid ${C.edge};box-shadow:0 0 0 var(--u) ${C.ring};line-height:0}
+.bld-bust canvas{display:block;width:${U(64)};height:${U(64)};image-rendering:pixelated;image-rendering:crisp-edges}
+.bld-tab{position:absolute;bottom:100%;margin-bottom:calc(var(--u) * -1);left:${U(69)};max-width:calc(100% - ${U(71)});box-sizing:border-box;background:${C.boxSolid};border:var(--u) solid ${C.edge};border-bottom-color:${C.boxSolid};padding:${U(3)} ${U(3)} ${U(2.5)};font:${U(4)}/1 ${F.px};letter-spacing:.04em;color:${C.name};white-space:nowrap;overflow:hidden}
+.bld.np .bld-tab{left:${U(3)};max-width:calc(100% - ${U(6)})}
+.bld-t{margin:0;min-height:${U(28.5)};overflow-wrap:break-word}
+.bld.narr .bld-t{color:${C.narr}}
+.bld-q{min-height:0;color:${C.prompt}}
+.bld-c{list-style:none;margin:${U(1)} 0 0;padding:0;display:grid;gap:${U(1)}}
+.bld-c li{position:relative;padding:${U(1)} ${U(2)} ${U(1)} ${U(7)}}
+.bld-c li.on{background:${C.cursorBg}}
+.bld-cur{position:absolute;left:${U(2)};top:50%;margin-top:${U(-2.5)};width:${U(3)};height:${U(5)};display:block}
+.bld-more{position:absolute;right:${U(4)};bottom:${U(3)};width:${U(5)};height:${U(3)};display:block}`;
+function css(){if(document.getElementById('bld-css'))return;const s=document.createElement('style');s.id='bld-css';s.textContent=CSS;document.head.append(s)}
+const svg=(cls,w,h,rects)=>`<svg class="${cls}" viewBox="0 0 ${w} ${h}" shape-rendering="crispEdges" aria-hidden="true">${rects.map(([x,y,a,b])=>`<rect x="${x}" y="${y}" width="${a}" height="${b}" fill="${C.name}"/>`).join('')}</svg>`;
+const MORE=svg('bld-more',5,3,[[0,0,5,1],[1,1,3,1],[2,2,1,1]]);
+const CUR=svg('bld-cur',3,5,[[0,0,1,5],[1,1,1,3],[2,2,1,1]]);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+function render(host,s){
+  css();const b=el('div','bld'+(s.portrait?'':' np')+(s.narrate?' narr':''));b.style.setProperty('--u',(s.scale||2)+'px');
+  if(s.portrait){const f=el('div','bld-bust'),c=el('canvas');c.width=c.height=64;s.portrait(c.getContext('2d'),s.mouth?1:0);f.append(c);b.append(f)}
+  if(s.name&&!s.narrate)b.append(el('span','bld-tab',s.name.toUpperCase()));
+  if(s.choices){if(s.text)b.append(el('p','bld-t bld-q',s.text));const ul=el('ul','bld-c');s.choices.forEach((t,i)=>{const li=el('li',i===s.sel?'on':'',t);if(i===s.sel)li.insertAdjacentHTML('afterbegin',CUR);ul.append(li)});b.append(ul)}
+  else{b.append(el('p','bld-t',s.text))}
+  if(s.more)b.insertAdjacentHTML('beforeend',MORE);
+  host.append(b);return b;
+}
+return{render};
+})();
+
+/* ---- placeholder Storybook faces, 32 x 32 ---- */
+function drawFace(c,o){
+  const r=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h)};
+  r(0,0,32,32,'#2b2a35');r(0,26,32,6,'#25242e');
+  // shirt and neck
+  r(7,27,18,5,o.shirt);r(6,29,20,3,o.shirt);r(7,27,3,5,o.shirtL);r(13,26,6,2,o.skinD);r(14,27,4,2,o.collar);
+  // head
+  for(let y=6;y<=25;y++){let hw=y<9?4+(y-6):y<20?8:Math.max(3,8-(y-19));
+    r(16-hw,y,hw*2,1,o.skin);r(16+hw-2,y,2,1,o.skinS)}
+  r(13,24,6,2,o.skinS);
+  // hair
+  r(8,4,16,4,o.hair);r(7,6,18,4,o.hair);r(9,3,14,1,o.hairD);r(10,5,6,1,o.hairL);
+  r(7,8,2,o.long?17:5,o.hair);r(23,8,2,o.long?17:5,o.hair);r(24,8,1,o.long?17:5,o.hairD);
+  if(o.fringe)r(9,9,9,2,o.hair);
+  if(o.bun){r(12,0,8,4,o.hair);r(13,0,4,1,o.hairL)}
+  // brows
+  r(10,11,4,1,o.hairD);r(18,11,4,1,o.hairD);
+  // eyes: whites, iris, pupil, glint, lashes
+  [[10,13],[18,13]].forEach(([x,y])=>{r(x,y,4,3,'#f4efe4');r(x+1,y,2,3,o.iris);r(x+2,y+1,1,1,'#14101a');r(x+1,y,1,1,'#ffffff');r(x-1,y-1,5,1,'#1a1214')});
+  // nose, cheeks, freckles
+  r(16,17,1,2,o.skinS);r(9,18,2,1,'#e08a8a');r(21,18,2,1,'#e08a8a');
+  if(o.freckles)[[11,17],[13,18],[19,18],[21,17]].forEach(([x,y])=>r(x,y,1,1,o.skinD));
+  // mouth
+  if(o.mouth==='open'){r(13,20,6,3,'#3a0e0c');r(14,20,4,1,'#f0e8d8');r(14,22,4,1,'#b8484a')}
+  else if(o.mouth==='flat'){r(13,21,6,1,'#5a2a24')}
+  else{r(13,21,6,1,'#5a2a24');r(12,20,1,1,'#5a2a24');r(19,20,1,1,'#5a2a24')}
+}
+const FACES={
+  RAINE:{skin:'#e0b08c',skinS:'#c48e6a',skinD:'#a06a4a',hair:'#3a2418',hairL:'#5a3a26',hairD:'#24160e',iris:'#3a8a5a',shirt:'#3a4a3a',shirtL:'#4e604c',collar:'#d8cdb4',fringe:true,mouth:'flat'},
+  DALE:{skin:'#8a5a3e',skinS:'#6e4430',skinD:'#4e2e1e',hair:'#1a1416',hairL:'#2e2628',hairD:'#0e0a0c',iris:'#6a4024',shirt:'#2e4a6a',shirtL:'#3e5e84',collar:'#e8e0d0',mouth:'smile'},
+  MARISOL:{skin:'#c8946a',skinS:'#a87450',skinD:'#80543a',hair:'#2a1a20',hairL:'#4a3038',hairD:'#180e12',iris:'#7a4a2a',shirt:'#6a3a2a',shirtL:'#8a5038',collar:'#d8cdb4',long:true,bun:true,freckles:true,mouth:'smile'}
+};
+function faceCanvas(name,size){const c=document.createElement('canvas');c.width=c.height=32;c.className='pxl';c.style.width=c.style.height=(size||64)+'px';drawFace(c.getContext('2d'),FACES[name]);return c}
+
+/* ---- donut-shop back room, 170 x 221 game px at 2x ---- */
+function drawBackRoom(c){
+  const r=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h)};
+  r(0,0,170,221,'#2a2030');
+  for(let x=0;x<170;x+=12)r(x,0,1,150,'#241a2a');
+  r(0,112,170,3,'#3a2c3c');r(0,115,170,35,'#221a28');for(let x=4;x<170;x+=10)r(x,115,1,35,'#1c1622');
+  r(0,150,170,71,'#1b1f33');for(let y=156;y<221;y+=8)r(0,y,170,1,'#161a2c');for(let y=152,i=0;y<221;y+=8,i++)r((i*23)%60,y,1,8,'#161a2c');
+  // flickering fluorescent tube and its pool of light
+  c.fillStyle='rgba(220,240,230,.06)';c.beginPath();c.moveTo(60,70);c.lineTo(130,70);c.lineTo(160,150);c.lineTo(30,150);c.fill();
+  // door with a little lit window
+  r(10,62,30,88,'#3a2a34');r(11,63,28,86,'#45333e');r(16,70,18,14,'#d9772b');r(17,71,16,12,'#e8a050');r(24,71,1,12,'#45333e');r(34,108,3,3,'#c0c0c8');
+  r(12,92,26,7,'#e8dcc0');for(let x=14;x<36;x+=3)r(x,94,2,3,'#2a2030');
+  // corkboard with a scarecrow photo
+  r(98,58,64,44,'#5a3a1c');r(100,60,60,40,'#9a6a3a');for(let i=0;i<40;i++)r(100+(i*37)%60,60+(i*17)%40,1,1,'#84582e');
+  r(106,64,14,18,'#e8dcc0');r(107,65,12,14,'#1b1f33');r(110,66,6,3,'#6e4630');r(109,69,8,1,'#6e4630');r(111,70,4,4,'#d6a43a');r(112,71,1,1,'#1b1f33');r(114,71,1,1,'#1b1f33');r(108,75,10,1,'#8a6a3a');r(112,74,2,5,'#6e4a2a');r(112,63,2,2,'#b5532e');
+  r(126,66,18,12,'#d8cdb4');for(let y=68;y<77;y+=2)r(128,y,13,1,'#8a8070');r(134,64,2,2,'#b5532e');
+  r(146,72,10,14,'#e8dcc0');r(148,74,6,6,'#7a6a8a');r(150,71,2,2,'#b5532e');
+  r(108,86,22,10,'#d6a43a');r(110,88,16,1,'#6e4a2a');r(110,91,12,1,'#6e4a2a');r(118,84,2,2,'#b5532e');
+  c.strokeStyle='#b5532e';c.lineWidth=1;c.beginPath();c.moveTo(113.5,64);c.lineTo(135,65);c.lineTo(151,72);c.moveTo(135,65);c.lineTo(119,85);c.stroke();
+  // desk
+  r(36,128,124,6,'#7a5234');r(36,128,124,1,'#9a6c44');r(38,134,120,22,'#5a3a24');r(38,134,120,1,'#3e2818');r(42,138,30,14,'#4e3220');r(120,138,34,14,'#4e3220');r(56,144,4,2,'#c0a070');r(135,144,4,2,'#c0a070');
+  // cruller box, mug, case folder
+  r(104,118,34,10,'#e8dcc0');r(104,118,34,2,'#ff9ec8');r(103,116,36,2,'#d8c8b0');
+  [[108,121],[117,121],[126,121]].forEach(([x,y])=>{r(x,y,7,4,'#d9772b');r(x+1,y,5,1,'#f0a860');r(x+3,y+1,1,2,'#8a4a1c')});
+  r(84,119,7,9,'#d8cdb4');r(91,121,2,4,'#d8cdb4');r(85,119,5,1,'#3a2418');
+  r(52,123,24,5,'#c0a46a');r(54,122,10,1,'#c0a46a');r(60,124,10,1,'#b5532e');
+  // tube itself
+  r(62,6,46,3,'#e8f0e0');r(60,5,2,5,'#8a8a94');r(108,5,2,5,'#8a8a94');r(62,9,46,1,'#a0b0a8');
+}
+
+/* ---- tiny pixel pin, used on case-only item rows ---- */
+const PIN='<svg class="pin" viewBox="0 0 7 9" shape-rendering="crispEdges" aria-hidden="true"><rect x="1" y="0" width="5" height="4" fill="#b5532e"/><rect x="2" y="1" width="2" height="1" fill="#e07a50"/><rect x="0" y="4" width="7" height="1" fill="#7a3520"/><rect x="3" y="5" width="1" height="4" fill="#c0c0c8"/></svg>';
+
+/* ---- shell ---- */
+function shell(id){
+  const p=document.getElementById(id);
+  p.innerHTML=`<div class="topbar"></div><div class="bezel"></div><div class="scr"></div>
+  <div class="brand"><i></i>BLACK LANTERN</div>
+  <div class="dpad"><b></b><span>▲</span><b></b><span>◀</span><span></span><span>▶</span><b></b><span>▼</span><b></b></div>
+  <div class="btn b">B</div><div class="btn a">A</div>
+  <div class="pills"><span class="lr">L</span><span>SELECT</span><span>START</span><span class="lr">R</span></div>`;
+  return p.querySelector('.scr');
+}
+
+
+function drawRoomWithHat(c,shout,frame){
+  drawBackRoom(c);
+  const p=document.createElement('canvas');p.width=p.height=64;drawBigHat(p.getContext('2d'),shout,frame,true);
+  c.imageSmoothingEnabled=false;c.drawImage(p,21,4,128,128);
+  // the desk sits in front of him (redrawn over the bust)
+  const r=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h)};
+  r(20,128,130,6,'#7a5234');r(20,128,130,1,'#9a6c44');r(22,134,126,22,'#5a3a24');r(22,134,126,1,'#3e2818');r(26,138,30,14,'#4e3220');r(114,138,30,14,'#4e3220');
+  r(108,118,34,10,'#e8dcc0');r(108,118,34,2,'#ff9ec8');r(107,116,36,2,'#d8c8b0');
+  [[112,121],[121,121],[130,121]].forEach(([x,y])=>{r(x,y,7,4,'#d9772b');r(x+1,y,5,1,'#f0a860');r(x+3,y+1,1,2,'#8a4a1c')});
+  r(30,119,7,9,'#d8cdb4');r(37,121,2,4,'#d8cdb4');r(31,119,5,1,'#3a2418');
+  if(shout){c.fillStyle='rgba(170,0,30,.28)';c.fillRect(0,0,170,221)}
+}
+function scene(id,shout,frame){const s=shell(id);
+  const bg=document.createElement('canvas');bg.width=170;bg.height=221;bg.className='pxl';Object.assign(bg.style,{width:'340px',height:'442px',position:'absolute',inset:'0'});
+  drawRoomWithHat(bg.getContext('2d'),shout,frame);s.append(bg);
+  if(shout)s.style.transform='translate(2px,-1px)';return s}
+BLD.render(scene('p1',false,1),{name:'Big Hat',text:"Agent IRON HERON. Sit.",more:true});
+BLD.render(scene('p2',false,0),{name:'Big Hat',text:'Two questions. Make \'em count.',choices:['The town','The scarecrow photo','The local law','The corn maze','No questions'],sel:1});
+BLD.render(scene('p3',true,1),{name:'Big Hat',text:'AND I WILL NOT HAVE IT IN MY JURISDICTION.',more:true});
+</script>
