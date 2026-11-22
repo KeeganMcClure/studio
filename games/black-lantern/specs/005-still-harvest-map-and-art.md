@@ -59,7 +59,7 @@ From the changelog (Art build passes 1 to 4, Demos 1 to 3, Nov 21) and the code:
 
 ## What to build
 
-### 1. The maps on the Shared Shelf (recommended; waiting on Keegan's pick: same layout, new art)
+### 1. The maps on the Shared Shelf (Keegan picked Nov 22: same layout, new art)
 
 - **Keep every map's plan.** Every building, townsperson, scarecrow, clue spot, sign, gate, lamp and warp stays on the same tile, and every tile that blocks walking today still blocks. The maze keeps its seed, so its paths, the three victims and the loot spots come out the same. Today's story and every checkpoint must play exactly as now.
 - **Draw it with the Shared Shelf**, at the versions in Art → Shared Shelf, painted with `SHELF.use(PALETTES.blacklantern)`. Roughly:
@@ -145,7 +145,7 @@ The pink SAN number is part of the approved low-SAN look, so the map needs the s
 
 | Piece | Now or later |
 | --- | --- |
-| Moving buildings, people or clues; a new town plan | **Later, if Demo 5 needs it** (step 1) |
+| Moving buildings, people or clues; a new town plan | **Later, if Demo 5 needs it** (Keegan picked same layout Nov 22) |
 | A night version of the town, and townsfolk night treatments | **Demo 5**, with the story |
 | Battle backgrounds and enemy battle sprites (Crowling, Husk Scout, Bale Hound, Long Man, Volunteer in battle, the Gleaner) and the Gleaner's portrait | **Demo 5**, with the fights under the new combat rules |
 | Big Hat's office scene | Unchanged |
