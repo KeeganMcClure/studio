@@ -117,7 +117,7 @@ The debrief plays in this order, right after the case's last scene. Each step au
 
 ### 7. The memorial list on the board
 
-The bible puts the memorial list on the case board screen but no mockup shows it. Build the option Keegan picks on the question in this spec's PR thread. Recommended:
+The bible puts the memorial list on the case board screen but no mockup shows it. Keegan picked a plaque pinned on the board (Nov 22):
 
 - **A memorial plaque** pinned in the cork board's lower corner, drawn in code to match the board (a small dark wood plaque with a brass edge). It appears only once `bl.memorial` has someone on it. The cursor reaches it like a card.
 - **A on the plaque** opens `MEMORIAL` in the Lantern Bust style: one row per agent, newest first, with their face, field name, profession, cases closed, how they were lost (`Retired` in a calmer color), and the season. Up/Down scroll; B closes.
