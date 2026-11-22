@@ -17,7 +17,7 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 - [x] Studio bible: `controls.md` lets a game give L/R their own jobs, and `ui.md` lets a game with one fixed lead leave out Make lead (Nov 21).
 - [x] The clock: how many in-game minutes a step and each action cost, so a day lands at 10 to 15 minutes of play (Nov 21). See Time and seasons, The clock.
 - [x] The map generator: how big the starting town and its countryside are, what building and area types exist, and how fast places run dry (Nov 21). See The map, Generator.
-- [ ] Needs and SAN numbers: how fast hunger, sleep and SAN drop, what each refills, and what happens at each low point.
+- [x] Needs and SAN numbers: how fast hunger, sleep and SAN drop, what each refills, and what happens at each low point (Nov 21). See Needs, The numbers.
 - [ ] Combat numbers: hit chances, damage, weapons, noise per action, and how zombies and raiders choose a move.
 - [ ] Your survivor: each job's skills and starting items, each trait's effect, the want list, the looks parts, the 8 templates, and how fast skills grow with use.
 - [ ] Rumors and late threats: the first rumor list, how the raider leader forms, and horde timing.
@@ -144,6 +144,11 @@ None yet.
 - **Health:** wounds, infection, cold and starving drain it. Rest and medicine restore it. At zero you die.
 - **Sleep:** drops while awake. Low sleep makes you slower and worse at everything. At zero you pass out where you stand (set Nov 21). Sleeping is safest inside the shelter, with a companion on watch.
 - **SAN** (set Nov 21): a light mechanic, not a big deal. It drifts down with darkness, gore, losing companions and no sleep. Low SAN worsens aim and shows as phantoms and grit, not the studio's pink and cyan edges (see Art, and Conflicts). Only at zero SAN does it take control, and only for a few turns: you freeze or run (set Nov 21).
+- **The numbers** (Keegan, Nov 21). Every bar runs 0 to 100. Exact numbers are tuned in playtests, and difficulty presets move them.
+  - **Hunger:** 2 meals a day. A full bar lasts about 2 days with no food. A solid meal fills about 40 and a light one about 20. Once starving, you die about 2 days later.
+  - **Sleep:** you get slow and clumsy after about 18 hours awake, and you pass out at about 30. 8 hours of sleep is a full rest (see Time and seasons, The clock).
+  - **SAN:** falls slowly. A hard day costs 10 to 15, a kill or gore 5 to 10, and losing a companion 30. A good evening wins most of a hard day back. Phantoms and grit start at 50 (see Art).
+  - **Health:** comes back slowly. A full night's sleep heals about 10, and more in a real bed. A deep cut or a break won't heal until it's treated.
 - **Joy restores SAN** (set Nov 21): a shared meal, a quiet night on watch together, a companion's arc paying off, a romance scene, finding something that was loved before (a cassette, a photo). People refill what the dark drains, so bonds are part of survival.
 - **Vices** (set Nov 21): cigarettes, booze and pills lift SAN fast, at a cost. Booze makes you clumsy while drunk (worse aim, bigger noise ring), a lit cigarette glows in the dark and can be seen at night, and pills slow you. Lean on one and you crave it. A Smoker starts hooked. Vices trade well. Homegrown weed (Keegan, Nov 21) lifts SAN and calms panic, but makes you hungrier and slower, and the smoke glows and smells.
 
