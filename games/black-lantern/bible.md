@@ -144,6 +144,8 @@ Problems found in playtests. Each line: what happened · where · how to make it
 
 Drop loose ideas here; Claude sorts them into the right section next build.
 
+- **Random cases each season (Keegan, Nov 21):** some randomness in which cases a season's board offers. The worry it answers: replaying cases you've already played after a party wipe. Note for sorting: today a full wipe only reopens the case in progress and the season keeps its progress (Systems → Gameplay loop, Game over); only New game starts the season over (spec 004). Randomness would still help replays of a fresh season.
+
 Your medieval spin-off notes moved, word for word, to their own doc on Nov 19: Doc
 
 ## Overview
