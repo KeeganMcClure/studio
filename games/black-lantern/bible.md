@@ -120,6 +120,8 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
 - [ ] Home phase part A (spec 008): arc beats, the home screen and all nine choices, Sabbatical with its recruit, the result card and the save. After Demo 6
 - [ ] Home phase part B (spec 008): the home backdrops for each Bond type and place, and older faces for parents and mentors
 - [ ] Season flow (spec 009): the season data file, the board for a full season, agency case unlocks, the finale, the season's end and the next season. After the home phase
+- [ ] Good Manners part A (spec 010): its maps and art, townsfolk and the two men, walkable with stand-in scripts. After the season flow
+- [ ] Good Manners part B (spec 010): the secret case file first, then its story, fights, boss and endings
 - [x] Turn the Art Bible page into the Asset Library (sprites, drawing code, palette)
 - [x] Update the project instructions to point here
 - [x] Set style rules for monsters and townsfolk
