@@ -6,8 +6,8 @@
 //                    with Select pressed once so seat 2 leads (since save version 3), and the season with
 //                    Still Harvest open (since save version 4), and since version 5 each agent's kit and items,
 //                    a found Bandage and seat 1 Bleeding, and since version 6 a lasting injury on seat 1
-//   closed.json      the same game after the case is finished (through the test hook BLG._t.finish(), which runs
-//                    the case's real ending step), back on the title: Still Harvest closed, CLOSED 1 (since version 4)
+//   closed.json      the same game after the case is finished (through the test hook BLG._t.finish(), the debrief's
+//                    last step), back on the title: Still Harvest closed, CLOSED 1 (since version 4)
 // Usage: node tools/build.js && node tools/capture-saves.js <label>   (label goes in the file names, e.g. 2026-11-21)
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -73,11 +73,10 @@ const write = (name, note, keys) => {
   console.log('checkpoint: map', g.map, 'at', g.x + ',' + g.y, '· lead seat', (g.lead | 0) + 1, '· clues', g.clues.length, '· party', g.party.map(m => m.name).join(', '));
   write('mid-chapter', `Roster plus a Chapter One checkpoint (Save & quit on the ${g.map} map, seat ${(g.lead | 0) + 1} leading) from the build of ${label}`, keys);
 
-  // Continue, finish the case, leave the dossier for the board (stamped CLOSED), then B to the title
+  // Continue, finish the case (since spec 007 straight to the board, stamped CLOSED), then B to the title
   await row('Continue Chapter One'); await page.waitForTimeout(500);
-  await page.evaluate(() => BLG._t.finish()); await page.waitForTimeout(300);
-  await key('x'); await page.waitForTimeout(700);
-  if (!await page.evaluate(() => !!BLG._t.board())) throw new Error('Leaving the dossier did not open the case board');
+  await page.evaluate(() => BLG._t.finish()); await page.waitForTimeout(700);
+  if (!await page.evaluate(() => !!BLG._t.board())) throw new Error('Finishing the case did not open the case board');
   await key('x'); await page.waitForTimeout(300);
   const closed = await dump(page), season = JSON.parse(closed['bl.season'] || 'null');
   if (!season || season.closed !== 1) throw new Error('The season did not record the closed case');

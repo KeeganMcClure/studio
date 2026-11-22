@@ -9,7 +9,8 @@
 //      with its saved lead (seat 1 for older saves), Select cycles the lead and Start → Party opens and closes;
 //      damaged saves open to the title with no errors
 //   6. the case board (spec 004): every test save has a season with Still Harvest (open for saves from before
-//      version 4); a checkpoint, once finished, shows the board with Still Harvest stamped CLOSED and CLOSED n+1;
+//      version 4); a checkpoint, once finished, shows the board with Still Harvest stamped CLOSED and CLOSED n+1
+//      (a checkpoint paused mid-debrief, spec 007, first reopens at its debrief step);
 //      then New game (asking first when a case is closed) → Pick a team → Your team → START shows the board with
 //      Still Harvest open, B goes back to Your team, and the roster is kept
 // Still needs a person: the changed part playing start to finish, text and typos, the fun check.
@@ -120,10 +121,16 @@ async function checkSaves(browser) {
       // its briefing with the same team instead, and says so in its first box; the in-case checks below then don't apply.
       const last = await page.evaluate(() => BLG._t.box());
       const rewrote = from < 7;
+      // a checkpoint paused mid-debrief (spec 007) opens back in Big Hat's back room at the step it reached
+      let paused = null; try { paused = JSON.parse(JSON.parse(save.keys['bl.game'])).db; } catch (e) {}
+      if (paused) {
+        const at = await page.evaluate(() => ({ step: BLG._t.G().db && BLG._t.G().db.step, mode: BLG._t.G().mode }));
+        if (at.step !== paused.step || at.mode !== 'scene') problems.push(`a mid-debrief checkpoint should reopen at debrief step ${paused.step}, got ${JSON.stringify(at)}`);
+      }
       if (rewrote && !/rewritten/.test(last)) problems.push('an old Still Harvest checkpoint should restart from the briefing with the rewritten line');
-      if (!rewrote && (!/LAST TIME/.test(last) || !/NEXT/.test(last))) problems.push('no Last time box with the Next goal after Continue');
+      if (!rewrote && !paused && (!/LAST TIME/.test(last) || !/NEXT/.test(last))) problems.push('no Last time box with the Next goal after Continue');
       await page.evaluate(() => BLG._t.skipBox()); await page.waitForTimeout(150);
-      if (!rewrote) {
+      if (!rewrote && !paused) {
       // Select on the map moves the lead to the next seat, and Start → Party opens and closes
       await page.keyboard.press('Backspace'); await page.waitForTimeout(100);
       const n = await page.evaluate(() => BLG._t.party().length), after = await page.evaluate(() => BLG._t.lead());
@@ -161,11 +168,10 @@ async function checkBoard(page, name, save, inCase, from) {
   }
   const roster = await page.evaluate(() => JSON.parse(localStorage.getItem('bl.roster') || '[]').length);
   if (inCase) {
-    // finish the case: the dossier, then the board with the card stamped CLOSED, then B to the title
-    await page.evaluate(() => BLG._t.finish()); await pause(300);
-    await page.keyboard.press('x'); await pause(700);
+    // finish the case (the debrief's last step, spec 007): straight to the board with the card stamped CLOSED, then B to the title
+    await page.evaluate(() => BLG._t.finish()); await pause(700);
     s = await season();
-    if (!await board()) problems.push('leaving the dossier after a finish did not open the case board');
+    if (!await board()) problems.push('finishing a case did not open the case board');
     if (!s || s.cases['still-harvest'].state !== 'closed' || s.closed !== before + 1) problems.push(`after a finish Still Harvest should be closed with CLOSED ${before + 1}`);
     await page.screenshot({ path: path.join(__dirname, '..', 'dist', `check-board-closed-${tag}.png`) });
     await page.keyboard.press('x'); await pause(300);

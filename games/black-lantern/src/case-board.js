@@ -19,13 +19,13 @@ function registerCase(c){if(c&&c.id&&!CASES.some(x=>x.id===c.id))CASES.push(c)}
 const caseById=id=>CASES.find(c=>c.id===id);
 const seasonKey=()=>B.key('season');
 // A fresh Season 1: every loaded case open, nothing closed, overstepping at Clean (spec 004, step 6)
-function freshSeason(){const cases={};CASES.forEach(c=>{cases[c.id]={file:c.card.file,state:'open',ending:null}});return{season:1,cases,closed:0,overstep:0}}
+function freshSeason(){const cases={};CASES.forEach(c=>{cases[c.id]={file:c.card.file,state:'open',ending:null}});return{season:1,cases,closed:0,overstep:0,hidden:[]}}
 // Reads bl.season. A case file the save doesn't know yet is added as open (no new save version needed).
 function loadSeason(){
  let s=store.get(seasonKey(),null),changed=false;
  if(!s||typeof s!=='object'||Array.isArray(s)||!s.cases||typeof s.cases!=='object'){s=freshSeason();changed=true}
  for(const c of CASES)if(!s.cases[c.id]){s.cases[c.id]={file:c.card.file,state:'open',ending:null};changed=true}
- if(!Number.isInteger(s.season))s.season=1;if(!Number.isInteger(s.closed))s.closed=0;if(!Number.isInteger(s.overstep))s.overstep=0;
+ if(!Number.isInteger(s.season))s.season=1;if(!Number.isInteger(s.closed))s.closed=0;if(!Number.isInteger(s.overstep))s.overstep=0;if(!Array.isArray(s.hidden))s.hidden=[];
  if(changed)store.set(seasonKey(),s);
  return s;
 }
@@ -56,6 +56,12 @@ function boardCards(){
  return CASES.filter(c=>s.cases[c.id]).sort((a,b)=>a.card.file-b.card.file).slice(0,SPOTS.length)
   .map(c=>({id:c.id,card:c.card,shut:s.cases[c.id].state==='closed'}));
 }
+// The memorial plaque (spec 007, step 7): pinned in the cork's lower right corner once bl.memorial has someone on it;
+// the cursor reaches it like a card, and A opens the MEMORIAL list. It stays through New game, like the roster.
+const memorial=()=>{const m=store.get(B.key('memorial'),[]);return(Array.isArray(m)?m:[]).filter(x=>x&&typeof x==='object'&&x.name)};
+function plaqueRect(L){const c=L.cork,w=48,h=24;return{x:c.x+c.w-w-4,y:c.y+c.h-h-4,w,h}}
+// every spot the cursor can reach: the cards, then the plaque
+function boardRects(cards,L){const r=cards.map((c,i)=>L.spot(SPOTS[i]));if(memorial().length)r.push(plaqueRect(L));return r}
 // o.from: 'team' (Your team → START; B goes back to Your team) or 'finish' (after a case; B goes to the title)
 function board(o={}){
  const cards=boardCards(),first=cards.findIndex(c=>!c.shut);
@@ -65,15 +71,18 @@ function board(o={}){
 }
 function closeBoard(){CB=null}
 function boardPress(k){
- const cards=boardCards(),L=boardLayout(),rects=cards.map((c,i)=>L.spot(SPOTS[i]));
+ if(CB.mem){memPress(k);return}
+ const cards=boardCards(),L=boardLayout(),rects=boardRects(cards,L);
  if(k==='up'||k==='down'||k==='left'||k==='right'){CB.sel=StudioNearest.step(rects,CB.sel,k);return}
+ if(k==='a'&&CB.sel===cards.length&&rects[CB.sel]){CB.mem={top:0};return}  // the plaque
  if(k==='a'){const c=cards[CB.sel];if(!c||c.shut)return;     // closed cases stay closed
   const from=CB.from;closeBoard();if(!B.beginCase(c.id)){board({from});B.toast('BUILD A TEAM FIRST')}return}
  if(k==='b'){const back=CB.from==='team'?'team':'title';closeBoard();leave();B.goto(back);B.render();return}
 }
 cv.addEventListener('click',e=>{if(!CB||!G.active)return;const r=cv.getBoundingClientRect();if(!r.width)return;
  const x=(e.clientX-r.left)*VW/r.width,y=(e.clientY-r.top)*VH/r.height;
- const cards=boardCards(),L=boardLayout(),rects=cards.map((c,i)=>{const s=L.spot(SPOTS[i]);return{x:s.x,y:s.y-5,w:s.w,h:s.h+5}});
+ if(CB.mem){for(const h of CB.hits||[])if(x>=h.x&&x<h.x+h.w&&y>=h.y&&y<h.y+h.h){boardPress(h.k);return}return}
+ const cards=boardCards(),L=boardLayout(),rects=boardRects(cards,L).map(s=>({x:s.x,y:s.y-5,w:s.w,h:s.h+5}));
  const i=StudioNearest.at(rects,x,y);
  if(i>=0){if(i===CB.sel)boardPress('a');else CB.sel=i;return}
  for(const h of CB.hits||[])if(x>=h.x&&x<h.x+h.w&&y>=h.y&&y<h.y+h.h){boardPress(h.k);return}
@@ -146,18 +155,49 @@ function drawDesc(L,c){
  else{const bx=kx-8-pW(BW.briefing,12);pT(BW.briefing,bx,ky-1,CB_COL.hint,12);kx=bx-13;drawKey(kx,ky,'A');hits.push({k:'a',x:kx-2,y:ky-3,w:bx+pW(BW.briefing,12)-kx+4,h:16})}
  CB.hits=hits;
 }
+// the plaque: small dark wood with a brass edge and two lines of brass letters
+function drawPlaque(r,on,n){
+ const x=r.x-(on?1:0),y=r.y-(on?1:0);pR(x+2,y+2,r.w,r.h,CB_COL.shadow);if(on)pR(x-2,y-2,r.w+4,r.h+4,PC.gold);
+ pBox(x,y,r.w,r.h,'#2a1a10','#b8955a',2);pR(x+3,y+3,r.w-6,1,'#4a2f1a');
+ const a=BLS.DEBRIEF.plaque,t=String(n);pT(a,x+(r.w-pW(a,5,PXf))/2,y+6,'#d6b46a',5,PXf);pT(t,x+(r.w-pW(t,12))/2,y+11,'#d6b46a',12);
+ drawPin(x+Math.round(r.w/2)-1,y,'#b8955a')}
+function drawPlaqueDesc(L){
+ const right=VW-3,ms=memorial(),W=BLS.DEBRIEF,tw=pW(W.memorial,14)+10;
+ pR(6,L.tabY,tw,13,PC.cream);pR(7,L.tabY+1,tw-2,13,PC.navy);pT(W.memorial,11,L.tabY,PC.gold,14);
+ pBox(3,L.descY,VW-6,L.boxH,PC.navy,PC.cream);pR(7,L.descY,tw-2,1,PC.navy);
+ ms.slice(-2).reverse().forEach((x,i)=>pT(pFit(`${String(x.name).split(' ')[0].toUpperCase()} · ${W.how[x.how]||x.how||''}`,VW-20,14),10,L.descY+4+i*13,i?PC.lav:PC.cream,14));
+ const ky=L.descY+L.boxH-13,hits=[];let kx=right-7-pW(BW.back,12);pT(BW.back,kx,ky-1,CB_COL.hint,12);kx-=13;drawKey(kx,ky,'B');hits.push({k:'b',x:kx-2,y:ky-3,w:right-kx,h:16});
+ const bx=kx-8-pW(W.memA,12);pT(W.memA,bx,ky-1,CB_COL.hint,12);kx=bx-13;drawKey(kx,ky,'A');hits.push({k:'a',x:kx-2,y:ky-3,w:bx+pW(W.memA,12)-kx+4,h:16});CB.hits=hits}
+// MEMORIAL, in the Lantern Bust style: one row per agent, newest first. Up/Down scroll, B closes.
+function memPress(k){const n=memorial().length;if(k==='up')CB.mem.top=Math.max(0,CB.mem.top-1);else if(k==='down')CB.mem.top=Math.min(Math.max(0,n-1),CB.mem.top+1);else if(k==='b'||k==='a')CB.mem=null}
+function drawMemorial(){
+ const W=BLS.DEBRIEF,ms=memorial().slice().reverse(),RH=44,top=26,avail=Math.max(1,Math.floor((VH-top-20)/RH));CB.mem.top=clamp(CB.mem.top,0,Math.max(0,ms.length-avail));
+ pR(0,0,VW,VH,PC.navy);pBox(4,4,232,18,PC.deep,PC.cream);pT(W.memorial,10,9,PC.gold,8,PXf);const c=`${ms.length}`;pT(c,230-pW(c,14),5,PC.lav,14);
+ ms.slice(CB.mem.top,CB.mem.top+avail).forEach((x,k)=>{const y=top+k*RH,ret=x.how==='retired',a=x.a&&x.a.look?x.a:null;
+  pBox(4,y,232,RH-3,PC.card,PC.dim);pR(8,y+4,34,34,PC.plum);if(a)cx.drawImage(faceOf(a,1),9,y+5);
+  pT(pFit(String(x.name).split(' ')[0].toUpperCase(),110,16),48,y+1,PC.gold,16);
+  const pf=(profOf(a||{prof:x.prof})||{}).name||'';pT(pFit(pf,80,12),231-pW(pFit(pf,80,12),12),y+3,PC.lav,12);
+  pT(`${fillT(W.memCases,{k:x.cases|0})} · ${fillT(W.memSeason,{s:x.season||1})}`,48,y+14,PC.lav,13);
+  pT(W.how[x.how]||x.how||'',48,y+26,ret?PC.lav:PC.pink,14)});
+ if(ms.length>avail)pT(`${CB.mem.top+1}–${Math.min(ms.length,CB.mem.top+avail)}/${ms.length}`,230-pW(`${CB.mem.top+1}–${Math.min(ms.length,CB.mem.top+avail)}/${ms.length}`,12),VH-16,PC.lav,12);
+ pT(W.memKeys,8,VH-16,PC.dim,13);
+ CB.hits=[{k:'b',x:0,y:0,w:VW,h:24}];
+}
 function drawBoard(){
- const now=performance.now(),L=boardLayout(),s=loadSeason(),cards=boardCards();
+ if(CB.mem)return drawMemorial();
+ const now=performance.now(),L=boardLayout(),s=loadSeason(),cards=boardCards(),mem=memorial();
  pR(0,0,VW,VH,PC.navy);drawCork(L);
  cx.save();cx.beginPath();cx.rect(L.cork.x,L.cork.y-6,L.cork.w,L.cork.h+6);cx.clip();
  drawDecor(L);
  cards.forEach((c,i)=>{if(i!==CB.sel)drawCard(c,L.spot(SPOTS[i]),false,now)});
  if(cards[CB.sel])drawCard(cards[CB.sel],L.spot(SPOTS[CB.sel]),true,now);
+ if(mem.length)drawPlaque(plaqueRect(L),CB.sel===cards.length,mem.length);
  cx.restore();
- if(cards[CB.sel])drawCursor(L.spot(SPOTS[CB.sel]),now);
+ if(CB.sel===cards.length&&mem.length)drawCursor(Object.assign({},plaqueRect(L),{y:plaqueRect(L).y-14}),now);
+ else if(cards[CB.sel])drawCursor(L.spot(SPOTS[CB.sel]),now);
  // header bar: SEASON n · CASE BOARD on the left, CLOSED n on the right
  const h=L.hdr,cl=`${BW.closed} ${s.closed}`;
  pBox(h.x,h.y,h.w,h.h,'rgba(27,31,51,.95)',PC.cream);
  pT(`${BW.season} ${s.season} · ${BW.title}`,h.x+6,h.y+3,PC.gold,15);pT(cl,h.x+h.w-6-pW(cl,15),h.y+3,PC.lav,15);
- if(cards[CB.sel])drawDesc(L,cards[CB.sel]);
+ if(CB.sel===cards.length&&mem.length)drawPlaqueDesc(L);else if(cards[CB.sel])drawDesc(L,cards[CB.sel]);
 }

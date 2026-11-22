@@ -21,7 +21,8 @@ const settings=()=>{const s=store.get(B.key('settings'),null);return s&&typeof s
 const fastOn=()=>!!settings().fast;
 
 // ================= ITEMS (A1) =================
-function itemDef(k){const c=caseById(G.case),ci=c&&c.items;return FI[k]||(ci&&ci[k])||{name:String(k),type:'?',desc:''}}
+// a case's own item stays readable after its case (a trophy or a hidden item): any loaded case's items are checked last
+function itemDef(k){const c=caseById(G.case),ci=c&&c.items;return FI[k]||(ci&&ci[k])||CASES.map(x=>x.items&&x.items[k]).find(Boolean)||{name:String(k),type:'?',desc:''}}
 function newItem(k,o={}){const d=itemDef(k);const it={k,u:o.u??(d.uses||1)};if(o.kit)it.kit=o.kit;if(d.pin)it.pin=1;return it}
 const isWeap=it=>!!itemDef(it.k).w;
 const isWorn=it=>!!itemDef(it.k).worn;
@@ -244,7 +245,7 @@ async function hunch(hint){
 async function overstep(seen){
  if(G.fs.jam&&G.fs.jam[G.map])return false;
  const o=luck(seen==='public'?-40:seen?-20:0);if(o.ok)return false;
- const s=loadSeason(),steps=stepsOf();s.overstep=Math.min(steps.length-1,(s.overstep|0)+1);store.set(seasonKey(),s);
+ const s=loadSeason(),steps=stepsOf();s.overstep=Math.min(steps.length-1,(s.overstep|0)+1);store.set(seasonKey(),s);G.fs.climbed=1;  // the debrief's drop needs it (spec 007)
  await say('',BLS.OVERSTEP.climb[steps[s.overstep]]||'');return true}
 function stepsOf(){const c=caseById(G.case);return c&&c.quiet?BLS.OVERSTEP.quiet:BLS.OVERSTEP.open}
 function noise(){roamLoud();const M=G.M;if(M&&M.onLoud)run(M.onLoud)}
@@ -399,7 +400,7 @@ function fillMember(m){
 function normDis(x){if(!x)return[];if(Array.isArray(x))return x.filter(d=>d&&DZ[d.k]);const k=OLDDIS[x];return k?[{k,s:k==='phobia'?'the dark':undefined}]:[]}
 const OLDDIS={'Jumpy':'ptsd','Night terrors':'sleep','Counting compulsion':'paranoia','Hypervigilance':'paranoia','Hollow stare':'depression','Can\'t stop smiling':'phobia'};
 function fieldStart(){
- const p=store.get(B.key('party'),null);G.fs=freshFs();G.fs.pack=p&&Array.isArray(p.pack)?p.pack.filter(it=>it&&it.k):[];
+ const p=store.get(B.key('party'),null);G.fs=freshFs();G.fs.step0=loadSeason().overstep|0;  // where overstepping started (spec 007)G.fs.pack=p&&Array.isArray(p.pack)?p.pack.filter(it=>it&&it.k):[];
  party.forEach(fillMember);party.forEach(m=>kitUp(m,true));
 }
 function fieldRestore(o){G.fs=Object.assign(freshFs(),o.fs||{});if(!o.fs&&o.items)G.fs.pack=oldPack(o.items);G.fs.start=0;party.forEach(fillMember);party.forEach(m=>kitUp(m,false))}
@@ -425,24 +426,24 @@ async function loseAgent(m,how){
  party.splice(i,1);if(!party.length){await gameOver();return}
  if(wasLead)G.lead=Math.min(i,party.length-1);else if((G.lead|0)>i)G.lead--;
  const L=lead(),pins=gearOf(m).it.filter(it=>it.pin);pins.forEach(it=>{if(gearOf(L).it.length<8)gearOf(L).it.push(it);else G.fs.pack.push(it)});gearOf(m).it=gearOf(m).it.filter(it=>!it.pin);
- const mem=store.get(B.key('memorial'),[]);(Array.isArray(mem)?mem:[]).push({name:m.a.name,code:m.a.code,prof:m.a.prof,how,case:G.case,when:new Date().toISOString().slice(0,10),a:JSON.parse(JSON.stringify(carry(m)))});
+ const mem=store.get(B.key('memorial'),[]);(Array.isArray(mem)?mem:[]).push({name:m.a.name,code:m.a.code,prof:m.a.prof,how,case:G.case,cases:m.a.cases|0,when:new Date().toISOString().slice(0,10),a:JSON.parse(JSON.stringify(carry(m)))});
  store.set(B.key('memorial'),Array.isArray(mem)?mem:[mem]);
  B.S.roster=(B.S.roster||[]).filter(x=>x.id!==m.a.id);store.set(B.key('roster'),B.S.roster);
  G.fs.recruit.push(m.a.prof);applySan();checkpoint();
 }
 // at the next area change, Big Hat offers three recruits (one shares the lost agent's profession) or the creator
-async function offerRecruit(){
+async function offerRecruit(o={}){  // o.ask: the opening line; o.late: joined at the debrief (no case gains, spec 007)
  while(G.fs.recruit.length){
   const prof=G.fs.recruit[0],same=REC.find(r=>r.prof===prof),others=REC.filter(r=>r.prof!==prof&&!party.some(m=>m.a.prof===r.prof)).sort(()=>Math.random()-.5).slice(0,2);
   const opts=[same,...others].filter(Boolean).sort(()=>Math.random()-.5);
-  await say('',RW.ask);
+  await say('',o.ask||RW.ask);
   const rows=opts.map(r=>`${r.name} · ${(profOf(r)||{}).name}`).concat([RW.build]);
   const i=await choose(rows,{title:'RECRUIT',desc:opts.map(r=>r.backstory).concat([''])});
   let a,line;
   if(i===opts.length){a=await buildRecruit();if(!a)continue;line=RW.built}
   else{a=B.fromTemplate(opts[i]);delete a.first;line=fillT(RW.hat,{p:(profOf(a)||{}).name,n:a.name})}
   G.fs.recruit.shift();
-  const m=fillMember(member(a));a.gear=null;gearOf(m);kitUp(m,true);party.push(m);
+  const m=fillMember(member(a));a.gear=null;gearOf(m);kitUp(m,true);if(o.late)m.late=1;party.push(m);
   B.S.roster=B.S.roster||[];B.S.roster.unshift(JSON.parse(JSON.stringify(a)));store.set(B.key('roster'),B.S.roster);
   await say('BIG HAT',line);
   const first=(REC.find(r=>r.prof===a.prof)||{}).first;if(first)await say(m.name.toUpperCase()+' · '+((profOf(a)||{}).name||'').toUpperCase(),first);
@@ -463,7 +464,7 @@ async function pauseMenu(){
   const dev=!!(window.Studio&&Studio.channel==='dev'),R=MMW.rows,rows=[...R.slice(0,-1),...(dev?[MMW.dev]:[]),R[R.length-1]];
   const r=await choose(rows,{cancel:true,title:MMW.title+' · '+G.M.name,sel:Math.min(pauseMenu.sel|0,rows.length-1)});
   if(r<0){pauseMenu.sel=0;return}const w=rows[r];pauseMenu.sel=r;
-  if(w===MMW.dev){pauseMenu.sel=0;finish();return}
+  if(w===MMW.dev){pauseMenu.sel=0;const c=caseById(G.case);if(c&&c.facts&&c.label){const l=c.label();await debrief(l,c.facts(l))}else finish();return}  // plays the real debrief (spec 007)
   if(w===R[0])await openParty();
   else if(w===R[1])await skillsMenu();
   else if(w===R[2])await openItems({i:G.lead|0});
@@ -576,7 +577,7 @@ function itemRows(s){
 const pickable=r=>!r.head&&!r.empty;
 function scrPress(k){
  const s=SCR;if(!s)return;
- if(s.kind==='page')return pagePress(k);if(s.kind==='log')return logPress(k);
+ if(s.kind==='page')return pagePress(k);if(s.kind==='log')return logPress(k);if(s.kind==='db')return dbPress(k);  // the debrief's screens: debrief.js
  const rows=itemRows(s),n=rows.length;
  const step=d=>{if(!rows.some(pickable))return;let j=s.sel;do{j=(j+d+n)%n}while(!pickable(rows[j]));s.sel=j};
  if(!pickable(rows[s.sel]||{}))step(1);
@@ -619,7 +620,7 @@ function icoPin(x,y,c){pR(x+1,y,3,3,c);pR(x,y+1,5,1,c);pR(x+2,y+3,1,4,PC.cream)}
 function icoBang(x,y,c){pR(x+2,y,1,5,c);pR(x+2,y+6,1,1,c);pR(x,y+2,1,1,c);pR(x+4,y+2,1,1,c)}
 function icoSkull(x,y,c){pR(x+1,y,5,4,c);pR(x,y+1,7,3,c);pR(x+1,y+2,2,1,PC.navy);pR(x+4,y+2,2,1,PC.navy);pR(x+2,y+4,3,2,c);pR(x+2,y+5,1,1,PC.navy);pR(x+4,y+5,1,1,PC.navy)}
 function drawScr(){
- const s=SCR;if(s.kind==='page')return drawPage();if(s.kind==='log')return drawLog();
+ const s=SCR;if(s.kind==='page')return drawPage();if(s.kind==='log')return drawLog();if(s.kind==='db')return dbDraw();
  pR(0,0,VW,VH,PC.navy);s.hits=[];
  const m=party[s.i];if(!m){closeScr();return}
  const rows=itemRows(s);if(!pickable(rows[s.sel]||{})){const j=rows.findIndex(pickable);s.sel=j<0?0:j}

@@ -102,7 +102,9 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
   - [x] Demo 5 part B: combat under the Combat tab, in the approved head-on layout, with battle art for the case's enemies
     Done Nov 22: fights use the head-on layout from the combat mockup, with the turn-order column, HP bars, the one-row Fight · Skills · Items · Guard box and result lines. Every battle move, status move, item and weapon works by the Combat tab; Downed agents bleed out after 3 turns, lasting injuries roll after the fight, and each enemy has big battle art. The case's enemies are stand-ins at the bible's tiers (the Gleaner at 60 HP, −8 per victim) until Part C.
   - [ ] Demo 5 part C: the story. Its text block, branching paths, fewer but harder fights, and the Gleaner at the bible's numbers
-- [ ] Demo 6 of 6: Debrief and end-of-case improvement (evidence, cover story, skill gains), built from the approved debrief mockup; the finished demo also goes to Drive as a milestone build
+- [x] Demo 6 of 6: Debrief and end-of-case improvement (evidence, cover story, skill gains), built from the approved debrief mockup; the finished demo also goes to Drive as a milestone build
+
+  Done Nov 22 (spec 007): a closed case now plays Big Hat's debrief with the wrap-up card, a recruit if one is owed, Big Hat sorting the case items (keep, bag, or hide one), the cover story with who tells it, skill gains with the dice shown, the heal-up, then any funeral or goodbye and the case board, where a memorial plaque lists the lost. The Drive milestone copy waits until Keegan calls the demo finished.
 - [x] Turn the hand copies of shelf.js and dialog.js into shared files, so a change on the Shared Shelf or in the Asset Library reaches the game without copying by hand (step 6 of the Claude Code move)
 
   Done Nov 21: one copy of each now lives in the studio's `engine/` (`engine/shelf.js`, `engine/dialog.js`), shared with Rushlight, with a sync step that brings in a new version from the source page and a check that fails if either is edited by hand.
