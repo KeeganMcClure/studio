@@ -132,6 +132,8 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
 - [ ] Good Manners part B (spec 010): the secret case file first, then its story, fights, boss and endings
 - [ ] Lot 83 part A (spec 011): its maps and art, the tented night, townsfolk and Walt, walkable with stand-in scripts. After Good Manners
 - [ ] Lot 83 part B (spec 011): the secret case file first, then its story, fights, boss and endings
+- [ ] First agency case part A (spec 014): the secret case file first, from the arc file; then its maps and art, townsfolk, and the black LANTERN folder on the board, walkable with stand-in scripts. After Lot 83
+- [ ] First agency case part B (spec 014): its story, fights, boss and endings, and the unlock scene's lines
 - [x] Turn the Art Bible page into the Asset Library (sprites, drawing code, palette)
 - [x] Update the project instructions to point here
 - [x] Set style rules for monsters and townsfolk
@@ -394,7 +396,7 @@ Cases start from your DG notes or take them as inspiration (set Nov 19). You sig
 7. **Ending.** Debrief with Big Hat, a cover-story choice, the home phase, and a saved SAN outcome; the boss and ending react to choices (specs 007 and 008).
 8. **Check and ship.** Boss tuning check, `npm run check` at all three sizes, and the playtest checklist. The case joins the season's queue in the season data file (spec 009). You play it first on Dev; what you find goes to Bugs or the Ideas inbox. The Designer runs a rules check against its spec (`studio-bible/rules-checks.md`), and it reaches Release when you say so.
 
-**Agency cases** skip steps 2 and 3: they come from the secret arc file, so no pitch is shown. Their case spec covers only the public parts (card text, maps, art, fight count), and the Developer designs the rest from the arc file in step 5.
+**Agency cases** skip steps 2 and 3: they come from the secret arc file, so no pitch is shown. Their case spec is a public frame (set Nov 22, spec 014): the card style, the case's size limits, the boss rules and the build steps, with no place, title or cast. The Developer writes the case file (step 5) at the start of part A, since the place, maps and art come from it, and public text names the case only by its LANTERN number.
 
 ### Your original material
 
