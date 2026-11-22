@@ -18,7 +18,7 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 - [x] The clock: how many in-game minutes a step and each action cost, so a day lands at 10 to 15 minutes of play (Nov 21). See Time and seasons, The clock.
 - [x] The map generator: how big the starting town and its countryside are, what building and area types exist, and how fast places run dry (Nov 21). See The map, Generator.
 - [x] Needs and SAN numbers: how fast hunger, sleep and SAN drop, what each refills, and what happens at each low point (Nov 21). See Needs, The numbers.
-- [ ] Combat numbers: hit chances, damage, weapons, noise per action, and how zombies and raiders choose a move.
+- [x] Combat numbers: hit chances, damage, weapons, noise per action, and how zombies and raiders choose a move (Nov 21). See Combat, The numbers. Each weapon's exact damage and wear go in spec 001.
 - [ ] Your survivor: each job's skills and starting items, each trait's effect, the want list, the looks parts, the 8 templates, and how fast skills grow with use.
 - [ ] Rumors and late threats: the first rumor list, how the raider leader forms, and horde timing.
 - [ ] Companions: the skill, fear and want lists; how bond is counted (hidden); the order rules; the short-job odds; the first set of arc parts and evening scenes.
@@ -162,6 +162,12 @@ None yet.
 - **Bites** (set Nov 21): a chance of infection. Infection is treatable with rare medicine; untreated, it kills, and the dead come back.
 - **Noise** (set Nov 21): the game has no sound, so noise is drawn as a ring on the map. Every action has a noise size (sneaking, swinging, breaking a door, a gunshot, a car). Zombies inside the ring turn toward it. Guns are strong but loud.
 - **Other people** (set Nov 21): raiders who attack, and traders you can talk and trade with. People fight on the same turn rules as zombies, but they think, take cover and run.
+- **The numbers** (Keegan, Nov 21). Exact numbers are tuned in playtests.
+  - **Zombie toughness:** 2 to 3 bat hits kill one. One zombie is easy, two is a fight, and four means you run. A scratch costs about 10 health, and a bite about 20 plus the infection risk.
+  - **Hit chance:** about 75% with melee for an average survivor, rising with skill, and about 60% with guns. Low SAN, being drunk or a bad arm lowers it.
+  - **Noise rings, in tiles:** sneak 1, walk 2, a melee swing 3, forcing a door 6, a gunshot 15, a car 20. Night makes rings bigger and rain makes them smaller.
+  - **How zombies move:** toward the last noise or sight, then they wander.
+  - **How raiders move:** smart but readable. They take cover, flank in pairs, back off when hurt, and give up when they're alone and losing. Their next move is marked like a zombie's.
 - **Fleeing:** you can always try to walk away; shamblers are slow, but numbers and dead ends trap you.
 - **Weapons** (set Nov 21): bats, pipes and axes wear down and can be fixed or crafted. Guns hold up, but bullets are scarce, so every shot is a choice. Guns are in the first slice, but rare (Keegan, Nov 21). The full weapon list is in `items.md`.
 - **Wounds** (set Nov 21): hits lower health, and a large hit has a chance of leaving a wound (a deep cut, a sprained ankle, a broken arm) that slows or weakens you until it's treated and heals over days.
