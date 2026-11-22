@@ -132,9 +132,9 @@ function dossierInfo(m,a,lead,y){
  pT(pFit((profOf(a)||{}).name||'',right-x,17),x,y+15,PC.cream,17);
  pT(PW.main,x,y+33,PC.lav,14);pT(pFit((a.motives||[])[a.main]||(a.motives||[])[0]||'—',right-x,17),x,y+45,PC.cream,17);
  y+=71;
- // the backstory gets every line the screen has left after the boxes below (134 px); it takes the key hints'
+ // the backstory gets every line the screen has left after the boxes below (148 px); it takes the key hints'
  // room first and is cut short only on screens too small for the whole thing (bug fix: it was cut at 2 lines)
- const fitLines=Math.max(1,Math.floor((VH-4-y-148-4)/12));
+ const fitLines=Math.max(1,Math.floor((VH-4-y-162-4)/12));
  const back=a.backstory?pWrap(a.backstory,228,15,fitLines):[PW.noBack];
  back.forEach((l,k)=>pT(l,8,y+k*12,a.backstory?PC.lav:PC.dim,15));y+=back.length*12+4;
  // HP, WP, SAN with the Breaking Point
@@ -148,13 +148,16 @@ function dossierInfo(m,a,lead,y){
  // weapon, to-hit, disorders (tap for trigger and flare), Adapted marks as pips (spec 006 A4)
  const wn=m.w.name.charAt(0).toUpperCase()+m.w.name.slice(1);
  const dice=`${m.w.dmg[0]}d${m.w.dmg[1]}${m.w.bonus>0?'+'+m.w.bonus:m.w.bonus<0?m.w.bonus:''}`;
- pBox(4,y,232,60,PC.card,PC.dim);
+ pBox(4,y,232,74,PC.card,PC.dim);
  const dz=(m.dis||[]).map(d=>BLS.DISORDERS[d.k].name+(d.s?` (${d.s})`:'')).join(', ');
  [[PW.equipped,`${wn} · ${dice}`],[PW.toHit,`${m.w.sk||'Firearms'} ${m.w.skill}%`],[PW.disorder,dz||PW.noDis]].forEach(([l,v],k)=>{const ry=y+3+k*14;pT(l,9,ry,PC.lav,15);const t=pFit(v,150,15);pT(t,231-pW(t,15),ry,PC.cream,15)});
  if((m.dis||[]).length)PM.d.tabs.push({x:4,y:y+30,w:232,h:14,fn:()=>run(async()=>{for(const d of m.dis){const D=BLS.DISORDERS[d.k];await say('',`${D.name}. ${fillT(D.trig,{s:d.s||''})} ${D.flare}`)}})});
  const ad=m.adapt||{},ry=y+45;pT(PW.adapted,9,ry,PC.lav,15);let px=231;
  [[PW.adaptH,ad.h|0,ad.H],[PW.adaptV,ad.v|0,ad.V]].forEach(([l,n,done])=>{for(let q=2;q>=0;q--){px-=7;pR(px,ry+5,5,5,done||q<n?PC.mus:PC.plum)}px-=pW(l,14)+3;pT(l,px,ry,PC.lav,14);px-=8});
- return y+64;
+ // lasting injuries (spec 006 part B): tagged Minor (with cases left), Rehab or Permanent; tap for the penalties
+ const inj=injuryTags(a),iy=y+59;pT(PW.injuries,9,iy,PC.lav,15);const it=pFit(inj.length?inj.map(x=>`${x.name} (${x.tag.split(',')[0]})`).join(', '):BLS.BATTLEW.injW.none,150,15);pT(it,231-pW(it,15),iy,inj.length?PC.pump:PC.cream,15);
+ if(inj.length)PM.d.tabs.push({x:4,y:iy,w:232,h:14,fn:()=>run(async()=>{for(const x of inj)await say('',`${x.name}. ${x.tag}. ${x.line}.`)})});
+ return y+78;
 }
 function dossierSkills(a,y){
  const rows=skillOrder(a),hint=VH-y>=18*13+36?36:0,rh=Math.min(13,Math.floor((VH-4-hint-y)/rows.length));

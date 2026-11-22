@@ -28,8 +28,12 @@ function newAgent(){return {prof:null,method:'buy',stats:Object.fromEntries(STAT
 let idN=0;const newId=()=>Date.now()*10+(idN++%10);
 function fromTemplate(t){const a=Object.assign(newAgent(),clone(t));a.id=newId();a.method='set';a.roll=null;a.bonds.forEach(b=>b.score=a.stats.CHA);return a}
 function setProf(a,p){if(a.prof!==p.id)a.picks={};a.prof=p.id}
-const derived=a=>{const s=a.stats;return{HP:Math.ceil((s.STR+s.CON)/2),WP:s.POW,SAN:s.POW*5,BP:s.POW*4}};
-function skillVal(a,k){if(!(k in SKILLS))return 0;const p=profOf(a);return Math.max(SKILLS[k],(p&&p.skills[k])||0)+20*((a.picks||{})[k]||0)}
+// lasting injuries (Combat, Lasting injuries; spec 006 part B): skill penalties never push a skill below its base,
+// and Chronic pain takes 2 off max HP
+const injOf=a=>(Array.isArray(a.inj)?a.inj:[]).map(x=>window.BLS.INJURIES[x&&x.k]).filter(Boolean);
+const derived=a=>{const s=a.stats,hp=injOf(a).reduce((t,I)=>t+(I.hp||0),0);return{HP:Math.max(1,Math.ceil((s.STR+s.CON)/2)+hp),WP:s.POW,SAN:s.POW*5,BP:s.POW*4}};
+function skillVal(a,k){if(!(k in SKILLS))return 0;const p=profOf(a);const v=Math.max(SKILLS[k],(p&&p.skills[k])||0)+20*((a.picks||{})[k]||0);
+ const pen=injOf(a).reduce((t,I)=>t+((I.pen||{})[k]||0),0);return pen?Math.max(SKILLS[k],v+pen):v}
 const picksUsed=a=>Object.values(a.picks).reduce((x,y)=>x+y,0);
 const buyLeft=a=>72-STATS.reduce((t,k)=>t+a.stats[k],0);
 const feature=(k,v)=>v<=5?FEAT[k][0]:v>=16?FEAT[k][1]:'';
@@ -46,7 +50,7 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
 // in order, bringing old saves forward before anything reads them. Before upgrading, the old
 // saves are copied to bl.backup. Rules: never change an old step; a new save shape gets a new
 // step and SAVE_V goes up by one. Saves from before numbering count as version 0.
-const SAVE_V=5;
+const SAVE_V=6;
 const fillAgent=a=>{if(!a||typeof a!=='object'||Array.isArray(a))return null;const d=newAgent();
   const o=Object.assign(d,a);o.look=Object.assign(newAgent().look,a.look||{});o.stats=Object.assign(newAgent().stats,a.stats||{});
   if(!o.picks||typeof o.picks!=='object')o.picks={};if(!Array.isArray(o.bonds))o.bonds=[];if(!Array.isArray(o.motives))o.motives=[];return o};
@@ -132,6 +136,17 @@ const UPGRADES={
       catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
     if(store.get(K('party'),null)===null)store.set(K('party'),{pack:[]});
     if(store.get(K('settings'),null)===null)store.set(K('settings'),{fast:false});
+  },
+  // 5 → 6 (Nov 22, spec 006 Demo 5 part B, combat): agents carry their lasting injuries (a.inj: [{k, tier, left, perm}]).
+  // Every agent on the roster, in the memorial and in a paused case starts with none.
+  6(){
+    const fixA=a=>{if(a&&typeof a==='object'&&!Array.isArray(a.inj))a.inj=[];return a};
+    const r=store.get(K('roster'),[]);if(Array.isArray(r))store.set(K('roster'),r.map(fixA));
+    const mem=store.get(K('memorial'),null);if(Array.isArray(mem))store.set(K('memorial'),mem.map(x=>{if(x&&x.a)fixA(x.a);return x}));
+    const g=store.get(K('game'),null);
+    if(g!==null){try{const o=JSON.parse(g);if(!o||!Array.isArray(o.party)||!o.party.length)throw 0;
+        o.party.forEach(m=>{if(m&&m.a)fixA(m.a)});store.set(K('game'),JSON.stringify(o))}
+      catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
   }
 };
 function upgradeSaves(){

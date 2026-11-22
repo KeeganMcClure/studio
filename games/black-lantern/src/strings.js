@@ -179,7 +179,7 @@ const KITUSES={salts:2};
 const ITEMUI={title:'ITEMS',pack:'BACKPACK',packRow:'Backpack',empty:'— empty —',noPack:'The backpack is empty.',weapons:'WEAPONS',slots:'ITEMS',worn:'WORN',
  use:'Use',equip:'Equip',stash:'To backpack',take:'Take',give:'Give',wear:'Wear',remove:'Take off',drop:'Leave it',
  kit:'Lantern: kit item, refills each case.',pin:'Pin: case-only item. Big Hat sorts these at the debrief.',bang:'Bang: Loud. Draws roamers.',
- equipped:'Equipped.',full:'Full',giveTo:'GIVE TO',whoUse:'WHO?',battleOnly:'Used in battle (Demo 5 part B).',hotOnly:'Used at a hotspot that asks for it.',passive:'Works on its own when it\'s needed.',
+ equipped:'Equipped.',full:'Full',giveTo:'GIVE TO',whoUse:'WHO?',battleOnly:'Used in battle.',notFight:'Not something for a fight.',hotOnly:'Used at a hotspot that asks for it.',passive:'Works on its own when it\'s needed.',
  spent:'Used up. Refills next case.',keys:'L/R: agent · A: pick · B: back',packKeys:'A: take · B: back',noRoom:'No room: 8 items already.',noWeapRoom:'Two weapons already.',
  paranoid:'Won\'t take anything from a teammate right now.',worn1:'Already wearing one.',found:'Found: ',toLead:' It goes to {n}.',toPack:' {n} is full, so it goes in the backpack.',
  hotlineAsk:'Big Hat picks up. "What do you need?"',hotlineNo:'"No." He hangs up.',hotlineOk:'It arrives. Nobody saw who brought it.'};
@@ -202,7 +202,7 @@ const PARTY={
  isLead:'Already the lead.',giveWhy:'Nothing to give.',
  none:'No conditions.',lowHP:'HP 3 or less: card blinks',
  tabs:['INFO','SKILLS','BONDS'],main:'MAIN MOTIVATION',noBack:'No backstory on file.',
- equipped:'EQUIPPED',toHit:'TO-HIT',disorder:'DISORDER',noDis:'None',bp:'BP',adapted:'ADAPTED',adaptV:'VIOL',adaptH:'HELP',
+ equipped:'EQUIPPED',toHit:'TO-HIT',disorder:'DISORDER',noDis:'None',bp:'BP',adapted:'ADAPTED',injuries:'INJURIES',adaptV:'VIOL',adaptH:'HELP',
  keys:['L/R: tabs · Up/Down: next agent','B: back to Party'],
  noBonds:'No Bonds on file.',score:'Score',
  moods:{close:'Close',strained:'Strained',fraying:'Fraying',broken:'Broken'}
@@ -332,7 +332,79 @@ const BOARD={
  // New game with a closed case (Skills and menus, Quality of life: Confirm what sticks)
  sure:'Can\'t be undone. Sure?',resetLine:'This starts Season 1 over. Your roster stays.',yes:'Yes, start over',no:'No, back to the title'
 };
+// ---------- BATTLE (Bible: Combat; spec 006 part B) ----------
+// The command row, the Guard list, every battle move with its skill, tier and one-line rule, and the battle's lines.
+// {n} the agent, {e} the enemy, {t} a target, {h} HP, {w} WP, {k} turns left.
+const BATTLEW={cmds:['FIGHT','SKILLS','ITEMS','GUARD'],free:'free',wp:'{w} WP',noSkills:'No battle skills yet.',noItems:'Nothing to use.',
+ detail:'{wn} {d} · {s} {p}% · free',target:'{e} · {p}% to hit · {d}',targetAlly:'{t} · {h}',targetNo:'{e}',
+ down:'DOWN · {k} left',downT:'{k} turns',down1:'1 turn',snap:'SNAPPED',gone:'GONE',
+ guard:{defend:['Defend','Take half damage until your next turn.'],slip:['Slip','Defend, and roll Dodge against each attack: a success takes no damage.'],
+  brace:['Brace','Spend 1d4 WP: your next SAN loss this fight is halved.'],retch:['Retch','Roll CON × 5 to clear Sickened. Once per scene.'],flee:['Flee','Roamer fights only. The party\'s slowest Athletics is rolled.']},
+ why:{wp:'Not enough WP.',gun:'Needs a gun in hand.',flee:'You can\'t run from this one.',retch:'Only when Sickened, once per scene.',once:'Once per fight.',oncecase:'Once per case.',noTarget:'No one to use it on.',twice:'Can\'t fire two turns in a row.',brace:'No WP left to brace.',spent:'Used up. Refills next case.'},
+ start:'{e} {v}!',round:'',
+ lines:{miss:'{n} {v}... and misses {e}.',hit:'{n} {v}. {e} takes {h}.',crit:'{n} {v}. Critical! {e} takes {h}.',
+  fumbleGun:'The {wn} jams. {n} loses the shot.',fumbleMelee:'{n} swings wide and nearly falls.',fumbleSkill:'Bad luck. Nothing happens.',
+  eMiss:'{e} {v} {n}... and misses.',eHit:'{e} {v} {n}. {h} damage.',eCrit:'{e} finds an opening. {h} damage to {n}!',eFumble:'{e} lunges and stumbles.',
+  slip:'{n} slips aside. No damage.',riposte:'Riposte!',halved:'(halved)',armor:'(armor)',
+  eDie:'{e} {d}.',downed:'{n} goes down!',downTurn:'{n} is down and bleeding. {k} left.',bledOut:'{n} stops moving.',revived:'{n} is back on their feet. +{h} HP.',
+  stunned:'{n} is stunned and can\'t act.',eStunned:'{e} is stunned.',resist:'{e} shrugs it off.',bleedTick:'{n} bleeds. −{h} HP.',poisonTick:'The poison works on {n}. −{h} HP.',
+  eBleed:'{e} bleeds. −{h} HP.',ePoison:'The poison eats at {e}. −{h} HP.',
+  defend:'{n} braces and watches the dark.',slipOn:'{n} gets light on their feet.',brace:'{n} steels themselves. −{w} WP.',
+  drawFire:'{n} steps out and shouts. Every eye turns to them.',vanish:'{n} melts into the dark.',tripwire:'{n} strings a tripwire.',
+  grapple:'{n} gets {e} in a hold!',grappleFail:'{e} twists out of reach.',hold:'{n} holds {e} down.',breakFree:'{e} breaks free!',pinned:'{e} struggles in the hold.',
+  shoved:'{e} stumbles to the back of the line.',exposed:'{e} is Exposed.',shaken:'{e} is Shaken.',eFlees:'{e} flees into the dark.',
+  bleeding:'{e} is Bleeding.',poisoned:'{e} is Poisoned.',stunOn:'{e} is Stunned.',calm:'{n} talks {t} down. No longer Shaken.',
+  identify:'{n} knows what this is. {w}',identifyFail:'{n} can\'t place it.',spot:'{n} spots a weak point.',
+  tackle:'{n} hits the ground with it.',zip:'{n} ties {e} up. Out of the fight.',
+  flee:'You back away into the dark. You get away.',fleeFail:'There\'s nowhere to go!',smokeFlee:'Smoke rolls over everything. You slip away.',
+  swap:'{n} switches to the {wn}.',hatchet:'The hatchet is gone for the rest of the fight.',chainsaw:'The fumes and the spray leave {n} Sickened.',
+  snapSelf:'{n} turns the {wn} on themselves.',snapAlly:'{n} lashes out at {t}!',snapFoe:'{n} screams and charges {e}.',snapNone:'{n} stares at nothing and laughs.',
+  win:'You survived. For now.',walkOff:'{n} walks it off.',phase:'{e} changes.',dmgFloat:'−{h}',miss1:'MISS'},
+ injW:{minor:'Minor',serious:'Rehab',grave:'Permanent',left2:'clears after next case',left1:'clears after this case',none:'None',
+  got:'{n}: {i}. {p}.',graveLabel:'Being badly wounded',career:'{n} won\'t be doing field work again.',repeat:'The same injury again. It won\'t fully heal now.'}
+};
+// Battle moves (Combat: Battle moves, Status moves, Other skills in battle). tier: the skill % that unlocks it; wp: its cost.
+// grp: where it shows (skills, or guard). The rules for each live in battle.js under its key.
+const M_=(key,skill,tier,wp,name,line,o={})=>Object.assign({key,skill,tier,wp,name,line},o);
+const MOVES=[
+ M_('aimed','Firearms',40,1,'Aimed shot','−20% to hit, double damage on a hit.',{gun:1,t:'foe',hit:-20}),
+ M_('burst','Firearms',75,2,'Burst','One roll against every enemy, half damage on each hit.',{gun:1,t:'none'}),
+ M_('deadeye','Firearms',90,3,'Dead eye','An automatic hit that also causes Bleeding.',{gun:1,t:'foe'}),
+ M_('shove','Melee',40,1,'Shove','Half damage; the enemy drops to last in the turn order.',{t:'foe'}),
+ M_('haymaker','Melee',75,2,'Haymaker','−20% to hit; a hit does full damage and Stuns.',{t:'foe',hit:-20}),
+ M_('grapple','Melee',90,3,'Grapple','Pin one enemy. You hold it instead of acting; teammates get +20% against it.',{t:'foe'}),
+ M_('drawfire','Dodge',75,2,'Draw fire','Defend, and every enemy targets you until your next turn.',{t:'none',noRoll:1}),
+ M_('spot','Search',40,1,'Spot weak point','One enemy is Exposed, and its exact HP shows for the fight.',{t:'foe'}),
+ M_('alarm','Computers',40,1,'Alarm','Blare a phone or car alarm: one enemy is Exposed. Loud.',{t:'foe',loud:1}),
+ M_('badge','Bureaucracy',40,1,'Flash the badge','A human enemy is Stunned. Once per fight.',{t:'foe',human:1,perFight:1}),
+ M_('tackle','Athletics',40,1,'Tackle','The enemy is Stunned, but you lose your next turn too.',{t:'foe'}),
+ M_('flare','Survival',40,1,'Road flare','Beast-like enemies are Shaken.',{t:'none'}),
+ M_('wound','Forensics',75,2,'Find the wound','An already-hurt enemy starts Bleeding.',{t:'foe',hurt:1}),
+ M_('vanish','Stealth',75,2,'Vanish','Enemies can\'t target you until you act; your next attack causes Bleeding.',{t:'none'}),
+ M_('caustic','Science',75,2,'Caustic mix','A living enemy is Poisoned.',{t:'foe',living:1}),
+ M_('bind','Occult',75,2,'Bind','An unnatural enemy you have Identified is Stunned.',{t:'foe',bound:1}),
+ M_('name','History',75,2,'Speak its name','An enemy found in the case\'s records is Shaken.',{t:'foe',records:1}),
+ M_('intimidate','Persuade',75,2,'Intimidate','A human enemy is Shaken; on a crit, it flees.',{t:'foe',human:1}),
+ M_('tripwire','Craft',75,2,'Tripwire','The next enemy to attack you is Stunned.',{t:'none'}),
+ M_('calm','Empathy',75,2,'Calm','Clears a teammate\'s Shaken.',{t:'ally',shaken:1}),
+ M_('patch','First Aid',40,1,'Patch up','Heal one agent 1d4 HP.',{t:'ally'}),
+ M_('triage','First Aid',75,2,'Triage','Heal each agent 1d2 HP.',{t:'none'}),
+ M_('treat','Medicine',40,1,'Treat','Cure Bleeding, Poisoned or Sickened on one agent.',{t:'ally',treat:1}),
+ M_('revive','Medicine',75,2,'Revive','A Downed agent stands at 1d4 HP.',{t:'downed'}),
+ M_('sedate','Medicine',90,1,'Sedate','Calm a teammate\'s disorder flare for the rest of the fight.',{t:'ally',flare:1}),
+ M_('identify','Occult',40,1,'Identify','−20% in battle. Its exact HP shows for the case, and its weakness.',{t:'foe',hit:-20})
+];
+// Lasting injuries (Combat: Lasting injuries, set Nov 20): 1d12 + modifiers. pen: skill penalties; hp: max HP.
+const INJURIES=[null,
+ {name:'Black eye',tier:'minor',pen:{Search:-10},line:'−10% Search'},{name:'Sprained wrist',tier:'minor',pen:{Firearms:-10},line:'−10% Firearms'},
+ {name:'Rolled ankle',tier:'minor',pen:{Athletics:-10},line:'−10% Athletics'},{name:'Bruised ribs',tier:'minor',pen:{Dodge:-10},line:'−10% Dodge'},
+ {name:'Split knuckles',tier:'minor',pen:{Melee:-10},line:'−10% Melee'},{name:'Bad knee',tier:'serious',pen:{Athletics:-20},line:'−20% Athletics'},
+ {name:'Cracked ribs',tier:'serious',pen:{Dodge:-20},line:'−20% Dodge'},{name:'Torn shoulder',tier:'serious',pen:{Melee:-20},line:'−20% Melee'},
+ {name:'Nerve-damaged hand',tier:'serious',pen:{Firearms:-20},line:'−20% Firearms'},{name:'Concussion',tier:'serious',pen:{Search:-20},line:'−20% Search'},
+ {name:'Lost eye',tier:'grave',pen:{Firearms:-20,Search:-10},line:'−20% Firearms, −10% Search'},{name:'Facial scarring',tier:'grave',pen:{Persuade:-20},line:'−20% Persuade'},
+ {name:'Chronic pain',tier:'grave',pen:{},hp:-2,line:'−2 max HP'},{name:'Ruined leg',tier:'grave',pen:{Athletics:-20,Dodge:-10},line:'−20% Athletics, −10% Dodge'},
+ {name:'Done with field work',tier:'career',pen:{},line:'Leaves the party'}];
 const STEPNAME={profession:'JOB',stats:'STATS',skills:'SKILLS',identity:'IDENTITY',bonds:'BONDS',motives:'MOTIVATIONS',dossier:'DOSSIER',title:'BLACK LANTERN',roster:'ROSTER',team:'YOUR TEAM',pick:'PICK A TEAM',confirm:'NEW GAME'};
 const STEPSHORT={profession:'JOB',stats:'STATS',skills:'SKILL',identity:'ID',bonds:'BOND',motives:'WHY',dossier:'FILE'};
-return {SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,diceOf,ITEMS,KIT,KITUSES,ITEMUI,DISORDERS,SANW,TIERS,KINDS,SKILLOPT,AUTOPERK,SKILLW,MAPMENU,OVERSTEP,RECRUITS,RECRUITW,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD,MAPHUD};
+return {SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,diceOf,ITEMS,KIT,KITUSES,ITEMUI,DISORDERS,SANW,TIERS,KINDS,SKILLOPT,AUTOPERK,SKILLW,MAPMENU,OVERSTEP,RECRUITS,RECRUITW,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD,MAPHUD,BATTLEW,MOVES,INJURIES};
 })();
