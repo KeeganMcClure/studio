@@ -517,6 +517,12 @@ Set Nov 22 (spec 004; your pick: hand-placed for the slice only, while the full 
 - **Known at start:** the two towns, Hollin and the main roads. Arriving anywhere shows every road leaving it.
 - **Roamers meet the company on roads** in the slice: the hedge cat and the rooks on two side roads, the Corpse-candle on a road touching Crookback, and the Lampwalkers on a road one step from a den road. Sneak past (Stealth), fight or turn back; the Lampwalkers are waited out or fought.
 
+**The slice's towns (set Nov 22, spec 005; Claude's first draft, tuned in playtest).**
+
+- **Harrowford:** the guild master (Town) gives the wool buyer; the board posts Pell and the Withy Hag. Market, smith, barber-surgeon, the Drowned Goose inn, a tavern, the chapel, a brothel, the reeve. A hire pool of 3, any trades.
+- **Saint Ebbe's:** the prior (Church) gives the Noonwife; the board posts Severa and the Counter. Market, the infirmarer's apothecary, the guesthouse inn, an alehouse, the priory church, the reeve. A hire pool of 2, learned trades first.
+- **Posting:** 4 of the 6 jobs are up at the start, at least one per town; the next goes up as one is taken. The company hires only into an empty seat.
+
 **Road events (set Nov 22, spec 004; Claude's first draft, tuned in playtest).** One roll per travel day (25% in region 1), then the table. Night attacks at camp are rooks or two road bandits.
 
 | d100 | Event | Choices |
