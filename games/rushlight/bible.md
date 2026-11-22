@@ -391,6 +391,18 @@ Code in Rushlight's Asset Library as rushlight-mockups-site-v1, rushlight-mockup
 
 ![Pick a company in the GBA shell: Free Company picked, Wendel's seat open on Reroll](mockups/16-company.png)
 
+**Species sheet (Ready 3 of 5, Nov 22; rough draft for your review).** The vertical slice's six species (Mercenaries and items, First to ship) at the three sizes they're built in: a 64 × 64 portrait head, a map sprite in the 14 × 26 frame at the species' height (Art, Scale: mouse and rat 18 px, hare and hedgehog 22 px, badger and fox 26 px), and a waist-up battle back view, plus all six on one street row at the phone's 2× scale. Premade check: the town, battle and Pick a company mockups in the Asset Library already show a hare, rat, badger, hedgehog and fox at map scale, and a badger, hare and rat from behind. This sheet follows their look (dark outlines, flat two-tone shading, coats in the palette) and adds the mouse, the missing back views and every portrait head. Faces follow Art, Faces: small dark eyes with no glints, real muzzles, and species read by silhouette first (ears, snout, stripes, spines). The drawing code is in `mockups/27-species-sheet-rough-v1.html`. It is filed in the Asset Library once approved.
+
+![Species sheet rough v1: mouse, rat, hare, hedgehog, badger and fox as portrait, map sprite and battle back view](mockups/27-species-sheet-rough-v1.png)
+
+**Your review (Nov 22): v2.** The badger and fox faces looked odd, the back of the hedgehog's head was odd, and the portraits had no necks. In v2, every portrait has a neck under the jaw going down into the collar. The badger has a white wedge face, and its two dark stripes run from the ears down through the eyes and narrow toward the snout. The fox has a narrower head with an orange bridge down the snout and white cheeks below the eyes. The hedgehog's back view is a round head of streaked spines with dark tips, ending in a short collar of spines over the shoulders. Drawing code: `mockups/28-species-sheet-rough-v2.html`.
+
+![Species sheet rough v2: necks on every portrait, new badger and fox faces, new hedgehog back view](mockups/28-species-sheet-rough-v2.png)
+
+**Your review (Nov 22): v3.** The faces were better, but the necks were too long and looked unnerving. In v3 the heads sit low on the shoulders, so only a short, wider neck shows above the collar. Drawing code: `mockups/29-species-sheet-rough-v3.html`.
+
+![Species sheet rough v3: heads set low on the shoulders with short necks](mockups/29-species-sheet-rough-v3.png)
+
 **Mockups to come:** none. The battle screen, town street and region map are all redrawn inside the GBA shell (set Nov 20, see Tech and To do). Every new screen still gets a still mockup before it's built.
 
 **Drawing the unnatural (set Nov 20, from the creature art study).** Each unnatural thing uses 2–4 of these rules, and no two creatures use the same pair, so no two are wrong in the same way. They replace the first draft.
