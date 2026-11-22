@@ -104,7 +104,8 @@ One item per chat, in order, biggest open decisions first. Claude ticks the item
   - [x] Ready 5 of 5: Text Library sign-off: approve the rows the slice uses (all are Draft today). Drafts work as placeholders while it's built, but the slice's lines are approved before you playtest it
     Done Nov 22: you read all 631 lines and approved them as written; every row in the Text Library is now Approved.
   Done Nov 22: all five steps done. Specs 002–007 are ready for the Developer, starting with the shared engine catch-up below.
-- [ ] Shared engine catch-up (spec 002): Rushlight onto the shared battle frame, party menu, rolls and night light, plus the new seeded dice stream in `engine/`. Before slice part A
+- [x] Shared engine catch-up (spec 002): Rushlight onto the shared battle frame, party menu, rolls and night light, plus the new seeded dice stream in `engine/`. Before slice part A
+  Done Nov 22: Rushlight's battle, party menu, dice and night light now use the shared pieces in `engine/`, and the new shared seeded dice stream rerolls nothing after a reload. Black Lantern plays the same.
 - [ ] Vertical slice: one short seeded run, start to finish.
 
   Scope (set Nov 21, lean): the Withy March cut to about 8 points and 2 towns; a pool of 6 (the Noonwife hunt, the Counter hunt, one beast job (Severa the owl, set Nov 21), the Withy Hag, 2 people jobs (Pell the poacher, the wool buyer)) and the Hollow Monk. In: food, camp and inn, Hue and cry, XP, hiring, trophies, the bestiary. Out: the feud and war contracts, magic, bargainers, debt, the Crown's people, retiring, Quarters, arcs. The run ends at the Monk's death on a ledger screen.

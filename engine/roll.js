@@ -9,8 +9,17 @@
 //                                 always misses.
 //   StudioRoll.luck(mod)          a flat 50% roll (plus mod, e.g. -20), same result shape
 //   StudioRoll.line(word, o)      the result line: 'FORCE IT 55% · rolled 41 · HIT' (words from the game)
+//   StudioRoll.use(src)           draw from a seeded stream (engine/seed.js) or any function giving 0..1, so a saved
+//                                 game rerolls nothing (Rushlight spec 002). use(null), or never calling it, keeps
+//                                 Math.random exactly as before.
+//   StudioRoll.rand()             the next 0..1 number from whatever the rolls draw from
+//   StudioRoll.die(n)             1..n from the same source
 (function () {
-  function d100() { return 1 + Math.floor(Math.random() * 100); }
+  var src = null;
+  function rand() { return src ? (typeof src === 'function' ? src() : src.next()) : Math.random(); }
+  function use(s) { src = s || null; }
+  function die(n) { return 1 + Math.floor(rand() * n); }
+  function d100() { return 1 + Math.floor(rand() * 100); }
   function pct(target, r) {
     var t = Math.max(1, Math.min(99, Math.round(target)));
     if (r == null) r = d100();
@@ -22,5 +31,5 @@
     var w = words || { hit: 'HIT', miss: 'MISS', crit: 'CRIT', fumble: 'FUMBLE' };
     return word + ' ' + o.target + '% · rolled ' + o.r + ' · ' + (o.crit ? w.crit : o.fumble ? w.fumble : o.ok ? w.hit : w.miss);
   }
-  window.StudioRoll = { d100: d100, pct: pct, luck: luck, line: line };
+  window.StudioRoll = { d100: d100, pct: pct, luck: luck, line: line, use: use, rand: rand, die: die };
 })();

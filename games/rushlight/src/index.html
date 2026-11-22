@@ -113,7 +113,7 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 .hb b{font-weight:normal;color:var(--scr-hi)} .hb .red,.gbox .red{color:var(--scr-red)} .hb .sn{color:#b9aee8}
 #gsan{left:6px;top:6px;padding:1px 6px;font:7px/1.8 var(--px);border-width:1px}
 #gsan b{font-weight:normal;color:var(--scr-hi)}
-#game.battle #gsan{display:none}
+#game.battle #gsan,#game.menu #gsan{display:none}
 .gban{position:absolute;top:8px;left:50%;transform:translateX(-50%);font:8px/1.6 var(--px);color:var(--scr-hi);background:rgba(13,19,34,.9);border:1px solid var(--scr-hi);padding:3px 8px;white-space:nowrap}
 #gfade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .32s}
 
@@ -135,13 +135,25 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 <script src="../../../engine/input.js"></script>
 <script src="../../../engine/move.js"></script>
 <script src="../../../engine/clock.js"></script>
+<script src="../../../engine/light.js"></script>
+<script src="../../../engine/party.js"></script>
+<script src="../../../engine/seed.js"></script>
+<script src="../../../engine/roll.js"></script>
+<script src="../../../engine/battle.js"></script>
+<script src="../../../engine/patrol.js"></script>
 <script src="strings.js"></script>
 <script src="creator.js"></script>
 <script src="../../../engine/shelf.js"></script>
-<script src="agent-sprite.js"></script>
+<script src="species-art.js"></script>
+<script src="art/creatures.js"></script>
+<script src="art/art.js"></script>
 <script src="../../../engine/dialog.js"></script>
 <script src="../../../engine/menu.js"></script>
 <script src="engine.js"></script>
+<script src="battle.js"></script>
+<script src="party-menu.js"></script>
+<script src="../../../engine/nearest.js"></script>
+<script src="content/text-library.js"></script>
 <script src="content/stub.js"></script>
 
 

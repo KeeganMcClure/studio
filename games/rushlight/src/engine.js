@@ -1,67 +1,24 @@
 // Rushlight (forked from Black Lantern, Nov 21, 2026) · engine.js
-// Game engine: map walking, dialog and menus, sanity, battle, Big Hat scenes, saves, pause, input. Exposes window.RLG.
-// Shared by every case. Case content (maps, enemies, scripts, text) lives in cases/<case>.js.
-// Loaded as a plain script (no wrapper) so case files can call say, ask, battle, clue, checkpoint and the rest.
+// Game engine: map walking, dialog and menus, sanity, saves, pause, input. Exposes window.RLG.
+// The battle is battle.js and the party menu party-menu.js (both on the studio's shared engine/ pieces, spec 002).
+// Loaded as a plain script (no wrapper) so content files can call say, ask, battle, checkpoint and the rest.
 const B=window.RL;
 const $=s=>document.querySelector(s);
 const scr=$('#screen'),gEl=$('#game'),cv=$('#gcv'),cx=cv.getContext('2d');
 const dhost=$('#gdlg'),menuEl=$('#gmenu'),hud=$('#ghud'),ban=$('#gban'),fadeEl=$('#gfade'),sanEl=$('#gsan');
-const {rnd,pick,esc,store,profOf,derived,skillVal,SKIN,HAIRC,OUTC}=B;
-const roll=(n,s,b=0)=>{let t=b;for(let i=0;i<n;i++)t+=1+rnd(s);return t};
-const dice=s=>{s=String(s);if(/^\d+$/.test(s))return +s;const m=s.match(/(\d+)d(\d+)/);return roll(+m[1],+m[2])};
-const d100=()=>1+rnd(100);
+const {pick,esc,store,SKIN,HAIRC}=B;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 let VW=240,VH=160;
-let G={active:false},Bt=null,party=[],raf=0,dlg=null,menu=null,held=[];
-const lead=()=>party[0];
+let G={active:false,lead:0},Bt=null,party=[],raf=0,dlg=null,menu=null,held=[];
+const lead=()=>party[G.lead|0]||party[0];  // a lead index, not the first seat (spec 002; Select cycles it, party-menu.js)
 const DIRS=StudioMove.DIRS;  // walking, the camera and the canvas fit are shared: engine/move.js
 
 // ================= DATA =================
-const ABIL={
- 'Badge Flash':{wp:2,t:'foe',fx:'stun',n:1,skill:'Persuade'},
- 'Double Tap':{wp:3,t:'foe',fx:'multi',n:2},
- 'Triage':{wp:3,t:'ally',fx:'heal',dice:[2,6,4]},
- 'Sedate':{wp:3,t:'foe',fx:'stun',n:2,skill:'Medicine'},
- 'Analyze':{wp:2,t:'foe',fx:'mark'},
- 'Jury-Rig':{wp:3,t:'foe',fx:'dmg',dice:[2,6,2]},
- 'Suppress':{wp:3,t:'none',fx:'blindAll',n:2},
- 'Cover':{wp:2,t:'ally',fx:'cover'},
- 'Recall Lore':{wp:2,t:'none',fx:'markAll'},
- 'Ward':{wp:3,t:'none',fx:'ward'},
- 'Overclock':{wp:2,t:'ally',fx:'extra'},
- 'Spoof':{wp:2,t:'none',fx:'decoy'},
- 'Baton':{wp:2,t:'foe',fx:'hitstun'},
- 'Command Voice':{wp:2,t:'none',fx:'taunt'},
- 'Patch Up':{wp:2,t:'ally',fx:'heal',dice:[1,8,4],revive:true},
- 'Adrenaline':{wp:3,t:'ally',fx:'extra'},
- 'Bear Spray':{wp:3,t:'none',fx:'blindAll',n:2},
- 'Read the Woods':{wp:2,t:'none',fx:'focus'},
- 'Last Rites':{wp:4,t:'none',fx:'sanAll',dice:[1,6,1]},
- 'Sermon':{wp:3,t:'none',fx:'stunAll',chance:55},
- 'Certified Delivery':{wp:2,t:'ally',fx:'heal',dice:[1,6,2],wp2:2},
- 'Dog Sense':{wp:2,t:'foe',fx:'surehit'},
- 'Composure':{wp:2,t:'none',fx:'ward'},
- 'Final Arrangements':{wp:3,t:'foe',fx:'dmg',dice:[3,6,0]},
- 'Mop Sweep':{wp:3,t:'none',fx:'dmgAll',dice:[1,6,1]},
- 'Knows the Building':{wp:2,t:'none',fx:'escape'},
- 'The Jingle':{wp:3,t:'none',fx:'wpAll',dice:[1,4,1]},
- 'Rocket Pop':{wp:2,t:'foe',fx:'dmg',dice:[1,6,1],stun:1},
-};
-const ITEMS=B.ITEMDEF;
-const DIS=RLS.DIS;
 const BLOCK=new Set('TCB#DLlPHFSVKkYyNpGWIOX'.split(''));
 
 // ================= HELPERS =================
-const fmt=t=>t.replace(/\{code\}/g,lead().a.code||((lead().a.name||'').split(' ').pop()||'?').toUpperCase()).replace(/\{first\}/g,lead().name);
-function weaponFor(a){const p=profOf(a),f=skillVal(a,'Firearms'),m=skillVal(a,'Melee Weapons'),u=skillVal(a,'Unarmed Combat'),sb=a.stats.STR>=17?2:a.stats.STR>=13?1:0;
- const sp=B.specOf(a);if(sp&&sp.weapon){const W=B.WEAP[sp.weapon];return{name:W.name,skill:skillVal(a,W.skill),dmg:W.dmg,bonus:W.melee?sb+1:0,verb:W.verb}}
- const MEL={jan:'mop handle',cop:'baton',ranger:'hatchet',ops:'knife',truck:'ice scoop',mail:'mail bag',mort:'shovel',priest:'candlestick'};
- if(f>=m&&f>=u)return{name:'pistol',skill:f,dmg:[1,10],bonus:0,verb:'fires'};
- if(m>=u)return{name:MEL[p.id]||'tire iron',skill:m,dmg:[1,6],bonus:sb+1,verb:'swings the '+(MEL[p.id]||'tire iron')};
- return{name:'fists',skill:u,dmg:[1,4],bonus:sb,verb:'throws a punch'}}
-function member(a){const d=derived(a),c=a.cur||{};return{a,name:(a.name||'Agent').split(' ')[0].slice(0,9)||'Agent',hp:d.HP,mhp:d.HP,wp:d.WP,mwp:d.WP,san:c.san??d.SAN,msan:d.SAN,san0:c.san??d.SAN,bp:d.BP,dis:c.dis||null,dex:a.stats.DEX,w:weaponFor(a),ko:false,stun:0}}
-
+const fmt=t=>party.length?t.replace(/\{merc\}/g,lead().name).replace(/\{first\}/g,lead().name):t;
 // ================= TILES =================
 const tc={};
 function tile(ch,v){const k=ch+v;if(tc[k])return tc[k];const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');const p=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h)};drawTile(p,ch,v|0);return tc[k]=c}
@@ -114,33 +71,11 @@ function drawChar(x,y,look,oc,dir,f,o={}){
  else if(dir==='right'){P(10,4+bob,1,2,E);if(look.acc===3)P(8,6+bob,4,2,hc)}
  if(o.hat)P(3,0+bob,10,2,o.hat);
 }
-function drawEnemy(t,x,y,tm,e){
- if(e&&e.flash>0&&(e.flash%4)<2)return;
- const sx=e&&e.shake?(Math.random()*4-2):0;x=Math.round(x+sx);y=Math.round(y);
- const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};
- const f=Math.floor(tm/10)%2;
- if(t==='crow'){P(-8,-6,16,10,'#151018');P(-7,-10,9,6,'#151018');P(-5,-9,2,2,'#ff8a1e');P(-12,-8,5,2,'#d9a43a');if(f)P(-2,-15,12,7,'#251d2e');else P(0,-4,15,4,'#251d2e');P(8,-3,7,3,'#151018');P(-2,4,1,5,'#d9a43a');P(2,4,1,5,'#d9a43a')}
- else if(t==='husk'){P(-6,-17,12,4,'#3e5c3a');P(-8,-13,15,1,'#2d4429');P(-6,-13,12,10,'#c9a36a');P(-4,-10,2,2,'#2a1a10');P(2,-10,2,2,'#2a1a10');P(-3,-6,6,1,'#2a1a10');P(-9,-12,3,4,'#e0c25a');P(6,-11,3,4,'#e0c25a');P(-7,-3,14,12,'#b59a5a');P(-3,-3,6,4,'#c0392b');P(3,1,2,2,'#f2c94c');P(-10,-2+f,3,9,'#b59a5a');P(-10,7+f,3,3,'#e0c25a');P(7,-2,3,9,'#b59a5a');P(7,7,3,3,'#e0c25a');P(-5,9,4,8,'#4b4b3a');P(1,9,4,8,'#4b4b3a')}
- else if(t==='hound'){P(-15,-6,28,12,'#d9b552');for(let i=-13;i<12;i+=5)P(i,-6,1,12,'#b8963a');P(10,-13,11,10,'#d9b552');P(16,-10,2,2,'#ff3b3b');P(12,-3,9,3,'#6a4a1a');P(13,-3,1,2,'#fff');P(16,-3,1,2,'#fff');P(19,-3,1,2,'#fff');P(-12,6,3,7-f,'#b8963a');P(-6,6,3,6+f,'#b8963a');P(3,6,3,7-f,'#b8963a');P(8,6,3,6+f,'#b8963a');P(-19,-9,5,3,'#e0c25a')}
- else if(t==='long'){const s=Math.round(Math.sin(tm*.04)*2);P(-9+s,-46,18,2,'#1b1414');P(-5+s,-54,10,8,'#1b1414');P(-5+s,-44,10,11,'#d9c8a0');P(-3+s,-41,1,1,'#000');P(2+s,-41,1,1,'#000');P(-1+s,-37,2,4,'#000');P(-4,-33,8,32,'#4a3a2e');P(-11,-32,7,28,'#4a3a2e');P(4,-32,7,28,'#4a3a2e');P(-11,-4,7,5,'#e0c25a');P(4,-4,7,5,'#e0c25a');P(-4,-1,3,18,'#2e241c');P(1,-1,3,18,'#2e241c')}
- else if(t==='vol'){P(-7,-24,14,13,'#c9a36a');P(-4,-20,2,2,'#000');P(2,-20,2,2,'#000');P(-5,-16,10,1,'#2a1a10');P(-6,-17,1,1,'#2a1a10');P(5,-17,1,1,'#2a1a10');P(-7,-12,14,1,'#8a6a2a');P(-8,-11,16,17,'#e8dcc0');P(-8,-11,5,17,'#ff7a1a');P(3,-11,5,17,'#ff7a1a');P(-8,-4,5,2,'#e6e6e6');P(3,-4,5,2,'#e6e6e6');P(-11,-10,3,12,'#ff7a1a');P(-11,2,3,3,'#e0c25a');P(8,-10,3,10,'#ff7a1a');P(9,-2+f,7,9,'#a07a4a');P(10,-1+f,5,7,'#f4f4f4');P(-6,6,5,12,'#3b4a6b');P(1,6,5,12,'#3b4a6b')}
- else if(t==='gleaner'){
-  const ph2=Bt&&Bt.phase===2,fl=.55+.35*Math.sin(tm*.18)+Math.random()*.1;
-  const g=cx.createRadialGradient(x,y-50,4,x,y-50,60);g.addColorStop(0,ph2?`rgba(255,255,240,${.45*fl})`:`rgba(255,190,80,${.4*fl})`);g.addColorStop(1,'rgba(255,150,40,0)');cx.fillStyle=g;cx.fillRect(x-60,y-110,120,120);
-  for(let i=0;i<14;i++)P(-6-i*2,-34+i*5,12+i*4,5,i%2?'#4a3a18':'#3a2c10');
-  for(let k=0;k<11;k++)P(-33+k*6,36+(k%2)*3,2,9,'#8a7030');
-  P(-36,-18+f,8,30,'#3a2c10');P(-44,10+f,12,2,'#c8c8d4');P(-46,4+f,2,8,'#c8c8d4');P(28,-18-f,8,30,'#3a2c10');P(32,10-f,12,2,'#c8c8d4');P(44,4-f,2,8,'#c8c8d4');
-  if(ph2){for(let k=0;k<6;k++)P(-18+k*7,-8+(k%3)*9,2,1,'#ff3b3b')}
-  P(-3,-42,6,8,'#2a1f0a');P(-10,-64,20,23,'#1b1414');P(-8,-61,16,17,ph2?`rgba(255,255,230,${fl})`:`rgba(255,${170+rnd(30)},70,${fl})`);P(-2,-57,4,9,'#fff3c2');P(-6,-68,12,4,'#1b1414');P(-2,-72,4,4,'#1b1414');P(-10,-53,20,1,'#1b1414');
- }
-}
-
 // ================= MAPS =================
 const mk=(w,h,f)=>Array.from({length:h},()=>Array(w).fill(f));
 const rect=(g,x,y,w,h,c)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(g[j]&&g[j][i]!==undefined)g[j][i]=c};
 async function stepBack(){const [dx,dy]=DIRS[G.dir];if(passable(G.x+dx,G.y+dy)){G.x+=dx;G.y+=dy;G.px=G.x*16;G.py=G.y*16}}
 
-function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 
 // ================= DIALOG / MENU =================
 // Lantern Bust box (engine/dialog.js, copied unchanged from the Asset Library). `box` holds what the box shows;
@@ -202,143 +137,12 @@ async function ask(name,text,opts){await say(name,text,{keep:true,instant:false}
 function banner(t){ban.textContent=t;ban.hidden=false;clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,2200)}
 function fade(on){fadeEl.style.opacity=on?1:0;return sleep(340)}
 async function run(fn){G.busy=(G.busy||0)+1;try{await fn()}catch(e){console.error(e)}finally{G.busy--}}
-function clue(id,text){if(G.clues.some(c=>c.id===id))return;G.clues.push({id,text});banner('NOTEBOOK UPDATED')}
 
 // ================= SANITY =================
-function applySan(){const m=lead();if(!m)return;const fr=clamp(m.san/m.msan,0,1),f=1-fr;
- scr.style.filter=f>.05?`hue-rotate(${(-f*80).toFixed(0)}deg) saturate(${(1+f*1.5).toFixed(2)}) contrast(${(1+f*.3).toFixed(2)})`:'';
- $('#vig').style.opacity=(Math.max(0,f-.1)*1.05).toFixed(2);scr.classList.toggle('glitch',fr<.4);
- sanEl.innerHTML=`SAN <b class="${fr<.4?'red':''}">${m.san}</b>`;}
-async function sanCheck(spec,label,who){
- if(Bt&&Bt.ward){Bt.ward=false;await say('',`${label}... but the ward holds. No one loses SAN.`,{auto:1100});return}
- const parts=[];(who||party).forEach(m=>{const r=d100(),loss=r<=m.san?dice(spec[0]):dice(spec[1]);m.san=Math.max(0,m.san-loss);if(loss)parts.push(`${m.name} -${loss}`)});
- applySan();if(Bt)updHUD();
- await say('',`${label}. `+(parts.length?'SAN: '+parts.join(', ')+'.':'Everyone keeps it together.'),{auto:1400});
- for(const m of party){if(m.san<=m.bp&&!m.dis&&m.san>0){m.dis=pick(DIS);await say('',`${m.name} hits a breaking point. Something cracks for good. New disorder: ${m.dis}.`,{auto:1800})}}
-}
-const hitPenalty=m=>m.dis?10:0;
-
-// ================= BATTLE =================
-function updHUD(){hud.innerHTML=party.map(m=>`<div class="hb ${Bt&&m===Bt.active?'on':''} ${m.ko?'ko':''}"><div class="nm">${esc(m.name)}</div><div>HP <b class="${m.hp<=m.mhp/3?'red':''}">${m.hp}</b>/${m.mhp}</div><div>WP ${m.wp} <span class="sn">S${m.san}</span></div></div>`).join('')}
-function nameEnemies(en){const c={};en.forEach(e=>c[e.base]=(c[e.base]||0)+1);const s={};en.forEach(e=>{if(c[e.base]>1){s[e.base]=(s[e.base]||0)+1;e.name=e.base+' '+'ABC'[s[e.base]-1]}else e.name=e.base})}
-async function battle(types,o={}){
- held=[];G.mode='battle';gEl.classList.add('battle');
- const en=types.map((t,i)=>({...EN[t],t,base:EN[t].name,hp:o.hp&&i===0?o.hp:EN[t].hp,mhp:o.hp&&i===0?o.hp:EN[t].hp,stun:0,blind:0,mark:false,dead:false,flash:0,alpha:1}));
- nameEnemies(en);
- Bt={en,bg:o.bg||G.M.bg,t:0,boss:!!o.boss,phase:1,focus:0,ward:false,decoy:false,taunt:null,hover:-1,active:null,floaties:[],queue:[]};
- party.forEach(m=>{m.defend=false;m.covering=null;m.stun=0});
- hud.hidden=false;updHUD();
- await sleep(250);
- await say('',o.intro||`${en.map(e=>e.name).join(', ')} ${en.length>1?'close in':'appears'}!`,{auto:1000});
- for(const t of [...new Set(types)])await sanCheck(EN[t].san,`Seeing ${/^The /.test(EN[t].name)?EN[t].name:'the '+EN[t].name}`);
- if(lead().san<=0)return endBattle('lose');
- if(o.onStart)await o.onStart();
- for(;;){
-  Bt.queue=[...party.filter(m=>!m.ko),...en.filter(e=>!e.dead)].map(a=>({a,i:a.dex+rnd(5)})).sort((x,y)=>y.i-x.i).map(x=>x.a);
-  while(Bt.queue.length){
-   const a=Bt.queue.shift();if(a.dead||a.ko)continue;
-   if(a.a){const r=await memberTurn(a);if(r==='flee')return endBattle('flee')}else await enemyTurn(a);
-   if(lead().ko||lead().san<=0)return endBattle('lose');
-   if(en.every(e=>e.dead))return endBattle('win');
-  }
-  if(Bt.focus>0)Bt.focus--;en.forEach(e=>{if(e.blind>0)e.blind--});Bt.taunt=null;
-  if(Bt.boss&&Bt.phase===1&&en[0].hp<=en[0].mhp/2){Bt.phase=2;await say('','The lantern flares white. The corn leans in to listen. The Gleaner moves faster now.',{auto:1800})}
- }
-}
-async function endBattle(res){
- Bt.active=null;updHUD();
- if(res==='win'){
-  await say('','You survived. For now.',{auto:900});
-  party.forEach(m=>{if(m.ko){m.ko=false;m.hp=1}m.wp=Math.min(m.mwp,m.wp+2)});
-  if(!Bt.boss&&Math.random()<.35){const it=pick(['aid','coffee','aid']);G.items[it]=(G.items[it]||0)+1;await say('',`You find a ${ITEMS[it].name} in the straw.`,{auto:1100})}
-  G.fights=(G.fights||0)+1;
- }
- hud.hidden=true;gEl.classList.remove('battle');Bt=null;G.mode='world';hideTB();return res;
-}
-function aliveFoes(){return Bt.en.filter(e=>!e.dead)}
-async function pickFoe(){const f=aliveFoes();if(f.length===1)return f[0];const r=await choose(f.map(e=>`${e.name}${e.mark?' ★':''}`),{cancel:true,title:'TARGET',onSel:i=>{Bt.hover=Bt.en.indexOf(f[i])}});return r<0?null:f[r]}
-async function pickAlly(o={}){const r=await choose(party.map(m=>({label:`${m.name}  ${m.ko?'DOWN':m.hp+'/'+m.mhp}`,dis:o.noKO&&m.ko})),{cancel:true,title:o.title||'WHO?'});return r<0?null:party[r]}
-function floaty(e,txt,col){const i=Bt.en.indexOf(e),n=Bt.en.length,x=VW/(n+1)*(i+1);Bt.floaties.push({x,y:VH*.42-20,txt:String(txt),t:0,col:col||'#fff'})}
-async function hurtEnemy(e,d){e.hp=Math.max(0,e.hp-d);e.flash=16;floaty(e,d);if(e.hp<=0&&!e.dead){e.dead=true;await say('',`${e.name} ${e.die}.`,{auto:900})}}
-async function attack(m,e,o={}){
- const w=m.w,sk=clamp(w.skill+(Bt.focus?20:0)-hitPenalty(m),5,99),r=d100();
- if(o.sure||r<=sk){let dmg=roll(w.dmg[0],w.dmg[1],w.bonus);const crit=!o.sure&&r<=Math.max(1,Math.floor(sk/10));if(crit)dmg*=2;if(e.mark)dmg=Math.ceil(dmg*1.5);
-  await say('',`${m.name} ${w.verb}! ${crit?'CRITICAL! ':''}${o.sure?'':`(${r} vs ${sk}) `}${e.name} takes ${dmg}.`,{auto:1000});await hurtEnemy(e,dmg);return true}
- await say('',`${m.name} ${w.verb}... and misses. (${r} vs ${sk})`,{auto:950});return false}
-async function memberTurn(m){
- m.defend=false;m.covering=null;Bt.active=m;updHUD();
- if(m.stun>0){m.stun--;await say('',`${m.name} is frozen and can't act.`,{auto:900});return}
- for(;;){
-  await say('',`What will ${m.name} do?`,{keep:true,instant:true});
-  const nAb=profOf(m.a).abil,itc=Object.values(G.items).reduce((a,b)=>a+b,0);
-  const c=await choose(['Attack','Skill','Item'+(itc?'':' (none)'),'Defend',{label:'Run',dis:Bt.boss}],{title:m.name.toUpperCase()+` · ${m.w.name}`});
-  hideTB();
-  if(c===0){const e=await pickFoe();if(!e)continue;await attack(m,e);return}
-  if(c===1){const s=await choose(nAb.map(x=>({label:`${x[0]} (${ABIL[x[0]].wp} WP)`,dis:m.wp<ABIL[x[0]].wp})),{cancel:true,title:`SKILL · ${m.wp} WP`,desc:nAb.map(x=>x[1])});if(s<0)continue;const r=await useAbil(m,nAb[s][0]);if(r===false)continue;if(r==='flee')return'flee';return}
-  if(c===2){const r=await itemMenu(m,true);if(r===false)continue;return}
-  if(c===3){m.defend=true;await say('',`${m.name} braces and watches the dark.`,{auto:800});return}
-  if(c===4){if(Math.random()<.6){await say('','You back away into the corn. You get away!',{auto:1000});return'flee'}await say('','There\'s nowhere to run!',{auto:900});return}
- }
-}
-async function useAbil(m,name){
- const A=ABIL[name];let tgt=null;
- if(A.t==='foe'){tgt=await pickFoe();if(!tgt)return false}
- if(A.t==='ally'){tgt=await pickAlly({title:name.toUpperCase(),noKO:!A.revive});if(!tgt)return false;if(A.fx==='extra'&&(tgt===m))return false}
- m.wp-=A.wp;updHUD();
- const fx=A.fx;
- if(fx==='stun'){const sk=skillVal(m.a,A.skill),r=d100();if(r<=sk){tgt.stun+=A.n;await say('',`${m.name} uses ${name}! (${r} vs ${sk}) ${tgt.name} is stunned.`,{auto:1100})}else await say('',`${m.name} uses ${name}... it doesn't take. (${r} vs ${sk})`,{auto:1100})}
- else if(fx==='multi'){for(let i=0;i<A.n&&!tgt.dead;i++)await attack(m,tgt)}
- else if(fx==='heal'){const h=roll(A.dice[0],A.dice[1],A.dice[2]);if(tgt.ko){tgt.ko=false;tgt.hp=Math.min(tgt.mhp,h);await say('',`${m.name} gets ${tgt.name} back on their feet! (+${h} HP)`,{auto:1100})}else{tgt.hp=Math.min(tgt.mhp,tgt.hp+h);if(A.wp2)tgt.wp=Math.min(tgt.mwp,tgt.wp+A.wp2);await say('',`${m.name} uses ${name}. ${tgt.name} recovers ${h} HP${A.wp2?' and '+A.wp2+' WP':''}.`,{auto:1100})}}
- else if(fx==='mark'){tgt.mark=true;await say('',`${m.name} studies ${tgt.name} and finds the weak seam. It takes extra damage now. ★`,{auto:1300})}
- else if(fx==='markAll'){aliveFoes().forEach(e=>e.mark=true);await say('',`${m.name} remembers an old woodcut of things like these. Every foe takes extra damage now. ★`,{auto:1400})}
- else if(fx==='dmg'){const d=roll(A.dice[0],A.dice[1],A.dice[2]);await say('',`${m.name} uses ${name}! ${tgt.name} takes ${d}.`,{auto:1000});if(A.stun){tgt.stun+=A.stun}await hurtEnemy(tgt,tgt.mark?Math.ceil(d*1.5):d)}
- else if(fx==='surehit'){await attack(m,tgt,{sure:true})}
- else if(fx==='hitstun'){const hit=await attack(m,tgt);if(hit&&!tgt.dead){tgt.stun+=1;await say('',`${tgt.name} is stunned.`,{auto:800})}}
- else if(fx==='blindAll'){aliveFoes().forEach(e=>e.blind=A.n);await say('',`${m.name} uses ${name}! The enemies can barely see straight.`,{auto:1100})}
- else if(fx==='cover'){m.covering=tgt;await say('',`${m.name} steps in front of ${tgt.name}.`,{auto:900})}
- else if(fx==='ward'){Bt.ward=true;await say('',`${m.name} steadies everyone. The next horror won't touch your minds.`,{auto:1200})}
- else if(fx==='extra'){Bt.queue.unshift(tgt);await say('',`${m.name} uses ${name}! ${tgt.name} acts next.`,{auto:1000})}
- else if(fx==='decoy'){Bt.decoy=true;await say('',`${m.name} rigs a phone to play footsteps in the corn. Decoy set.`,{auto:1100})}
- else if(fx==='taunt'){Bt.taunt=m;m.defend=true;await say('',`${m.name} bellows. Every eye turns toward them.`,{auto:1000})}
- else if(fx==='focus'){Bt.focus=2;await say('',`${m.name} reads the ground and calls out where they'll come from. Party +20 to hit for 2 rounds.`,{auto:1400})}
- else if(fx==='sanAll'){const parts=party.map(p=>{const g=roll(A.dice[0],A.dice[1],A.dice[2]);p.san=Math.min(p.msan,p.san+g);return`${p.name} +${g}`});applySan();await say('',`${m.name} speaks old words of comfort. SAN: ${parts.join(', ')}.`,{auto:1500})}
- else if(fx==='stunAll'){let n=0;aliveFoes().forEach(e=>{if(rnd(100)<A.chance){e.stun+=1;n++}});await say('',`${m.name} preaches into the dark. ${n?n+' of them hesitate.':'Nothing listens.'}`,{auto:1200})}
- else if(fx==='dmgAll'){await say('',`${m.name} uses ${name}!`,{auto:700});for(const e of aliveFoes()){const d=roll(A.dice[0],A.dice[1],A.dice[2]);await hurtEnemy(e,e.mark?Math.ceil(d*1.5):d)}}
- else if(fx==='escape'){if(Bt.boss){party.forEach(p=>p.defend=true);await say('',`${m.name} pulls everyone behind a hay wagon. The party braces.`,{auto:1200})}else{await say('',`${m.name} knows a gap in the corn. You slip away.`,{auto:1100});return'flee'}}
- else if(fx==='wpAll'){const parts=party.map(p=>{const g=roll(A.dice[0],A.dice[1],A.dice[2]);p.wp=Math.min(p.mwp,p.wp+g);return`${p.name} +${g}`});await say('',`${m.name} hums the ice cream song. It shouldn't help. It does. WP: ${parts.join(', ')}.`,{auto:1500})}
- updHUD();
-}
-async function itemMenu(m,inBattle){
- const keys=Object.keys(G.items).filter(k=>G.items[k]>0);if(!keys.length){await say('','You have nothing useful.',{auto:inBattle?800:0});return false}
- const r=await choose(keys.map(k=>({label:`${ITEMS[k].name} x${G.items[k]}`,dis:!inBattle&&ITEMS[k].battle})),{cancel:true,title:'ITEMS',desc:keys.map(k=>ITEMS[k].desc)});if(r<0)return false;const k=keys[r];
- if(k==='aid'){const t=await pickAlly({title:'HEAL WHO?'});if(!t)return false;const h=roll(1,8,3);if(t.ko){t.ko=false;t.hp=Math.min(t.mhp,h)}else t.hp=Math.min(t.mhp,t.hp+h);G.items.aid--;await say('',`${t.name} is patched up. +${h} HP.`,{auto:inBattle?1000:0})}
- else if(k==='coffee'){const t=await pickAlly({title:'WHO DRINKS?',noKO:true});if(!t)return false;const g=roll(1,4,1);t.wp=Math.min(t.mwp,t.wp+g);G.items.coffee--;await say('',`${t.name} drinks gas-station coffee. +${g} WP.`,{auto:inBattle?1000:0})}
- else if(k==='flare'){const e=await pickFoe();if(!e)return false;G.items.flare--;const d=roll(2,6,2);await say('',`${m.name} lights a road flare and jams it into the straw! ${e.name} takes ${d}.`,{auto:1100});await hurtEnemy(e,d)}
- else if(k==='bell'){G.items.bell--;aliveFoes().forEach(e=>e.stun+=1);await say('',`${m.name} rings the church handbell. BONNNG. Every foe flinches and freezes.`,{auto:1300})}
- else if(k==='salts'){const t=await pickAlly({title:'WHO?',noKO:true});if(!t)return false;const g=roll(1,4);t.san=Math.min(t.msan,t.san+g);G.items.salts--;applySan();await say('',`${t.name} takes a sharp breath of smelling salts. The world snaps back into focus. +${g} SAN.`,{auto:inBattle?1200:0})}
- else if(k==='tape'){const t=await pickAlly({title:'PATCH WHO?',noKO:true});if(!t)return false;const h=roll(1,4,1);t.hp=Math.min(t.mhp,t.hp+h);G.items.tape--;await say('',`${t.name} gets taped up. It's not pretty. +${h} HP.`,{auto:inBattle?1000:0})}
- else if(k==='tranq'){const e=await pickFoe();if(!e)return false;G.items.tranq--;e.stun+=2;await say('',`${m.name} jabs a tranquilizer into ${e.name}. It sways and goes still.`,{auto:1100})}
- else if(k==='spray'){G.items.spray--;aliveFoes().forEach(e=>e.blind=Math.max(e.blind,2));await say('',`${m.name} empties the pepper spray. The enemies can barely see.`,{auto:1100})}
- if(inBattle)updHUD();return true;
-}
-async function enemyTurn(e){
- if(e.stun>0){e.stun--;await say('',`${e.name} is stunned.`,{auto:800});return}
- const n=Bt.boss&&e.t==='gleaner'&&Bt.phase===2?2:1;
- for(let i=0;i<n;i++){if(lead().ko)return;await enemyAct(e)}
-}
-async function enemyAct(e){
- const pool=[];e.moves.forEach(([mv,w])=>{for(let i=0;i<w;i++)pool.push(mv)});let mv=pick(pool);
- const alive=party.filter(m=>!m.ko);if(!alive.length)return;
- if(mv==='san'){await say('',e.sanText,{auto:1300});let spec=e.sanHit;if(e.t==='gleaner'&&G.flags.cider)spec=[spec[0],'1d6'];await sanCheck(spec,'The words get inside');return}
- if(mv==='all'){await say('',e.allText,{auto:1000});for(const m of alive){const r=d100(),hit=e.skill-(e.blind?30:0)-(m.defend?20:0);if(r<=hit){let d=roll(e.allDmg[0],e.allDmg[1]);if(m.defend)d=Math.ceil(d/2);await hurtMember(m,d)}}return}
- let t=Bt.taunt&&!Bt.taunt.ko?Bt.taunt:pick(alive);
- if(Bt.decoy){Bt.decoy=false;await say('',`${e.name} lunges at the decoy in the corn. The phone shatters.`,{auto:1100});return}
- const cov=party.find(p=>p.covering===t&&!p.ko&&p!==t);if(cov){await say('',`${cov.name} takes the hit for ${t.name}!`,{auto:800});t=cov}
- const hit=e.skill-(e.blind?30:0)-(t.defend?20:0),r=d100();
- if(r<=hit){let d=roll(e.dmg[0],e.dmg[1]);if(t.defend)d=Math.ceil(d/2);await say('',`${e.name} ${e.verb} ${t.name}! ${d} damage.`,{auto:1000});await hurtMember(t,d)}
- else await say('',`${e.name} ${e.verb} ${t.name}... and misses.`,{auto:900});
-}
-async function hurtMember(m,d){m.hp=Math.max(0,m.hp-d);hud.classList.add('shake');setTimeout(()=>hud.classList.remove('shake'),250);updHUD();if(m.hp<=0&&!m.ko){m.ko=true;updHUD();await say('',m===lead()?`${m.name} goes down.`:`${m.name} goes down!`,{auto:1000})}}
+// Low SAN sours the picture toward SAN pink and cyan (engine/light.js, drawn in drawWorld); the thresholds are the old ones.
+const LOOK={dark:'#1c1814',alpha:.9,warm:'#d9b45a',pink:'#ff4fa3',cyan:'#3ff0e8',sour:.6};
+const sourFade={};
+function applySan(){const m=lead();if(!m)return;const fr=clamp(m.san/m.msan,0,1);sanEl.innerHTML=`SAN <b class="${fr<.4?'red':''}">${m.san}</b>`;}
 
 // ================= WORLD =================
 function passable(x,y){const M=G.M;if(x<0||y<0||x>=M.w||y>=M.h)return false;if(BLOCK.has(M.g[y][x]))return false;if(M.npcs.some(n=>(!n.on||n.on())&&n.x===x&&n.y===y))return false;return true}
@@ -366,67 +170,46 @@ function drawWorld(){
  const moving=!!G.mv,fr=StudioMove.walkFrame(G);
  // Only the lead walks the map (Bible, Art, Maps). Agent sprites from agent-sprite.js; lantern at night only; a blink every few seconds.
  const blink=!moving&&(performance.now()%3400)<150?1:0;
- spr.push({y:G.py,f:()=>RLA.draw(cx,lead().a,G.px+8-camx,G.py+13-camy,G.dir,fr,blink,!!M.dark)});
- if(M.boss)spr.push({y:11*16,f:()=>drawEnemy('gleaner',13*16+8-camx,11*16+14-camy,performance.now()/16)});
+ spr.push({y:G.py,f:()=>{const s=RLSP.map(lead().sp,lead().look);cx.drawImage(s,Math.round(G.px+1-camx),Math.round(G.py+16-26-camy+(moving&&fr%2?-1:0)))}});
  spr.sort((a,b)=>a.y-b.y).forEach(s=>s.f());
- if(M.dark)darkness(camx,camy);else{cx.fillStyle='rgba(80,20,70,.16)';cx.fillRect(0,0,VW,VH);glows(camx,camy)}
+ lights(M,camx,camy);
 }
-const dk=document.createElement('canvas'),dx=dk.getContext('2d');
-function darkness(camx,camy){
- if(dk.width!==VW||dk.height!==VH){dk.width=VW;dk.height=VH}
- dx.globalCompositeOperation='source-over';dx.clearRect(0,0,VW,VH);dx.fillStyle='rgba(6,4,14,.94)';dx.fillRect(0,0,VW,VH);dx.globalCompositeOperation='destination-out';
- const hole=(x,y,r)=>{const g=dx.createRadialGradient(x,y,r*.2,x,y,r);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');dx.fillStyle=g;dx.beginPath();dx.arc(x,y,r,0,7);dx.fill()};
- const fr=clamp(lead().san/lead().msan,0,1);hole(G.px+8-camx,G.py+6-camy,34+36*fr+Math.random()*3);
- const M=G.M;for(let ty=0;ty<M.h;ty++)for(let tx=0;tx<M.w;tx++)if(M.g[ty][tx]==='L'||M.g[ty][tx]==='l')hole(tx*16+8-camx,ty*16+4-camy,26);
- if(M.boss)hole(13*16+8-camx,11*16-38-camy,46+Math.random()*4);
- cx.drawImage(dk,0,0);
- const g=cx.createRadialGradient(G.px+8-camx,G.py+6-camy,2,G.px+8-camx,G.py+6-camy,50);g.addColorStop(0,'rgba(255,170,60,.16)');g.addColorStop(1,'rgba(255,170,60,0)');cx.fillStyle=g;cx.fillRect(0,0,VW,VH);
+// Night and lamps on the shared light (engine/light.js): the dark from Peat, Tallow pools from the rushlight and lamps.
+// The rushlight's pool shrinks as the lead's SAN falls (the old rule), and below 40% SAN the picture sours.
+function lights(M,camx,camy){
+ const fr=clamp(lead().san/lead().msan,0,1),lamps=[];
+ for(let ty=0;ty<M.h;ty++)for(let tx=0;tx<M.w;tx++)if(M.g[ty][tx]==='L'||M.g[ty][tx]==='l')lamps.push([tx*16+8-camx,ty*16+4-camy,M.dark?26:24,.3]);
+ if(M.dark)StudioLight.night(cx,{dark:LOOK.dark,alpha:LOOK.alpha,warm:LOOK.warm,pools:[[G.px+8-camx,G.py+6-camy,34+36*fr],...lamps.map(l=>[l[0],l[1],l[2]])]});
+ else StudioLight.night(cx,{dark:LOOK.dark,alpha:0,warm:LOOK.warm,pools:[],glows:lamps});
+ const k=StudioLight.fade(sourFade,fr<.4,performance.now());if(k>0)StudioLight.sour(cx,k*LOOK.sour,{pink:LOOK.pink,cyan:LOOK.cyan});
 }
-function glows(camx,camy){cx.globalCompositeOperation='lighter';const M=G.M;for(let ty=0;ty<M.h;ty++)for(let tx=0;tx<M.w;tx++)if(M.g[ty][tx]==='L'){const x=tx*16+8-camx,y=ty*16+3-camy;if(x<-30||y<-30||x>VW+30||y>VH+30)continue;const g=cx.createRadialGradient(x,y,1,x,y,24);g.addColorStop(0,'rgba(255,170,60,.35)');g.addColorStop(1,'rgba(255,120,40,0)');cx.fillStyle=g;cx.fillRect(x-24,y-24,48,48)}cx.globalCompositeOperation='source-over'}
-function drawBattle(){
- const t=Bt.t++,pal=BGPAL[Bt.boss?'boss':Bt.bg];
- for(let y=0;y<VH;y+=2){const off=Math.sin(y*.06+t*.035)*12+t*.35;const idx=Math.floor((y+off)/9);cx.fillStyle=pal[((idx%pal.length)+pal.length)%pal.length];cx.fillRect(0,y,VW,2)}
- cx.fillStyle='rgba(0,0,0,.18)';for(let x=0;x<VW;x+=4){const o=Math.sin(x*.08+t*.05)*6;cx.fillRect(x,0,2,VH*.12+o)}
- const n=Bt.en.length;
- Bt.en.forEach((e,i)=>{if(e.dead){e.alpha=Math.max(0,e.alpha-.04)}if(e.alpha<=0)return;const x=VW/(n+1)*(i+1),y=Bt.boss?VH*.62:VH*.48;cx.globalAlpha=e.alpha;drawEnemy(e.t,x,y,t,e);cx.globalAlpha=1;if(e.flash>0)e.flash--;
-  if(Bt.hover===i){cx.fillStyle='#ffd166';const ay=y-(e.t==='long'?62:e.t==='gleaner'?80:28)+Math.sin(t*.2)*2;cx.fillRect(x-3,ay,7,2);cx.fillRect(x-2,ay+2,5,2);cx.fillRect(x-1,ay+4,3,2)}
-  if(e.stun>0&&!e.dead){cx.fillStyle='#ffd166';cx.font='8px "Press Start 2P",monospace';cx.fillText('z',x+12+Math.sin(t*.1)*3,y-20)}});
- cx.font='9px "Press Start 2P",monospace';cx.textAlign='center';
- Bt.floaties=Bt.floaties.filter(f=>f.t<50);Bt.floaties.forEach(f=>{f.t++;cx.fillStyle='#000';cx.fillText(f.txt,f.x+1,f.y-f.t*.5+1);cx.fillStyle=f.col;cx.fillText(f.txt,f.x,f.y-f.t*.5)});cx.textAlign='left';
-}
-function drawScene(){cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+rnd(20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
+function drawTitleCard(){cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+Math.floor(Math.random()*20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
 // Logic runs at 60 ticks a second on any screen (engine/clock.js); frames with no tick due are skipped.
 const clock=StudioClock.make();
-function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(G.mode==='battle'&&Bt)drawBattle();else if(G.mode==='world')drawWorld();else drawScene();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
+function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(G.mode==='battle'&&Bt)drawBattle();else if(PM)drawParty();else if(G.mode==='world')drawWorld();else drawTitleCard();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
 function fit(){const v=StudioMove.fit(gEl,cv);if(!v)return;VW=v.w;VH=v.h;gEl.style.setProperty('--pu',(64*v.boxW/VW)+'px');boxKey='';if(menu&&!menu.inBox){menu.w=0;renderMenu()}posMenu()}
 window.addEventListener('resize',()=>{if(G.active)fit()});
 
 async function gameOver(){
  held=[];G.mode='scene';
  const L=lead();
- await say('',L.san<=0?'Agent {code} walks into the corn, smiling, and does not come back.':'Agent {code} doesn\'t get up. The lantern goes out.');
+ await say('',L.san<=0?'{merc} walks off into the dark and does not come back.':'{merc} doesn\'t get up.');
  const r=await ask('','The file stays open.',['Retry from checkpoint','Quit to title']);
  if(r===0){await fade(1);restore(G.cp);await fade(0)}else quit();
 }
 
 // ================= SAVE / FLOW =================
-function snap(){return JSON.stringify({map:G.map,x:G.x,y:G.y,dir:G.dir,party,flags:G.flags,clues:G.clues,items:G.items,fights:G.fights,enc:G.enc,rescued:G.rescued})}
+function snap(){return JSON.stringify({map:G.map,x:G.x,y:G.y,dir:G.dir,party,lead:G.lead|0,flags:G.flags,kit:G.kit})}
 function checkpoint(){G.cp=snap();store.set(B.key('game'),G.cp)}
-function restore(s){const o=JSON.parse(s);party=o.party;G.flags=o.flags;G.clues=o.clues;G.items=o.items;G.fights=o.fights;G.enc=o.enc;G.rescued=o.rescued||0;G.mode='world';goMap(o.map,o.x,o.y,o.dir);applySan()}
+function restore(s){const o=JSON.parse(s);party=o.party;G.lead=o.lead|0;G.flags=o.flags||{};G.kit=o.kit||{};G.mode='world';goMap(o.map,o.x,o.y,o.dir);applySan()}
 function enter(){G.active=true;scr.classList.add('gaming');sanEl.hidden=false;fit();cancelAnimationFrame(raf);clock.reset();raf=requestAnimationFrame(loop)}
-function leave(){G.active=false;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
+function leave(){G.active=false;PM=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
 function quit(){checkpoint();leave();B.goto('title');B.render()}
-function finish(){
- store.set(B.key('game'),null);const a=lead().a;
- a.id=a.id||Date.now();const R=B.S.roster,i=R.findIndex(x=>x.id===a.id);const copy=JSON.parse(JSON.stringify(a));if(i>=0)R[i]=copy;else R.unshift(copy);store.set(B.key('roster'),R);
- B.S.a=a;leave();B.goto('dossier');B.render();B.toast('FILED. CHAPTER ONE CLOSED.');
-}
-function startKit(){const it={aid:1};const add=(k,n)=>{it[k]=(it[k]||0)+n};
- const s=B.specOf(lead().a);if(s)Object.entries(s.items).forEach(([k,n])=>add(k,n));else{add('aid',1);add('coffee',1);add('flare',1)}
- party.slice(1).forEach(m=>{const t=B.specOf(m.a);if(t)add(Object.keys(t.items)[0],1)});return it}
+// Until Part A makes real mercs, Black Lantern's creator still hands over agents; each becomes a stand-in merc.
+function member(a,i){return testMerc(i)}
 async function start(agent,squad){
- party=[member(agent),...squad.map(member)];
- G=Object.assign(G,{active:true,flags:{},clues:[],items:startKit(),fights:0,enc:10,rescued:0,busy:0,mode:'scene',scene:null});
+ party=[member(agent,0),...squad.map((a,i)=>member(a,i+1))];
+ G=Object.assign(G,{active:true,lead:0,flags:{},kit:{bandage:2},busy:0,mode:'scene',scene:null});
  MAZE=null;enter();applySan();
  run(caseOpening);
 }
@@ -436,11 +219,9 @@ function resume(){const s=store.get(B.key('game'),null);if(!s)return false;G=Obj
 async function pauseMenu(){
  held=[];
  for(;;){
-  const r=await choose(['Party','Items','Notebook','Save & quit','Close'],{cancel:true,title:'MENU · '+G.M.name});
-  if(r===0){for(const m of party)await say(m.name.toUpperCase(),`${profOf(m.a).name}\nHP ${m.hp}/${m.mhp}   WP ${m.wp}/${m.mwp}\nSAN ${m.san}/${m.msan}   Breaking Point ${m.bp}${m.dis?'\nDisorder: '+m.dis:''}\nWeapon: ${m.w.name} (${m.w.skill}%)`)}
-  else if(r===1){await itemMenu(lead(),false);hideTB()}
-  else if(r===2){if(!G.clues.length)await say('NOTEBOOK','Nothing yet. Talk to the townsfolk.');for(const c of G.clues)await say('NOTEBOOK',c.text);if(!G.flags.key)await say('NOTEBOOK',`Deputy Ross wants proof: ${townClues()}/3 town clues.`)}
-  else if(r===3){quit();return}
+  const r=await choose(['Party','Save & quit','Close'],{cancel:true,title:'MENU · '+G.M.name});
+  if(r===0){await openParty()}
+  else if(r===1){quit();return}
   else return;
  }
 }
@@ -448,6 +229,8 @@ async function pauseMenu(){
 // ================= INPUT =================
 function input(k){
  if(!G.active)return;
+ if(G.mode==='battle'&&Bt&&!dlg&&!menu){battlePress(k);return}
+ if(PM&&!dlg&&!menu){partyPress(k);return}
  if(dlg){if(k==='a'||k==='b'){if(!dlg.done)finishType();else closeDlg()}return}
  if(menu){const n=menu.items.length;
   if(k==='up'){menu.sel=(menu.sel-1+n)%n;renderMenu()}
@@ -455,6 +238,7 @@ function input(k){
   else if(k==='a'){const it=menu.items[menu.sel];if(it&&it.dis)return;closeMenu(menu.sel)}
   else if(k==='b'&&menu.cancel){closeMenu(-1)}
   return}
+ if(k==='select'){mapSelect();return}
  if(G.mode==='world'&&!G.busy&&!G.mv){if(k==='a')run(interact);else if(k==='start')run(pauseMenu)}
 }
 function hold(d,on){held=StudioMove.hold(held,d,on)}
@@ -465,4 +249,21 @@ menuEl.addEventListener('click',e=>{const el=e.target.closest('.gi');if(!el||!me
 // checkpoint if there is one, else the agent draft's dossier; with neither, the title screen opens as usual.
 window.addEventListener('load',()=>{if(!(window.Studio&&Studio.continued)||G.active)return;
  if(resume())return;if(B.S.a&&B.S.a.prof){B.goto('dossier');B.render()}});
-window.RLG={start,resume,input,hold,get active(){return G.active},_t:{fight:t=>run(async()=>{const r=await battle(t);if(r==='lose')await gameOver()}),go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,boss:()=>run(bossIntro)}};
+// A canvas tap goes to the battle or the party list when either is open
+cv.addEventListener('click',e=>{if(!G.active)return;const r=cv.getBoundingClientRect();if(!r.width)return;
+ const x=(e.clientX-r.left)*VW/r.width,y=(e.clientY-r.top)*VH/r.height;if(G.mode==='battle'&&Bt)battleTap(x,y);else if(PM)partyTap(x,y)});
+
+// ================= TEST HOOKS (the automatic checks only; spec 002) =================
+// A test party, a small test map and a test fight against one stand-in enemy. The enemy's numbers are placeholders,
+// not the Noonwife's real card (the real fights come with spec Part D).
+function testMerc(i){const T=[{name:'Ostra',sp:'badger',str:15,dex:9,hp:13,wp:11,san:55,sk:{Melee:70,Athletics:70,Dodge:60},w:{name:'Halberd',skill:'Melee',dmg:'1d10',melee:true}},
+ {name:'Wendel',sp:'hare',str:10,dex:15,hp:10,wp:12,san:60,sk:{Shooting:70,Dodge:70,Search:50,Athletics:40},w:{name:'Crossbow',skill:'Shooting',dmg:'2d6+3'}},
+ {name:'Tomas',sp:'rat',str:9,dex:12,hp:9,wp:13,san:65,sk:{Medicine:70,'First Aid':70,Melee:30,Athletics:30},w:{name:'Knife',skill:'Melee',dmg:'1d6',melee:true}}][i%3];
+ return Object.assign({look:{shade:1,mark:0,neck:0},mhp:T.hp,mwp:T.wp,msan:T.san,ko:false},JSON.parse(JSON.stringify(T)))}
+const TEST_FOE={name:'Stand-in',lvl:1,skulls:1,hp:16,dex:11,hit:45,dmg:'1d4+1',sprite:'noonwife',faceless:true,known:false,foe:true};
+const testMap=()=>{const g=mk(16,10,'.');rect(g,0,4,16,1,',');g[2][3]='L';return{name:'TEST LANE',w:16,h:10,g,npcs:[],O:{},vv:{}}};
+function testStart(){MAPS.test=testMap;party=[0,1,2].map(testMerc);G=Object.assign(G,{active:true,lead:0,flags:{},kit:{bandage:2},busy:0,mode:'world'});enter();goMap('test',4,4,'right');applySan()}
+window.RLG={start,resume,input,hold,get active(){return G.active},
+ _t:{start:testStart,fight:(o={})=>{run(async()=>{const r=await battle([Object.assign({},TEST_FOE)],Object.assign({roamer:true,bg:'noon',countdown:{label:'NOON BELL',n:12}},o));G.lastFight=r});return true},
+  go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,Bt:()=>Bt,PM:()=>PM,lead:()=>G.lead|0}};
+
