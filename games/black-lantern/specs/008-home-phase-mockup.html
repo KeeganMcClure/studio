@@ -1,0 +1,298 @@
+<title>Home Phase Mockup</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+/* Layout: phone frames stacked in play order, each a 375x667 iPhone SE GBA shell with a caption. Single dark look on purpose (matches the other mockups). */
+:root{
+  --page:#0e1020; --shell:#34305c; --bezel:#14121e; --screen:#1b1f33;
+  --panel:#1f2440; --panel-hi:#2a2f52; --panel-lo:#14172a; --line:#5a5070;
+  --cream:#e8dcc0; --gold:#f4c96a; --mustard:#d6a43a; --lav:#b9a8e0; --dim:#9a92c8;
+  --pink:#ff4fa3; --cyan:#3ff0e8; --rust:#b5532e;
+  --px:'Press Start 2P',ui-monospace,Menlo,monospace; --vt:'VT323',ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+body{background:var(--page);color:var(--cream);font-family:var(--vt);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px;margin:0}
+.wrap{max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font-family:var(--px);font-size:13px;line-height:1.6;color:var(--gold);margin:0;letter-spacing:.04em}
+.intro{font-size:20px;line-height:1.15;color:var(--lav);margin:0}
+figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:10px}
+figcaption{font-size:19px;line-height:1.15;color:var(--cream);max-width:375px}
+figcaption b{font-family:var(--px);font-size:9px;color:var(--gold);font-weight:400;letter-spacing:.05em;display:block;margin-bottom:4px}
+@media (max-width:400px){.phone{zoom:.9}}
+
+/* shell */
+.phone{position:relative;width:375px;height:667px;overflow:hidden;background:var(--shell);color:var(--cream);font-family:var(--vt);flex:none;border-radius:6px}
+.phone .topbar{position:absolute;left:0;right:0;top:0;height:4px;background:#4a4380}
+.phone .bezel{position:absolute;left:7px;top:10px;width:361px;height:466px;background:var(--bezel);border-radius:10px 10px 28px 10px}
+.scr{position:absolute;left:17px;top:22px;width:340px;height:442px;overflow:hidden;background:var(--screen);box-sizing:border-box}
+.scr.pad{padding:6px;display:flex;flex-direction:column;gap:4px}
+.brand{position:absolute;left:0;right:0;top:482px;display:flex;justify-content:center;align-items:center;gap:8px;font-family:var(--px);font-size:9px;letter-spacing:1px;color:var(--dim)}
+.brand i{width:6px;height:6px;background:var(--mustard);box-shadow:0 0 6px var(--mustard)}
+.dpad{position:absolute;left:25px;top:508px;width:106px;height:106px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr)}
+.dpad span{background:#1a1824;color:#4a4560;font-size:12px;display:grid;place-items:center}
+.btn{position:absolute;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-family:var(--px);font-size:14px}
+.btn.b{left:228px;top:548px;background:#6e2e24;box-shadow:inset 0 -4px 0 #4a1e18,0 2px 0 #241f40;color:#e8c8b8}
+.btn.a{left:294px;top:516px;background:var(--rust);box-shadow:inset 0 -4px 0 #7a3520,0 2px 0 #241f40;color:#fbe8d8}
+.pills{position:absolute;left:0;right:0;top:626px;display:flex;justify-content:center;gap:14px}
+.pills span{height:26px;border-radius:13px;background:#1a1824;color:var(--dim);font-family:var(--px);font-size:7px;display:grid;place-items:center;width:72px}
+.pills span.lr{width:54px;background:#24213c;font-size:9px}
+
+/* shared UI pieces, matching the creator and debrief mockups */
+.hdr{display:flex;align-items:center;justify-content:space-between;height:26px;padding:0 8px;background:var(--panel-lo);border:2px solid var(--cream);border-radius:3px;flex:none}
+.hdr .t{font-family:var(--px);font-size:9px;color:var(--gold)}
+.hdr .s{font-size:15px;color:var(--lav)}
+.row{display:flex;align-items:center;gap:6px;min-height:25px;padding:1px 6px;background:var(--panel);border:2px solid var(--line);border-radius:3px;box-sizing:border-box;flex:none}
+.row.on{background:var(--panel-hi);border-color:var(--mustard)}
+.row.off{opacity:.45}
+.row .cur{width:10px;color:var(--gold);font-size:16px;flex:none}
+.row .main{flex:1;min-width:0;display:flex;flex-direction:column}
+.row .n{font-size:18px;line-height:15px}
+.row.on .n{color:var(--gold)}
+.row .sub{font-size:14px;line-height:12px;color:var(--lav)}
+.chip{font-family:var(--px);font-size:6px;padding:4px 5px 3px;border-radius:2px;flex:none;letter-spacing:.03em}
+.chip.gain{background:#2e3a5e;color:var(--cyan)}
+.chip.cost{background:#3a3424;color:var(--mustard)}
+.chip.lock{background:#2a2438;color:var(--dim)}
+.chip.close{background:#24402e;color:#9ae0a8}
+.chip.strained{background:#3a3424;color:var(--mustard)}
+.chip.fraying{background:#4a1e38;color:var(--pink)}
+.detail{box-sizing:border-box;background:var(--panel);border:3px solid var(--cream);border-radius:3px;padding:5px 8px;display:flex;flex-direction:column;gap:2px;font-size:17px;line-height:16px;flex:none}
+.detail .help{color:var(--lav)}
+canvas.pxl{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+
+/* screen 1: who's picked what */
+.team{display:flex;gap:5px;flex:none}
+.team .a{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 0 3px;background:var(--panel);border:2px solid var(--line);border-radius:3px;position:relative}
+.team .a.on{border-color:var(--mustard);background:var(--panel-hi)}
+.team .a .nm{font-size:16px;line-height:14px}
+.team .a.on .nm{color:var(--gold)}
+.team .a .pk{font-size:14px;line-height:12px;color:var(--lav);white-space:nowrap}
+.team .a.done .pk{color:var(--cyan)}
+.team .a.wait .pk{color:var(--dim)}
+.team .a .tick{position:absolute;right:3px;top:2px;font-family:var(--px);font-size:7px;color:var(--cyan)}
+
+/* screen 2: bond picker */
+.bond{display:flex;gap:7px;align-items:center;padding:5px;background:var(--panel);border:2px solid var(--line);border-radius:3px}
+.bond.on{border-color:var(--mustard);background:var(--panel-hi)}
+.bond .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.bond .nm{font-size:19px;line-height:15px;display:flex;justify-content:space-between;align-items:center}
+.bond.on .nm{color:var(--gold)}
+.bond .rel{font-size:14px;line-height:12px;color:var(--lav)}
+.bar{height:8px;background:var(--panel-lo);border:1px solid var(--line);position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--mustard)}
+.bar .t1,.bar .t2{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--cream);opacity:.5}
+.bnum{font-size:15px;line-height:12px;color:var(--cream);font-variant-numeric:tabular-nums}
+.who{display:flex;align-items:center;gap:6px;font-size:16px;color:var(--lav);padding:0 2px}
+.who b{font-weight:400;color:var(--cream)}
+
+/* screen 4: result card */
+.result{position:absolute;left:6px;right:6px;top:6px;background:rgba(13,19,34,.94);border:2px solid var(--cream);box-shadow:0 0 0 2px #05040a;border-radius:2px;padding:6px 8px 7px;display:flex;flex-direction:column;gap:5px}
+.result .top{display:flex;justify-content:space-between;align-items:baseline}
+.result .top .t{font-family:var(--px);font-size:9px;color:var(--gold)}
+.result .top .s{font-size:16px;color:var(--lav)}
+.rline{display:flex;justify-content:space-between;align-items:center;font-size:18px;line-height:16px;font-variant-numeric:tabular-nums}
+.rline b{font-weight:400;color:var(--gold)}
+.die{font-family:var(--px);font-size:6px;background:#2e3a5e;color:var(--cyan);padding:3px 4px 2px;border-radius:2px;margin-right:5px}
+.moodshift{display:flex;align-items:center;gap:6px;border-top:1px solid var(--line);padding-top:5px;font-size:16px;color:var(--lav)}
+</style>
+
+<div class="wrap">
+  <h1>HOME PHASE</h1>
+  <p class="intro">Still mockup at iPhone SE size, inside the GBA shell. Four screens in the order they play after Case Gains. Names, numbers and the scene's lines are placeholders, not game text.</p>
+
+  <figure>
+    <div class="phone" id="p1"></div>
+    <figcaption><b>1 · PICK A HOME SCENE</b>The three agents sit in a strip on top: done ones show their pick, the one choosing is lit. Each agent gets exactly one choice. Rows that don't apply are greyed with the reason (New Bond needs an empty slot); Use only appears for an agent with Addiction. The box below spells out the highlighted choice. Arc beats and any funeral play before this screen on their own.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="phone" id="p2"></div>
+    <figcaption><b>2 · PICK A BOND</b>Only for choices that touch a Bond (Fulfill Responsibilities, or the Bond that pays for Back to Nature or Special Training). Each Bond shows its portrait, score out of CHA, and mood: Close, Strained or Fraying. Tick marks on the bar show where the moods change.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="phone" id="p3"></div>
+    <figcaption><b>3 · THE SCENE</b>A home backdrop drawn per Bond type (a parent's kitchen here, at night), with the Bond speaking in the Lantern Bust box. Bond portraits are built from the face parts; parents and mentors read older. The mood picks which version of the scene plays.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="phone" id="p4"></div>
+    <figcaption><b>4 · HOW IT WENT</b>The last narration line, then a result card over the dimmed scene: the roll, the die, and what changed. When a Bond crosses into a new mood, the card says so. A: next agent, or on to the case board after the last one.</figcaption>
+  </figure>
+</div>
+
+<script>
+/* ---- Lantern Bust dialog box, copied from the Asset Library (dialog.js, chosen Nov 15) ---- */
+const BLD=(()=>{
+const C={box:'rgba(13,19,34,.94)',boxSolid:'#0d1322',edge:'#ebe5c8',ring:'#05040a',text:'#ebe5c8',name:'#ffd166',narr:'#b9aee8',prompt:'#9a93c4',cursorBg:'#22305a'};
+const F={px:'"Press Start 2P",ui-monospace,Menlo,monospace',vt:'"VT323",ui-monospace,Menlo,monospace'};
+const U=n=>`calc(var(--u) * ${n})`;
+const CSS=`
+.bld{--u:2px;position:absolute;left:${U(2)};right:${U(2)};bottom:${U(2)};box-sizing:border-box;background:${C.box};border:var(--u) solid ${C.edge};box-shadow:0 0 0 var(--u) ${C.ring};border-radius:var(--u);padding:${U(4)} ${U(5)} ${U(7)};color:${C.text};font:${U(9.5)}/1 ${F.vt};text-align:left;-webkit-font-smoothing:none}
+.bld-bust{position:absolute;left:${U(2)};bottom:100%;margin-bottom:calc(var(--u) * -1);border:var(--u) solid ${C.edge};box-shadow:0 0 0 var(--u) ${C.ring};line-height:0}
+.bld-bust canvas{display:block;width:${U(64)};height:${U(64)};image-rendering:pixelated;image-rendering:crisp-edges}
+.bld-tab{position:absolute;bottom:100%;margin-bottom:calc(var(--u) * -1);left:${U(69)};max-width:calc(100% - ${U(71)});box-sizing:border-box;background:${C.boxSolid};border:var(--u) solid ${C.edge};border-bottom-color:${C.boxSolid};padding:${U(3)} ${U(3)} ${U(2.5)};font:${U(4)}/1 ${F.px};letter-spacing:.04em;color:${C.name};white-space:nowrap;overflow:hidden}
+.bld.np .bld-tab{left:${U(3)};max-width:calc(100% - ${U(6)})}
+.bld-t{margin:0;min-height:${U(28.5)};overflow-wrap:break-word}
+.bld.narr .bld-t{color:${C.narr}}
+.bld-q{min-height:0;color:${C.prompt}}
+.bld-c{list-style:none;margin:${U(1)} 0 0;padding:0;display:grid;gap:${U(1)}}
+.bld-c li{position:relative;padding:${U(1)} ${U(2)} ${U(1)} ${U(7)}}
+.bld-c li.on{background:${C.cursorBg}}
+.bld-cur{position:absolute;left:${U(2)};top:50%;margin-top:${U(-2.5)};width:${U(3)};height:${U(5)};display:block}
+.bld-more{position:absolute;right:${U(4)};bottom:${U(3)};width:${U(5)};height:${U(3)};display:block}`;
+function css(){if(document.getElementById('bld-css'))return;const s=document.createElement('style');s.id='bld-css';s.textContent=CSS;document.head.append(s)}
+const svg=(cls,w,h,rects)=>`<svg class="${cls}" viewBox="0 0 ${w} ${h}" shape-rendering="crispEdges" aria-hidden="true">${rects.map(([x,y,a,b])=>`<rect x="${x}" y="${y}" width="${a}" height="${b}" fill="${C.name}"/>`).join('')}</svg>`;
+const MORE=svg('bld-more',5,3,[[0,0,5,1],[1,1,3,1],[2,2,1,1]]);
+const CUR=svg('bld-cur',3,5,[[0,0,1,5],[1,1,1,3],[2,2,1,1]]);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+function render(host,s){
+  css();const b=el('div','bld'+(s.portrait?'':' np')+(s.narrate?' narr':''));b.style.setProperty('--u',(s.scale||2)+'px');
+  if(s.portrait){const f=el('div','bld-bust'),c=el('canvas');c.width=c.height=64;s.portrait(c.getContext('2d'),s.mouth?1:0);f.append(c);b.append(f)}
+  if(s.name&&!s.narrate)b.append(el('span','bld-tab',s.name.toUpperCase()));
+  if(s.choices){if(s.text)b.append(el('p','bld-t bld-q',s.text));const ul=el('ul','bld-c');s.choices.forEach((t,i)=>{const li=el('li',i===s.sel?'on':'',t);if(i===s.sel)li.insertAdjacentHTML('afterbegin',CUR);ul.append(li)});b.append(ul)}
+  else{b.append(el('p','bld-t',s.text))}
+  if(s.more)b.insertAdjacentHTML('beforeend',MORE);
+  host.append(b);return b;
+}
+return{render};
+})();
+
+/* ---- placeholder Storybook faces, 32 x 32 (same drawer as the debrief mockup, plus grey hair, glasses and lines for older Bonds) ---- */
+function drawFace(c,o){
+  const r=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h)};
+  r(0,0,32,32,o.bg||'#2b2a35');r(0,26,32,6,o.bg2||'#25242e');
+  r(7,27,18,5,o.shirt);r(6,29,20,3,o.shirt);r(7,27,3,5,o.shirtL);r(13,26,6,2,o.skinD);r(14,27,4,2,o.collar);
+  for(let y=6;y<=25;y++){let hw=y<9?4+(y-6):y<20?8:Math.max(3,8-(y-19));
+    r(16-hw,y,hw*2,1,o.skin);r(16+hw-2,y,2,1,o.skinS)}
+  r(13,24,6,2,o.skinS);
+  r(8,4,16,4,o.hair);r(7,6,18,4,o.hair);r(9,3,14,1,o.hairD);r(10,5,6,1,o.hairL);
+  r(7,8,2,o.long?17:5,o.hair);r(23,8,2,o.long?17:5,o.hair);r(24,8,1,o.long?17:5,o.hairD);
+  if(o.fringe)r(9,9,9,2,o.hair);
+  if(o.bun){r(12,0,8,4,o.hair);r(13,0,4,1,o.hairL)}
+  if(o.curls){[[7,5],[10,3],[14,2],[18,2],[22,3],[24,5],[6,8],[25,8]].forEach(([x,y])=>{r(x,y,2,2,o.hairL)})}
+  r(10,11,4,1,o.hairD);r(18,11,4,1,o.hairD);
+  [[10,13],[18,13]].forEach(([x,y])=>{r(x,y,4,3,'#f4efe4');r(x+1,y,2,3,o.iris);r(x+2,y+1,1,1,'#14101a');r(x+1,y,1,1,'#ffffff');r(x-1,y-1,5,1,'#1a1214')});
+  if(o.glasses){c.strokeStyle=o.glasses;c.lineWidth=1;c.strokeRect(9.5,12.5,5,4);c.strokeRect(17.5,12.5,5,4);r(15,14,3,1,o.glasses)}
+  if(o.lines){r(8,15,1,2,o.skinS);r(23,15,1,2,o.skinS);r(12,22,1,1,o.skinS);r(19,22,1,1,o.skinS)}
+  r(16,17,1,2,o.skinS);r(9,18,2,1,'#e08a8a');r(21,18,2,1,'#e08a8a');
+  if(o.freckles)[[11,17],[13,18],[19,18],[21,17]].forEach(([x,y])=>r(x,y,1,1,o.skinD));
+  if(o.mouth==='open'){r(13,20,6,3,'#3a0e0c');r(14,20,4,1,'#f0e8d8');r(14,22,4,1,'#b8484a')}
+  else if(o.mouth==='flat'){r(13,21,6,1,'#5a2a24')}
+  else{r(13,21,6,1,'#5a2a24');r(12,20,1,1,'#5a2a24');r(19,20,1,1,'#5a2a24')}
+}
+const FACES={
+  RAINE:{skin:'#e0b08c',skinS:'#c48e6a',skinD:'#a06a4a',hair:'#3a2418',hairL:'#5a3a26',hairD:'#24160e',iris:'#3a8a5a',shirt:'#3a4a3a',shirtL:'#4e604c',collar:'#d8cdb4',fringe:true,mouth:'flat'},
+  DALE:{skin:'#8a5a3e',skinS:'#6e4430',skinD:'#4e2e1e',hair:'#1a1416',hairL:'#2e2628',hairD:'#0e0a0c',iris:'#6a4024',shirt:'#2e4a6a',shirtL:'#3e5e84',collar:'#e8e0d0',mouth:'smile'},
+  MARISOL:{skin:'#c8946a',skinS:'#a87450',skinD:'#80543a',hair:'#2a1a20',hairL:'#4a3038',hairD:'#180e12',iris:'#7a4a2a',shirt:'#6a3a2a',shirtL:'#8a5038',collar:'#d8cdb4',long:true,bun:true,freckles:true,mouth:'smile'},
+  GLORIA:{skin:'#94603f',skinS:'#784a30',skinD:'#583420',hair:'#a8a2ac',hairL:'#cac4cc',hairD:'#7a7480',iris:'#5a3820',shirt:'#7a3a52',shirtL:'#9a4e6a',collar:'#e8dcc0',curls:true,glasses:'#d6a43a',lines:true,mouth:'open',bg:'#3a2a24',bg2:'#30221e'},
+  TYRELL:{skin:'#7e5238',skinS:'#643e2a',skinD:'#46281a',hair:'#14100e',hairL:'#2a2220',hairD:'#0a0806',iris:'#4a2e1a',shirt:'#8a6a2a',shirtL:'#a88438',collar:'#d8cdb4',mouth:'smile'}
+};
+function faceCanvas(name,size){const c=document.createElement('canvas');c.width=c.height=32;c.className='pxl';c.style.width=c.style.height=(size||64)+'px';drawFace(c.getContext('2d'),FACES[name]);return c}
+const portrait=(name,mouthOpen)=>(ctx,m)=>{ctx.save();ctx.scale(2,2);drawFace(ctx,Object.assign({},FACES[name],{mouth:m?'open':'smile'}));ctx.restore()};
+
+/* ---- parent's kitchen at night, 170 x 221 game px at 2x (case-neutral home backdrop) ---- */
+function drawKitchen(c){
+  const r=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h)};
+  // wallpaper with a faded stripe
+  r(0,0,170,150,'#3a2a2e');for(let x=0;x<170;x+=10){r(x,0,3,150,'#42303a')}for(let x=5;x<170;x+=10)for(let y=6;y<150;y+=14)r(x,y,1,1,'#5a4048');
+  r(0,98,170,2,'#4a3440');r(0,100,170,50,'#2e2228');for(let x=0;x<170;x+=8)r(x,100,1,50,'#281e24');
+  // window: night sky, moon, a neighbor's light
+  r(18,24,44,40,'#4a3a30');r(20,26,40,36,'#1b1f33');r(21,27,38,34,'#22284a');
+  for(let i=0;i<14;i++)r(22+(i*11)%36,28+(i*7)%20,1,1,'#8a90c0');
+  r(46,30,7,7,'#e8dcc0');r(47,30,6,1,'#f4ecd4');r(51,31,2,5,'#c8bca0');
+  r(23,50,10,11,'#14172a');r(26,53,3,3,'#d6a43a');r(36,46,20,15,'#14172a');r(40,49,3,3,'#3a2f22');
+  r(39,26,2,36,'#4a3a30');r(20,43,40,2,'#4a3a30');
+  r(14,20,52,4,'#6e4630');r(14,20,52,1,'#8e5e40');
+  r(14,24,8,42,'#9a4e3a');r(15,24,2,42,'#b8604a');r(58,24,8,42,'#9a4e3a');r(63,24,2,42,'#7a3a2a');
+  r(16,64,48,4,'#6e4630');r(16,64,48,1,'#8e5e40');r(24,61,6,3,'#4a7a3a');r(26,58,2,3,'#5e9a48');
+  // fridge with magnets and a kid's drawing
+  r(124,40,38,110,'#c8c4b8');r(125,41,36,108,'#dcd8cc');r(158,41,3,108,'#b0aca0');r(125,82,36,2,'#9a968a');r(152,56,2,18,'#8a867a');r(152,90,2,22,'#8a867a');
+  r(130,48,14,16,'#f4efe4');r(132,52,3,8,'#5a7ad8');r(137,55,5,1,'#d84a4a');r(136,50,4,3,'#f0c040');r(135,46,3,3,'#b5532e');
+  r(146,62,4,4,'#3a8a5a');r(128,70,5,4,'#d6a43a');r(140,92,10,7,'#f4efe4');r(141,94,8,1,'#8a867a');r(141,96,6,1,'#8a867a');r(144,90,2,2,'#b5532e');
+  // counter, stove, cabinets
+  r(70,90,52,4,'#7a5a3a');r(70,90,52,1,'#9a7a52');r(70,94,52,56,'#5a3e2a');
+  r(74,100,20,22,'#4e3424');r(98,100,20,22,'#4e3424');r(74,126,44,20,'#4e3424');r(91,109,2,5,'#c0a070');r(99,109,2,5,'#c0a070');r(94,134,4,2,'#c0a070');
+  r(74,30,44,30,'#5a3e2a');r(76,32,19,26,'#4e3424');r(97,32,19,26,'#4e3424');r(92,44,2,4,'#c0a070');r(98,44,2,4,'#c0a070');
+  r(98,84,16,6,'#3a3a40');r(100,82,4,3,'#2a2a30');r(108,82,5,2,'#2a2a30');r(80,84,10,6,'#d8cdb4');r(81,84,8,1,'#f0e8d8');r(83,80,4,4,'#d8cdb4');
+  // floor: worn checker linoleum
+  r(0,150,170,71,'#3a3438');for(let y=150;y<221;y+=10)for(let x=((y-150)/10%2)*10;x<170;x+=20)r(x,y,10,10,'#2e2a30');
+  // hanging lamp and its warm pool
+  r(84,0,1,60,'#2a2028');r(76,60,18,6,'#b5532e');r(74,66,22,2,'#7a3520');r(82,68,6,2,'#f4c96a');
+  c.fillStyle='rgba(217,119,43,.13)';c.beginPath();c.moveTo(74,68);c.lineTo(96,68);c.lineTo(140,205);c.lineTo(30,205);c.fill();
+  c.fillStyle='rgba(244,201,106,.08)';c.beginPath();c.moveTo(78,68);c.lineTo(92,68);c.lineTo(118,190);c.lineTo(52,190);c.fill();
+  // table with a saved plate, two chairs
+  r(36,164,98,5,'#8a5e3a');r(36,164,98,1,'#aa7a4e');r(40,169,4,34,'#5a3a22');r(126,169,4,34,'#5a3a22');r(36,169,98,3,'#6e4a2e');
+  r(48,158,20,6,'#e8e0d0');r(50,157,16,2,'#c8c4b8');r(52,158,12,3,'#8a4a2a');r(55,158,5,1,'#b86a3a');
+  r(100,158,8,6,'#d8cdb4');r(102,156,4,2,'#d8cdb4');r(108,159,2,3,'#d8cdb4');
+  r(14,150,16,4,'#6e4630');r(14,150,2,54,'#5a3a22');r(28,150,2,54,'#5a3a22');r(14,176,16,3,'#7a5232');
+  r(140,150,16,4,'#6e4630');r(140,150,2,54,'#5a3a22');r(154,150,2,54,'#5a3a22');r(140,176,16,3,'#7a5232');
+  // night shade over the room edges
+  c.fillStyle='rgba(13,15,30,.28)';c.fillRect(0,0,170,221);
+  c.fillStyle='rgba(217,119,43,.06)';c.fillRect(30,60,110,150);
+}
+function bgCanvas(dim){const bg=document.createElement('canvas');bg.width=170;bg.height=221;bg.className='pxl';Object.assign(bg.style,{width:'340px',height:'442px',position:'absolute',inset:'0'});const x=bg.getContext('2d');drawKitchen(x);if(dim){x.fillStyle='rgba(13,15,30,.45)';x.fillRect(0,0,170,221)}return bg}
+
+/* ---- shell ---- */
+function shell(id){
+  const p=document.getElementById(id);
+  p.innerHTML=`<div class="topbar"></div><div class="bezel"></div><div class="scr"></div>
+  <div class="brand"><i></i>BLACK LANTERN</div>
+  <div class="dpad"><b></b><span>▲</span><b></b><span>◀</span><span></span><span>▶</span><b></b><span>▼</span><b></b></div>
+  <div class="btn b">B</div><div class="btn a">A</div>
+  <div class="pills"><span class="lr">L</span><span>SELECT</span><span>START</span><span class="lr">R</span></div>`;
+  return p.querySelector('.scr');
+}
+
+/* 1 · Pick a home scene */
+(()=>{const s=shell('p1');s.classList.add('pad');
+  s.insertAdjacentHTML('beforeend',`<div class="hdr"><span class="t">HOME</span><span class="s">One choice each</span></div><div class="team"></div>`);
+  const team=s.querySelector('.team');
+  [['RAINE','Back to Nature','done'],['DALE','Choosing…','on'],['MARISOL','Waiting','wait']].forEach(([n,pk,st])=>{
+    const d=document.createElement('div');d.className='a '+st;d.append(faceCanvas(n,32));
+    d.insertAdjacentHTML('beforeend',`<span class="nm">${n}</span><span class="pk">${pk}</span>${st==='done'?'<span class="tick">✓</span>':''}`);team.append(d)});
+  const rows=[
+    ['Fulfill Responsibilities','gain','+BOND',true,''],
+    ['Back to Nature','gain','+SAN',false,''],
+    ['Personal Motivation','gain','+SAN',false,''],
+    ['Therapy','gain','+SAN',false,''],
+    ['Improve Skill','gain','+1D6%',false,''],
+    ['Special Training','cost','−BOND',false,''],
+    ['Sabbatical','cost','1–3 CASES',false,''],
+    ['New Bond','lock','NO SLOT',false,'off']];
+  rows.forEach(([n,k,c,on,off])=>s.insertAdjacentHTML('beforeend',`<div class="row${on?' on':''}${off?' off':''}"><span class="cur">${on?'▶':''}</span><div class="main"><span class="n">${n}</span></div><span class="chip ${k}">${c}</span></div>`));
+  s.insertAdjacentHTML('beforeend',`<div class="detail"><span>See one of your people. Pass SAN and that Bond grows.</span><span class="help">A: pick a Bond · B: back</span></div>`);
+})();
+
+/* 2 · Pick a Bond */
+(()=>{const s=shell('p2');s.classList.add('pad');
+  s.insertAdjacentHTML('beforeend',`<div class="hdr"><span class="t">WHO TO SEE?</span><span class="s">Fulfill Responsibilities</span></div>
+  <div class="who">${'<span id="dalef"></span>'}<span><b>DALE</b> · CHA 15 · SAN 52</span></div>`);
+  s.querySelector('#dalef').append(faceCanvas('DALE',24));
+  const data=[['GLORIA','Mother · Parent',7,'strained',true],['TYRELL','Brother · Sibling',12,'close',false]];
+  data.forEach(([n,rel,v,mood,on])=>{
+    const d=document.createElement('div');d.className='bond'+(on?' on':'');d.append(faceCanvas(n,64));
+    d.insertAdjacentHTML('beforeend',`<div class="info"><span class="nm">${on?'▶ ':''}${n}<span class="chip ${mood}">${mood.toUpperCase()}</span></span><span class="rel">${rel}</span>
+    <div class="bar"><i style="width:${v/15*100}%"></i><span class="t1" style="left:33.3%"></span><span class="t2" style="left:66.6%"></span></div>
+    <span class="bnum">Bond ${v} / 15</span></div>`);
+    s.append(d)});
+  s.insertAdjacentHTML('beforeend',`<div class="detail"><span>Gloria hasn't seen Dale in two cases.</span><span class="help">Pass SAN (52%): Gloria +1d6, up to 15.</span><span class="help">Crit: also +1 SAN. Fumble: Gloria −1d4, −1 SAN.</span><span class="help">A: go see her · B: back</span></div>`);
+})();
+
+/* 3 · The scene */
+(()=>{const s=shell('p3');s.append(bgCanvas(false));
+  BLD.render(s,{name:'Gloria',portrait:portrait('GLORIA'),mouth:1,text:'You missed dinner. I saved you a plate. It\'s mostly gravy now.',more:true});
+})();
+
+/* 4 · How it went */
+(()=>{const s=shell('p4');s.append(bgCanvas(true));
+  const w=document.createElement('div');w.className='result';
+  w.innerHTML=`<div class="top"><span class="t">HOME · DALE</span><span class="s">Fulfill Responsibilities</span></div>
+  <div class="rline"><span>SAN roll vs 52</span><span><span class="die">D100·31</span><b>PASS</b></span></div>
+  <div class="rline"><span>Gloria</span><span><span class="die">D6·4</span>7 → <b>11</b></span></div>
+  <div class="moodshift"><span class="chip strained">STRAINED</span>→<span class="chip close">CLOSE</span><span>Next visit plays warmer.</span></div>`;
+  s.append(w);
+  BLD.render(s,{narrate:true,text:'You leave with a foil-wrapped plate you will never, ever return.',more:true});
+})();
+</script>
