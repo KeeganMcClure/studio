@@ -132,6 +132,8 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
 - [ ] Good Manners part B (spec 010): the secret case file first, then its story, fights, boss and endings
 - [ ] Lot 83 part A (spec 011): its maps and art, the tented night, townsfolk and Walt, walkable with stand-in scripts. After Good Manners
 - [ ] Lot 83 part B (spec 011): the secret case file first, then its story, fights, boss and endings
+- [ ] Lost Hour part A (spec 016): its maps and art, the ridge road in fog, townsfolk and the Pruetts, walkable with stand-in scripts. After Lot 83
+- [ ] Lost Hour part B (spec 016): the secret case file first, then its story, the night drive and hypnosis session, fights, boss and endings
 - [ ] First agency case part A (spec 014): the secret case file first, from the arc file; then its maps and art, townsfolk, and the black LANTERN folder on the board, walkable with stand-in scripts. After Lot 83
 - [ ] First agency case part B (spec 014): its story, fights, boss and endings, and the unlock scene's lines
 - [x] Turn the Art Bible page into the Asset Library (sprites, drawing code, palette)
