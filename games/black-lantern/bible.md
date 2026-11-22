@@ -90,7 +90,9 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
 - [x] Demo 2 of 6: Pokémon-style party menu, and Select cycling the lead on the map
 
   Done Nov 21 (spec 002): Start → Party shows the three cards in seat order with the LEAD tag, each opening Make lead, Dossier and Give item (greyed until Demo 5); Select cycles the lead on the map and in Party.
-- [ ] Demo 3 of 6: Case board (season save, open and closed cases), built from the approved case board mockup
+- [x] Demo 3 of 6: Case board (season save, open and closed cases), built from the approved case board mockup
+
+  Done Nov 21 (spec 004): Your team → START opens the cork board with Still Harvest; A plays the briefing, finishing the case stamps it CLOSED, and New game starts Season 1 over (roster kept). Saves are version 4 with the new `bl.season`.
 - [ ] Demo 4 of 6: Still Harvest rebuild, map and art: its map on the Shared Shelf (then delete legacy-street-kit.js), townsfolk sprites and portraits, night and low-SAN look
 - [ ] Demo 5 of 6: Still Harvest rebuild, story and play: its text block, branching paths, and fewer but harder fights under the new combat rules
 - [ ] Demo 6 of 6: Debrief and end-of-case improvement (evidence, cover story, skill gains), built from the approved debrief mockup; the finished demo also goes to Drive as a milestone build
