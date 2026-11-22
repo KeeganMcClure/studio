@@ -29,8 +29,10 @@ The loop for each feature and the bug route are in the README; the Developer's r
 | Owns | Studio bible, game bibles, specs, mockups, art direction, and each game's to-do list and what comes next | Engine, games, launcher, builds, deploys |
 | Writes | `bible.md`, `specs/`, `studio-bible/` | `src/`, `engine/`, `changelog.md`, final `assets/` |
 | Reads | `changelog.md` before every rules check | Bibles and specs before every feature |
-| Never | Writes code | Changes a bible or spec without asking |
+| Ticks | To do items for paper work (specs, mockups, bible changes) | To do items and Bugs lines the build finishes, in the same PR as the changelog entry |
+| Never | Writes code | Changes a bible or spec without asking (ticks excepted) |
 
+- **Ticking To do items (set Nov 22, 2026):** a To do item is ticked in the same PR that finishes it, so the list never lags behind the changelog. The Developer ticks build items and adds a one-line `Done <date>:` note under each; the Designer ticks paper items in their own PRs. Before each rules check, the Designer also looks for any item the changelog shows as built but still unticked.
 - The Designer is also the project manager. There is no separate project-manager Project.
 - The Designer changes bibles and specs only through GitHub pull requests, one per change. Keegan merges. Never straight to `main`.
 - Mockups are made by the Designer. Final sprites follow `art-style.md` and go in the game's `assets/` folder as drawing code, so nothing gets redrawn.

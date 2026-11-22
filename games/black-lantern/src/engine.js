@@ -5,7 +5,7 @@
 const B=window.BL;
 const $=s=>document.querySelector(s);
 const scr=$('#screen'),gEl=$('#game'),cv=$('#gcv'),cx=cv.getContext('2d');
-const dhost=$('#gdlg'),menuEl=$('#gmenu'),hud=$('#ghud'),ban=$('#gban'),fadeEl=$('#gfade'),sanEl=$('#gsan');
+const dhost=$('#gdlg'),menuEl=$('#gmenu'),hud=$('#ghud'),ban=$('#gban'),fadeEl=$('#gfade');
 const {rnd,pick,esc,store,profOf,derived,skillVal,SKIN,HAIRC,OUTC}=B;
 const roll=(n,s,b=0)=>{let t=b;for(let i=0;i<n;i++)t+=1+rnd(s);return t};
 const dice=s=>{s=String(s);if(/^\d+$/.test(s))return +s;const m=s.match(/(\d+)d(\d+)/);return roll(+m[1],+m[2])};
@@ -61,58 +61,9 @@ function weaponFor(a){const p=profOf(a),W=B.WEAP[(p&&p.weapon)||'handgun']||B.WE
  return{name:W.name,skill:clamp(skillVal(a,W.skill)+(W.hit||0),5,99),dmg:W.dmg,bonus:(W.plus||0)+(W.melee&&a.stats.STR>=13?1:0),verb:W.verb}}
 function member(a){const d=derived(a),c=a.cur||{};return{a,name:(a.name||'Agent').split(' ')[0].slice(0,9)||'Agent',hp:d.HP,mhp:d.HP,wp:d.WP,mwp:d.WP,san:c.san??d.SAN,msan:d.SAN,san0:c.san??d.SAN,bp:d.BP,dis:c.dis||null,dex:a.stats.DEX,w:weaponFor(a),ko:false,stun:0}}
 
-// ================= TILES =================
-const tc={};
-function tile(ch,v){const k=ch+v;if(tc[k])return tc[k];const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');const p=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h)};drawTile(p,ch,v|0);return tc[k]=c}
-function grass(p,v){p(0,0,16,16,'#4f6e35');const s=[[2,3],[9,5],[5,11],[12,12],[13,2],[7,8]];s.forEach(([a,b],i)=>{if((i+v)%3)p((a+v*3)%15,b,1,2,'#6a8a42')});if(v===2)p(10,9,2,1,'#d98a3a')}
-function path(p,v){p(0,0,16,16,'#9a7a50');p((v*5)%13+1,4,2,1,'#7e6340');p((v*7)%12+2,11,1,1,'#b8956a');p(4,(v*3)%12+2,1,1,'#7e6340')}
-function floor(p,v){p(0,0,16,16,'#4b3824');p((v*5)%13+1,5,2,1,'#5e4630');p((v*3)%13+2,12,1,1,'#3a2a1a');p(9,(v*7)%13+1,1,2,'#5e4630')}
-function drawTile(p,ch,v){
- switch(ch){
- case '.':grass(p,v);break;
- case ',':path(p,v);break;
- case 'M':case 'X':floor(p,v);break;
- case 'T':{grass(p,0);p(7,10,2,6,'#4a3020');const col=['#c8572a','#d99a2b','#7a8a2a'][v%3],hi=['#e07a3a','#efc04a','#9aaa3a'][v%3];p(2,2,12,9,col);p(1,4,14,5,col);p(4,0,8,2,col);p(4,2,3,2,hi);p(9,5,2,2,hi);p(3,9,10,2,'rgba(0,0,0,.25)');break}
- case 'C':{p(0,0,16,16,'#2c2112');for(let i=0;i<4;i++){const xx=1+i*4;p(xx,0,2,16,i%2?'#a8892f':'#bf9f3c');p(xx+(i%2?-1:2),4+i*2,2,1,'#7a6a22');p(xx,i%2?1:0,2,2,'#e0c25a')}break}
- case 'B':{p(0,0,16,16,'#7a3b2e');for(let y=0;y<16;y+=4){p(0,y,16,1,'#5e2c22');p((y*3)%8,y+1,1,3,'#5e2c22');p((y*3)%8+8,y+1,1,3,'#5e2c22')}break}
- case '#':{p(0,0,16,16,'#cdb88f');p(0,5,16,1,'#ad9a72');p(0,10,16,1,'#ad9a72');if(v%2){p(4,3,8,7,'#2a2440');p(5,4,6,5,'#ffcf6a');p(7,4,1,5,'#2a2440');p(5,6,6,1,'#2a2440')}p(0,15,16,1,'#6b5a3a');break}
- case 'D':{p(0,0,16,16,'#cdb88f');p(3,2,10,14,'#4a2f1f');p(4,3,8,6,'#5e3c26');p(10,10,2,2,'#f2c94c');break}
- case 'L':case 'l':{ch==='l'?floor(p,v):grass(p,v);p(7,5,2,11,'#2b2b33');p(4,0,8,1,'#2b2b33');p(4,1,8,5,'#ffcf5a');p(5,2,6,3,'#fff1c2');p(6,6,4,1,'#2b2b33');break}
- case 'P':{grass(p,v);p(3,7,10,8,'#e07b26');p(2,9,12,4,'#e07b26');p(7,7,1,8,'#b85e16');p(4,8,1,6,'#b85e16');p(11,8,1,6,'#b85e16');p(7,5,2,2,'#4a6b2a');p(5,10,2,1,'#3a1a08');p(9,10,2,1,'#3a1a08');p(6,12,4,1,'#3a1a08');break}
- case 'H':{grass(p,v);p(1,5,14,10,'#d9b552');p(1,8,14,1,'#b8963a');p(1,12,14,1,'#b8963a');p(3,4,2,1,'#e8cc6a');break}
- case 'F':{grass(p,v);p(0,6,16,2,'#8a6a42');p(0,11,16,2,'#8a6a42');p(2,4,2,12,'#6b4a2a');p(10,4,2,12,'#6b4a2a');break}
- case 'S':case 'V':{const base=ch==='S';base?grass(p,v):floor(p,v);const sh=['#6b4a8a','#c0392b','#2d5a8a','#4a7a3a'][v%4];p(7,4,2,12,'#5a3e2b');p(1,6,14,2,'#5a3e2b');p(4,5,8,7,sh);p(2,6,2,3,'#e0c25a');p(12,6,2,3,'#e0c25a');p(5,0,6,6,'#d9c08a');p(6,2,1,1,'#2a1a10');p(9,2,1,1,'#2a1a10');p(6,4,4,1,'#2a1a10');if(base){p(4,0,8,1,'#3a2a1a');p(5,-1,6,1,'#3a2a1a')}else{p(6,10,4,1,'rgba(255,255,255,.25)')}break}
- case 'K':{path(p,v);p(1,5,15,8,'#e8e8e8');p(1,8,15,3,'#1b1b2a');p(4,5,10,3,'#5a7ab0');p(12,3,4,2,'#d33');p(3,12,4,4,'#111');break}
- case 'k':{path(p,v);p(0,5,15,8,'#e8e8e8');p(0,8,15,3,'#1b1b2a');p(2,5,8,3,'#5a7ab0');p(0,3,4,2,'#35f');p(9,12,4,4,'#111');break}
- case 'Y':case 'y':{path(p,v);for(let i=0;i<4;i++)p(i*4,1,4,4,i%2?'#f4f1e8':'#c0392b');p(0,8,16,7,'#8a5a2b');p(0,8,16,1,'#a8743a');p(ch==='Y'?3:9,5,3,3,'#e0a030');p(ch==='Y'?2:13,2,1,6,'#5a3e2b');break}
- case 'N':{path(p,v);p(2,9,2,7,'#5a3e2b');p(12,9,2,7,'#5a3e2b');p(0,1,16,9,'#7a5a3a');p(1,2,4,6,'#f4f4f4');p(6,3,4,6,'#f4f4f4');p(11,2,4,6,'#f4f4f4');p(2,3,2,2,'#ff7a1a');p(7,4,2,2,'#ff7a1a');p(12,3,2,2,'#ff7a1a');break}
- case 'p':{path(p,v);p(1,4,14,12,'#6b4a2a');p(1,4,14,1,'#8a6a42');p(3,7,10,4,'#c0392b');p(5,8,6,2,'#f2c94c');break}
- case 'W':{grass(p,v);p(3,9,2,7,'#5a3e2b');p(11,9,2,7,'#5a3e2b');p(0,2,16,8,'#e8dcc0');p(2,4,12,1,'#3a2a1a');p(2,6,9,1,'#3a2a1a');p(11,6,3,1,'#ff7a1a');break}
- case 'G':{path(p,v);p(0,2,16,2,'#7a5a3a');p(0,8,16,2,'#7a5a3a');p(0,13,16,2,'#7a5a3a');p(2,1,2,15,'#5a3e2b');p(12,1,2,15,'#5a3e2b');p(6,5,4,5,'#9aa0a6');p(7,6,2,3,'#4a4a52');break}
- case 'I':{floor(p,v);p(4,6,8,8,'#3e5c8a');p(4,6,8,3,'#2d4569');p(7,9,2,2,'#c9c9c9');break}
- case 'O':{floor(p,v);p(4,7,8,6,'#e8e2d0');p(5,8,6,1,'#7a6a5a');p(5,10,5,1,'#7a6a5a');break}
- default:p(0,0,16,16,'#000');
- }
-}
-
 // ================= SPRITES =================
-// Townsfolk only (old 16 x 16 look until the Still Harvest rebuild). Agents use agent-sprite.js.
-function drawChar(x,y,look,oc,dir,f,o={}){
- const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};
- const sk=SKIN[look.skin],hc=HAIRC[look.hairC],bob=f?1:0;
- P(3,14,10,2,'rgba(0,0,0,.3)');
- P(5,12,2,3-(f===1?1:0),'#2a2433');P(9,12,2,3-(f===2?1:0),'#2a2433');
- P(4,7+bob,8,6-bob,oc);P(3,8+bob,1,4,oc);P(12,8+bob,1,4,oc);P(3,12,1,1,sk);P(12,12,1,1,sk);
- if(o.sack){P(4,0+bob,8,8,'#c9a36a');P(4,7+bob,8,1,'#8a6a2a');if(dir!=='up'){P(5,3+bob,2,2,'#111');P(9,3+bob,2,2,'#111');P(5,6+bob,6,1,'#2a1a10')}return}
- P(4,1+bob,8,7,sk);
- if(look.hair!==3&&look.hair!==2){P(4,0+bob,8,2,hc);if(dir==='up')P(4,1+bob,8,5,hc);if(look.hair===1||look.hair===6){P(3,1+bob,1,6,hc);P(12,1+bob,1,6,hc)}if(look.hair===4)P(6,-2+bob,4,2,hc);if(look.hair===5){P(7,-2+bob,2,3,hc)}}
- else if(look.hair===2)P(4,0+bob,8,1,hc);
- const E='#120c1c';
- if(dir==='down'){P(6,4+bob,1,2,E);P(9,4+bob,1,2,E);if(look.acc===1||look.acc===2){P(5,4+bob,6,1,E)}if(look.acc===3)P(4,6+bob,8,2,hc)}
- else if(dir==='left'){P(5,4+bob,1,2,E);if(look.acc===3)P(4,6+bob,4,2,hc)}
- else if(dir==='right'){P(10,4+bob,1,2,E);if(look.acc===3)P(8,6+bob,4,2,hc)}
- if(o.hat)P(3,0+bob,10,2,o.hat);
-}
+// Maps and townsfolk are drawn by each case's own art (spec 005: Still Harvest's is cases/still-harvest-art.js, on the Shared Shelf).
+// Agents use agent-sprite.js. Battle sprites stay here until Demo 5.
 function drawEnemy(t,x,y,tm,e){
  if(e&&e.flash>0&&(e.flash%4)<2)return;
  const sx=e&&e.shake?(Math.random()*4-2):0;x=Math.round(x+sx);y=Math.round(y);
@@ -146,6 +97,8 @@ function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1
 // drawBox() runs every frame and redraws the box only when something visible changed.
 let box=null,boxKey='';
 const PORTRAITS={'BIG HAT':(c,f,sh)=>drawBigHatPortrait(c,sh,f)}; // speaker name -> (ctx, frame, shouting) 64 x 64
+// a case's own speakers (its townsfolk) come from its registerCase({portraits: name -> (ctx, frame)}); signs and narration have none
+function portraitOf(name){if(!name)return null;if(PORTRAITS[name])return PORTRAITS[name];const c=caseById(G.case);return c&&c.portraits&&c.portraits(name)||null}
 function say(name,text,o={}){
  return new Promise(res=>{
   if(dlg)clearTimeout(dlg.to);
@@ -170,7 +123,7 @@ function hideTB(){box=null}
 function drawBox(){
  if(!box){if(boxKey){dhost.replaceChildren();boxKey=''}return}
  const T=BLD.TIMING,now=performance.now(),n=Math.floor(now/T.flapMs);
- const typing=box.typed<box.text.length,por=PORTRAITS[box.name],sh=!!(G.shoutPor&&por);
+ const typing=box.typed<box.text.length,por=portraitOf(box.name),sh=!!(G.shoutPor&&por);
  // mouth: bursts of open/shut while the line types, then shut; shout face: its counter runs while typing, then holds
  if(typing)box.n=n;const p=n%(T.burst+T.rest),f=sh?(box.n||0):(typing&&p<T.burst&&p%2===0?1:0);
  const arrow=box.more&&Math.floor(now/T.moreBlinkMs)%2===0;
@@ -201,10 +154,9 @@ async function run(fn){G.busy=(G.busy||0)+1;try{await fn()}catch(e){console.erro
 function clue(id,text){if(G.clues.some(c=>c.id===id))return;G.clues.push({id,text});banner('NOTEBOOK UPDATED')}
 
 // ================= SANITY =================
-function applySan(){const m=lead();if(!m)return;const fr=clamp(m.san/m.msan,0,1),f=1-fr;
- scr.style.filter=f>.05?`hue-rotate(${(-f*80).toFixed(0)}deg) saturate(${(1+f*1.5).toFixed(2)}) contrast(${(1+f*.3).toFixed(2)})`:'';
- $('#vig').style.opacity=(Math.max(0,f-.1)*1.05).toFixed(2);scr.classList.toggle('glitch',fr<.4);
- sanEl.innerHTML=`SAN <b class="${fr<.4?'red':''}">${m.san}</b>`;}
+// The low-SAN look (spec 005) follows the lead's SAN every frame in drawWorld, and the lead card shows the number,
+// so there is nothing to set here any more; callers still call it after a SAN change.
+function applySan(){}
 async function sanCheck(spec,label,who){
  if(Bt&&Bt.ward){Bt.ward=false;await say('',`${label}... but the ward holds. No one loses SAN.`,{auto:1100});return}
  const parts=[];(who||(G.mode==='world'&&!Bt?[lead()]:party)).forEach(m=>{const r=d100(),loss=r<=m.san?dice(spec[0]):dice(spec[1]);m.san=Math.max(0,m.san-loss);if(loss)parts.push(`${m.name} -${loss}`)});
@@ -353,32 +305,83 @@ async function interact(){
  const ch=M.g[ty]&&M.g[ty][tx];if(ch&&TILEDESC[ch]){held=[];await say('',TILEDESC[ch])}
 }
 function cam(){return StudioMove.camera(G,G.M.w,G.M.h,VW,VH)}
+// ================= MAP DRAWING AND LIGHT (spec 005) =================
+// Each map names its art (M.art: paint, props, folk) and its light: 'day', 'dusk' or 'night' (Bible, Art, Light and mood).
+// Day: the plain palette. Dusk: the Shared Shelf's dusk (shared-effects-dusk-v1), no lantern. Night: dark except the pools
+// around the lead's lantern, the lamps and the boss; lit windows and carved pumpkins glow without lighting the ground.
+// Below 40 SAN on the lead, the picture sours toward SAN pink and cyan, fading over half a second, and at night the lantern's
+// circle is a third smaller and the lamps' a little smaller (the approved night and low-SAN mockup). The light pass is the
+// studio's engine/light.js. The lead card, the NIGHT tag and the A bubble go on top and never sour.
+const LOOK={dark:'#0a0812',alpha:.9,warm:'#d6a43a',pink:'#ff4fa3',cyan:'#3ff0e8',lowSan:40,lantern:[62,40],lamp:[34,26],boss:46};
+const sourFade={};
 function drawWorld(){
- const M=G.M,[camx,camy]=cam();cx.fillStyle='#0a0710';cx.fillRect(0,0,VW,VH);
- const x0=Math.floor(camx/16),y0=Math.floor(camy/16);
- for(let ty=y0;ty<=y0+Math.ceil(VH/16)+1;ty++)for(let tx=x0;tx<=x0+Math.ceil(VW/16)+1;tx++){const ch=M.g[ty]&&M.g[ty][tx];if(!ch)continue;let v=(tx*7+ty*13)%4;if(ch==='V')v=M.vv[tx+','+ty];if(ch==='T')v=(tx*3+ty*5)%3;cx.drawImage(tile(ch,v),tx*16-camx,ty*16-camy)}
- const spr=[];
- M.npcs.forEach(n=>{if(n.on&&!n.on())return;spr.push({y:n.y*16,f:()=>drawChar(n.x*16-camx,n.y*16-camy-3,n.look,n.oc,n.dir,0,{sack:n.sack,hat:n.hat})})});
- const moving=!!G.mv,fr=StudioMove.walkFrame(G);
+ const M=G.M,[camx,camy]=cam(),now=performance.now(),art=M.art,L=lead(),night=M.light==='night';
+ if(!M.props)M.props=art.props(M);
+ const st=art.paint(M);
+ cx.fillStyle='#0a0710';cx.fillRect(0,0,VW,VH);cx.drawImage(st.c,-camx,-camy);
+ const spr=[],moving=!!G.mv,fr=StudioMove.walkFrame(G),midX=camx+VW/2,midY=camy+VH/2;
+ // a piece with a canopy (a tree) turns see-through while the lead stands behind it
+ const me=[G.px+1,G.py-15,14,28];
+ M.props.forEach(p=>{if(Math.abs(p.x-midX)<VW/2+60&&p.y>camy-8&&p.top<camy+VH+8)spr.push({y:p.y,f:()=>{const see=p.canopy&&G.py+13<p.y&&overlaps(me,p.canopy);
+  if(see)cx.globalAlpha=.45;p.draw(cx,-camx,-camy);cx.globalAlpha=1}})});
+ // townsfolk stand still; they turn to face the lead when spoken to, and blink now and then
+ M.npcs.forEach((n,i)=>{if(n.on&&!n.on())return;const fx=n.x*16+8-camx,fy=n.y*16+13-camy,bl=(now+i*1100)%4100<150?1:0;
+  spr.push({y:n.y*16+13,f:()=>{const v=art.folk(n.id,n.dir,bl);cx.fillStyle='rgba(0,0,0,.3)';cx.fillRect(Math.round(fx-5),Math.round(fy-1),10,2);cx.drawImage(v.c,Math.round(fx-v.ax),Math.round(fy-v.ay))}})});
  // Only the lead walks the map (Bible, Art, Maps). Agent sprites from agent-sprite.js; lantern at night only; a blink every few seconds.
- const blink=!moving&&(performance.now()%3400)<150?1:0;
- spr.push({y:G.py,f:()=>BLA.draw(cx,lead().a,G.px+8-camx,G.py+13-camy,G.dir,fr,blink,!!M.dark)});
- if(M.boss)spr.push({y:11*16,f:()=>drawEnemy('gleaner',13*16+8-camx,11*16+14-camy,performance.now()/16)});
+ const blink=!moving&&(now%3400)<150?1:0;
+ spr.push({y:G.py+13,f:()=>BLA.draw(cx,L.a,G.px+8-camx,G.py+13-camy,G.dir,fr,blink,night)});
+ if(M.boss)spr.push({y:11*16+14,f:()=>drawEnemy('gleaner',13*16+8-camx,11*16+14-camy,now/16)});
  spr.sort((a,b)=>a.y-b.y).forEach(s=>s.f());
- if(M.dark)darkness(camx,camy);else{cx.fillStyle='rgba(80,20,70,.16)';cx.fillRect(0,0,VW,VH);glows(camx,camy)}
+ // light
+ const k=StudioLight.fade(sourFade,L.san<LOOK.lowSan,now),glows=[],pools=[];
+ st.glows.forEach(([x,y,r,a])=>glows.push([x-camx,y-camy,r,a]));
+ M.props.forEach(p=>p.lights.forEach(([x,y,r,a,pool])=>(pool?pools:glows).push([x-camx,y-camy,r,a])));
+ if(M.light==='dusk')SHELF.dusk(cx,glows.concat(pools),now);
+ else if(night){
+  const lamp=StudioLight.mix(LOOK.lamp[0],LOOK.lamp[1],k),ring=[[G.px+8-camx,G.py+6-camy,StudioLight.mix(LOOK.lantern[0],LOOK.lantern[1],k)]];
+  pools.forEach(([x,y])=>ring.push([x,y,lamp]));
+  if(M.boss)ring.push([13*16+8-camx,11*16-38-camy,LOOK.boss+Math.random()*4]);
+  StudioLight.night(cx,{dark:LOOK.dark,alpha:LOOK.alpha,warm:LOOK.warm,pools:ring,glows:glows.map(([x,y,r,a])=>[x,y,r*.7,a*.6])});
+ }
+ if(k>0)StudioLight.sour(cx,k,{pink:LOOK.pink,cyan:LOOK.cyan});
+ drawMapHud(camx,camy,night);
 }
-const dk=document.createElement('canvas'),dx=dk.getContext('2d');
-function darkness(camx,camy){
- if(dk.width!==VW||dk.height!==VH){dk.width=VW;dk.height=VH}
- dx.globalCompositeOperation='source-over';dx.clearRect(0,0,VW,VH);dx.fillStyle='rgba(6,4,14,.94)';dx.fillRect(0,0,VW,VH);dx.globalCompositeOperation='destination-out';
- const hole=(x,y,r)=>{const g=dx.createRadialGradient(x,y,r*.2,x,y,r);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');dx.fillStyle=g;dx.beginPath();dx.arc(x,y,r,0,7);dx.fill()};
- const fr=clamp(lead().san/lead().msan,0,1);hole(G.px+8-camx,G.py+6-camy,34+36*fr+Math.random()*3);
- const M=G.M;for(let ty=0;ty<M.h;ty++)for(let tx=0;tx<M.w;tx++)if(M.g[ty][tx]==='L'||M.g[ty][tx]==='l')hole(tx*16+8-camx,ty*16+4-camy,26);
- if(M.boss)hole(13*16+8-camx,11*16-38-camy,46+Math.random()*4);
- cx.drawImage(dk,0,0);
- const g=cx.createRadialGradient(G.px+8-camx,G.py+6-camy,2,G.px+8-camx,G.py+6-camy,50);g.addColorStop(0,'rgba(255,170,60,.16)');g.addColorStop(1,'rgba(255,170,60,0)');cx.fillStyle=g;cx.fillRect(0,0,VW,VH);
+// ---- the lead card, the NIGHT tag and the A bubble (the approved On Map mockup) ----
+const MH=BLS.MAPHUD;
+const headCache=new Map();
+// the lead's small face: the head of their own map sprite, so it matches who walks the map
+function headOf(a){const k=JSON.stringify([a.prof,a.look]);let c=headCache.get(k);if(c)return c;
+ const v=BLA.sprite(a,'down',0,0,false);c=document.createElement('canvas');c.width=c.height=16;c.getContext('2d').drawImage(v.c,v.ax-8,v.ay-27,16,16,0,0,16,16);headCache.set(k,c);return c}
+function overlaps(a,b){return a[0]<b[0]+b[2]&&b[0]<a[0]+a[2]&&a[1]<b[1]+b[3]&&b[1]<a[1]+a[3]}
+function drawMapHud(camx,camy,night){
+ if(box||menu||!menuEl.hidden)return;  // hidden while the dialog box or a menu is up
+ const L=lead(),me=[G.px+8-camx-8,G.py+13-camy-28,16,30];
+ // card: face, name, HP numbers and bar, WP · SAN (SAN pink below 40)
+ const cw=94,ch=30;let x=3,y=3;if(overlaps(me,[x,y,cw,ch]))y=VH-ch-3;  // never over the lead
+ pBox(x,y,cw,ch,PC.navy,PC.cream);pBox(x+3,y+3,20,20,PC.plum,PC.mus);cx.drawImage(headOf(L.a),x+5,y+5);
+ const hp=`${L.hp}/${L.mhp}`;pT(pFit(L.name.toUpperCase(),cw-30-pW(hp,13),13),x+26,y+1,PC.gold,13);pT(hp,x+cw-4-pW(hp,13),y+1,PC.cream,13);
+ pT(MH.hp,x+26,y+9,PC.lav,11);pBar(x+26+pW(MH.hp,11)+2,y+12,cw-32-pW(MH.hp,11),L.hp/L.mhp,PC.green);
+ const wp=`${MH.wp} ${L.wp} · `;pT(wp,x+26,y+18,PC.lav,12);pT(`${MH.san} ${L.san}`,x+26+pW(wp,12),y+18,L.san<LOOK.lowSan?PC.pink:PC.lav,12);
+ // NIGHT tag, top right, night maps only
+ if(night){const tw=pW(MH.night,13)+19,th=14;let tx=VW-tw-3,ty=3;if(overlaps(me,[tx,ty,tw,th]))ty=VH-th-3;
+  pBox(tx,ty,tw,th,PC.navy,PC.cream);
+  [[2,0,3],[1,1,2],[0,2,2],[0,3,2],[0,4,2],[1,5,2],[2,6,3]].forEach(([a,b,w])=>pR(tx+5+a,ty+3+b,w,1,PC.cream));
+  pT(MH.night,tx+14,ty+1,PC.cream,13)}
+ // A bubble over the person or thing the lead faces, only when A would use it now (hidden hotspots stay hidden)
+ if(G.busy||G.mv||G.mode!=='world')return;
+ const [ax,ay]=StudioMove.ahead(G),M=G.M,n=M.npcs.find(n=>(!n.on||n.on())&&n.x===ax&&n.y===ay);let word,bx,top,bot;
+ if(n){word=MH.talk;bx=n.x*16+8;bot=n.y*16+14;top=bot-(n.id==='pip'?24:28)}
+ else if(M.O[ax+','+ay]){word=MH.look;const p=M.props.find(p=>(p.tx===ax||p.tx===ax-1)&&(p.ty===ay||p.ty===ay-1)&&M.O[p.tx+','+p.ty]);
+  bx=p?p.x:ax*16+8;top=p?p.top:ay*16;bot=p?p.y:ay*16+16}
+ else return;
+ const w=pW(word,12)+17,h=12,below=G.dir==='down';bx=clamp(Math.round(bx-camx-w/2),2,VW-w-2);
+ let by=below?bot-camy+5:top-camy-h-5;by=clamp(Math.round(by),2,VH-h-2);
+ const px=clamp(Math.round((n?n.x*16+8:(bx+camx+w/2))-camx),bx+4,bx+w-4);
+ pBox(bx,by,w,h,PC.navy,PC.cream);
+ if(below){pR(px-2,by-2,5,1,PC.cream);pR(px-1,by-3,3,1,PC.cream);pR(px,by-4,1,1,PC.cream)}else{pR(px-2,by+h,5,1,PC.cream);pR(px-1,by+h+1,3,1,PC.cream);pR(px,by+h+2,1,1,PC.cream)}
+ cx.fillStyle=PC.rust;cx.beginPath();cx.arc(bx+7,by+6,4.5,0,7);cx.fill();pT(MH.a,bx+5,by+1,PC.chipInk,11);
+ pT(word,bx+13,by,PC.cream,12);
 }
-function glows(camx,camy){cx.globalCompositeOperation='lighter';const M=G.M;for(let ty=0;ty<M.h;ty++)for(let tx=0;tx<M.w;tx++)if(M.g[ty][tx]==='L'){const x=tx*16+8-camx,y=ty*16+3-camy;if(x<-30||y<-30||x>VW+30||y>VH+30)continue;const g=cx.createRadialGradient(x,y,1,x,y,24);g.addColorStop(0,'rgba(255,170,60,.35)');g.addColorStop(1,'rgba(255,120,40,0)');cx.fillStyle=g;cx.fillRect(x-24,y-24,48,48)}cx.globalCompositeOperation='source-over'}
 function drawBattle(){
  const t=Bt.t++,pal=BGPAL[Bt.boss?'boss':Bt.bg];
  for(let y=0;y<VH;y+=2){const off=Math.sin(y*.06+t*.035)*12+t*.35;const idx=Math.floor((y+off)/9);cx.fillStyle=pal[((idx%pal.length)+pal.length)%pal.length];cx.fillRect(0,y,VW,2)}
@@ -491,7 +494,9 @@ function drawBigHatPortrait(c,shout,frame){
 async function shout(text){G.shout=performance.now()+750;G.shoutPor=true;try{return await say('BIG HAT',text)}finally{G.shoutPor=false}}
 async function bigHatScene(fn){await fade(1);G.mode='scene';G.scene='bighat';await fade(0);await sleep(400);await fn();await fade(1);G.scene=null}
 function drawScene(){if(G.scene==='bighat')return drawOffice();cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+rnd(20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
-function loop(){if(!G.active)return;try{update();if(G.mode==='battle'&&Bt)drawBattle();else if(PM)drawParty();else if(G.mode==='world')drawWorld();else drawScene();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
+// Logic runs at 60 ticks a second on any screen (engine/clock.js); frames with no tick due are skipped.
+const clock=StudioClock.make();
+function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(CB)drawBoard();else if(G.mode==='battle'&&Bt)drawBattle();else if(PM)drawParty();else if(G.mode==='world')drawWorld();else drawScene();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
 function fit(){const v=StudioMove.fit(gEl,cv);if(!v)return;VW=v.w;VH=v.h;gEl.style.setProperty('--pu',(64*v.boxW/VW)+'px');boxKey='';posMenu()}
 window.addEventListener('resize',()=>{if(G.active)fit()});
 
@@ -504,25 +509,29 @@ async function gameOver(){
 }
 
 // ================= SAVE / FLOW =================
-function snap(){return JSON.stringify({map:G.map,x:G.x,y:G.y,dir:G.dir,party,lead:G.lead|0,flags:G.flags,clues:G.clues,items:G.items,fights:G.fights,enc:G.enc,rescued:G.rescued})}
+function snap(){return JSON.stringify({case:G.case,map:G.map,x:G.x,y:G.y,dir:G.dir,party,lead:G.lead|0,flags:G.flags,clues:G.clues,items:G.items,fights:G.fights,enc:G.enc,rescued:G.rescued})}
 function checkpoint(){G.cp=snap();store.set(B.key('game'),G.cp)}
-function restore(s){const o=JSON.parse(s);party=o.party;G.lead=o.lead>=0&&o.lead<party.length?o.lead|0:0;G.flags=o.flags;G.clues=o.clues;G.items=o.items;G.fights=o.fights;G.enc=o.enc;G.rescued=o.rescued||0;G.mode='world';goMap(o.map,o.x,o.y,o.dir);applySan()}
-function enter(){G.active=true;scr.classList.add('gaming');sanEl.hidden=false;fit();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
-function leave(){G.active=false;PM=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
+function restore(s){const o=JSON.parse(s);G.case=o.case||(CASES[0]&&CASES[0].id);party=o.party;G.lead=o.lead>=0&&o.lead<party.length?o.lead|0:0;G.flags=o.flags;G.clues=o.clues;G.items=o.items;G.fights=o.fights;G.enc=o.enc;G.rescued=o.rescued||0;G.mode='world';goMap(o.map,o.x,o.y,o.dir);applySan()}
+function enter(){G.active=true;scr.classList.add('gaming');fit();cancelAnimationFrame(raf);clock.reset();raf=requestAnimationFrame(loop)}
+function leave(){G.active=false;PM=null;CB=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
 function quit(){checkpoint();leave();B.goto('title');B.render()}
-function finish(){
- store.set(B.key('game'),null);const a=lead().a;
+// The end of a case (spec 004, step 5): the case is stamped closed in bl.season, then the lead's dossier opens as
+// before, and leaving the dossier opens the case board. The demo's one ending saves as "closed".
+function finish(ending){
+ store.set(B.key('game'),null);const a=lead().a;const id=G.case;closeCase(id,ending);B.S.afterCase=true;B.S.stampCase=id;
  a.id=a.id||Date.now();const R=B.S.roster,i=R.findIndex(x=>x.id===a.id);const copy=JSON.parse(JSON.stringify(a));if(i>=0)R[i]=copy;else R.unshift(copy);store.set(B.key('roster'),R);
  B.S.a=a;B.S.view=true;leave();B.goto('dossier');B.render();B.toast('FILED. CHAPTER ONE CLOSED.');
 }
 function startKit(){const it={aid:1};const add=(k,n)=>{it[k]=(it[k]||0)+n};
  const s=B.specOf(lead().a);if(s)Object.entries(s.items).forEach(([k,n])=>add(k,n));else{add('aid',1);add('coffee',1);add('flare',1)}
  party.slice(1).forEach(m=>{const t=B.specOf(m.a);if(t)add(Object.keys(t.items)[0],1)});return it}
-async function start(agent,squad){
+// Starts a case (A on its card): its briefing (the case's opening) plays first. Seat 1 leads.
+async function start(agent,squad,id){
+ const c=caseById(id)||CASES[0];
  party=[member(agent),...squad.map(member)];
- G=Object.assign(G,{active:true,lead:0,flags:{},clues:[],items:startKit(),fights:0,enc:10,rescued:0,busy:0,mode:'scene',scene:null});
+ G=Object.assign(G,{active:true,case:c.id,lead:0,flags:{},clues:[],items:startKit(),fights:0,enc:10,rescued:0,busy:0,mode:'scene',scene:null});
  MAZE=null;enter();applySan();
- run(caseOpening);
+ run(c.opening);
 }
 function resume(){const s=store.get(B.key('game'),null);if(!s)return false;G=Object.assign(G,{active:true,busy:0,mode:'world'});MAZE=null;enter();
  // a checkpoint that won't open goes back to the title with a message instead of freezing; the save is kept
@@ -533,7 +542,10 @@ function resume(){const s=store.get(B.key('game'),null);if(!s)return false;G=Obj
 async function pauseMenu(){
  held=[];
  for(;;){
-  const r=await choose(['Party','Items','Notebook','Save & quit','Close'],{cancel:true,title:'MENU · '+G.M.name});
+  // Dev build only (never Release): a row that finishes the case at once, for testing the case board on a phone
+  const dev=!!(window.Studio&&Studio.channel==='dev'),rows=['Party','Items','Notebook','Save & quit',...(dev?['Dev: finish case']:[]),'Close'];
+  const r=await choose(rows,{cancel:true,title:'MENU · '+G.M.name});
+  if(rows[r]==='Dev: finish case'){finish();return}
   if(r===0)await openParty();
   else if(r===1){await itemMenu(lead(),false);hideTB()}
   else if(r===2){if(!G.clues.length)await say('NOTEBOOK','Nothing yet. Talk to the townsfolk.');for(const c of G.clues)await say('NOTEBOOK',c.text);if(!G.flags.key)await say('NOTEBOOK',`Deputy Ross wants proof: ${townClues()}/3 town clues.`)}
@@ -545,6 +557,7 @@ async function pauseMenu(){
 // ================= INPUT =================
 function input(k){
  if(!G.active)return;
+ if(CB){boardPress(k);return}
  if(dlg){if(k==='a'||k==='b'){if(!dlg.done)finishType();else closeDlg()}return}
  if(PM){partyPress(k);return}
  if(menu){const n=menu.items.length;
@@ -563,4 +576,5 @@ menuEl.addEventListener('click',e=>{const el=e.target.closest('.gi');if(!el||!me
 // The shelf's Continue button opens straight into the case checkpoint (launcher.md, Title cards).
 // With no checkpoint (only agents on the roster) the title screen opens as usual.
 window.addEventListener('load',()=>{if(window.Studio&&Studio.continued&&!G.active)resume()});
-window.BLG={start,resume,input,hold,get active(){return G.active},_t:{hp:(i,n)=>{party[i].hp=n},status:(i,k)=>{const m=party[i];m.st=m.st||[];if(!m.st.includes(k))m.st.push(k)},lead:()=>G.lead|0,fight:t=>run(async()=>{const r=await battle(t);if(r==='lose')await gameOver()}),go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,boss:()=>run(bossIntro)}};
+window.BLG={start,resume,input,hold,get active(){return G.active},
+ board:o=>board(Object.assign({stamp:o&&o.from==='finish'?B.S.stampCase:null},o)),seasonClosed:()=>seasonClosed(),newSeason:()=>newSeason(),_t:{hp:(i,n)=>{party[i].hp=n},status:(i,k)=>{const m=party[i];m.st=m.st||[];if(!m.st.includes(k))m.st.push(k)},lead:()=>G.lead|0,fight:t=>run(async()=>{const r=await battle(t);if(r==='lose')await gameOver()}),go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,boss:()=>run(bossIntro),finish:()=>finish(),board:()=>CB}};

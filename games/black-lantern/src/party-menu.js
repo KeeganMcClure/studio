@@ -49,9 +49,9 @@ function openParty(){return new Promise(res=>{
   paint:{header:paintHeader,card:paintCard,detail:paintDetail},
   colors:{box:PC.deep,border:PC.cream,shadow:'#0a0812',on:PC.cardOn,text:PC.cream,dim:PC.dim,cursor:PC.gold},
   font:VTf(16),headerH:18,cardH:50,gap:4,detailMin:44})};
- PM.list.reset(G.lead|0);sanEl.hidden=true;ban.hidden=true;
+ PM.list.reset(G.lead|0);ban.hidden=true;
 })}
-function closeParty(){const p=PM;PM=null;sanEl.hidden=false;if(p)p.done()}
+function closeParty(){const p=PM;PM=null;if(p)p.done()}
 function partyPress(k){if(PM.view==='dossier')dossierPress(k);else PM.list.press(k)}
 function drawParty(){pR(0,0,VW,VH,PC.navy);if(PM.view==='dossier')drawDossier();else PM.list.draw(cx,VW,VH,performance.now())}
 cv.addEventListener('click',e=>{if(!PM||!G.active)return;const r=cv.getBoundingClientRect();if(!r.width)return;

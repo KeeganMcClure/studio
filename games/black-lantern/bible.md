@@ -87,12 +87,23 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
 - [x] Demo 1 of 6: Agent creator under the new rules (team templates, party of 3, Bonds and motivation), built from the approved creator mockup
 
   Done Nov 21: Pick a team, Your team (Keep, Tweak, Rebuild; empty seats build or pull from the roster) and the 7-step creator, matching the mockup. Old agents convert to the new professions; battle abilities and items are stand-ins until Demo 5.
-- [ ] Demo 2 of 6: Pokémon-style party menu, and Select cycling the lead on the map
-- [ ] Demo 3 of 6: Case board (season save, open and closed cases), built from the approved case board mockup
-- [ ] Demo 4 of 6: Still Harvest rebuild, map and art: its map on the Shared Shelf (then delete legacy-street-kit.js), townsfolk sprites and portraits, night and low-SAN look
-- [ ] Demo 5 of 6: Still Harvest rebuild, story and play: its text block, branching paths, and fewer but harder fights under the new combat rules
+- [x] Demo 2 of 6: Pokémon-style party menu, and Select cycling the lead on the map
+
+  Done Nov 21 (spec 002): Start → Party shows the three cards in seat order with the LEAD tag, each opening Make lead, Dossier and Give item (greyed until Demo 5); Select cycles the lead on the map and in Party.
+- [x] Demo 3 of 6: Case board (season save, open and closed cases), built from the approved case board mockup
+
+  Done Nov 21 (spec 004): Your team → START opens the cork board with Still Harvest; A plays the briefing, finishing the case stamps it CLOSED, and New game starts Season 1 over (roster kept). Saves are version 4 with the new `bl.season`.
+- [x] Demo 4 of 6: Still Harvest rebuild, map and art: its map on the Shared Shelf (then delete legacy-street-kit.js), townsfolk sprites and portraits, night and low-SAN look
+
+  Done Nov 22 (spec 005): the town and corn maze are redrawn on the Shared Shelf in the 3/4 view with nothing moved, the town at dusk and the maze at night, the low-SAN look below 40, the five townsfolk with new map sprites and talking portraits, and the lead card, NIGHT tag and A bubble. The old tile kit and legacy-street-kit.js are gone.
+- [ ] Demo 5 of 6: Still Harvest rebuild, story and play: its text block, branching paths, and fewer but harder fights under the new combat rules. Split Nov 22 into the three parts below (spec 006), one Claude Code session each, in order; tick this when all three are done
+  - [ ] Demo 5 part A: field rules. Each agent's own kit and items, skills at hotspots, statuses on the map, SAN by the bible, the full map menu
+  - [ ] Demo 5 part B: combat under the Combat tab, in the approved head-on layout, with battle art for the case's enemies
+  - [ ] Demo 5 part C: the story. Its text block, branching paths, fewer but harder fights, and the Gleaner at the bible's numbers
 - [ ] Demo 6 of 6: Debrief and end-of-case improvement (evidence, cover story, skill gains), built from the approved debrief mockup; the finished demo also goes to Drive as a milestone build
-- [ ] Turn the hand copies of shelf.js and dialog.js into shared files, so a change on the Shared Shelf or in the Asset Library reaches the game without copying by hand (step 6 of the Claude Code move)
+- [x] Turn the hand copies of shelf.js and dialog.js into shared files, so a change on the Shared Shelf or in the Asset Library reaches the game without copying by hand (step 6 of the Claude Code move)
+
+  Done Nov 21: one copy of each now lives in the studio's `engine/` (`engine/shelf.js`, `engine/dialog.js`), shared with Rushlight, with a sync step that brings in a new version from the source page and a check that fails if either is edited by hand.
 - [ ] After the Still Harvest playtest: revisit party size (3 vs 4). Weigh tension, skill coverage, fight length on the phone and screen space; switching to 4 means reworking templates, professions, balance and the combat layout
 - [x] Turn the Art Bible page into the Asset Library (sprites, drawing code, palette)
 - [x] Update the project instructions to point here
@@ -139,6 +150,8 @@ Problems found in playtests. Each line: what happened · where · how to make it
 ## Ideas inbox
 
 Drop loose ideas here; Claude sorts them into the right section next build.
+
+- **Random cases each season (Keegan, Nov 21):** some randomness in which cases a season's board offers. The worry it answers: replaying cases you've already played after a party wipe. Note for sorting: today a full wipe only reopens the case in progress and the season keeps its progress (Systems → Gameplay loop, Game over); only New game starts the season over (spec 004). Randomness would still help replays of a fresh season.
 
 Your medieval spin-off notes moved, word for word, to their own doc on Nov 19: Doc
 
@@ -323,7 +336,7 @@ Big Hat is the only character who appears in every case; his 64 × 64 calm and s
 - **Units:** teams carry a founding name until they're wiped out; a fallen member is replaced by someone with similar skills.
 - **Big Hat:** legally doesn't exist; nobody learns his backstory. His thick country accent may be fake, and agents suspect the huge hats keep anyone from describing his face. He hands out gear in absurd packaging, like pink Walmart gift bags. His look stays as set in Cast.
 
-**Case board.** You pick a case from a board, which opens Big Hat's briefing for it. Each case is a self-contained module. The board is a cork board of pinned case cards (decided Nov 21; mockup listed in Art, Reference mockups). Each card shows its file number, title and town; the D-pad moves a cursor between cards, and the selected card opens a description box at the bottom (place, a two-line hook, A for the briefing, B to back out). Closed cases stay pinned, stamped CLOSED. If a season ever has more than 6 open cases, the board switches to a plain list automatically: open cases first, closed ones at the bottom.
+**Case board.** You pick a case from a board, which opens Big Hat's briefing for it. Each case is a self-contained module. The board is a cork board of pinned case cards (decided Nov 21; mockup listed in Art, Reference mockups). Each card shows its file number, title and town; the D-pad moves a cursor between cards, and the selected card opens a description box at the bottom (place, a two-line hook, A for the briefing, B to back out). Closed cases stay pinned, stamped CLOSED. The board has the mockup's 5 card spots (built Nov 21, spec 004); a 6th spot gets drawn when a 6th case is pitched, since the plain list only takes over at 7 open cases. If a season ever has more than 6 open cases, the board switches to a plain list automatically: open cases first, closed ones at the bottom.
 
 The demo case, "Operation Still Harvest," is built and playable. It's the test build, not a chapter one.
 
@@ -334,7 +347,7 @@ Marrow Creek, Oregon, during the Harvest Lantern Walk.
 1. **Briefing** with Big Hat in the donut-shop back room off I-5.
 2. **Town investigation:** 5 clues, 3 needed to proceed.
 3. **Committee Volunteer** fight.
-4. **Dark corn maze** with random encounters, loot and a lore note.
+4. **Dark corn maze** with roamers in a danger zone, loot and a lore note (no random encounters, per Gameplay loop).
 5. **Victims:** 3 people tied to scarecrow poles who can be cut down.
 6. **Boss: The Gleaner**, a figure of harvest straw with a lantern for a head. It gets weaker for each victim rescued.
 7. **Debrief** with Big Hat, a cover-story choice, then a home scene choosing a Bond. The agent's new SAN and disorders save to the roster.
@@ -1058,8 +1071,8 @@ The game is the "Black Lantern Intake" HTML artifact, played on an iPhone SE ins
 ### File and code
 
 - One artifact, split into parts (since Nov 21). The parts live in the studio repo (KeeganMcClure/studio) under `games/black-lantern/src/` and are built in Claude Code, which bundles them into one HTML file for the artifact; the CLAUDE.md files there carry these rules (since Nov 21). No outside assets except Google Fonts: Press Start 2P (headings, UI) and VT323 (body text). All art is drawn in code on canvas; there is no sound or music.
-- The parts, loaded in this order: `index.html` (the page and Black Lantern's shell colors), then the studio's shared `engine/shell.js`, `engine/input.js` and `engine/move.js` (the shell layout, buttons and keyboard, and map walking, shared with Rushlight since Nov 21, spec 001), `strings.js` (the shared strings block, `window.BLS`), `creator.js` (agent creator and portraits, and where button presses go, `window.BL`), `dialog.js` (the Lantern Bust box, copied unchanged from the Asset Library, `window.BLD`), `engine.js` (map, dialog, sanity, battle, Big Hat scenes, saves, pause, input, `window.BLG`), then one file per case in `cases/` (Still Harvest: `cases/still-harvest.js`). A chat reads only the parts its task touches. A new case is a new file in `cases/`, added as a script line at the end of `index.html`; each case file supplies its maps, enemies, scripts and a `caseOpening` briefing.
-- Agents on the map (since Nov 21): `shelf.js` (the Shared Shelf script, copied unchanged; method v1 and person v1 are the pieces in use) and `agent-sprite.js` (agent world sprites, `window.BLA`) load after `creator.js`, before `dialog.js`. The engine calls `BLA.draw` for the lead only; townsfolk still use the engine's old `drawChar` until the Still Harvest rebuild.
+- The parts, loaded in this order (updated Nov 22): `index.html` (the page and Black Lantern's shell colors), then the studio's shared `engine/studio.js`, `engine/shell.js`, `engine/input.js`, `engine/move.js`, `engine/clock.js` and `engine/party.js` (the site's Dev/Release saves, the shell layout, buttons and keyboard, map walking, the 60-ticks-a-second clock, and the party card list; shared with Rushlight, spec 001 and later), `strings.js` (the shared strings block, `window.BLS`), `creator.js` (agent creator and portraits, and where button presses go, `window.BL`), `engine/shelf.js` (the Shared Shelf script), `agent-sprite.js` (agent map sprites, `window.BLA`), `engine/dialog.js` (the Lantern Bust box, `window.BLD`), `engine.js` (map, dialog, sanity, battle, Big Hat scenes, saves, pause, input, `window.BLG`), `party-menu.js` (the Party screen and Dossier, spec 002), `engine/nearest.js` (moves a cursor to the nearest thing in a direction) and `case-board.js` (the case board, spec 004), then one file per case in `cases/` (Still Harvest: `cases/still-harvest.js`). `engine/shelf.js` and `engine/dialog.js` are the one shared copy of each, synced unchanged from the Shared Shelf and the Asset Library, never edited by hand. A chat reads only the parts its task touches. A new case is a new file in `cases/`, added as a script line at the end of `index.html`; each case file supplies its maps, enemies, scripts, a `caseOpening` briefing and a `caseCard` (file number, title, town, place line, two-line hook, pin color), and ends with `registerCase`, which puts it on the case board.
+- Agents on the map (since Nov 21): the Shared Shelf's method v1 and person v1 are the pieces in use. The engine calls `BLA.draw` for the lead only; townsfolk still use the engine's old `drawChar` until the Still Harvest rebuild.
 - Cases are data plus small async functions: `say`, `ask`, `choose`, `battle`, `sanCheck`, `clue`, `checkpoint`.
 - **Where text lives (set Nov 20).** All in-game text stays in the game file, with no separate text store or Sheet, so case writing stays a surprise. Once the file is split, each case part opens with its own text block (dialog, case text, its pools of lines), and menus, items and names share one strings block. Item and menu wording is designed in Agents and items and Skills and menus, then copied in at build time.
 - Edit the existing file, never rewrite from scratch. After each change: syntax check, playtest the changed part, copy any newly drawn art into the Asset Library (see Art, Save every asset), run npm run check, commit and push, then publish the bundled file to the same artifact with a dated label (Build YYYY-MM-DD), and add a Changelog line. Milestone builds also go to Drive (see Process, Backups).
@@ -1079,12 +1092,12 @@ Saves live in the phone browser's local storage, one key per row below. Clearing
 | --- | --- |
 | `bl.roster` | Saved agents, with everything that carries between cases: SAN, disorders, Bonds, lasting injuries, motivation arc beats, Sabbatical cases left |
 | `bl.draft` | Team in progress in the creator (since Nov 21: the team, its 3 seats, and the agent being built or tweaked) |
-| `bl.game` | Case checkpoint |
+| `bl.game` | Case checkpoint, including which case it belongs to (since Nov 21, spec 004) and who leads (spec 002) |
 | `bl.party` | The 3 agents in the field, who leads, and the backpack |
-| `bl.season` | Season number, the case board (which cases are open or closed, and how each ended), cases closed, overstepping step |
+| `bl.season` | Season number, the case board (each case open or closed, and how it ended), cases closed, overstepping step (since Nov 21, spec 004: `season`, `cases` with `state` and `ending`, `closed`, `overstep`) |
 | `bl.memorial` | Fallen and retired agents |
 | `bl.settings` | The map menu's Settings choices |
-| `bl.version` | Save version number (since Nov 21; now 2: step 2 moved agents to the new creator rules). Saves without it count as version 0 |
+| `bl.version` | Save version number (since Nov 21; now 4: step 2 moved agents to the new creator rules, step 3 added who leads, step 4 added the season save). Saves without it count as version 0 |
 | `bl.backup` | Untouched copy of every save, taken just before the last upgrade, with the version it came from |
 | `bl.broken` | A checkpoint the upgrade couldn't read, set aside instead of deleted (only exists if that happened) |
 | `bl.sound` | Retired Nov 21 with all sound and music. The game no longer reads or writes it; old saves that still have it just ignore it |

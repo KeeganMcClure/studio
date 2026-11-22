@@ -114,13 +114,22 @@ const PARTY={
  noBonds:'No Bonds on file.',score:'Score',
  moods:{close:'Close',strained:'Strained',fraying:'Fraying',broken:'Broken'}
 };
+// ---------- ON THE MAP (spec 005): the lead card, the NIGHT tag and the A bubble ----------
+const MAPHUD={night:'NIGHT',talk:'TALK',look:'LOOK',hp:'HP',wp:'WP',san:'SAN',a:'A'};
 // ---------- DISORDERS (names) ----------
 const DIS=['Jumpy','Night terrors','Counting compulsion','Hypervigilance','Hollow stare','Can\'t stop smiling'];
 // ---------- CREATOR STEP NAMES ----------
 // Stat jobs (Bible: Agent creator, Worked out from stats) and weird hobbies (a bonus pick in a skill outside the profession)
 const STATJOB={STR:'HP = (STR + CON) ÷ 2. STR 13+ adds +1 Melee damage.',CON:'HP = (STR + CON) ÷ 2. Roll CON × 5 to shrug off Poisoned or Sickened, and to keep from retching.',DEX:'Sets turn order in a fight.',INT:'Once per case, stuck on a deduction, roll INT × 5 for a Hunch.',POW:'WP = POW. SAN = POW × 5. Breaking Point = SAN − POW.',CHA:'Each Bond starts at CHA.'};
 const HOBBY={'Firearms':'shoots skeet on Sundays','Melee':'boxes on weekends','Dodge':'has never been tagged at dodgeball','Athletics':'runs marathons','Search':'finds everyone\'s lost keys','Persuade':'could sell sand at the beach','Forensics':'watches true crime with a notebook','Occult':'reads tarot','History':'haunts the county archive','Science':'keeps a lab in the basement','Empathy':'can tell when you\'re lying','Bureaucracy':'loves a form in triplicate','Stealth':'never makes the floorboards creak','Survival':'hunts every fall','First Aid':'carries bandages for everyone','Medicine':'almost finished med school','Computers':'builds their own computers','Craft':'fixes anything with a wrench'};
-const STEPNAME={profession:'JOB',stats:'STATS',skills:'SKILLS',identity:'IDENTITY',bonds:'BONDS',motives:'MOTIVATIONS',dossier:'DOSSIER',title:'BLACK LANTERN',roster:'ROSTER',team:'YOUR TEAM',pick:'PICK A TEAM'};
+// ---------- CASE BOARD (Bible: Story, Case board; spec 004) ----------
+const BOARD={
+ season:'SEASON',title:'CASE BOARD',closed:'CLOSED',briefing:'BRIEFING',back:'BACK',stamp:'CLOSED',file:'FILE',
+ sticky:['NOBODY','TOUCH MY','CRULLERS.','—BH'],  // Big Hat's sticky note on the cork (mockup)
+ // New game with a closed case (Skills and menus, Quality of life: Confirm what sticks)
+ sure:'Can\'t be undone. Sure?',resetLine:'This starts Season 1 over. Your roster stays.',yes:'Yes, start over',no:'No, back to the title'
+};
+const STEPNAME={profession:'JOB',stats:'STATS',skills:'SKILLS',identity:'IDENTITY',bonds:'BONDS',motives:'MOTIVATIONS',dossier:'DOSSIER',title:'BLACK LANTERN',roster:'ROSTER',team:'YOUR TEAM',pick:'PICK A TEAM',confirm:'NEW GAME'};
 const STEPSHORT={profession:'JOB',stats:'STATS',skills:'SKILL',identity:'ID',bonds:'BOND',motives:'WHY',dossier:'FILE'};
-return {SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY};
+return {SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD,MAPHUD};
 })();

@@ -180,10 +180,9 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 .hb.ko{opacity:.5;border-color:var(--scr-red)}
 .hb .nm{font:6px/1.6 var(--px);color:var(--scr-hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hb b{font-weight:normal;color:var(--scr-hi)} .hb .red,.gbox .red{color:var(--scr-red)} .hb .sn{color:#b9aee8}
-#gsan{left:6px;top:6px;padding:1px 6px;font:7px/1.8 var(--px);border-width:1px}
-#gsan b{font-weight:normal;color:var(--scr-hi)}
-#game.battle #gsan{display:none}
 .gban{position:absolute;top:8px;left:50%;transform:translateX(-50%);font:8px/1.6 var(--px);color:var(--scr-hi);background:rgba(13,19,34,.9);border:1px solid var(--scr-hi);padding:3px 8px;white-space:nowrap}
+/* on the map the banner sits just under the lead card (spec 005); --pu is 64 map pixels */
+#game:not(.battle) .gban{top:calc(var(--pu,128px) * .56)}
 #gfade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .32s}
 
 </style>
@@ -194,7 +193,7 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
   <div class="info" id="info" hidden></div>
   <div class="body" id="body"><div class="list" id="list"></div><div class="pane" id="pane"></div></div>
   <div class="ftr" id="ftr"></div>
-  <div id="game"><canvas id="gcv" width="240" height="160"></canvas><div class="gbox" id="gsan" hidden></div><div class="gban" id="gban" hidden></div><div id="gdlg"></div><div class="gbox" id="gmenu" hidden></div><div id="ghud" hidden></div><div id="gfade"></div></div>
+  <div id="game"><canvas id="gcv" width="240" height="160"></canvas><div class="gban" id="gban" hidden></div><div id="gdlg"></div><div class="gbox" id="gmenu" hidden></div><div id="ghud" hidden></div><div id="gfade"></div></div>
   <div class="vig" id="vig"></div>
   <div class="scan"></div>
   <div class="toast" id="toast"></div>
@@ -204,6 +203,8 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 <script src="../../../engine/shell.js"></script>
 <script src="../../../engine/input.js"></script>
 <script src="../../../engine/move.js"></script>
+<script src="../../../engine/clock.js"></script>
+<script src="../../../engine/light.js"></script>
 <script src="../../../engine/party.js"></script>
 <script src="strings.js"></script>
 <script src="creator.js"></script>
@@ -212,7 +213,10 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 <script src="../../../engine/dialog.js"></script>
 <script src="engine.js"></script>
 <script src="party-menu.js"></script>
+<script src="../../../engine/nearest.js"></script>
+<script src="case-board.js"></script>
 <script src="cases/still-harvest.js"></script>
+<script src="cases/still-harvest-art.js"></script>
 
 
 </body></html>
