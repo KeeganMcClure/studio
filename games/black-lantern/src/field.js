@@ -90,6 +90,7 @@ const resultLine=(word,o)=>SR.line(word,o,SKW.result);
 // ================= STATUSES (A3) =================
 async function addStatus(m,k,o={}){
  if(!m||m.gone||hasSt(m,k))return false;
+ if(k==='shaken'&&o.from&&(o.from.tags||[]).includes('human')&&m.a.arc&&m.a.arc.perk==='revenge')return false;  // Cold head (spec 008)
  if((k==='poison'||k==='sick')&&o.air&&wearing(m,'gasmask'))return false;
  if((k==='poison'||k==='sick')&&!o.noShrug){const r=SR.pct(m.a.stats.CON*5+rollMod(m,''));
   if(r.ok){await say('',`${m.name} shrugs it off. (${resultLine('CON',r)})`,{auto:1300});return false}}
@@ -135,6 +136,7 @@ async function trigger(tag,subj){
  for(const m of who){
   const d=(m.dis||[]).find(x=>x.k===k&&(k!=='phobia'||x.s===subj));if(!d)continue;
   m.flared=m.flared||{};if(m.flared[k]||flaring(m,k))continue;m.flared[k]=1;m.flare=m.flare||{};
+  if(k==='addiction'&&m.a.noWD){delete m.a.noWD;delete m.flared[k];continue}  // Use at home: no Withdrawal this case (spec 008)
   if(k==='addiction'){m.flare.addiction='case';await say('',fillT(DZ.addiction.line,{n:m.name}),{auto:1500});continue}
   const r=SR.pct(m.san);if(r.ok){await say('',fillT(SW.flareHold,{n:m.name})+` (${resultLine('SAN',r)})`,{auto:1200});continue}
   m.flare[k]='scene';await say('',fillT(DZ[k].line,{n:m.name}),{auto:1600});
@@ -169,7 +171,9 @@ async function horror(h,o={}){
   const adapted=kk&&m.adapt&&m.adapt[kk.toUpperCase()];
   if(h.gore&&skillVal(m.a,'Forensics')>=90){parts.push(fillT(SW.hardened,{n:m.name}));continue}
   if(h.sight&&!G.fs.charm){const c=holderOf('charm');if(c&&c.m===m){spend(m,c.it);G.fs.charm=1;parts.push(fillT(SW.charm,{n:m.name}));continue}}
-  const r=SR.pct(m.san-(m.high==='shrooms'?20:0));const pass=adapted||r.ok;
+  let r=SR.pct(m.san-(m.high==='shrooms'?20:0));
+  if(!r.ok&&!adapted&&perkOn(m,'redeem')){note=' '+fillT(BLS.HOMEW.perkUsed,{p:BLS.HOMEW.perks.redeem[0],n:m.name});r=SR.pct(m.san-(m.high==='shrooms'?20:0))}
+  const pass=adapted||r.ok;
   loss=dice(pass?spec[0]:spec[1]);
   if(braced.has(m)){half=true;note=' braced'}
   else if(m.braceB&&Bt){half=true;m.braceB=false;note=' braced'}
@@ -183,6 +187,7 @@ async function horror(h,o={}){
     if(s.crit){loss=0;half=false;note=' '+fillT(SW.steadyAll,{h:hp.name,n:m.name})}else if(s.ok&&!half){half=true;note=' '+fillT(SW.steady,{h:hp.name,n:m.name})}else if(!s.ok)tried(hp,'Empathy')}}
   if(half)loss=Math.floor(loss/2);
   if(hasSt(m,'drunk'))loss-=1;
+  if(h.sight&&m.a.arc&&m.a.arc.perk==='faith')loss-=1;  // Steady faith (spec 008)
   loss=Math.max(0,loss);
   m.san=Math.max(0,m.san-loss);
   parts.push(`${m.name} −${loss}${note?' ('+note.trim()+')':''}`);
@@ -201,6 +206,11 @@ async function horror(h,o={}){
 // the old engine call (enemies' SAN attacks): a raw SAN hit through the same rules
 async function sanCheck(spec,label,who){return horror({spec,label,kind:'unnatural'},{who})}
 function bondsLose(m,n){const a=m.a;a.bondDmg=a.bondDmg||[];(a.bonds||[]).forEach((b,j)=>{a.bondDmg[j]=(a.bondDmg[j]||0)+n})}
+// folds Leaning and Adapted damage into each Bond's score (the home phase works on the score itself, spec 008)
+function bondFold(a){(a.bonds||[]).forEach((b,j)=>{b.score=bondNow(a,j)});a.bondDmg=[]}
+// arc perks (spec 008): perkOn spends a once-per-case perk and says so; badge is Duty's
+function perkOn(m,id){if(!(m&&m.a&&m.a.arc&&m.a.arc.perk===id))return false;const k='arc'+id+m.a.id;if(G.fs.perk[k])return false;G.fs.perk[k]=1;return true}
+function badge(m){if(!perkOn(m,'duty'))return false;run(()=>say('',fillT(BLS.HOMEW.perkUsed,{p:BLS.HOMEW.perks.duty[0],n:m.name}),{auto:1000}));return true}
 const bondNow=(a,j)=>{const b=a.bonds[j],cha=a.stats.CHA||10;return Math.max(0,(b.score??cha)-((a.bondDmg||[])[j]||0))};
 // Breaking Point: SAN minus POW, reset after each one (Sanity; SAN loss table)
 async function breakingPoint(m,kind,subj){
@@ -212,7 +222,8 @@ async function breakingPoint(m,kind,subj){
   const r=await choose([SW.takeDis,{label:SW.giveMot,dis:!mots.length},{label:SW.lean,dis:!canLean}],{title:fillT(SW.bpAsk,{})+' · '+m.name.toUpperCase()});
   if(r===1){const i=await choose(mots.map(x=>x),{cancel:true,title:SW.giveMot.toUpperCase()});if(i<0)continue;
    const ok=await choose([SW.yes,SW.no],{cancel:true,title:SW.sure});if(ok!==0)continue;
-   const gone=mots.splice(i,1)[0];if(a.main>=mots.length)a.main=0;await say('',fillT(SW.motLine,{n:m.name,m:gone}));break}
+   const wasMain=i===(a.main|0),gone=mots.splice(i,1)[0];if(i<(a.main|0))a.main--;if(a.main>=mots.length)a.main=0;await say('',fillT(SW.motLine,{n:m.name,m:gone}));
+   if(wasMain&&typeof arcShield==='function')await arcShield(m,gone);break}
   if(r===2){const i=await choose(bonds.map(([b,j,s])=>({label:`${b.name} · ${s}`,dis:s<=1})),{cancel:true,title:SW.lean.toUpperCase(),desc:bonds.map(x=>x[2]<=1?SW.bondLow:'')});if(i<0)continue;
    const j=bonds[i][1],loss=Math.min(roll(1,6),bondNow(a,j)-1);a.bondDmg=a.bondDmg||[];a.bondDmg[j]=(a.bondDmg[j]||0)+loss;await say('',fillT(SW.bondLine,{n:m.name,b:a.bonds[j].name}));break}
   if(r===0||r<0){await giveDisorder(m,kind,subj);break}
@@ -276,6 +287,7 @@ async function runOpt(o,r,key){
  if(o.once)G.fs.used['opt:'+o.once]=1;
  if(o.use){const L=lead(),S=r.S,v=skillVal(L.a,S.skill);let x=SR.pct(r.p),perk='';
   if(!x.ok&&S.skill==='Persuade'&&v>=90&&!G.fs.perk.retry){G.fs.perk.retry=1;await say('',SKW.retry,{auto:900});x=SR.pct(r.p)}
+  if(!x.ok&&o.official&&badge(L))x=Object.assign({},x,{ok:true,fumble:false});  // Badge (an arc perk, spec 008)
   if(!x.ok&&v>=90&&BLS.AUTOPERK[S.skill]&&!G.fs.perk[S.skill]){G.fs.perk[S.skill]=1;perk=fillT(SKW.perk,{p:BLS.AUTOPERK[S.skill]});x=Object.assign({},x,{ok:true,fumble:false})}
   await say('',resultLine(`${(o.label||S.label).toUpperCase()} · ${S.skill.toUpperCase()}`,x)+(perk?' '+perk:''),{auto:1300});
   if(r.loud)noise();if(!x.ok)tried(L,S.skill);
@@ -379,7 +391,8 @@ async function requisition(){
   const p=k=>chanceOf(m,'Bureaucracy',FI[k].req||0);
   const i=await choose(cat.map(([k,x])=>`${x.name} · ${p(k)}%`).concat([RW_.reqSkip]),{cancel:true,title:fillT(RW_.reqWho,{n:m.name.toUpperCase()}),desc:cat.map(([k,x])=>x.desc).concat([''])});
   if(i<0||i>=cat.length)continue;
-  const [k,x]=cat[i],o=SR.pct(p(k));await say('',resultLine('BUREAUCRACY',o),{auto:1000});
+  if(m.a.noReq){delete m.a.noReq;await say('BIG HAT',BLS.HOMEW.noReq);await say('BIG HAT',BLS.HOMEW.noReq2);continue}  // Therapy fumble (spec 008)
+  const [k,x]=cat[i];let o=SR.pct(p(k));if(!o.ok&&badge(m))o=Object.assign({},o,{ok:true,fumble:false});await say('',resultLine('BUREAUCRACY',o),{auto:1000});
   if(!o.ok){tried(m,'Bureaucracy');await say('BIG HAT',fillT(RW_.reqNoLine,{i:x.name}));continue}
   G.fs.pack.push(newItem(k));await say('BIG HAT',fillT(RW_.reqOk,{i:x.name,n:m.name}));
  }
@@ -400,7 +413,10 @@ function fillMember(m){
 function normDis(x){if(!x)return[];if(Array.isArray(x))return x.filter(d=>d&&DZ[d.k]);const k=OLDDIS[x];return k?[{k,s:k==='phobia'?'the dark':undefined}]:[]}
 const OLDDIS={'Jumpy':'ptsd','Night terrors':'sleep','Counting compulsion':'paranoia','Hypervigilance':'paranoia','Hollow stare':'depression','Can\'t stop smiling':'phobia'};
 function fieldStart(){
- const p=store.get(B.key('party'),null);G.fs=freshFs();G.fs.step0=loadSeason().overstep|0;  // where overstepping started (spec 007)G.fs.pack=p&&Array.isArray(p.pack)?p.pack.filter(it=>it&&it.k):[];
+ const p=store.get(B.key('party'),null);G.fs=freshFs();G.fs.step0=loadSeason().overstep|0;  // where overstepping started (spec 007)
+ // an arc choice at home can owe a step of overstepping in the next case (spec 008): it climbs now, no roll
+ const owe=party.reduce((t,m)=>t+(m.a.osNext|0),0);party.forEach(m=>delete m.a.osNext);
+ if(owe){const s=loadSeason(),st=stepsOf();s.overstep=Math.min(st.length-1,(s.overstep|0)+owe);store.set(seasonKey(),s);G.fs.climbed=1}G.fs.pack=p&&Array.isArray(p.pack)?p.pack.filter(it=>it&&it.k):[];
  party.forEach(fillMember);party.forEach(m=>kitUp(m,true));
 }
 function fieldRestore(o){G.fs=Object.assign(freshFs(),o.fs||{});if(!o.fs&&o.items)G.fs.pack=oldPack(o.items);G.fs.start=0;party.forEach(fillMember);party.forEach(m=>kitUp(m,false))}
@@ -484,6 +500,12 @@ async function skillsMenu(){
   const hurt=live().filter(m=>m.hurt>m.aided&&m.hp<m.mhp);
   add(MMW.patch,'First Aid',40,hurt.length,MMW.patchWhy,patchUp);
   add(MMW.triage,'First Aid',75,hurt.length,MMW.triageWhy,triage);
+  const ph=(id,fn)=>{const m=live().find(x=>x.a.arc&&x.a.arc.perk===id);if(!m)return;const used=!!G.fs.perk['arc'+id+m.a.id];
+   rows.push({label:`${BLS.HOMEW.perks[id][0]} · ${m.name}`,dis:used});desc.push(used?MMW.campUsed.replace('Already camped','Already used'):BLS.HOMEW.perks[id][1]);acts.push(()=>fn(m))};
+  ph('family',async m=>{if(!perkOn(m,'family'))return;const bs=(m.a.bonds||[]).map((b,j)=>[b,j]).filter(([b,j])=>bondNow(m.a,j)>0);const x=bs.length?pick(bs):null;
+   clearStatus(m,'shaken');const g=roll(1,4);m.wp=Math.min(m.mwp,m.wp+g);if(x)x[0].score=(x[0].score??(m.a.stats.CHA||10))+1;await say('',fillT(BLS.HOMEW.callHome,{n:m.name,b:x?x[0].name:'nobody'})+` +${g} WP.`)});
+  ph('money',async m=>{if(!perkOn(m,'money'))return;const com=['bandage','painkillers','energy','salts','roadflare','salt','cigs','firecrackers'].filter(k=>FI[k]);const k=pick(com);
+   await say('',fillT(BLS.HOMEW.expense,{n:m.name,i:FI[k].name}));await pickup(k)});
   add(MMW.treat,'Medicine',40,live().some(m=>['bleed','poison','sick'].some(k=>hasSt(m,k))),MMW.treatWhy,treat);
   add(MMW.sedate,'Medicine',90,live().some(flaringAny),MMW.sedateWhy,sedate);
   add(MMW.camp,'Survival',90,!G.fs.camped&&!G.M.danger,G.fs.camped?MMW.campUsed:MMW.campWhy,makeCamp);
@@ -551,6 +573,7 @@ async function useItem(m,it){
   case 'hotline':{const cat=Object.entries(FI).filter(([k,x])=>x.lb);
    await say('',IU.hotlineAsk);const i=await choose(cat.map(([k,x])=>`${x.name} · ${x.req>=0?'+':''}${x.req}%`),{cancel:true,title:'HOTLINE'});if(i<0)return false;
    const [k,x]=cat[i],o=SR.pct(chanceOf(m,'Bureaucracy',(x.req||0)+15));await say('',resultLine('BUREAUCRACY',o),{auto:1000});
+   if(!o.ok&&badge(m))o.ok=true;
    if(!o.ok){tried(m,'Bureaucracy');await say('BIG HAT',IU.hotlineNo);return true}
    const n=newItem(k),g=gearOf(m);if(x.w&&g.w.length<2)g.w.push(n);else if(!x.w&&!x.worn&&g.it.length<8)g.it.push(n);else G.fs.pack.push(n);refreshW(m);await say('',IU.hotlineOk+` ${x.name}.`);return true}
  }
@@ -577,7 +600,7 @@ function itemRows(s){
 const pickable=r=>!r.head&&!r.empty;
 function scrPress(k){
  const s=SCR;if(!s)return;
- if(s.kind==='page')return pagePress(k);if(s.kind==='log')return logPress(k);if(s.kind==='db')return dbPress(k);  // the debrief's screens: debrief.js
+ if(s.kind==='page')return pagePress(k);if(s.kind==='log')return logPress(k);if(s.kind==='db')return dbPress(k);if(s.kind==='home')return homePress(k);  // the debrief's screens: debrief.js
  const rows=itemRows(s),n=rows.length;
  const step=d=>{if(!rows.some(pickable))return;let j=s.sel;do{j=(j+d+n)%n}while(!pickable(rows[j]));s.sel=j};
  if(!pickable(rows[s.sel]||{}))step(1);
@@ -620,7 +643,7 @@ function icoPin(x,y,c){pR(x+1,y,3,3,c);pR(x,y+1,5,1,c);pR(x+2,y+3,1,4,PC.cream)}
 function icoBang(x,y,c){pR(x+2,y,1,5,c);pR(x+2,y+6,1,1,c);pR(x,y+2,1,1,c);pR(x+4,y+2,1,1,c)}
 function icoSkull(x,y,c){pR(x+1,y,5,4,c);pR(x,y+1,7,3,c);pR(x+1,y+2,2,1,PC.navy);pR(x+4,y+2,2,1,PC.navy);pR(x+2,y+4,3,2,c);pR(x+2,y+5,1,1,PC.navy);pR(x+4,y+5,1,1,PC.navy)}
 function drawScr(){
- const s=SCR;if(s.kind==='page')return drawPage();if(s.kind==='log')return drawLog();if(s.kind==='db')return dbDraw();
+ const s=SCR;if(s.kind==='page')return drawPage();if(s.kind==='log')return drawLog();if(s.kind==='db')return dbDraw();if(s.kind==='home')return homeDraw();
  pR(0,0,VW,VH,PC.navy);s.hits=[];
  const m=party[s.i];if(!m){closeScr();return}
  const rows=itemRows(s);if(!pickable(rows[s.sel]||{})){const j=rows.findIndex(pickable);s.sel=j<0?0:j}

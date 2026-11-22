@@ -75,7 +75,8 @@ function boardPress(k){
  const cards=boardCards(),L=boardLayout(),rects=boardRects(cards,L);
  if(k==='up'||k==='down'||k==='left'||k==='right'){CB.sel=StudioNearest.step(rects,CB.sel,k);return}
  if(k==='a'&&CB.sel===cards.length&&rects[CB.sel]){CB.mem={top:0};return}  // the plaque
- if(k==='a'){const c=cards[CB.sel];if(!c||c.shut)return;     // closed cases stay closed
+ // closed cases stay closed; the Dev build only lets one be played again, to test the home phase (spec 008 Done when)
+ if(k==='a'){const c=cards[CB.sel];if(!c||c.shut&&!(window.Studio&&Studio.channel==='dev'))return;
   const from=CB.from;closeBoard();if(!B.beginCase(c.id)){board({from});B.toast('BUILD A TEAM FIRST')}return}
  if(k==='b'){const back=CB.from==='team'?'team':'title';closeBoard();leave();B.goto(back);B.render();return}
 }
