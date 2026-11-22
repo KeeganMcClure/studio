@@ -86,7 +86,7 @@ When the finale's debrief and home phase are done, instead of the board:
 - **What resets:** overstepping goes back to Clean (Skills and menus → Overstepping). Every agent's survived-case count for arc beats starts over at 0 (spec 008, A2), except for an arc still running (next bullet).
 - **What carries:** the roster, the party, the backpack, the memorial, every agent's SAN, disorders, Bonds, injuries and skills, and Sabbaticals in progress (their remaining cases count down in the new season).
 - **Running arcs finish first** (Personal arcs): an agent whose arc hasn't reached beat 3 keeps counting toward it in the new season. After beat 3 plays, their next arc starts at beat 1 from the new season's arcs and counts from their next case.
-- **Regular cases left open** when the finale closes: see the open question on the PR thread. Until Keegan picks, they carry over to the next season's board as open cases (recommended), pinned before the new season's cases.
+- **Regular cases left open** when the finale closes carry over to the next season's board as open cases, pinned before the new season's cases (Keegan picked Nov 22). They count toward the new season's `closed` when closed there.
 - **The next season:** `season` rises by one and the new board opens from the next season data file. If there's no next season file yet, the board opens as `SEASON 2 · CASE BOARD` with only the carried-over cases (if any) and Big Hat's sticky note changed to `MORE ON THE WAY. —BH`. Continue still works; New game still starts Season 1 over.
 
 ### 6. The save (Tech → Saving; `studio-bible/saves.md`)
@@ -134,5 +134,5 @@ The season machinery is Black Lantern's own (`season.js`, loaded with `case-boar
 ## Bible notes for the Designer (no change made here)
 
 - Story → Case board says closed cases stay pinned, stamped CLOSED, and that the board has 5 spots with a 6th drawn when needed. A full season holds more cards than that. Keegan picked on Nov 22 that closed cases go to a CLOSED pile, and this PR updates that paragraph to match.
-- Story → Agency arc doesn't say what happens to regular cases still open when the finale closes. Keegan is asked on the PR thread.
+- Story → Agency arc didn't say what happens to regular cases still open when the finale closes. Keegan picked Nov 22 that they carry to the next season, and this PR adds that line to Agency arc.
 - Tech → Saving says to export agent codes before big updates. The launcher's full save export now covers every key; that line could point there instead. The Intake artifact, which has no launcher, still only has agent codes.
