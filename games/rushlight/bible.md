@@ -453,6 +453,10 @@ Claude's calls, for your review: the Corpse-candle's cold blue light (new colors
 
 ![Battle in the GBA shell: the Withy Hag on the causeway at night](mockups/26-battle-hag.png)
 
+**Species sheet (Ready 3 of 5, Nov 22; rough draft for your review).** The vertical slice's six species (Mercenaries and items, First to ship) at the three sizes they're built in: a 64 × 64 portrait head, a map sprite in the 14 × 26 frame at the species' height (Art, Scale: mouse and rat 18 px, hare and hedgehog 22 px, badger and fox 26 px), and a waist-up battle back view, plus all six on one street row at the phone's 2× scale. Premade check: the town, battle and Pick a company mockups in the Asset Library already show a hare, rat, badger, hedgehog and fox at map scale, and a badger, hare and rat from behind. This sheet follows their look (dark outlines, flat two-tone shading, coats in the palette) and adds the mouse, the missing back views and every portrait head. Faces follow Art, Faces: small dark eyes with no glints, real muzzles, and species read by silhouette first (ears, snout, stripes, spines). The drawing code is in `mockups/27-species-sheet-rough-v1.html`. It is filed in the Asset Library once approved.
+
+![Species sheet rough v1: mouse, rat, hare, hedgehog, badger and fox as portrait, map sprite and battle back view](mockups/27-species-sheet-rough-v1.png)
+
 References: from the era, Bosch's hell panels, Bruegel's Triumph of Death, Schongauer's Temptation of Saint Anthony, Dürer's woodcuts, danse macabre prints and manuscript marginalia; modern, Beksiński, Mignola, Junji Ito, Trevor Henderson, and the games Darkwood, Fear & Hunger, Pathologic 2 and Inscryption. Added by the study: Lovecraft fan art on DeviantArt and ArtStation, as the clichés to avoid.
 
 **Open questions**
