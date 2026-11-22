@@ -347,7 +347,7 @@ Marrow Creek, Oregon, during the Harvest Lantern Walk.
 1. **Briefing** with Big Hat in the donut-shop back room off I-5.
 2. **Town investigation:** 5 clues, 3 needed to proceed.
 3. **Committee Volunteer** fight.
-4. **Dark corn maze** with random encounters, loot and a lore note.
+4. **Dark corn maze** with roamers in a danger zone, loot and a lore note (no random encounters, per Gameplay loop).
 5. **Victims:** 3 people tied to scarecrow poles who can be cut down.
 6. **Boss: The Gleaner**, a figure of harvest straw with a lantern for a head. It gets weaker for each victim rescued.
 7. **Debrief** with Big Hat, a cover-story choice, then a home scene choosing a Bond. The agent's new SAN and disorders save to the roster.
