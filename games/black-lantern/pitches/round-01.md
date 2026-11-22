@@ -23,7 +23,7 @@ Public-safe: no twist, no culprit, no solution, no arc touches. Every name is or
 | | |
 | --- | --- |
 | Setting | Odessa Flats, Kansas, a grain town of 900 between two highways, during the county fair's last week |
-| Hook | For a month, people in Odessa Flats have called the sheriff about two men in black suits and dark glasses who stand across the street and watch. They don't trespass and they don't talk much. When they do, the words come out in the wrong order. The sheriff thinks it's a prank. The county's coroner has started keeping a list. Big Hat sends the agents in as federal agents with badges: find out what the men want, and see that nobody else starts a list. |
+| Hook | For a month, two men in black suits and dark glasses have been turning up around Odessa Flats. They stand across the street from someone's house and watch for hours. When they do talk, they sound like they learned English from a manual. Three of the people they watched have since died in their sleep, and the sheriff is calling it a prank and a bad flu season. Big Hat sends the agents in with badges: find out who the men are and what they want, and stop it before anyone else dies. |
 | Monster theme | Things practicing how to be people |
 | Night treatment | Empty streets under one blinking light, the fairground's rides lit and turning with nobody on them, a tinted car that follows for an hour and then isn't there |
 | Heaviest themes | Stalking and being watched, death of innocents, paranoia |
