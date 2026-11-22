@@ -97,7 +97,8 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
 
   Done Nov 22 (spec 005): the town and corn maze are redrawn on the Shared Shelf in the 3/4 view with nothing moved, the town at dusk and the maze at night, the low-SAN look below 40, the five townsfolk with new map sprites and talking portraits, and the lead card, NIGHT tag and A bubble. The old tile kit and legacy-street-kit.js are gone.
 - [ ] Demo 5 of 6: Still Harvest rebuild, story and play: its text block, branching paths, and fewer but harder fights under the new combat rules. Split Nov 22 into the three parts below (spec 006), one Claude Code session each, in order; tick this when all three are done
-  - [ ] Demo 5 part A: field rules. Each agent's own kit and items, skills at hotspots, statuses on the map, SAN by the bible, the full map menu
+  - [x] Demo 5 part A: field rules. Each agent's own kit and items, skills at hotspots, statuses on the map, SAN by the bible, the full map menu
+    Done Nov 22: each agent carries their own kit and items with a shared backpack, A on a hotspot shows the lead's skill options with their odds, statuses tick as you walk, SAN follows the bible's rules, and Start opens the full seven-row map menu. Still Harvest keeps its old story and plays start to finish.
   - [ ] Demo 5 part B: combat under the Combat tab, in the approved head-on layout, with battle art for the case's enemies
   - [ ] Demo 5 part C: the story. Its text block, branching paths, fewer but harder fights, and the Gleaner at the bible's numbers
 - [ ] Demo 6 of 6: Debrief and end-of-case improvement (evidence, cover story, skill gains), built from the approved debrief mockup; the finished demo also goes to Drive as a milestone build

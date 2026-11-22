@@ -13,18 +13,19 @@ This game's build bible. Started 2026-11-21 from Keegan's first-pass answers in 
 One item per chat, in order, biggest open decisions first. The Designer ticks the item when its task is done and adds new items where they belong.
 
 - [x] Setup: create this bible (Nov 21).
-- [x] Controls: Select opens companion orders (Nov 21). L/R still open.
-- [ ] Controls: what L/R step through.
-- [ ] The clock: how many in-game minutes a step and each action cost, so a day lands at 10 to 15 minutes of play; how long a season is.
+- [x] Controls: Select opens companion orders, L opens the bag, R opens the map (Nov 21). See Controls and screens.
+- [x] Studio bible: `controls.md` lets a game give L/R their own jobs, and `ui.md` lets a game with one fixed lead leave out Make lead (Nov 21).
+- [ ] The clock: how many in-game minutes a step and each action cost, so a day lands at 10 to 15 minutes of play. Season length is set (14 days).
 - [ ] The map generator: how big the starting town and its countryside are, what building and area types exist, and how fast places run dry.
 - [ ] Needs and SAN numbers: how fast hunger, sleep and SAN drop, what each refills, and what happens at each low point.
 - [ ] Combat numbers: hit chances, damage, weapons, noise per action, and how zombies and raiders choose a move.
-- [ ] Your survivor: each job's skills and starting items, each trait's effect, the looks parts, the 8 templates, and how fast skills grow with use.
+- [ ] Your survivor: each job's skills and starting items, each trait's effect, the want list, the looks parts, the 8 templates, and how fast skills grow with use.
+- [ ] Rumors and late threats: the first rumor list, how the raider leader forms, and horde timing.
 - [ ] Companions: the skill, fear and want lists; how bond is counted (hidden); the order rules; the short-job odds; the first set of arc parts and evening scenes.
 - [ ] Shelter: what can be built, what it costs, and how a night attack plays out.
 - [ ] Crafting and items: the first recipe list and item list, with look-alike brand names.
 - [x] Art direction: settled Nov 21 (see Art). Exact palette hex codes come with the first in-shell mockup.
-- [ ] Studio bible: an `art-style.md` PR letting a game set its own low SAN signal (Life After uses phantoms and SAN grit, not the pink and cyan edges). See Conflicts.
+- [x] Studio bible: `art-style.md` lets a game set its own low SAN signal (Nov 21).
 - [ ] Other survivors and trade: group types, starting moods, what they remember, and barter values.
 - [ ] Weather and events: the first list, how often each comes, and how sure the warnings are.
 - [ ] Difficulty presets: what Gentle, Standard and Harsh change, in numbers.
@@ -90,13 +91,19 @@ None yet.
   - **Four traits:** one good and one bad plain-life trait, plus one good and one bad personality trait. Plain-life traits each have one clear effect (good: Light Sleeper, Strong Back, Steady Hands, Iron Gut; bad: Smoker, Bad Knee, Nearsighted, Hothead). Personality traits shift SAN and how people react to you (good: Brave, Calm, Kind; bad: Jumpy, Greedy, Stubborn). Companions use the same lists. Effects: To do.
   - **Looks from parts:** body type, skin tone, face, hair style and color, clothes colors and age range (young adult to older). They show on the map sprite and the portrait, built from the same parts as companions and zombies.
   - **Templates:** one ready-made survivor per job, with a name (for example Rita, the night-shift nurse), traits and looks already picked. You can change any of it.
+- **A want** (set Nov 21): your survivor also has a want (find family, get home, make something last). It gives a long run a thread with no ending, and rumors can tie into it.
 - **Getting better** (set Nov 21): skills grow with use. There's no XP screen.
 
 ## The map
 
 - **Generated each game** (set Nov 21): one town plus its countryside, new every time.
-- **Big enough to last** (set Nov 21): the map has to carry a long one-life game through several seasons. First pass: a town center ringed by farms, woods, a highway and one or two smaller spots further out (a truck stop, a trailer park, a campground).
+- **Big enough to last** (set Nov 21): the map has to carry a long one-life game through several seasons.
+- **Sections** (set Nov 21): 5 big walkable sections, each with many places to search: downtown (diner, pharmacy, hardware store, police station), houses (homes, school, church), the highway strip (gas station, motel, big-box store), the farm belt, and the woods and lake. The first slice can use a smaller cut.
+- **Getting around** (set Nov 21): walk tile by tile inside a section. Travel between sections on a road map: drive (fast, loud, needs gas), bike or skateboard, or walk (slow, and you may have to camp). Road trips cost time and can bring road events.
+- **Learning the map** (set Nov 21): places start hidden until you see them. A found road map (from a gas station) shows the roads. Your survivor marks places as looted, dangerous or promising.
 - **The world runs down** (set Nov 21). Each building is looted once; food and supplies near your shelter thin out. Food spoils, the power fails and raiders grow bolder. By the second or third season you must travel further and craft more, which costs time and risk, and you may have to move hideouts. That keeps a long game moving.
+- **What pulls you forward** (set Nov 21): rumors from radio calls, notes and survivors point to far places worth the trip (a military depot, a seed vault, a safe zone). Some are real and some are traps. Your survivor's want gives the trip a reason.
+- **Bigger threats grow from the world** (set Nov 21): raider gangs merge under a leader who hunts you by name, and big hordes drift through each season. They grow from what you did, not on a timer.
 - **Vehicles** (set Nov 21): cars are rare and costly. Most are dead; one that runs needs gas, a battery and repairs. It carries a lot fast but is loud. Bikes and skateboards are quieter ways to get around.
 - **Weather and events** (set Nov 21): grounded. Storms, fog, heat waves, blizzards, a horde passing through, a raider push. A working radio (with batteries) warns you a day ahead; without one you read the sky, which is less sure. First list: To do.
 - **Map view** (`studio-bible/art-style.md`): Stardew-style 3/4 top-down, 16 px tiles, building fronts and faces.
@@ -106,6 +113,9 @@ None yet.
 - **Day and night** (set Nov 21). Time moves when you act: each step or action uses in-game minutes. Days are for scavenging; nights are far more dangerous, with more zombies out and raiders attacking shelters.
 - **Night is your choice** (set Nov 21): hole up (sleep, craft, talk, defend) or go out. Going out is how you get what people guard: raiders and survivors watch the best places by day and sleep at night, so you can sneak in. The cost: zombies are hard to see, sound carries farther (a bigger noise ring), your flashlight draws zombies and uses batteries, and getting caught makes enemies of that group.
 - **Day length** (set Nov 21): about 10 to 15 minutes of play, so one day fits one sitting. Exact minutes per action: To do.
+- **Season length** (set Nov 21): 14 days. A year is 56 days, about 10 to 14 hours of play.
+- **Starting season** (set Nov 21): pick it when you set up a new world, or leave it random. Summer is gentler, winter is brutal.
+- **Menus and time** (set Nov 21): looking is free. Opening the bag, map or notes stops the clock. Doing something (eating, bandaging, reloading, crafting) costs in-game minutes and, in a fight, your turn.
 - **Seasons** (set Nov 21), each with its own pluses and minuses. First pass (Claude's call, for review):
 
 | Season | Plus | Minus |
@@ -118,17 +128,21 @@ None yet.
 ## Needs
 
 - **Four needs** (set Nov 21): hunger, health, sleep and SAN. No thirst meter: water counts as food.
-- **Hunger:** drops through the day. Eating refills it. Starving drains health.
+- **On screen** (set Nov 21): four small bars in the top bar, plus body cues (a stomach-growl line, yawning, limping, the phantoms).
+- **Hunger:** drops through the day. Eating refills it. Starving drains health every hour.
 - **Health:** wounds, infection, cold and starving drain it. Rest and medicine restore it. At zero you die.
-- **Sleep:** drops while awake. Low sleep makes you slower and worse at everything. Sleeping is safest inside the shelter, with a companion on watch.
-- **SAN** (set Nov 21): a light mechanic, not a big deal. It drifts down with darkness, gore, losing companions and no sleep. Low SAN worsens aim and shows as phantoms and grit, not the studio's pink and cyan edges (see Art, and Conflicts). It never takes control away from you.
+- **Sleep:** drops while awake. Low sleep makes you slower and worse at everything. At zero you pass out where you stand (set Nov 21). Sleeping is safest inside the shelter, with a companion on watch.
+- **SAN** (set Nov 21): a light mechanic, not a big deal. It drifts down with darkness, gore, losing companions and no sleep. Low SAN worsens aim and shows as phantoms and grit, not the studio's pink and cyan edges (see Art, and Conflicts). Only at zero SAN does it take control, and only for a few turns: you freeze or run (set Nov 21).
 - **Joy restores SAN** (set Nov 21): a shared meal, a quiet night on watch together, a companion's arc paying off, a romance scene, finding something that was loved before (a cassette, a photo). People refill what the dark drains, so bonds are part of survival.
+- **Vices** (set Nov 21): cigarettes, booze and pills lift SAN fast, at a cost. Booze makes you clumsy while drunk (worse aim, bigger noise ring), a lit cigarette glows in the dark and can be seen at night, and pills slow you. Lean on one and you crave it. A Smoker starts hooked. Vices trade well.
 
 ## Combat
 
 - **On the map, turn-based** (set Nov 21, after the rough mockup in `mockups/01-combat-compare-rough-v1.png`). There is no separate battle screen. Each step or action is one turn, and zombies, raiders and companions move after you.
 - You see what's coming: the tile each nearby zombie will step to next is marked, and the bottom box shows the target, your weapon and your chance to hit before you swing.
 - **Zombies** (set Nov 21): slow shamblers, deadly in numbers. They follow noise and sight.
+- **Grounded variants** (set Nov 21): all shamblers at heart. Crawlers hide in grass, fresh turns are a bit quicker, bloated ones burst and spread sickness, and frozen ones sit still in winter.
+- **Over a long run** (set Nov 21): old zombies slowly rot and fall apart, but everyone who dies turns, so fresh ones keep coming. Someone you lost may walk back up to you.
 - **Bites** (set Nov 21): a chance of infection. Infection is treatable with rare medicine; untreated, it kills, and the dead come back.
 - **Noise** (set Nov 21): the game has no sound, so noise is drawn as a ring on the map. Every action has a noise size (sneaking, swinging, breaking a door, a gunshot, a car). Zombies inside the ring turn toward it. Guns are strong but loud.
 - **Other people** (set Nov 21): raiders who attack, and traders you can talk and trade with. People fight on the same turn rules as zombies, but they think, take cover and run.
@@ -136,12 +150,13 @@ None yet.
 - **Weapons** (set Nov 21): bats, pipes and axes wear down and can be fixed or crafted. Guns hold up, but bullets are scarce, so every shot is a choice.
 - **Wounds** (set Nov 21): hits lower health, and a large hit has a chance of leaving a wound (a deep cut, a sprained ankle, a broken arm) that slows or weakens you until it's treated and heals over days.
 - **Sneaking** (set Nov 21): zombies and people see in a cone shown on the map. Stay out of it and keep your noise ring small to slip past, or kill quietly from behind with a melee weapon.
-- **Stealth bonus** (Keegan asked; Claude's call, for review): hitting anyone who hasn't seen you is easier and does more damage. A melee hit from behind on an unaware zombie is a sure, quiet kill. An unaware person takes a heavy hit and is often wounded. Guns get the aim bonus but are still loud.
+- **Stealth bonus** (set Nov 21): hitting anyone who hasn't seen you is easier and does more damage. A melee hit from behind on an unaware zombie is a sure, quiet kill. An unaware person takes a heavy hit and is often wounded. Guns get the aim bonus but are still loud.
 - **Fights with people** (set Nov 21): people can surrender, run or be talked down mid-fight, and you choose to spare, rob or kill them. Killing a person weighs on SAN, and their group remembers it.
 
 ## Companions
 
-- **Who you play** (set Nov 21): one survivor you control, plus up to 2 companions (a group of 3 at most).
+- **Who you play** (set Nov 21): one survivor you control, plus up to 2 companions who travel with you (a party of 3 at most).
+- **Settlers** (set Nov 21): more people can live at your hideout. They guard, garden and craft, need food, and have their own moods. When you move, each one chooses by mood and bond: come along on a risky trip, stay and keep the old place going (somewhere to return to and trade with), or leave for good.
 - **Simple orders** (set Nov 21): companions act on their own, and you steer them with orders from a quick menu opened with Select: Follow, Hold here, Sneak, Fight. Between orders they follow a short list of rules in order, for example: don't step next to 2 or more zombies, stay inside your noise ring, retreat when badly hurt, never shoot while sneaking, hit whatever threatens you first.
 - **Deaths stick** (set Nov 21): a dead companion is gone. You can meet new people later.
 - **Complex bonds** (set Nov 21). Since you only steer your own survivor, companions carry the depth:
@@ -162,6 +177,13 @@ None yet.
 
 - **Mixed, and they remember you** (set Nov 21): loners, families, traders and raider gangs. Each group starts friendlier or more hostile, then shifts with how you treat it: help, trade, theft, a spared life or a killing.
 - **Trade** (set Nov 21): barter, no money. Values shift with need, the season and how much a group trusts you. Medicine is worth the most.
+
+## Controls and screens
+
+- **Buttons** (set Nov 21): D-pad moves and faces, A acts, B goes back, Start opens the full menu, Select opens companion orders. L opens the bag and R opens the map; both stop the clock. Inside the bag and the map, L and R flip between pages.
+- **Top bar** (set Nov 21): day, clock, the four need bars and a small season mark, as in the baseline mockup. Your weapon and ammo show only in fights.
+- **Bag** (set Nov 21): a grid of slots. Pockets are one row, and each bag adds rows of item squares with pixel icons, counts and a wear mark. L and R flip to companions' bags. A uses an item, B goes back.
+- **Party menu** (set Nov 21): the studio's party cards (`studio-bible/ui.md`) for you and each companion: portrait, needs, wounds, traits, the rough bond word, and Give item. No Make lead, since you always play your own survivor.
 
 ## Shelter
 
@@ -220,6 +242,7 @@ Found while drafting (Nov 21). Each needs a decision or a separate `studio-bible
 
 - **Battle screen** (`studio-bible/ui.md`, Battle screen): describes a head-on battle screen. Life After fights on the map and has none. Settled Nov 21: the section now applies only to games that have a battle screen.
 - **Select** (`studio-bible/controls.md`, Buttons): settled Nov 21 (Keegan). Select opens companion orders (Follow, Hold here, Sneak, Fight), and `controls.md` lets a game with no lead to cycle give Select its own job.
-- **Low SAN signal** (`studio-bible/art-style.md`, Color): makes pink `#ff4fa3` and cyan `#3ff0e8` the shared low-SAN mark. Life After shows SAN with phantoms and grit, and uses cyan for usable things. Open: a separate `art-style.md` PR letting a game set its own SAN signal. To do.
-- **Party menu** (`studio-bible/ui.md`, Party menu, added Nov 21 from Black Lantern spec 002): assumes a lead you can swap, with Make lead and Select cycling. Life After keeps one survivor as lead, so it has no Make lead and Select opens orders instead. Open: whether Life After uses the party cards (bond, traits, Give item) without Make lead. To do: Companions.
+- **Low SAN signal** (`studio-bible/art-style.md`, Color): makes pink and cyan the shared low-SAN mark. Settled Nov 21: `art-style.md` now lets a game show low SAN its own way, and Life After uses phantoms and SAN grit, with cyan for usable things.
+- **Party menu** (`studio-bible/ui.md`, Party menu, added Nov 21 from Black Lantern spec 002): assumes a lead you can swap, with Make lead and Select cycling. Life After keeps one survivor as lead, so it has no Make lead and Select opens orders instead. Settled Nov 21: Life After uses the party cards without Make lead (see Controls and screens). Settled Nov 21: `ui.md` now says a game with one fixed lead leaves out Make lead and Select cycling.
+- **L/R** (`studio-bible/controls.md`, Buttons): says L/R step previous and next. Life After uses L for the bag and R for the map (Keegan, Nov 21). Settled Nov 21: `controls.md` now lets a game give L/R their own jobs.
 
