@@ -140,7 +140,8 @@ function paint(M){
   // trees, buildings and the fence, back to front
   const items=[];
   // trees on the map's edge stand just outside it, so their crowns frame the town without hiding the fence, the sign or the lead
-  for(let y=0;y<M.h;y++)for(let x=0;x<M.w;x++)if(M.g[y][x]==='T'){const v=(x*3+y*5)%3,a=get('tree'+v,()=>autumn.tree(v));
+  // trees inside the map stand up with the pieces and people instead (SHA.props), so the cruiser and the lead sort with them
+  for(let y=0;y<M.h;y++)for(let x=0;x<M.w;x++)if(M.g[y][x]==='T'&&!standingTree(M,x,y)){const v=(x*3+y*5)%3,a=get('tree'+v,()=>autumn.tree(v));
    let fx=x*T+8,fy=y*T+15;if(y===M.h-1)fy+=40;else if(x===0)fx-=14;else if(x===M.w-1)fx+=14;
    items.push({y:fy,f:()=>g.drawImage(a.c,Math.round(fx-a.ax),Math.round(fy-a.ay))})}
   for(const b of buildingsOf(M))items.push({y:b.fb,f:()=>building(g,b,glows)});
@@ -149,6 +150,8 @@ function paint(M){
  }
  return still[key]={c,glows};
 }
+// a tree off the map's edge and below the shop row is a standing piece, sorted by its feet like everything else
+const standingTree=(M,x,y)=>y>=2&&y<M.h-1&&x>0&&x<M.w-1;
 // buildings: each run of roof (B) over a wall row (#) with its door (D) becomes one front, 3/4 view
 function buildingsOf(M){const out=[],seen=new Set();
  for(let y=0;y<M.h;y++)for(let x=0;x<M.w;x++){if(M.g[y][x]!=='B'||seen.has(x+','+y))continue;
@@ -196,6 +199,9 @@ function props(M){
    else if(v===2)put(get('pile',()=>autumn.PILE),cx,fy+1,x,y);
    else out.push({tx:x,ty:y,x:cx,y:fy,top:fy-10,draw:(c,ox,oy)=>autumn.jackOLantern(c,cx+ox,y*T+10+oy,T),lights:[[cx,y*T+10,1.1*T,.5,false]]});}
   else if(ch==='H'){const a=get('hay'+((x+y)%2),()=>autumn.hay((x+y)%2===0));put(a,cx,fy,x,y)}
+  else if(ch==='T'&&standingTree(M,x,y)){const v=(x*3+y*5)%3,a=get('tree'+v,()=>autumn.tree(v)),X=Math.round(cx-a.ax),Y=Math.round(y*T+15-a.ay);
+   // canopy: while the lead is behind it, the engine draws the tree see-through so the lead never disappears
+   put(a,cx,y*T+15,x,y,{extra:{canopy:[X+6,Y,a.c.width-12,a.c.height-14]}})}
   else if(ch==='S')put(get('crow'+(x<M.w/2?'pell':'ruiz'),()=>SCARECROW(x<M.w/2?'pell':'ruiz')),cx,fy,x,y);
   else if(ch==='V'){const i=(M.vv&&M.vv[x+','+y])|0;put(get('victim'+i,()=>VICTIM[i%3]),cx,fy,x,y)}
   else if(ch==='K'){seen.add((x+1)+','+y);put(get('cruiser',()=>CRUISER),x*T+16,fy+1,x,y)}
