@@ -119,7 +119,8 @@ If Demo 5 or 6 built any of this differently, the changelog wins; note the diffe
 - Picking it asks how many cases, 1–3, then `Can't be undone. Sure?` (Confirm what sticks).
 - Right away, Big Hat offers 3 recruits or the creator, exactly as for a loss (Losing an agent). The recruit takes the seat; the agent leaves the party and waits in the roster, marked `Sabbatical · n cases left`.
 - **Each case the party closes** while they're away: their SAN rises 1d6 (up to max), and a 40% roll cures one disorder the player picks at that moment; the cure is shown in the home phase before the home screen, one card per agent away. All their Serious lasting injuries clear on the first case sat out (Lasting injuries).
-- **Coming back:** when the last case is sat out, at the start of that home phase the agent returns to the seat they left, and the recruit who covered goes to the roster with everything they earned. The returning agent then picks a home scene like everyone else. (If Keegan picks another way on this spec's PR question, this bullet changes.)
+- **Coming back (Keegan picked Nov 22: you choose each time):** when the last case is sat out, at the start of that home phase a small `BACK FROM SABBATICAL` screen shows the returning agent and the recruit who covered for them side by side (face, field name, profession, SAN, and the recruit's cases closed), and asks who keeps the seat. A picks, then `Can't be undone. Sure?` (Confirm what sticks). The other goes to the roster with everything they've earned. Whoever keeps the seat then picks a home scene like everyone else.
+- Each returning agent gets their own screen, in seat order. Only the recruit who covered for that agent is offered against them.
 - A game over while agents are away doesn't touch them; they're in the roster.
 
 **A7. The case board after.** The board opens as spec 007 left it. Nothing on the board changes in this spec.
@@ -165,12 +166,12 @@ The home phase is Black Lantern's own (`home.js`, a new part loaded after `debri
 ## Done when
 
 - `npm run check` passes in `games/black-lantern/src/` at all three sizes, with every old and new test save opening.
-- Playtest after Part A: close Still Harvest, play beat 1 for each agent with both choices tried across runs; try every choice at least once, including a crit, a fumble, a Bond crossing a mood, a Bond breaking and New Bond; send an agent on Sabbatical for 1 case, close the case again (New game → same season, or a Dev shortcut), and see them come back; close the app mid-phase and reopen.
+- Playtest after Part A (the Sabbatical return screen included, trying both picks): close Still Harvest, play beat 1 for each agent with both choices tried across runs; try every choice at least once, including a crit, a fumble, a Bond crossing a mood, a Bond breaking and New Bond; send an agent on Sabbatical for 1 case, close the case again (New game → same season, or a Dev shortcut), and see them come back; close the app mid-phase and reopen.
 - Playtest after Part B: every backdrop and place shows, and Parent and Mentor Bonds read older.
 - On an iPhone SE, the four screens match the mockup.
 - `changelog.md` has a dated entry per part, with any deviations, and the matching To do lines are ticked.
 
 ## Bible notes for the Designer (no change made here)
 
-- Systems → Sanity: Sabbatical says a recruit "fills in" but not what happens when the agent comes back. This spec has the agent take back their seat; Keegan is asked on the PR's thread.
+- Systems → Sanity: Sabbatical says a recruit "fills in" but not what happens when the agent comes back. Keegan picked Nov 22 that the player chooses who keeps the seat each time (A6). A later bible PR should write that into Sanity.
 - Systems → Home scenes: Use's Bond loss doesn't say which Bond. This spec picks one at random among those above 0, since the agent is hiding it from everyone.
