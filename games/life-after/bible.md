@@ -23,7 +23,7 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 - [ ] Rumors and late threats: the first rumor list, how the raider leader forms, and horde timing.
 - [ ] Companions: the skill, fear and want lists; how bond is counted (hidden); the order rules; the short-job odds; the first set of arc parts and evening scenes.
 - [ ] Shelter: what can be built, what it costs, and how a night attack plays out.
-- [ ] Crafting and items: the first recipe list and item list, with look-alike brand names.
+- [x] Crafting and items: the first recipe list and item list, with look-alike brand names (Nov 21). See `items.md`.
 - [x] Art direction: settled Nov 21 (see Art). Exact palette hex codes come with the first in-shell mockup.
 - [x] Studio bible: `art-style.md` lets a game set its own low SAN signal (Nov 21).
 - [ ] Other survivors and trade: group types, starting moods, what they remember, and barter values.
@@ -134,7 +134,7 @@ None yet.
 - **Sleep:** drops while awake. Low sleep makes you slower and worse at everything. At zero you pass out where you stand (set Nov 21). Sleeping is safest inside the shelter, with a companion on watch.
 - **SAN** (set Nov 21): a light mechanic, not a big deal. It drifts down with darkness, gore, losing companions and no sleep. Low SAN worsens aim and shows as phantoms and grit, not the studio's pink and cyan edges (see Art, and Conflicts). Only at zero SAN does it take control, and only for a few turns: you freeze or run (set Nov 21).
 - **Joy restores SAN** (set Nov 21): a shared meal, a quiet night on watch together, a companion's arc paying off, a romance scene, finding something that was loved before (a cassette, a photo). People refill what the dark drains, so bonds are part of survival.
-- **Vices** (set Nov 21): cigarettes, booze and pills lift SAN fast, at a cost. Booze makes you clumsy while drunk (worse aim, bigger noise ring), a lit cigarette glows in the dark and can be seen at night, and pills slow you. Lean on one and you crave it. A Smoker starts hooked. Vices trade well.
+- **Vices** (set Nov 21): cigarettes, booze and pills lift SAN fast, at a cost. Booze makes you clumsy while drunk (worse aim, bigger noise ring), a lit cigarette glows in the dark and can be seen at night, and pills slow you. Lean on one and you crave it. A Smoker starts hooked. Vices trade well. Homegrown weed (Keegan, Nov 21) lifts SAN and calms panic, but makes you hungrier and slower, and the smoke glows and smells.
 
 ## Combat
 
@@ -147,11 +147,11 @@ None yet.
 - **Noise** (set Nov 21): the game has no sound, so noise is drawn as a ring on the map. Every action has a noise size (sneaking, swinging, breaking a door, a gunshot, a car). Zombies inside the ring turn toward it. Guns are strong but loud.
 - **Other people** (set Nov 21): raiders who attack, and traders you can talk and trade with. People fight on the same turn rules as zombies, but they think, take cover and run.
 - **Fleeing:** you can always try to walk away; shamblers are slow, but numbers and dead ends trap you.
-- **Weapons** (set Nov 21): bats, pipes and axes wear down and can be fixed or crafted. Guns hold up, but bullets are scarce, so every shot is a choice.
+- **Weapons** (set Nov 21): bats, pipes and axes wear down and can be fixed or crafted. Guns hold up, but bullets are scarce, so every shot is a choice. Guns are in the first slice, but rare (Keegan, Nov 21). The full weapon list is in `items.md`.
 - **Wounds** (set Nov 21): hits lower health, and a large hit has a chance of leaving a wound (a deep cut, a sprained ankle, a broken arm) that slows or weakens you until it's treated and heals over days.
 - **Sneaking** (set Nov 21): zombies and people see in a cone shown on the map. Stay out of it and keep your noise ring small to slip past, or kill quietly from behind with a melee weapon.
 - **Stealth bonus** (set Nov 21): hitting anyone who hasn't seen you is easier and does more damage. A melee hit from behind on an unaware zombie is a sure, quiet kill. An unaware person takes a heavy hit and is often wounded. Guns get the aim bonus but are still loud.
-- **Fights with people** (set Nov 21): people can surrender, run or be talked down mid-fight, and you choose to spare, rob or kill them. Killing a person weighs on SAN, and their group remembers it.
+- **Fights with people** (set Nov 21): people can surrender, run or be talked down mid-fight, and you choose to spare, rob or kill them. Killing a person weighs on SAN, and their group remembers it. You can harden to it (Keegan, Nov 21): after enough kills of people it stops costing SAN, but kind companions trust you less, some evening talks close, and a few may leave.
 
 ## Companions
 
@@ -196,11 +196,14 @@ None yet.
 
 ## Items and crafting
 
-- **Bag slots** (set Nov 21): a set number of slots on your person (pockets), and bags you find add more (a school backpack, a hiking pack).
-- **Crafting** (set Nov 21): simple recipes from scavenged parts. Weapons (a nail bat), barricades and traps, without deep menus.
+- **Item list** (set Nov 21): every item, recipe and keepsake is in `items.md`, part of this bible. Exact numbers go in spec 001.
+- **Bag slots** (set Nov 21): 4 pocket slots, and you can wear one bag at a time for more (a school backpack, a hiking pack). Every companion carries the same way, and L/R flips between people on the bag screen.
+- **Hideout storage** (Keegan, Nov 21): crates and shelves you build, a root cellar where food spoils slower, and a small lockbox raiders can't take from. Anything else can be stolen in a raid. Sizes are set in playtests.
+- **Crafting** (set Nov 21): simple recipes from scavenged parts. Weapons (a nail bat), barricades and traps, without deep menus. How it works (Keegan, Nov 21): your notebook's Recipes page, opened from the bag menu, lists the recipes you know and shows what's missing. You start with a few from your job and learn more from finds (how-to magazines, the field guide) and from companions at evening talks. Small things craft anywhere; big builds need a workbench at the hideout. Crafting takes time on the clock.
+- **Looting the dead** (Keegan, Nov 21): a dead survivor or raider drops what they carried: their bag, a worn weapon, a few rounds, some food, maybe a note or keepsake. Raiders carry more. Searching a body takes time.
 - **Searching** (set Nov 21): each room has spots to search (a fridge, a closet, a car trunk). Searching takes in-game minutes and makes a little noise, and what's there fits the place. Traits, skills and items make it quicker or quieter (a crowbar, a flashlight, Steady Hands).
 - **Locks** (set Nov 21): find the key, pick it (slow, quiet, needs a skill or tools), or force it (fast, loud, can break the lock or your tool). The best loot is often behind one.
-- **Food** spoils by season (see Time and seasons). Canned food keeps. Once the stores run dry (set Nov 21): grow a garden at the hideout (seasons matter), hunt, fish and forage, or take it from other survivors.
+- **Food** spoils by season (see Time and seasons). Canned food keeps. Once the stores run dry (set Nov 21): grow a garden at the hideout (seasons matter), hunt, fish and forage, or take it from other survivors. Farming (Keegan, Nov 21): plant seed packets in plots by season (nothing grows in winter), keep hens and goats for eggs and milk, and set snares. It needs daily work, adds noise, and raiders want it; an attack can kill animals and crops. Weed can be grown too, as a vice.
 - **Medicine** (set Nov 21): scarce, and skill matters. Bandages, painkillers, antibiotics and splints are rare; a nurse or medic uses them better, and expired pills may not work. The infection cure is the rarest of all. Natural medicine (Keegan, Nov 21): with the know-how (a skill, a job like farmer, or a found field guide), forage plants and make remedies (willow bark for pain, yarrow for bleeding). Weaker than real medicine.
 - Item names use look-alike brands (see Setting).
 
