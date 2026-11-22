@@ -122,6 +122,8 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
 - [ ] Season flow (spec 009): the season data file, the board for a full season, agency case unlocks, the finale, the season's end and the next season. After the home phase
 - [ ] Good Manners part A (spec 010): its maps and art, townsfolk and the two men, walkable with stand-in scripts. After the season flow
 - [ ] Good Manners part B (spec 010): the secret case file first, then its story, fights, boss and endings
+- [ ] Lot 83 part A (spec 011): its maps and art, the tented night, townsfolk and Walt, walkable with stand-in scripts. After Good Manners
+- [ ] Lot 83 part B (spec 011): the secret case file first, then its story, fights, boss and endings
 - [x] Turn the Art Bible page into the Asset Library (sprites, drawing code, palette)
 - [x] Update the project instructions to point here
 - [x] Set style rules for monsters and townsfolk
