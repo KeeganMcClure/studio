@@ -124,7 +124,9 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
 - [x] Home phase part A (spec 008): arc beats, the home screen and all nine choices, Sabbatical with its recruit, the result card and the save. After Demo 6
 
   Done Nov 22 (spec 008): after the debrief, Sabbatical cards and returns, Bonds that broke, and arc beats play, then each agent picks one of the nine home scenes; scenes play with the Bond's face over one stand-in backdrop, and a result card shows the roll and what changed. The per-Bond backdrops and older faces are Part B.
-- [ ] Home phase part B (spec 008): the home backdrops for each Bond type and place, and older faces for parents and mentors
+- [x] Home phase part B (spec 008): the home backdrops for each Bond type and place, and older faces for parents and mentors
+
+  Done Nov 22 (spec 008): every home scene now plays in its own drawn place: a room for each of the eight Bond types, and the woods, a church pew, a cemetery bench, a motel room, a therapist's office, a firing range, a library, a parked car and a psych ward hallway for the choices with no Bond, each with a night version. Parents and Mentors have lines and reading glasses, Kids have a smaller kid face, and a Bond's last scene and the arc beats have their own look.
 - [ ] Season flow (spec 009): the season data file, the board for a full season, agency case unlocks, the finale, the season's end and the next season. After the home phase
 - [ ] Good Manners part A (spec 010): its maps and art, townsfolk and the two men, walkable with stand-in scripts. After the season flow
 - [ ] Good Manners part B (spec 010): the secret case file first, then its story, fights, boss and endings

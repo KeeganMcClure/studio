@@ -248,13 +248,17 @@ function outfit32(px,o,oc,od,ol,sk){
   else if(o==='janitor'){px(10,28,12,4,'#3b5b8a');px(11,27,2,1,'#3b5b8a');px(19,27,2,1,'#3b5b8a');px(14,29,3,1,'#f2c94c')}
   else if(o==='apron'){px(10,27,12,5,'#f4f1e8');px(10,27,12,1,'#e86a92')}
 }
+// Face parts added for Bonds (spec 008 part B): look.age 'old' adds lines around the eyes and mouth (Parents and
+// Mentors; their grey or white hair is a hair color), 'kid' draws the smaller kid face (drawKid32). Accessory 9 is
+// reading glasses, half-moons low on the nose. look.outfit puts a Bond in plain clothes instead of the agent's uniform.
 function drawPortrait(cv,a,scale,blink){
   const p=profOf(a)||PROFS[0],L=Object.assign({eyeC:0},a.look),ctx=cv.getContext('2d');cv.width=32*scale;cv.height=32*scale;
   ctx.imageSmoothingEnabled=false;ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,32,32);
   const px=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h)};
+  if(L.age==='kid')return drawKid32(px,L,p,blink);
   const OL='#120e18',sk=SKIN[L.skin]||SKIN[1],sd=shade(sk,-30),sl=shade(sk,16),hc=HAIRC[L.hairC]||HAIRC[1],hd=shade(hc,-26),hl=shade(hc,30),H=L.hair;
   let oc=L.outfitC>=0?OUTC[L.outfitC]:OUTC[p.color];if(p.outfit==='clerical'&&L.outfitC<0)oc='#1d1b22';
-  const od=shade(oc,-24),ol=shade(oc,26);
+  const od=shade(oc,-24),ol=shade(oc,26),old=L.age==='old';
   px(0,0,32,32,'#2a2030');
   // hair that falls behind the head
   if(H===1){px(4,5,24,22,OL);px(5,6,5,20,hc);px(22,6,5,20,hd);px(10,6,12,6,hc)}
@@ -262,7 +266,7 @@ function drawPortrait(cv,a,scale,blink){
   // shoulders, neck, outfit
   px(3,28,26,4,OL);px(7,26,18,2,OL);px(4,29,24,3,oc);px(8,27,16,2,oc);px(21,28,7,4,od);px(5,29,3,1,ol);
   px(12,22,8,5,sd);px(13,26,6,1,shade(sk,-45));
-  outfit32(px,p.outfit,oc,od,ol,sk);
+  outfit32(px,L.outfit||p.outfit,oc,od,ol,sk);
   // head and ears
   px(7,7,18,17,OL);px(8,8,16,15,sk);px(9,23,14,1,sk);px(21,9,3,14,sd);px(8,10,1,11,sl);
   px(5,14,1,4,OL);px(26,14,1,4,OL);px(6,14,2,4,sk);px(24,14,2,4,sd);
@@ -285,6 +289,9 @@ function drawPortrait(cv,a,scale,blink){
   // nose, rosy cheeks, open smile
   const cheek=mix(sk,'#e0606a',.45),lip='#5a1e1a';
   px(15,17,2,2,sd);px(9,19,2,1,cheek);px(21,19,2,1,cheek);
+  // older faces: crow's feet, bags under the eyes, the lines from nose to mouth, a forehead crease where hair allows
+  if(old){const ln=shade(sk,-38);px(8,ey,1,1,ln);px(8,ey+2,1,1,ln);px(23,ey,1,1,ln);px(23,ey+2,1,1,ln);
+    if(!blink){px(11,ey+eh+1,2,1,sd);px(19,ey+eh+1,2,1,sd)}px(11,18,1,2,ln);px(20,18,1,2,ln);if(H===2||H===3||H===5){px(12,9,8,1,ln);px(13,11,6,1,sd)}}
   const A=L.acc;
   if(A===3){px(8,17,16,6,hc);px(9,23,14,1,hc);px(8,15,2,2,hc);px(22,15,2,2,hd);px(12,19,8,1,hd);px(15,17,2,2,sd)}
   px(13,20,6,1,lip);px(12,19,1,1,lip);px(19,19,1,1,lip);px(14,21,4,1,A===3?lip:'#8a3a2e');
@@ -296,6 +303,33 @@ function drawPortrait(cv,a,scale,blink){
   else if(A===6){px(8,11,16,1,OL);px(18,13,5,5,OL);px(19,14,3,3,'#2a2030')}
   else if(A===7){const fr=shade(sk,-42);for(const [x,y] of[[9,17],[11,18],[13,17],[18,17],[20,18],[22,17],[14,19],[17,19]])px(x,y,1,1,fr)}
   else if(A===8){px(6,18,1,2,'#d6a43a')}
+  else if(A===9){const g='#d6a43a';for(const x of[9,17]){px(x,ey+1,6,1,g);px(x,ey+eh+1,6,1,g);px(x,ey+1,1,eh+1,g);px(x+5,ey+1,1,eh+1,g)}px(15,ey+2,2,1,g);px(7,ey+1,2,1,g);px(23,ey+1,2,1,g)}
+}
+// the kid face (spec 008 part B): a smaller, rounder head set lower, big eyes, narrow shoulders, a plain tee.
+// Takes the same look parts as an adult: skin, hair style and color, eye color, outfit color; glasses and freckles show.
+function drawKid32(px,L,p,blink){
+  const OL='#120e18',sk=SKIN[L.skin]||SKIN[1],sd=shade(sk,-30),sl=shade(sk,16),hc=HAIRC[L.hairC]||HAIRC[1],hd=shade(hc,-26),hl=shade(hc,30),H=L.hair;
+  const oc=OUTC[L.outfitC>=0?L.outfitC:p.color]||OUTC[0],od=shade(oc,-24);
+  px(0,0,32,32,'#2a2030');
+  if(H===1||H===4){px(6,10,20,18,OL);px(7,11,4,16,hc);px(21,11,4,16,hd)}
+  // shoulders, a striped tee, neck
+  px(6,28,20,4,OL);px(7,29,18,3,oc);px(7,30,18,1,od);px(13,26,6,3,sd);px(14,28,4,1,shade(sk,-45));
+  // head
+  px(8,10,16,17,OL);px(9,11,14,15,sk);px(10,26,12,1,sk);px(20,12,3,14,sd);px(9,13,1,10,sl);px(7,17,1,4,OL);px(24,17,1,4,OL);
+  // hair
+  const top=()=>{px(8,7,16,6,OL);px(9,8,14,4,hc);px(9,11,6,2,hc);px(17,11,4,1,hc);px(8,9,2,6,hc);px(22,9,2,5,hd);px(11,8,6,1,hl)};
+  if(H===2||H===3){px(8,9,16,3,OL);px(9,10,14,2,hd);px(11,10,4,1,hc)}
+  else if(H===5){top();px(15,4,3,4,OL);px(16,5,1,3,hc)}
+  else if(H===6){px(7,7,18,6,OL);px(8,8,16,4,hc);[[8,11],[12,12],[17,12],[22,11],[9,8],[20,8]].forEach(([x,y])=>px(x,y,3,2,hc));px(12,8,2,1,hl)}
+  else{top();if(H===1){px(8,12,2,13,hc);px(22,12,2,13,hd)}if(H===4){px(4,12,4,5,OL);px(5,13,2,3,hc);px(24,12,4,5,OL);px(25,13,2,3,hd)}}
+  // big eyes, rosy cheeks, a small smile
+  const ir=IRIS[L.eyeC]||IRIS[0];
+  if(blink){px(11,18,4,1,OL);px(17,18,4,1,OL)}
+  else for(const x of[11,17]){px(x,15,4,1,OL);px(x,16,4,4,'#f4ecd8');px(x+1,16,2,4,ir);px(x+1,19,2,1,shade(ir,-40));px(x+1,16,1,1,'#ffffff')}
+  const cheek=mix(sk,'#e0606a',.55);px(10,21,2,1,cheek);px(20,21,2,1,cheek);px(15,20,2,1,sd);
+  px(14,23,4,1,'#5a1e1a');px(13,22,1,1,'#5a1e1a');px(18,22,1,1,'#5a1e1a');
+  if(L.acc===7){const fr=shade(sk,-42);[[10,20],[12,21],[19,21],[21,20]].forEach(([x,y])=>px(x,y,1,1,fr))}
+  if(L.acc===1){for(const x of[10,16]){px(x,15,6,1,OL);px(x,20,6,1,OL);px(x,15,1,6,OL);px(x+5,15,1,6,OL)}}
 }
 const urlCache={};
 function portraitURL(a,scale){const k=JSON.stringify([a.prof,a.look,scale]);if(!urlCache[k]){const c=document.createElement('canvas');drawPortrait(c,a,scale,false);urlCache[k]=c.toDataURL()}return urlCache[k]}

@@ -232,16 +232,19 @@ const nameOf=m=>m.name;
 const bondsOf=a=>(a.bonds||[]).map((b,j)=>({b,j,s:Math.max(0,b.score??chaOf(a)),cha:chaOf(a)})).map(x=>Object.assign(x,{mood:moodOf(x.s,x.cha)}));
 // a Bond's face: Storybook face parts, picked the first time the Bond appears, then kept (Parents and Mentors greyer)
 function bondLook(b){
- if(!b.look){const old=/Parent|Mentor/.test(b.rel);b.look={skin:rnd(6),hair:rnd(7),hairC:old?5+rnd(2):rnd(5),eyes:rnd(3),eyeC:rnd(5),acc:old?pick([0,1,1,3]):b.rel==='Kid'?pick([0,0,7]):pick([0,0,3,7,8]),outfitC:rnd(7)}}
+ if(!b.look){const old=/Parent|Mentor/.test(b.rel);b.look={skin:rnd(6),hair:rnd(7),hairC:old?5+rnd(2):rnd(5),eyes:rnd(3),eyeC:rnd(5),acc:old?pick([0,9,9,1,3]):b.rel==='Kid'?pick([0,0,7]):pick([0,0,3,7,8]),outfitC:rnd(7)}}
  return b.look}
-const bondAgent=(a,b)=>({prof:a.prof,look:bondLook(b)});
+// how a Bond's face is drawn: its saved parts, plus its age from its type (Parents and Mentors older, Kids the kid
+// face; not saved, so Bonds saved before Part B age too) and plain clothes (a cardigan for the older ones)
+const bondAgent=(a,b)=>{const old=/Parent|Mentor/.test(b.rel);return{prof:a.prof,look:Object.assign({},bondLook(b),{age:old?'old':b.rel==='Kid'?'kid':'',outfit:old?'cardigan':'plain'})}};
+const bondFace=(a,b)=>{const x=bondAgent(a,b);return faceCanvas(x,'b'+JSON.stringify(x.look))};
 const porCache={};
 function faceCanvas(a,key){if(!porCache[key]){const c=document.createElement('canvas');B.drawPortrait(c,a,2,false);porCache[key]=c}return porCache[key]}
 // sets who can speak in a scene, with their faces: the agent and each of their Bonds
 function castFor(m,extra={}){
  Object.keys(XPOR).forEach(k=>delete XPOR[k]);
  const a=m.a,me=faceCanvas(a,'a'+JSON.stringify([a.prof,a.look]));XPOR[m.name.toUpperCase()]=c=>c.drawImage(me,0,0);
- (a.bonds||[]).forEach(b=>{const f=faceCanvas(bondAgent(a,b),'b'+JSON.stringify(bondLook(b)));XPOR[String(b.name).toUpperCase()]=c=>c.drawImage(f,0,0)});
+ (a.bonds||[]).forEach(b=>{const f=bondFace(a,b);XPOR[String(b.name).toUpperCase()]=c=>c.drawImage(f,0,0)});
  Object.entries(extra).forEach(([k,f])=>XPOR[k]=f);
 }
 // plays scene lines: 'A' the agent, 'B' the Bond, 'T' a Therapist, 'X' an arc stand-in; anyone else by name
@@ -282,7 +285,7 @@ function sabTick(){
 async function runHome(){
  const D=G.db;if(!D.counted)caseCounts();
  const H=D.home=D.home||{stage:'away',i:0,b:0,picks:[]};if(!H.picks)H.picks=[];if(!H.stage)H.stage='away';
- G.mode='scene';G.scene='home';HS.card=null;HS.bg='home';hud.hidden=true;
+ G.mode='scene';G.scene='home';HS.card=null;setBg();hud.hidden=true;
  if(H.stage==='away'){for(const x of H.away||[])if(!x.shown){await awayCard(x);x.shown=1;checkpoint()}H.stage='back';checkpoint()}
  if(H.stage==='back'){for(const x of H.away||[])if(x.back&&!x.backDone){await backScreen(x);x.backDone=1;checkpoint()}H.stage='broken';checkpoint()}
  if(H.stage==='broken'){for(const m of live().slice())await brokenBonds(m);H.stage='beats';checkpoint()}
@@ -290,18 +293,20 @@ async function runHome(){
  if(H.stage==='pick'){while(H.i<party.length){const done=await homePick(H.i);if(done===false)continue;H.i++;checkpoint()}}
  HS.card=null;
 }
-const HS={card:null,bg:'home'};  // what the home backdrop shows: the result card over it, and which backdrop
+const HS={card:null,bg:'home',night:false,dress:''};  // what the home backdrop shows: the result card over it, which backdrop (a Bond type or a place, home-art.js), night or not, and the 'broken' or 'arc' dressing
+// sets the backdrop for the next scene; with no arguments, back to the agent's own living room
+function setBg(k,night,dress){HS.bg=k||'home';HS.night=!!night;HS.dress=dress||''}
 
 // ---- away on Sabbatical: one card per agent ----
 async function awayCard(x){
  const a=(B.S.roster||[]).find(r=>r.id===x.id);if(!a)return;const m={name:firstName(a),a};
- HS.bg='sab';castFor({name:m.name,a});
+ setBg('sab');castFor({name:m.name,a});
  await hPlay(HT.sabEach,m);
  const rows=[{l:fillT(HW.sanUp,{a:x.from,b:x.to}),chip:StudioChip.die(6,x.g)}];
  if(x.cure){const ds=(a.cur.dis||[]);let i=0;if(ds.length>1){i=await choose(ds.map(d=>BLS.DISORDERS[d.k].name),{title:HW.cureQ});if(i<0)i=0}
   const d=ds.splice(i,1)[0];store.set(B.key('roster'),B.S.roster);if(d){rows.push({l:fillT(HW.cured,{d:BLS.DISORDERS[d.k].name}),chip:'40%'});await hPlay(HT.sabCure,m)}}
  HS.card={title:fillT(HW.awayT,{n:m.name.toUpperCase()}),sub:fillT(HW.sabTag,{k:a.sab&&a.sab.left>0?a.sab.left:0}),rows};
- await say('',x.back?HW.back:fillT(HW.sabTag,{k:a.sab.left}));HS.card=null;HS.bg='home';
+ await say('',x.back?HW.back:fillT(HW.sabTag,{k:a.sab.left}));HS.card=null;setBg();
 }
 const firstName=a=>(a.name||'Agent').split(' ')[0].slice(0,9);
 // ---- coming back: the agent and the recruit who covered, side by side; the player picks who keeps the seat ----
@@ -323,7 +328,7 @@ async function backScreen(x){
 async function brokenBonds(m){
  const a=m.a;bondFold(a);
  for(let j=(a.bonds||[]).length-1;j>=0;j--){const b=a.bonds[j];if((b.score|0)>0)continue;
-  castFor(m);HS.bg=HTYPE(b.rel);await hPlay(((HT.fr[HTYPE(b.rel)]||HT.fr.friend).broken),m,{B:b.name});HS.bg='home';
+  castFor(m);setBg(HTYPE(b.rel),true,'broken');await hPlay(((HT.fr[HTYPE(b.rel)]||HT.fr.friend).broken),m,{B:b.name});setBg();
   a.bonds.splice(j,1);await horror({tier:'severe',kind:'helplessness',label:fillT(HT.arcBondBad,{B:b.name,A:m.name})},{who:[m]})}
 }
 
@@ -340,7 +345,7 @@ function arcCast(m,A){const a=m.a,bs=bondsOf(a).filter(x=>x.s>0&&!(A.adult&&x.b.
 async function arcBeat(m){
  const a=m.a,arc=arcOf(m);if(!arc||arc.over||arc.beat>=3)return;
  const n=(a.sc|0)-(arc.base|0);if(![1,3,5].includes(n)||arc.at===n)return;arc.at=n;
- const A=HT.arcs[arc.m];if(!A)return;const cast=arcCast(m,A);castFor(m);HS.bg=cast.bond?HTYPE(cast.bond.rel):'home';
+ const A=HT.arcs[arc.m];if(!A)return;const cast=arcCast(m,A);castFor(m);setBg(cast.bond?HTYPE(cast.bond.rel):'home',true,'arc');
  if(arc.beat===0||arc.beat===1){
   const k=arc.beat===0?1:2;
   if(k===2)await hPlay(arc.ch[0]==='hold'?A.b2hold:A.b2slip,m,cast);
@@ -351,7 +356,7 @@ async function arcBeat(m){
   await hPlay((c==='hold'?H:S).slice(1),m,cast);
   if(c==='slip')arcSlip(m,arc,k);
  }else await arcEnd(m,arc,A,cast);
- HS.bg='home';checkpoint();
+ setBg();checkpoint();
 }
 // Slip always pays something right now (+1 SAN that night), and some carry a cost the arc names
 function arcSlip(m,arc,k){sanUp(m,1);
@@ -379,7 +384,7 @@ async function arcShield(m,mot){
 
 // ================= ONE AGENT'S PICK =================
 // returns true when the agent has picked and their scene has played; false to show the list again
-function homePick(i){return new Promise(res=>{const m=party[i];if(!m||m.gone){res(true);return}bondFold(m.a);HS.bg='home';
+function homePick(i){return new Promise(res=>{const m=party[i];if(!m||m.gone){res(true);return}bondFold(m.a);setBg();
  SCR={kind:'home',v:'list',i,sel:0,top:0,hits:[],done:res};ban.hidden=true})}
 // the nine rows for this agent, with odds, tags and why a row is greyed (Odds on home scenes)
 function homeRows(m){
@@ -415,7 +420,7 @@ function moodChange(b,before,cha){const m0=moodOf(before,cha),m1=moodOf(b.score|
 // ---- the nine choices ----
 async function actFR(m,r){
  const x0=await pickBond(m,false,r);if(!x0)return false;const b=x0.b,cha=chaOf(m.a),before=b.score|0,mood=moodOf(before,cha);
- castFor(m);HS.bg=HTYPE(b.rel);const o={B:b.name,bond:b};
+ castFor(m);setBg(HTYPE(b.rel),mood!=='close');const o={B:b.name,bond:b};
  await hPlay((HT.fr[HTYPE(b.rel)]||HT.fr.friend)[mood],m,o);
  const p=clamp(m.san,1,99),x=SR.pct(p),rows=[sanRow(x,p)];
  if(x.ok){const g=roll(1,6);b.score=Math.min(cha,before+g);rows.push({l:fillT(HW.bondUp,{b:b.name,x:before,y:b.score}),chip:StudioChip.die(6,g)});
@@ -425,7 +430,7 @@ async function actFR(m,r){
  await result(m,r.name,rows,line,Object.assign(o,{mood:moodChange(b,before,cha)}));return true}
 async function actNature(m,r){
  const x0=await pickBond(m,true,r);if(!x0)return false;const b=x0.b,cha=chaOf(m.a),before=b.score|0;
- castFor(m);HS.bg='nature';const a=m.a;a.nat=Array.isArray(a.nat)&&a.nat.length<HT.nature.length?a.nat:[];
+ castFor(m);setBg('nature');const a=m.a;a.nat=Array.isArray(a.nat)&&a.nat.length<HT.nature.length?a.nat:[];
  const left=HT.nature.map((v,i)=>i).filter(i=>!a.nat.includes(i)),vi=pick(left);a.nat.push(vi);
  b.score=before-1;await hPlay(HT.nature[vi],m);await hPlay(HT.natureCost,m,{B:b.name});
  const p=clamp(m.san,1,99),x=SR.pct(p),rows=[{l:fillT(HW.bondUp,{b:b.name,x:before,y:b.score}),chip:'−1'},sanRow(x,p)];
@@ -436,7 +441,7 @@ async function actMot(m,r){
  const a=m.a,mots=a.motives||[],free=BLS.MOTIVES.filter(k=>!mots.includes(k));
  const opts=mots.map(k=>({label:fillT(HW.pursue,{m:k}),k:'p',m:k}));
  if(mots.length<2)opts.push({label:HW.replace,k:'r'});if(mots.length)opts.push({label:HW.swap,k:'s'});
- const c=await choose(opts,{cancel:true,title:HW.motT});if(c<0)return false;const o=opts[c];castFor(m);HS.bg='mot';
+ const c=await choose(opts,{cancel:true,title:HW.motT});if(c<0)return false;const o=opts[c];castFor(m);setBg(BLHA.motPlace(o.m||mots[a.main|0]),true);
  if(o.k==='p'){await hPlay(HT.pursue[o.m]||HT.pursue.Duty,m);const p=clamp(m.san,1,99),x=SR.pct(p),rows=[sanRow(x,p)];
   if(x.ok){const g=x.crit?2:roll(1,2),[s0,s1]=sanUp(m,g);rows.push({l:fillT(HW.sanUp,{a:s0,b:s1}),chip:x.crit?'+2':StudioChip.die(2,g)})}
   const O=HT.pursueOut;await result(m,r.name,rows,x.ok?(x.crit?O.crit:O.ok):O.fail);return true}
@@ -447,12 +452,12 @@ async function actMot(m,r){
  const wasMain=which>=0&&which===(a.main|0)||!mots.length;
  if(which>=0)mots[which]=free[n];else mots.push(free[n]);a.motives=mots;
  if(mots.length>1){const mi=await choose(mots,{title:HW.mainQ});a.main=mi<0?(a.main|0):mi}else a.main=0;
- await hPlay(HT.newMot,m);
+ setBg(BLHA.motPlace(free[n]),true);await hPlay(HT.newMot,m);
  // a new or swapped Main ends the old arc with no payoff; the new arc starts at beat 1 and counts from the next case
  if(wasMain||(a.arc&&a.arc.m!==mots[a.main])){if(a.arc&&a.arc.beat<3&&a.arc.m!==mots[a.main])await hPlay(HT.newMain,m);a.arc={m:mots[a.main],beat:0,ch:[],base:a.sc|0}}
  await result(m,r.name,[{l:`${HW.newMot}: ${free[n]}`,chip:'✓'}],`[${free[n]}]`);return true}
 async function actUse(m,r){
- castFor(m);HS.bg='use';const a=m.a;await hPlay(pick(HT.use),m);
+ castFor(m);setBg('use',true);const a=m.a;await hPlay(pick(HT.use),m);
  const bs=bondsOf(a).filter(x=>x.s>0),x=bs.length?pick(bs):null,rows=[];
  if(x){const before=x.b.score|0,g=roll(1,4);x.b.score=Math.max(0,before-g);await hPlay(HT.useCost,m,{B:x.b.name});rows.push({l:fillT(HW.bondUp,{b:x.b.name,x:before,y:x.b.score}),chip:StudioChip.die(4,g)})}
  const [s0,s1]=await sanDown(m,1);rows.push({l:fillT(HW.sanUp,{a:s0,b:s1}),chip:'−1'});a.noWD=1;
@@ -462,11 +467,11 @@ async function actBond(m,r){
  const names=BLS.FIRST.slice().sort(()=>Math.random()-.5).slice(0,4),n=await choose([...names,HW.typeName],{cancel:true,title:HW.nameT});if(n<0)return false;
  let name=names[n];if(n===names.length){let v=null;try{v=window.prompt(HW.namePrompt,names[0])}catch(e){}name=String(v||names[0]).trim().slice(0,14)||names[0]}
  const a=m.a,b={rel:BLS.RELS[t],name,score:Math.ceil(chaOf(a)/2)};a.bonds=a.bonds||[];a.bonds.push(b);bondLook(b);
- castFor(m);HS.bg=HTYPE(b.rel);await hPlay(HT.newBond[HTYPE(b.rel)]||[],m,{B:name});
+ castFor(m);setBg(HTYPE(b.rel));await hPlay(HT.newBond[HTYPE(b.rel)]||[],m,{B:name});
  await result(m,r.name,[{l:`${name} · ${b.rel}`,chip:`${b.score}/${chaOf(a)}`}],`[New Bond: ${name}]`);return true}
 async function actTherapy(m,r){
  const a=m.a,ds=m.dis||[],opts=[{label:HW.therSan}].concat(ds.map(d=>({label:fillT(HW.therDis,{d:BLS.DISORDERS[d.k].name,k:((a.ther||{})[d.k]|0)+1})})));
- const c=await choose(opts,{cancel:true,title:HW.therT});if(c<0)return false;const T=therapistFor(m);castFor(m);HS.bg='therapy';
+ const c=await choose(opts,{cancel:true,title:HW.therT});if(c<0)return false;const T=therapistFor(m);castFor(m);setBg('therapy');
  await hPlay(T?HT.therParty:HT.therOpen,m,{T:T?T.name:''});
  if(c===0){await hPlay(HT.therSan,m);const ps=clamp(m.san,1,99),pe=T?chanceOf(T,'Empathy'):0,useT=pe>ps,p=useT?pe:ps,x=SR.pct(p),rows=[sanRow(x,p,useT?T.name:null)];
   if(x.ok){const g=x.crit?4:roll(1,4),[s0,s1]=sanUp(m,g);rows.push({l:fillT(HW.sanUp,{a:s0,b:s1}),chip:x.crit?'+4':StudioChip.die(4,g)})}
@@ -478,21 +483,21 @@ async function actTherapy(m,r){
  await result(m,r.name,[{l:nm,chip:`${k} of 3`}],HT.therDis[k-1].slice(-1)[0]);return true}
 async function actSkill(m,r){
  const a=m.a,ks=Object.keys(B.SKILLS),c=await choose(ks.map(k=>`${k} · ${skillVal(a,k)}%`),{cancel:true,title:HW.skillT});if(c<0)return false;
- const k=ks[c];castFor(m);HS.bg='skill';await hPlay(HT.skill[k]||'',m,{SKILL:k});
+ const k=ks[c];castFor(m);setBg(BLHA.skillPlace(k));await hPlay(HT.skill[k]||'',m,{SKILL:k});
  const old=skillVal(a,k),g=roll(1,6),up=Math.max(0,Math.min(g,99-old));a.grow=a.grow||{};a.grow[k]=(a.grow[k]||0)+up;const nw=skillVal(a,k),t=[40,75,90].findIndex(t=>old<t&&nw>=t);
  const rows=[{l:fillT(HW.skillUp,{k,x:old,y:nw}),chip:StudioChip.die(6,g)}];if(t>=0)rows.push({l:fillT(BLS.DEBRIEF.newUnlock,{u:BLS.UNLOCKS[k][t].toUpperCase()}),star:1});
  await result(m,r.name,rows,`[${k} +${up}%]`);return true}
 async function actTrain(m,r){
  const a=m.a,ks=Object.keys(B.SKILLS).filter(k=>skillVal(a,k)<=10),c=await choose(ks,{cancel:true,title:HW.trainT});if(c<0)return false;
  const x0=await pickBond(m,true,r);if(!x0)return false;const b=x0.b,cha=chaOf(a),before=b.score|0,k=ks[c];
- castFor(m);HS.bg='skill';await hPlay(HT.skill[k]||'',m);await hPlay(HT.train,m,{B:b.name});
+ castFor(m);setBg(BLHA.skillPlace(k));await hPlay(HT.skill[k]||'',m);await hPlay(HT.train,m,{B:b.name});
  const old=skillVal(a,k);a.grow=a.grow||{};a.grow[k]=(a.grow[k]||0)+(30-old);b.score=before-1;
  await result(m,r.name,[{l:fillT(HW.skillUp,{k,x:old,y:skillVal(a,k)}),chip:'30%'},{l:fillT(HW.bondUp,{b:b.name,x:before,y:b.score}),chip:'−1'}],`[${k} now 30%, ${b.name} −1]`,{mood:moodChange(b,before,cha)});return true}
 // Sabbatical: 1–3 cases, Can't be undone, then the recruit takes the seat and the agent waits in the roster
 async function actSab(m,r){
  const n=await choose(HW.sabN,{cancel:true,title:HW.sabT});if(n<0)return false;
  const ok=await choose([HW.yes,HW.no],{cancel:true,title:fillT(HW.sabSure,{n:m.name,k:HW.sabN[n]})});if(ok!==0)return false;
- castFor(m);HS.bg='sab';await hPlay(HT.sabIn,m);
+ castFor(m);setBg('sab');await hPlay(HT.sabIn,m);
  const i=party.indexOf(m),before=party.length;G.fs.recruit=G.fs.recruit||[];G.fs.recruit.push(m.a.prof);await offerRecruit({ask:HW.sabRecruit,late:true});
  const rec=party.length>before?party.pop():null;if(!rec){return true}
  const a=carry(m);a.sab={left:n+1,seat:i,cover:rec.a.id,sat:0};const R=B.S.roster||(B.S.roster=[]);const j=R.findIndex(y=>y.id===a.id);const cp=JSON.parse(JSON.stringify(a));if(j>=0)R[j]=cp;else R.unshift(cp);store.set(B.key('roster'),R);
@@ -501,15 +506,10 @@ async function actSab(m,r){
  await say('',HT.sabIn[1]);HS.card=null;return true}
 
 // ================= DRAWING =================
-// Part A: one plain home backdrop for every scene (the per-Bond and per-place backdrops are Part B)
+// the backdrop for the scene (home-art.js): a Bond type's room or a place, night or not, with its dressing.
+// 'home' is the agent's own living room (the Partner backdrop), for scenes with no Bond and no place of their own.
 function drawHome(){
- const t=performance.now()/1000,fy=Math.round(VH*.62);
- cx.fillStyle='#1c1622';cx.fillRect(0,0,VW,VH);for(let x=0;x<VW;x+=14){cx.fillStyle='#221a28';cx.fillRect(x,0,7,fy)}
- pR(0,fy,VW,VH-fy,'#2a1e1a');pR(0,fy,VW,2,'#3a2a22');
- // a window with the night in it, a lamp, a table
- pR(24,24,46,36,'#3a2a20');pR(27,27,40,30,'#0e1530');pR(46,27,2,30,'#3a2a20');pR(27,41,40,2,'#3a2a20');cx.fillStyle='#e8dcc0';cx.fillRect(56,31,3,3);
- const l=.85+.15*Math.sin(t*2);cx.fillStyle=`rgba(214,164,58,${.16*l})`;cx.beginPath();cx.arc(VW-60,fy-30,46,0,7);cx.fill();
- pR(VW-66,fy-44,12,8,'#d6a43a');pR(VW-61,fy-36,2,30,'#4a3a2a');pR(VW-110,fy+6,90,6,'#4a2f1f');pR(VW-104,fy+12,4,16,'#3a2416');pR(VW-30,fy+12,4,16,'#3a2416');
+ BLHA.draw(cx,HS.bg==='home'||!BLHA.has(HS.bg)?'partner':HS.bg,VW,VH,{night:HS.night,dress:HS.dress});
  if(HS.card)drawHomeCard();
 }
 function drawHomeCard(){
@@ -550,7 +550,7 @@ function drawBondPick(){
  pR(0,0,VW,VH,PC.navy);pBox(4,4,232,18,PC.deep,PC.cream);const t=s.pay?HW.pays:HW.see;pT(t,10,9,PC.gold,8,PXf);const sub=pFit(s.r.name,110,13);pT(sub,230-pW(sub,13),5,PC.lav,13);
  pR(8,26,12,12,PC.plum);cx.drawImage(faceOf(a,1),8,26,12,12);pT(`${m.name.toUpperCase()} · ${fillT(HW.cha,{c:chaOf(a),s:m.san})}`,24,25,PC.cream,14);
  let y=42;all.forEach((x,k)=>{const on=k===s.sel,dis=s.pay&&x.s<=1,bh=46;pBox(4,y,232,bh,on?PC.cardOn:PC.card,on?PC.gold:PC.dim);
-  const f=faceCanvas(bondAgent(a,x.b),'b'+JSON.stringify(bondLook(x.b)));pR(8,y+4,38,38,PC.plum);cx.drawImage(f,9,y+5,36,36);
+  const f=bondFace(a,x.b);pR(8,y+4,38,38,PC.plum);cx.drawImage(f,9,y+5,36,36);
   if(on)pT('▶',50,y,PC.gold,15);pT(pFit(String(x.b.name).toUpperCase(),110,16),60,y,dis?PC.dim:PC.gold,16);
   const mw=pW(HW.moods[x.mood],5,PXf)+6;pBox(229-mw,y+4,mw,10,PC.deep,MOODCOL[x.mood]);pT(HW.moods[x.mood],232-mw,y+6,MOODCOL[x.mood],5,PXf);
   pT(x.b.rel,60,y+13,PC.lav,12);
@@ -578,7 +578,7 @@ function homePress(k){
  if(s.v==='list'){const m=party[s.i],rows=homeRows(m),n=rows.length;
   if(k==='up')s.sel=(s.sel-1+n)%n;else if(k==='down')s.sel=(s.sel+1)%n;
   else if(k==='a'){const r=rows[s.sel];if(!r||r.dis)return;const done=s.done,i=s.i;SCR=null;
-   run(async()=>{const ok=await homeAct(m,r);HS.bg='home';if(ok){G.db.home.picks[i]=r.name;done(true)}else{SCR={kind:'home',v:'list',i,sel:s.sel,hits:[],done}}})}
+   run(async()=>{const ok=await homeAct(m,r);setBg();if(ok){G.db.home.picks[i]=r.name;done(true)}else{SCR={kind:'home',v:'list',i,sel:s.sel,hits:[],done}}})}
   return}
  if(s.v==='bond'){const all=bondsOf(s.m.a).filter(x=>x.s>0),n=all.length;
   if(k==='up')s.sel=(s.sel-1+n)%n;else if(k==='down')s.sel=(s.sel+1)%n;
