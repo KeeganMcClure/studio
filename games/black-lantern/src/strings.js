@@ -114,6 +114,8 @@ const PARTY={
  noBonds:'No Bonds on file.',score:'Score',
  moods:{close:'Close',strained:'Strained',fraying:'Fraying',broken:'Broken'}
 };
+// ---------- ON THE MAP (spec 005): the lead card, the NIGHT tag and the A bubble ----------
+const MAPHUD={night:'NIGHT',talk:'TALK',look:'LOOK',hp:'HP',wp:'WP',san:'SAN',a:'A'};
 // ---------- DISORDERS (names) ----------
 const DIS=['Jumpy','Night terrors','Counting compulsion','Hypervigilance','Hollow stare','Can\'t stop smiling'];
 // ---------- CREATOR STEP NAMES ----------
@@ -129,5 +131,5 @@ const BOARD={
 };
 const STEPNAME={profession:'JOB',stats:'STATS',skills:'SKILLS',identity:'IDENTITY',bonds:'BONDS',motives:'MOTIVATIONS',dossier:'DOSSIER',title:'BLACK LANTERN',roster:'ROSTER',team:'YOUR TEAM',pick:'PICK A TEAM',confirm:'NEW GAME'};
 const STEPSHORT={profession:'JOB',stats:'STATS',skills:'SKILL',identity:'ID',bonds:'BOND',motives:'WHY',dossier:'FILE'};
-return {SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD};
+return {SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD,MAPHUD};
 })();
