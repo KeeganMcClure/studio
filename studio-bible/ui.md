@@ -25,6 +25,7 @@ Set Nov 21, 2026 from Black Lantern spec 002; Rushlight's Map menu sets the same
 - Each card opens Make lead, a details page (Dossier in Black Lantern, Merc card in Rushlight) and Give item.
 - Select cycles the lead in seat order, on the map and in the party menu, never in battle, dialog or cutscenes. The new lead takes the old lead's tile and facing, and a short banner names them.
 - Each game's bible sets what a card and its details page show.
+- A game with one fixed lead leaves out Make lead and Select cycling, and its bible says what Select does instead (Life After: companion orders, set Nov 21).
 - The shared parts (who leads, Select cycling, the card list) live in `engine/`.
 
 ## Battle screen
