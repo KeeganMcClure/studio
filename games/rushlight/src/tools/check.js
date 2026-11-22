@@ -149,6 +149,88 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
     failed += all.length;
     await ctx.close();
   }
+
+  // 7. spec 003 (Part A): the same company from the same seed, a Blank company by D-pad and by tap, closing and
+  //    reopening mid-creator and in town, the test saves, and Export then Import
+  {
+    const fs = require('fs');
+    const bad = [];
+    const fresh = async (init) => {
+      const ctx = await browser.newContext({ viewport: { width: 375, height: 667 }, hasTouch: true });
+      if (init) await ctx.addInitScript(init);
+      const page = await ctx.newPage(); const errors = [];
+      page.on('pageerror', e => errors.push('page error: ' + e.message));
+      await page.goto(url); await page.waitForTimeout(500); return { ctx, page, errors };
+    };
+    // same seed, same first company and same next 5 rerolls
+    { const { ctx, page, errors } = await fresh();
+      for (const seed of ['4471-K', '0001-A', '9031-Z']) {
+        const a = await page.evaluate(s => { const t = RL._t; const d = t.draftFor(s); const out = d.seats.map(c => c.name + c.sp + JSON.stringify(c.base)); for (let i = 0; i < 5; i++) { t.reroll(0); out.push(d.seats[0].name + JSON.stringify(d.seats[0].base)); } return out.join('|'); }, seed);
+        const b = await page.evaluate(s => { const t = RL._t; const d = t.draftFor(s); const out = d.seats.map(c => c.name + c.sp + JSON.stringify(c.base)); for (let i = 0; i < 5; i++) { t.reroll(0); out.push(d.seats[0].name + JSON.stringify(d.seats[0].base)); } return out.join('|'); }, seed);
+        if (a !== b) bad.push(`seed ${seed}: a different first company or rerolls the second time`);
+      }
+      bad.push(...errors); await ctx.close(); }
+    // a Blank company in the full creator, every step, by D-pad (keys) and by tap
+    for (const how of ['keys', 'tap']) {
+      const { ctx, page, errors } = await fresh();
+      const step = () => page.evaluate(() => RL.S.step);
+      const choose = async (re) => {
+        if (how === 'tap') { const rows = page.locator('#list .row'); const n = await rows.count(); for (let i = 0; i < n; i++) { const t = await rows.nth(i).innerText(); if (new RegExp(re).test(t)) { await rows.nth(i).tap(); await page.waitForTimeout(40); return true; } } return false; }
+        for (let k = 0; k < 40; k++) { const t = await page.evaluate(() => (document.querySelector('#list .row.on') || {}).innerText || ''); if (new RegExp(re).test(t)) { await page.keyboard.press('z'); await page.waitForTimeout(30); return true; } await page.keyboard.press('ArrowDown'); }
+        for (let k = 0; k < 40; k++) { const t = await page.evaluate(() => (document.querySelector('#list .row.on') || {}).innerText || ''); if (new RegExp(re).test(t)) { await page.keyboard.press('z'); await page.waitForTimeout(30); return true; } await page.keyboard.press('ArrowUp'); }
+        bad.push(`${how}: no row ${re} on ${await step()}`); return false;
+      };
+      await choose('^\\s*▶?\\s*New run'); await choose('Random seed'); await choose('Blank company');
+      for (let seat = 0; seat < 3; seat++) {
+        await choose(seat === 0 ? 'EMPTY SEAT 1' : seat === 1 ? 'EMPTY SEAT 2' : 'EMPTY SEAT 3');
+        await choose(['Halberdier', 'Crossbowman', 'Barber-surgeon'][seat]);
+        await choose('^\\s*▶?\\s*Roll'); await choose('Next');
+        for (const sk of ['Melee', 'Athletics', 'Dodge', 'Survival', 'Search', 'Craft', 'Persuade', 'Letters']) await choose('^\\s*▶?\\s*' + sk);
+        if (seat === 1) { // close mid-creator and reopen: the same step comes back
+          const st = await step(); await page.reload(); await page.waitForTimeout(500);
+          await choose('New run'); await choose('^\\s*▶?\\s*Yes');
+          if (await step() !== st) bad.push(`${how}: reopening mid-creator gave ${await step()}, not ${st}`);
+        }
+        await choose('Next'); await choose('Roll a name'); await choose('Next'); await choose('Roll a name'); await choose('Next');
+        await choose('Protect the innocent'); await choose('^\\s*▶?\\s*Faith'); await choose('Next'); await choose('Sign on');
+      }
+      await choose('START'); await choose('Sign them on');
+      const on = await page.evaluate(() => RLG.active && RLG._t.party().length);
+      if (on !== 3) bad.push(`${how}: the Blank company did not sign on (step ${await step()})`);
+      // close in town and reopen: the same company on the same tile
+      if (on === 3) {
+        for (let i = 0; i < 3; i++) { await page.keyboard.down('ArrowRight'); await page.waitForTimeout(190); await page.keyboard.up('ArrowRight'); }
+        await page.waitForTimeout(300);
+        const before = await page.evaluate(() => { const g = RLG._t.G(); return [g.x, g.y, RLG._t.party().map(m => m.name).join()].join(); });
+        await page.evaluate(() => RLG.saveRun()); await page.reload(); await page.waitForTimeout(500);
+        await choose('Continue');
+        const after = await page.evaluate(() => { const g = RLG._t.G(); return [g.x, g.y, RLG._t.party().map(m => m.name).join()].join(); });
+        if (before !== after) bad.push(`${how}: reopening in town gave ${after}, not ${before}`);
+        // Export then Import gives the same run
+        const same = await page.evaluate(() => { const run = localStorage.getItem('rl.run'); const code = RL.exportCode(); localStorage.removeItem('rl.run'); const o = RL.readCode(code); if (!o) return 'unreadable'; RL.applyCode(o); return localStorage.getItem('rl.run') === run ? 'same' : 'different'; });
+        if (same !== 'same') bad.push(`${how}: Export then Import gave a ${same} run`);
+        if (await page.evaluate(() => RL.readCode('not a code')) !== null) bad.push('a bad save code was read');
+      }
+      bad.push(...errors.map(e => how + ': ' + e)); await ctx.close();
+    }
+    // the test saves: every saved version opens
+    for (const f of fs.readdirSync(path.join(__dirname, '..', 'test-saves')).filter(f => f.endsWith('.json')).sort()) {
+      const T = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'test-saves', f), 'utf8'));
+      const { ctx, page, errors } = await fresh(`(()=>{if(sessionStorage.getItem('loaded'))return;sessionStorage.setItem('loaded',1);localStorage.clear();const k=${JSON.stringify(T.keys)};for(const n in k)localStorage.setItem(n,k[n])})()`);
+      const r = await page.evaluate(() => ({ v: localStorage.getItem('rl.version'), backup: Object.keys(localStorage).filter(k => k.startsWith('rl.backup.')), run: !!localStorage.getItem('rl.run'), roster: !!localStorage.getItem('rl.roster') }));
+      const probs = [];
+      if (+r.v !== await page.evaluate(() => RL.VERSION)) probs.push('version ' + r.v);
+      if (T.version < await page.evaluate(() => RL.VERSION) && !r.backup.includes('rl.backup.v' + T.version)) probs.push('no backup made');
+      if (T.version === 0 && (r.run || r.roster)) probs.push('old Black Lantern keys kept');
+      if (T.keys['rl.run'] && !(await page.evaluate(() => RLG.resume()))) probs.push('the run did not open');
+      if (T.keys['rl.run'] && await page.evaluate(() => RLG._t.party().length) !== 3) probs.push('the company did not load');
+      probs.push(...errors);
+      console.log(`${probs.length ? 'FAIL' : 'ok  '} test save: ${f}`); probs.forEach(p => console.log('     - ' + p)); failed += probs.length;
+      await ctx.close();
+    }
+    console.log(`${bad.length ? 'FAIL' : 'ok  '} spec 003: seeds repeat, Blank company by D-pad and tap, reopen mid-creator and in town, Export/Import`);
+    bad.forEach(p => console.log('     - ' + p)); failed += bad.length;
+  }
   await browser.close();
   console.log(failed ? `\n${failed} problem(s) found.` : '\nAll automatic checks passed.');
   process.exit(failed ? 1 : 0);

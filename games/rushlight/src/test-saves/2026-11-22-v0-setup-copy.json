@@ -1,0 +1,7 @@
+{"about":"Save version 0: the Dev build before spec 003 (no rl.version). Black Lantern-shaped test data from the setup copy: a roster, a checkpoint and an agent draft. Opening it backs everything up to rl.backup.v0 and lands on the title with no run.",
+ "version":0,
+ "keys":{
+  "rl.roster":"[{\"prof\":\"cop\",\"name\":\"Dale Ruiz\",\"stats\":{\"STR\":12,\"CON\":11,\"DEX\":13,\"INT\":10,\"POW\":12,\"CHA\":9},\"picks\":{}}]",
+  "rl.game":"\"{\\\"map\\\":\\\"test\\\",\\\"x\\\":4,\\\"y\\\":4,\\\"dir\\\":\\\"right\\\",\\\"party\\\":[],\\\"flags\\\":{}}\"",
+  "rl.draft":"{\"prof\":\"mail\",\"spec\":null,\"method\":\"buy\",\"stats\":{\"STR\":12,\"CON\":12,\"DEX\":12,\"INT\":12,\"POW\":12,\"CHA\":12},\"picks\":{},\"bonds\":[],\"name\":\"Pat Kowalski\",\"motives\":[]}"
+ }}

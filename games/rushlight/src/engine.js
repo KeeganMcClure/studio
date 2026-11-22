@@ -6,7 +6,7 @@ const B=window.RL;
 const $=s=>document.querySelector(s);
 const scr=$('#screen'),gEl=$('#game'),cv=$('#gcv'),cx=cv.getContext('2d');
 const dhost=$('#gdlg'),menuEl=$('#gmenu'),hud=$('#ghud'),ban=$('#gban'),fadeEl=$('#gfade'),sanEl=$('#gsan');
-const {pick,esc,store,SKIN,HAIRC}=B;
+const {esc,store}=B;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 let VW=240,VH=160;
@@ -53,24 +53,6 @@ function drawTile(p,ch,v){
  }
 }
 
-// ================= SPRITES =================
-// Townsfolk only (old 16 x 16 look until the Still Harvest rebuild). Agents use agent-sprite.js.
-function drawChar(x,y,look,oc,dir,f,o={}){
- const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};
- const sk=SKIN[look.skin],hc=HAIRC[look.hairC],bob=f?1:0;
- P(3,14,10,2,'rgba(0,0,0,.3)');
- P(5,12,2,3-(f===1?1:0),'#2a2433');P(9,12,2,3-(f===2?1:0),'#2a2433');
- P(4,7+bob,8,6-bob,oc);P(3,8+bob,1,4,oc);P(12,8+bob,1,4,oc);P(3,12,1,1,sk);P(12,12,1,1,sk);
- if(o.sack){P(4,0+bob,8,8,'#c9a36a');P(4,7+bob,8,1,'#8a6a2a');if(dir!=='up'){P(5,3+bob,2,2,'#111');P(9,3+bob,2,2,'#111');P(5,6+bob,6,1,'#2a1a10')}return}
- P(4,1+bob,8,7,sk);
- if(look.hair!==3&&look.hair!==2){P(4,0+bob,8,2,hc);if(dir==='up')P(4,1+bob,8,5,hc);if(look.hair===1||look.hair===6){P(3,1+bob,1,6,hc);P(12,1+bob,1,6,hc)}if(look.hair===4)P(6,-2+bob,4,2,hc);if(look.hair===5){P(7,-2+bob,2,3,hc)}}
- else if(look.hair===2)P(4,0+bob,8,1,hc);
- const E='#120c1c';
- if(dir==='down'){P(6,4+bob,1,2,E);P(9,4+bob,1,2,E);if(look.acc===1||look.acc===2){P(5,4+bob,6,1,E)}if(look.acc===3)P(4,6+bob,8,2,hc)}
- else if(dir==='left'){P(5,4+bob,1,2,E);if(look.acc===3)P(4,6+bob,4,2,hc)}
- else if(dir==='right'){P(10,4+bob,1,2,E);if(look.acc===3)P(8,6+bob,4,2,hc)}
- if(o.hat)P(3,0+bob,10,2,o.hat);
-}
 // ================= MAPS =================
 const mk=(w,h,f)=>Array.from({length:h},()=>Array(w).fill(f));
 const rect=(g,x,y,w,h,c)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(g[j]&&g[j][i]!==undefined)g[j][i]=c};
@@ -146,11 +128,13 @@ function applySan(){const m=lead();if(!m)return;const fr=clamp(m.san/m.msan,0,1)
 
 // ================= WORLD =================
 function passable(x,y){const M=G.M;if(x<0||y<0||x>=M.w||y>=M.h)return false;if(BLOCK.has(M.g[y][x]))return false;if(M.npcs.some(n=>(!n.on||n.on())&&n.x===x&&n.y===y))return false;return true}
-function goMap(name,x,y,dir){hud.hidden=true;gEl.classList.remove('battle');G.map=name;G.M=MAPS[name]();StudioMove.place(G,x,y,dir);
- banner(G.M.name);}
+function goMap(name,x,y,dir){hud.hidden=true;gEl.classList.remove('battle');G.map=name;G.M=MAPS[name]();StudioMove.place(G,x,y,dir);G.trail=[];
+ banner(G.M.name);saveRun()}
 function update(){
  if(G.mode!=='world')return;
- StudioMove.update(G,StudioMove.last(held),{passable,busy:()=>G.busy||dlg||menu,arrive:()=>run(onStep)});
+ const ox=G.x,oy=G.y;
+ StudioMove.update(G,StudioMove.last(held),{passable,busy:()=>G.busy||dlg||menu||PM||IV||EX,arrive:()=>run(onStep)});
+ if(G.x!==ox||G.y!==oy){G.trail=[[ox,oy],...(G.trail||[])].slice(0,2)}
 }
 async function onStep(){const M=G.M,k=G.x+','+G.y;if(M.warps&&M.warps[k]){held=[];return M.warps[k]()}if(M.onStep)await M.onStep()}
 async function interact(){
@@ -158,15 +142,17 @@ async function interact(){
  const n=M.npcs.find(n=>(!n.on||n.on())&&n.x===tx&&n.y===ty);
  if(n){n.dir={up:'down',down:'up',left:'right',right:'left'}[G.dir];held=[];await n.talk(n);return}
  if(M.O[k]){held=[];await M.O[k]();return}
- const ch=M.g[ty]&&M.g[ty][tx];if(ch&&TILEDESC[ch]){held=[];await say('',TILEDESC[ch])}
 }
+function others(){const l=G.lead|0;return party.filter((m,i)=>i!==l&&!m.dead)}
 function cam(){return StudioMove.camera(G,G.M.w,G.M.h,VW,VH)}
 function drawWorld(){
  const M=G.M,[camx,camy]=cam();cx.fillStyle='#0a0710';cx.fillRect(0,0,VW,VH);
  const x0=Math.floor(camx/16),y0=Math.floor(camy/16);
  for(let ty=y0;ty<=y0+Math.ceil(VH/16)+1;ty++)for(let tx=x0;tx<=x0+Math.ceil(VW/16)+1;tx++){const ch=M.g[ty]&&M.g[ty][tx];if(!ch)continue;let v=(tx*7+ty*13)%4;if(ch==='V')v=M.vv[tx+','+ty];if(ch==='T')v=(tx*3+ty*5)%3;cx.drawImage(tile(ch,v),tx*16-camx,ty*16-camy)}
  const spr=[];
- M.npcs.forEach(n=>{if(n.on&&!n.on())return;spr.push({y:n.y*16,f:()=>drawChar(n.x*16-camx,n.y*16-camy-3,n.look,n.oc,n.dir,0,{sack:n.sack,hat:n.hat})})});
+ M.npcs.forEach(n=>{if(n.on&&!n.on())return;spr.push({y:n.y*16,f:()=>cx.drawImage(RLSP.map(n.sp,n.look),n.x*16+1-camx,n.y*16+16-26-camy)})});
+ // the other mercs follow the lead, a tile apart, along the lead's own steps (spec 003, 10)
+ (G.trail||[]).forEach((t,k)=>{const m=others()[k];if(!m)return;spr.push({y:t[1]*16,f:()=>cx.drawImage(RLSP.map(m.sp,m.look),t[0]*16+1-camx,t[1]*16+16-26-camy)})});
  const moving=!!G.mv,fr=StudioMove.walkFrame(G);
  // Only the lead walks the map (Bible, Art, Maps). Agent sprites from agent-sprite.js; lantern at night only; a blink every few seconds.
  const blink=!moving&&(performance.now()%3400)<150?1:0;
@@ -186,50 +172,80 @@ function lights(M,camx,camy){
 function drawTitleCard(){cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+Math.floor(Math.random()*20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
 // Logic runs at 60 ticks a second on any screen (engine/clock.js); frames with no tick due are skipped.
 const clock=StudioClock.make();
-function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(G.mode==='battle'&&Bt)drawBattle();else if(PM)drawParty();else if(G.mode==='world')drawWorld();else drawTitleCard();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
+function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(G.mode==='battle'&&Bt)drawBattle();else if(IV)drawItems();else if(PM)drawParty();else if(G.mode==='world')drawWorld();else drawTitleCard();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
 function fit(){const v=StudioMove.fit(gEl,cv);if(!v)return;VW=v.w;VH=v.h;gEl.style.setProperty('--pu',(64*v.boxW/VW)+'px');boxKey='';if(menu&&!menu.inBox){menu.w=0;renderMenu()}posMenu()}
 window.addEventListener('resize',()=>{if(G.active)fit()});
 
-async function gameOver(){
- held=[];G.mode='scene';
- const L=lead();
- await say('',L.san<=0?'{merc} walks off into the dark and does not come back.':'{merc} doesn\'t get up.');
- const r=await ask('','The file stays open.',['Retry from checkpoint','Quit to title']);
- if(r===0){await fade(1);restore(G.cp);await fade(0)}else quit();
-}
-
-// ================= SAVE / FLOW =================
-function snap(){return JSON.stringify({map:G.map,x:G.x,y:G.y,dir:G.dir,party,lead:G.lead|0,flags:G.flags,kit:G.kit})}
-function checkpoint(){G.cp=snap();store.set(B.key('game'),G.cp)}
-function restore(s){const o=JSON.parse(s);party=o.party;G.lead=o.lead|0;G.flags=o.flags||{};G.kit=o.kit||{};G.mode='world';goMap(o.map,o.x,o.y,o.dir);applySan()}
+// ================= THE RUN AND ITS SAVE (spec 003) =================
+// rl.run holds the run: seed, the three streams' positions, the company, lead, purse, pack and where they stand.
+// It autosaves on every screen change (a map, a menu closing, the lead changing). Deaths stick: nothing reloads a roll.
+let DICE=null;
+function useDice(saved){DICE=StudioSeed.load(saved);StudioRoll.use(DICE)}
+function saveRun(){const r=G.run;if(!r||r.ended)return;r.party=party;r.lead=G.lead|0;if(DICE)r.streams.dice=DICE.save();
+ if(G.M&&G.mode==='world')r.place={map:G.map,x:G.x,y:G.y,dir:G.dir};store.set(B.key('run'),r)}
 function enter(){G.active=true;scr.classList.add('gaming');sanEl.hidden=false;fit();cancelAnimationFrame(raf);clock.reset();raf=requestAnimationFrame(loop)}
-function leave(){G.active=false;PM=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
-function quit(){checkpoint();leave();B.goto('title');B.render()}
-// Until Part A makes real mercs, Black Lantern's creator still hands over agents; each becomes a stand-in merc.
-function member(a,i){return testMerc(i)}
-async function start(agent,squad){
- party=[member(agent,0),...squad.map((a,i)=>member(a,i+1))];
- G=Object.assign(G,{active:true,lead:0,flags:{},kit:{bandage:2},busy:0,mode:'scene',scene:null});
- MAZE=null;enter();applySan();
- run(caseOpening);
+function leave(){saveRun();G.active=false;PM=null;IV=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;exportEl.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[];StudioRoll.use(null)}
+function quit(){leave();B.goto('title');B.render()}
+// Sign them on: the company drops into the stand-in town (spec 003, 10; Part C replaces it with Harrowford)
+function begin(run){
+ G=Object.assign(G,{active:true,run,lead:run.lead|0,flags:{},busy:0,mode:'world',trail:[]});party=run.party;useDice(run.streams.dice);
+ enter();const p=run.place||{map:'standin',x:3,y:7,dir:'right'};goMap(p.map,p.x,p.y,p.dir);applySan();saveRun();
 }
-function resume(){const s=store.get(B.key('game'),null);if(!s)return false;G=Object.assign(G,{active:true,busy:0,mode:'world'});MAZE=null;enter();restore(s);G.cp=s;return true}
+function resume(){const r=store.get(B.key('run'),null);if(!r||r.ended||!r.party)return false;begin(r);return true}
+G.onLead=()=>{G.trail=[];saveRun()};
 
-// ================= PAUSE =================
+// ================= THE MAP MENU =================
 async function pauseMenu(){
  held=[];
  for(;;){
-  const r=await choose(['Party','Save & quit','Close'],{cancel:true,title:'MENU · '+G.M.name});
-  if(r===0){await openParty()}
-  else if(r===1){quit();return}
-  else return;
+  const r=await choose(['Party','Items','Export','Title','Close'],{cancel:true,title:'MENU · '+G.M.name});
+  if(r===0)await openParty();
+  else if(r===1)await openItems(G.lead|0);
+  else if(r===2)await showExport();
+  else if(r===3){quit();return}
+  else {saveRun();return}
  }
+}
+// Start → Export: the save code with a Copy row (spec 003, 9)
+const exportEl=document.createElement('div');exportEl.className='gbox';exportEl.id='gexport';exportEl.hidden=true;gEl.appendChild(exportEl);
+function showExport(){saveRun();const code=B.exportCode();return new Promise(res=>{
+ exportEl.innerHTML=`<div class="mt">SAVE CODE</div><textarea readonly spellcheck="false">${esc(code)}</textarea><div class="gi" data-k="copy"><span class="gc">▶</span>Copy</div><div class="gi" data-k="close"><span class="gc"></span>Close</div>`;
+ exportEl.hidden=false;let sel=0;const rows=[...exportEl.querySelectorAll('.gi')];const paint=()=>rows.forEach((r,i)=>{r.classList.toggle('on',i===sel);r.querySelector('.gc').textContent=i===sel?'▶':''});paint();
+ const done=()=>{exportEl.hidden=true;EX=null;res()};
+ const copy=()=>{const t=exportEl.querySelector('textarea');t.select();try{navigator.clipboard.writeText(code).catch(()=>document.execCommand('copy'))}catch(e){try{document.execCommand('copy')}catch(e2){}}B.toast('COPIED')};
+ rows[0].onclick=copy;rows[1].onclick=done;
+ EX={press:k=>{if(k==='up'||k==='down'){sel=1-sel;paint()}else if(k==='a'){if(sel)done();else copy()}else if(k==='b')done()}};
+})}
+let EX=null;
+
+// ================= ITEMS (read-only in Part A; Mockup 4's layout) =================
+let IV=null;
+function openItems(i){return new Promise(res=>{IV={i,done:res};ban.hidden=true;gEl.classList.add('menu')})}
+function itemsPress(k){const n=party.length;if(k==='l'||k==='up')IV.i=(IV.i+n-1)%n;else if(k==='r'||k==='down')IV.i=(IV.i+1)%n;else if(k==='b'||k==='a'||k==='start'){const d=IV.done;IV=null;gEl.classList.remove('menu');d()}}
+const WEAR=['Sound','Worn','Cracked','Broken'];
+function drawItems(){const m=party[IV.i],I=RLS.ITEMS,r=G.run;pR(0,0,VW,VH,PAL.peat);
+ pBox(4,4,VW-8,18,PAL.soot,PAL.bone);pT('ITEMS',9,9,PAL.tallow,8,PXf);
+ party.forEach((p,j)=>{const x=78+j*52;if(j===IV.i)pBox(x-2,5,50,16,PAL.cardOn,PAL.tallow);cx.drawImage(RLSP.portrait(p.sp,p.look),0,0,64,64,x,6,14,14);pT(pFit(p.name,32,13),x+16,6,j===IV.i?PAL.tallow:PAL.bone,13)});
+ let y=26;const used=m.slots.length,sl=`SLOTS ${used}/8`,slx=VW-8-pW(sl,14);pT(`${m.name.toUpperCase()}`,8,y,PAL.tallow,16);const nx=8+pW(m.name.toUpperCase()+' ',16);pT(pFit(`${m.sp} · ${m.trade}${(G.lead|0)===IV.i?' · lead':''}`,slx-nx-4,14),nx,y+1,'#c4b99e',14);
+ pT(sl,slx,y+1,'#c4b99e',14);y+=16;
+ const g=m.gear;[['WPN 1',g.w1,g.hand==='w1'],['WPN 2',g.w2,g.hand==='w2'],['BODY',g.body],['HEAD',g.head]].forEach(([l,it,inHand])=>{pBox(4,y,VW-8,14,PAL.card,PAL.line);pT(l,8,y,'#c4b99e',14);
+  if(inHand)pR(42,y+5,3,3,PAL.tallow);const nm=it?I[it.id].name+(I[it.id].dmg?' '+I[it.id].dmg:''):'—';pT(nm,48,y,PAL.bone,14);
+  if(it){const w=WEAR[it.wear|0];pT(w,VW-30-pW(w,13),y+1,it.wear?PAL.tallow:PAL.ash,13);for(let q=0;q<3;q++)pR(VW-24+q*6,y+5,4,4,q<3-(it.wear|0)?PAL.bone:PAL.soot)}y+=15});
+ y+=2;for(let s=0;s<8;s++){const x=4+(s%4)*58,yy=y+Math.floor(s/4)*16,it=m.slots[s];pBox(x,yy,56,15,PAL.card,it?PAL.line:PAL.soot);
+  if(it){pT(pFit(I[it.id].name,40,13),x+3,yy,PAL.bone,13);if(it.n>1)pT('×'+it.n,x+54-pW('×'+it.n,13),yy,PAL.tallow,13);if(it.kit)pT('KIT',x+3,yy+8,PAL.ash,9)}}
+ y+=36;pT('PACK',8,y,PAL.tallow,14);y+=13;
+ const pack=r.pack||[];if(!pack.length){pT('Nothing in the pack.',8,y,PAL.ash,14);y+=13}
+ pack.slice(0,Math.max(0,Math.floor((VH-28-y)/12))).forEach(p=>{pT(I[p.id]?I[p.id].name+(p.n>1?' ×'+p.n:''):p.id,8,y,PAL.bone,14);y+=12});
+ pBox(4,VH-20,VW-8,16,PAL.soot,PAL.bone);const days=Math.floor((r.rations|0)/Math.max(1,party.filter(p=>!p.dead).length));
+ pT(`PURSE ${r.purse} gr · RATIONS ${r.rations}/15 · ${days} days`,9,VH-19,PAL.bone,14);
 }
 
 // ================= INPUT =================
 function input(k){
  if(!G.active)return;
+ if(EX){EX.press(k);return}
  if(G.mode==='battle'&&Bt&&!dlg&&!menu){battlePress(k);return}
+ if(IV&&!dlg&&!menu){itemsPress(k);return}
  if(PM&&!dlg&&!menu){partyPress(k);return}
  if(dlg){if(k==='a'||k==='b'){if(!dlg.done)finishType();else closeDlg()}return}
  if(menu){const n=menu.items.length;
@@ -245,25 +261,36 @@ function hold(d,on){held=StudioMove.hold(held,d,on)}
 dhost.addEventListener('click',e=>{if(!e.target.closest('.bld'))return;const li=e.target.closest('.bld-c li');
  if(menu){if(!li||!menu.inBox)return;const i=[...li.parentNode.children].indexOf(li);if(menu.sel!==i){menu.sel=i;renderMenu()}}input('a')});
 menuEl.addEventListener('click',e=>{const el=e.target.closest('.gi');if(!el||!menu)return;const i=+el.dataset.i;if(menu.sel!==i){menu.sel=i;renderMenu()}input('a')});
-// The shelf's Continue button opens straight into the save (studio-bible/launcher.md, Title cards): the
-// checkpoint if there is one, else the agent draft's dossier; with neither, the title screen opens as usual.
-window.addEventListener('load',()=>{if(!(window.Studio&&Studio.continued)||G.active)return;
- if(resume())return;if(B.S.a&&B.S.a.prof){B.goto('dossier');B.render()}});
-// A canvas tap goes to the battle or the party list when either is open
+// The shelf's Continue button opens straight into the run (studio-bible/launcher.md, Title cards); with none, the title.
+window.addEventListener('load',()=>{if(!(window.Studio&&Studio.continued)||G.active)return;resume()});
+// Saves on close, so closing the phone mid-walk loses nothing
+window.addEventListener('pagehide',()=>{if(G.active)saveRun()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&G.active)saveRun()});
+// A canvas tap goes to the battle, the party list or the items page when one is open
 cv.addEventListener('click',e=>{if(!G.active)return;const r=cv.getBoundingClientRect();if(!r.width)return;
- const x=(e.clientX-r.left)*VW/r.width,y=(e.clientY-r.top)*VH/r.height;if(G.mode==='battle'&&Bt)battleTap(x,y);else if(PM)partyTap(x,y)});
+ const x=(e.clientX-r.left)*VW/r.width,y=(e.clientY-r.top)*VH/r.height;if(G.mode==='battle'&&Bt)battleTap(x,y);else if(IV)itemsPress(x<VW/3?'l':x>VW*2/3?'r':'b');else if(PM)partyTap(x,y)});
 
-// ================= TEST HOOKS (the automatic checks only; spec 002) =================
-// A test party, a small test map and a test fight against one stand-in enemy. The enemy's numbers are placeholders,
-// not the Noonwife's real card (the real fights come with spec Part D).
-function testMerc(i){const T=[{name:'Ostra',sp:'badger',str:15,dex:9,hp:13,wp:11,san:55,sk:{Melee:70,Athletics:70,Dodge:60},w:{name:'Halberd',skill:'Melee',dmg:'1d10',melee:true}},
- {name:'Wendel',sp:'hare',str:10,dex:15,hp:10,wp:12,san:60,sk:{Shooting:70,Dodge:70,Search:50,Athletics:40},w:{name:'Crossbow',skill:'Shooting',dmg:'2d6+3'}},
- {name:'Tomas',sp:'rat',str:9,dex:12,hp:9,wp:13,san:65,sk:{Medicine:70,'First Aid':70,Melee:30,Athletics:30},w:{name:'Knife',skill:'Melee',dmg:'1d6',melee:true}}][i%3];
- return Object.assign({look:{shade:1,mark:0,neck:0},mhp:T.hp,mwp:T.wp,msan:T.san,ko:false},JSON.parse(JSON.stringify(T)))}
-const TEST_FOE={name:'Stand-in',lvl:1,skulls:1,hp:16,dex:11,hit:45,dmg:'1d4+1',sprite:'noonwife',faceless:true,known:false,foe:true};
-const testMap=()=>{const g=mk(16,10,'.');rect(g,0,4,16,1,',');g[2][3]='L';return{name:'TEST LANE',w:16,h:10,g,npcs:[],O:{},vv:{}}};
-function testStart(){MAPS.test=testMap;party=[0,1,2].map(testMerc);G=Object.assign(G,{active:true,lead:0,flags:{},kit:{bandage:2},busy:0,mode:'world'});enter();goMap('test',4,4,'right');applySan()}
-window.RLG={start,resume,input,hold,get active(){return G.active},
+// ================= NEW RUNS FOR THE CHECKS (spec 003; src/CLAUDE.md rule 5) =================
+// RLG.newRun(seed): makes the first company a seed offers, checks every template's mercs against the rules, signs on
+// the Free Company and lands in the stand-in town. Returns {ok, problems}.
+async function newRun(seedArg){
+ const seed=typeof seedArg==='number'?B.seedText(Math.abs(seedArg)%260000):String(seedArg),problems=[],T_=RLS.TRADES;
+ const d=B._t.draftFor(seed);
+ RLS.TEMPLATES.forEach((tp,ti)=>{if(!tp.trades.length)return;B._t.pickTemplate(ti);d.seats.forEach(c=>{const m=B.build(c),tr=B.tradeOf(c.trade);
+  RLS.STATS.forEach(k=>{if(m.stats[k]<3||m.stats[k]>18)problems.push(`${tp.name}: ${m.name} ${k} ${m.stats[k]}`)});
+  Object.keys(RLS.SKILLS).forEach(k=>{const raw=m.sk[k]-(k==='Stealth'?(RLS.SIZE[m.size].Stealth|0):0)-((RLS.SPECIES[m.sp].skill||{})[k]|0);if(raw>80)problems.push(`${tp.name}: ${m.name} ${k} ${m.sk[k]}`)});
+  tr.strong.forEach(k=>{const raw=m.sk[k]-(k==='Stealth'?(RLS.SIZE[m.size].Stealth|0):0)-((RLS.SPECIES[m.sp].skill||{})[k]|0);if(raw!==70)problems.push(`${tp.name}: ${m.name} strong ${k} at ${raw}`)});
+  if(m.gear.w1.id!==tr.weapon||m.slots[0].id!==tr.kit||m.slots[0].n!==tr.n)problems.push(`${tp.name}: ${m.name} has the wrong kit`)})});
+ const names=d.used.slice();if(new Set(names).size!==names.length)problems.push('a name repeats in the run');
+ B._t.draftFor(seed);B._t.signOn();await sleep(50);
+ if(!G.active||party.length!==3)problems.push('the company did not sign on');
+ return {ok:!problems.length,problems};
+}
+window.RLG={begin,resume,input,hold,newRun,saveRun,get active(){return G.active},
  _t:{start:testStart,fight:(o={})=>{run(async()=>{const r=await battle([Object.assign({},TEST_FOE)],Object.assign({roamer:true,bg:'noon',countdown:{label:'NOON BELL',n:12}},o));G.lastFight=r});return true},
-  go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,Bt:()=>Bt,PM:()=>PM,lead:()=>G.lead|0}};
+  go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,Bt:()=>Bt,PM:()=>PM,IV:()=>IV,EX:()=>EX,lead:()=>G.lead|0,quit}};
 
+// ================= TEST HOOKS (the automatic checks only) =================
+// A test fight against one stand-in enemy (spec 002). Its numbers are placeholders, not a real card (those come in Part D).
+const TEST_FOE={name:'Stand-in',lvl:1,skulls:1,hp:16,dex:11,hit:45,dmg:'1d4+1',sprite:'noonwife',faceless:true,known:false,foe:true};
+function testStart(seed){if(!G.active)newRun(seed||'0001-A')}

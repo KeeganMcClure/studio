@@ -48,7 +48,7 @@ async function battle(foes,o={}){
 }
 function nameFoes(en){const c={};en.forEach(e=>c[e.base]=(c[e.base]||0)+1);const s={};en.forEach(e=>{if(c[e.base]>1){s[e.base]=(s[e.base]||0)+1;e.name=e.base+' '+'ABCD'[s[e.base]-1]}else e.name=e.base})}
 // DEX order, highest first; ties go to mercs (Combat, Basics)
-function turnOrder(){return [...party.filter(m=>!m.ko),...Bt.en.filter(e=>!e.dead)].sort((a,b)=>(b.dex-a.dex)||((a.foe?1:0)-(b.foe?1:0)))}
+function turnOrder(){const dx=a=>a.foe?a.dex:a.stats.DEX;return [...party.filter(m=>!m.ko),...Bt.en.filter(e=>!e.dead)].sort((a,b)=>(dx(b)-dx(a))||((a.foe?1:0)-(b.foe?1:0)))}
 function endBattle(res){
  Bt.active=null;const out=res;
  party.forEach(m=>{m.defend=false;if(m.ko&&res!=='lose'){m.ko=false;m.hp=Math.max(1,m.hp)}});
@@ -62,8 +62,9 @@ function blist(title,rows,o={}){return new Promise(res=>{Bt.ui={kind:'list',titl
 const fastOn=()=>!!(G.dev&&G.dev.fast);
 
 // ================= MERCS =================
-function weaponOf(m){return m.w||{name:'fists',skill:'Melee',dmg:'1d4-1',melee:true}}
-function hitChance(m,e,o={}){const w=weaponOf(m);let p=(m.sk[w.skill]||0)+(o.mod||0);if(!o.special)p=Math.max(FIGHT_FLOOR,p);return Math.max(1,Math.min(99,p))}
+// the weapon in hand (WPN 1 or WPN 2), or fists
+function weaponOf(m){const g=m.gear,it=g&&g[g.hand||'w1'];return it&&RLS.ITEMS[it.id]||RLS.FISTS}
+function hitChance(m,e,o={}){const w=weaponOf(m);let p=(m.sk[w.skill]||0)+(w.hit|0)+(o.mod||0);if(!o.special)p=Math.max(FIGHT_FLOOR,p);return Math.max(1,Math.min(99,p))}
 async function mercTurn(m){
  Bt.active=m;m.defend=false;
  for(;;){
@@ -87,7 +88,7 @@ async function attack(m,e,o){
  showRes(R_.line(BW.skill[w.skill]||w.skill.toUpperCase(),r,BW.words),r);
  if(r.fumble){await bsay(`${m.name}: ${BW.fumble[die(BW.fumble.length)-1]}`,1000);return false}
  if(!r.ok){await bsay(`${m.name} misses ${e.name}.`,900);return false}
- let d=rollDice(w.dmg)+(w.melee?strBonus(m.str):0);if(o.half)d=Math.floor(d/2);if(r.crit)d*=2;if(o.double)d*=2;d=Math.max(1,d);
+ let d=rollDice(w.dmg)+(w.melee?strBonus(m.stats.STR):0);if(o.half)d=Math.floor(d/2);if(r.crit)d*=2;if(o.double)d*=2;d=Math.max(1,d);
  await bsay(`${m.name} hits ${e.name} for ${d}.${r.crit?' A crit.':''}`,1000);hurtFoe(e,d);return true;
 }
 function hurtFoe(e,d){e.hp=Math.max(0,e.hp-d);e.flash=16;floaty(e,d);if(e.hp<=0)e.dead=true}
@@ -99,12 +100,10 @@ async function skillMenu(m){
  if(!rows.length){rows.push({label:'No battle moves',dis:true});acts.push(null)}
  const r=await blist('SKILLS · '+m.wp+' WP',rows);if(r<0||!acts[r])return false;return acts[r]();
 }
-// Items: the test kit's bandages (the real item list comes in Part A and D)
+// Items: the merc's own slots (what each item does in a fight comes in Part D)
 async function itemMenu(m){
- const n=(G.kit&&G.kit.bandage)|0,rows=[{label:'Linen bandage',right:'x'+n,dis:!n}];
- const r=await blist('ITEMS',rows);if(r<0)return false;
- const t=await pickMerc('WHO?');if(!t)return false;
- G.kit.bandage--;const h=die(4);t.hp=Math.min(t.mhp,t.hp+h);await bsay(`${m.name} binds ${t.name}'s wound. +${h} HP.`,1000);
+ const rows=m.slots.map(s=>({label:RLS.ITEMS[s.id].name,right:s.n>1?'x'+s.n:'',dis:true}));if(!rows.length)rows.push({label:'Nothing in hand',dis:true});
+ const r=await blist('ITEMS',rows);return false;
 }
 async function pickMerc(title){const rows=party.map(p=>({label:p.name,right:p.ko?'DOWN':p.hp+'/'+p.mhp,dis:p.ko}));const r=await blist(title,rows);return r<0?null:party[r]}
 
@@ -181,7 +180,7 @@ function drawBattle(){
   Bt.hits.push({x:0,y:L.cmd.y,w:VW,h:L.cmd.h,fn:()=>battlePress('b')})}
  else{SB.commands(cx,BT_THEME,L.cmd,[],0,'',{msg:[Bt.active?(Bt.active.foe?Bt.active.name+'…':Bt.active.name):''],more:!!(u&&u.kind==='msg')});if(u&&u.kind==='msg')Bt.hits.push({x:0,y:0,w:VW,h:VH,fn:()=>u.res()})}
 }
-function cmdDetail(m,sel){const w=weaponOf(m);return [`${w.name} · ${w.dmg} · ${hitChance(m,null)}%`,`${m.wp} WP`,`${(G.kit&&G.kit.bandage)|0} bandages`,Bt.roamer?'Defend or Flee':'Defend'][sel]}
+function cmdDetail(m,sel){const w=weaponOf(m);return [`${w.name} · ${w.dmg} · ${hitChance(m,null)}%`,`${m.wp} WP`,`${m.slots.length} in slots`,Bt.roamer?'Defend or Flee':'Defend'][sel]}
 // the nameplate: name, level, threat skulls, and an HP bar hatched and marked ??? until Identified
 function plate(e,x,y){
  const nm=`${e.name} L${e.lvl||1}`,sk=e.skulls||1,w=Math.max(54,bW(nm,13)+sk*7+8),x0=Math.round(Math.max(26,Math.min(VW-2-w,x-w/2)));
