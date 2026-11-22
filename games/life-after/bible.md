@@ -24,7 +24,7 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 - [ ] Shelter: what can be built, what it costs, and how a night attack plays out.
 - [ ] Crafting and items: the first recipe list and item list, with look-alike brand names.
 - [x] Art direction: settled Nov 21 (see Art). Exact palette hex codes come with the first in-shell mockup.
-- [ ] Studio bible: an `art-style.md` PR letting a game set its own low SAN signal (Life After uses phantoms and SAN grit, not the pink and cyan edges). See Conflicts.
+- [x] Studio bible: `art-style.md` lets a game set its own low SAN signal (Nov 21).
 - [ ] Other survivors and trade: group types, starting moods, what they remember, and barter values.
 - [ ] Weather and events: the first list, how often each comes, and how sure the warnings are.
 - [ ] Difficulty presets: what Gentle, Standard and Harsh change, in numbers.
@@ -136,7 +136,7 @@ None yet.
 - **Weapons** (set Nov 21): bats, pipes and axes wear down and can be fixed or crafted. Guns hold up, but bullets are scarce, so every shot is a choice.
 - **Wounds** (set Nov 21): hits lower health, and a large hit has a chance of leaving a wound (a deep cut, a sprained ankle, a broken arm) that slows or weakens you until it's treated and heals over days.
 - **Sneaking** (set Nov 21): zombies and people see in a cone shown on the map. Stay out of it and keep your noise ring small to slip past, or kill quietly from behind with a melee weapon.
-- **Stealth bonus** (Keegan asked; Claude's call, for review): hitting anyone who hasn't seen you is easier and does more damage. A melee hit from behind on an unaware zombie is a sure, quiet kill. An unaware person takes a heavy hit and is often wounded. Guns get the aim bonus but are still loud.
+- **Stealth bonus** (set Nov 21): hitting anyone who hasn't seen you is easier and does more damage. A melee hit from behind on an unaware zombie is a sure, quiet kill. An unaware person takes a heavy hit and is often wounded. Guns get the aim bonus but are still loud.
 - **Fights with people** (set Nov 21): people can surrender, run or be talked down mid-fight, and you choose to spare, rob or kill them. Killing a person weighs on SAN, and their group remembers it.
 
 ## Companions
@@ -220,6 +220,6 @@ Found while drafting (Nov 21). Each needs a decision or a separate `studio-bible
 
 - **Battle screen** (`studio-bible/ui.md`, Battle screen): describes a head-on battle screen. Life After fights on the map and has none. Settled Nov 21: the section now applies only to games that have a battle screen.
 - **Select** (`studio-bible/controls.md`, Buttons): settled Nov 21 (Keegan). Select opens companion orders (Follow, Hold here, Sneak, Fight), and `controls.md` lets a game with no lead to cycle give Select its own job.
-- **Low SAN signal** (`studio-bible/art-style.md`, Color): makes pink `#ff4fa3` and cyan `#3ff0e8` the shared low-SAN mark. Life After shows SAN with phantoms and grit, and uses cyan for usable things. Open: a separate `art-style.md` PR letting a game set its own SAN signal. To do.
+- **Low SAN signal** (`studio-bible/art-style.md`, Color): makes pink and cyan the shared low-SAN mark. Settled Nov 21: `art-style.md` now lets a game show low SAN its own way, and Life After uses phantoms and SAN grit, with cyan for usable things.
 - **Party menu** (`studio-bible/ui.md`, Party menu, added Nov 21 from Black Lantern spec 002): assumes a lead you can swap, with Make lead and Select cycling. Life After keeps one survivor as lead, so it has no Make lead and Select opens orders instead. Open: whether Life After uses the party cards (bond, traits, Give item) without Make lead. To do: Companions.
 
