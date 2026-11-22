@@ -287,7 +287,7 @@ const MAPMENU={title:'MENU',rows:['Party','Skills','Items','Case file','Log','Se
  healed:'{n} +{h} HP.',patchFail:'It doesn\'t take. {n} stays as they are.',treated:'{n} is no longer {s}.',treatFail:'The treatment doesn\'t take.',
  camped:'The party makes camp and rests a while. Half their HP and WP come back.',retched:'{n} retches into the dirt. Better out than in.',retchFail:'{n} dry-heaves. Still queasy.',
  sedated:'{n}\'s breathing slows. The flare passes.',analyzed:'{n} works through the samples.',
- caseFile:'CASE FILE',next:'NEXT',clues:'CLUES',noClues:'Nothing yet. Talk to people.',overstep:'OVERSTEPPING',rules:'Rules page',rulesT:'RULES',statuses:'STATUSES',icons:'ITEM ICONS',skulls:'THREAT SKULLS',
+ caseFile:'CASE FILE',next:'NEXT',clues:'CLUES',intel:'INTEL',noClues:'Nothing yet. Talk to people.',overstep:'OVERSTEPPING',rules:'Rules page',rulesT:'RULES',statuses:'STATUSES',icons:'ITEM ICONS',skulls:'THREAT SKULLS',
  skullLines:['One skull: a fight you should win.','Two skulls: a real fight. Plan for it.','Three skulls: run, or bring everything.'],
  pageKeys:'Up/Down: scroll · A: rules · B: back',rulesKeys:'Up/Down: scroll · B: back',
  log:'LOG',logKeys:'Up/Down: older/newer · B: back',noLog:'Nothing said yet.',
@@ -504,7 +504,9 @@ const INJURIES=[null,
  {name:'Lost eye',tier:'grave',pen:{Firearms:-20,Search:-10},line:'−20% Firearms, −10% Search'},{name:'Facial scarring',tier:'grave',pen:{Persuade:-20},line:'−20% Persuade'},
  {name:'Chronic pain',tier:'grave',pen:{},hp:-2,line:'−2 max HP'},{name:'Ruined leg',tier:'grave',pen:{Athletics:-20,Dodge:-10},line:'−20% Athletics, −10% Dodge'},
  {name:'Done with field work',tier:'career',pen:{},line:'Leaves the party'}];
+// Big Hat's two questions at every briefing (spec 013): his words around the case's four topics
+const BRIEF={ask:'Two questions. Make \'em count.',none:'No questions',noQ:'Good. I like you. Don\'t make it weird.',two:'That\'s two.',banner:'CASE FILE: INTEL ADDED'};
 const STEPNAME={profession:'JOB',stats:'STATS',skills:'SKILLS',identity:'IDENTITY',bonds:'BONDS',motives:'MOTIVATIONS',dossier:'DOSSIER',title:'BLACK LANTERN',roster:'ROSTER',team:'YOUR TEAM',pick:'PICK A TEAM',confirm:'NEW GAME'};
 const STEPSHORT={profession:'JOB',stats:'STATS',skills:'SKILL',identity:'ID',bonds:'BOND',motives:'WHY',dossier:'FILE'};
-return {ROAMW,SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,diceOf,ITEMS,KIT,KITUSES,ITEMUI,DISORDERS,SANW,TIERS,KINDS,SKILLOPT,AUTOPERK,SKILLW,MAPMENU,OVERSTEP,RECRUITS,RECRUITW,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD,MAPHUD,BATTLEW,MOVES,INJURIES,DEBRIEF,UNLOCKS,HOMEW};
+return {BRIEF,ROAMW,SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,diceOf,ITEMS,KIT,KITUSES,ITEMUI,DISORDERS,SANW,TIERS,KINDS,SKILLOPT,AUTOPERK,SKILLW,MAPMENU,OVERSTEP,RECRUITS,RECRUITW,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD,MAPHUD,BATTLEW,MOVES,INJURIES,DEBRIEF,UNLOCKS,HOMEW};
 })();

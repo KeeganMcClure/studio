@@ -74,30 +74,37 @@ function hideTB(){box=null}
 function drawBox(){
  if(!box){if(boxKey){dhost.replaceChildren();boxKey=''}return}
  const T=BLD.TIMING,now=performance.now(),n=Math.floor(now/T.flapMs);
- const typing=box.typed<box.text.length,por=portraitOf(box.name),sh=!!(G.shoutPor&&por);
+ // Spec 013 (ui.md, Dialog box): a speaker drawn large in the scene gets the name tab only. Inside his back room,
+ // BIG HAT's lines show no portrait; the scene's bust takes his mouth frame and shout face from here (G.hatF).
+ const typing=box.typed<box.text.length,face=portraitOf(box.name),inScene=box.name==='BIG HAT'&&hatOnScreen(),por=inScene?null:face,sh=!!(G.shoutPor&&face);
  // mouth: bursts of open/shut while the line types, then shut; shout face: its counter runs while typing, then holds
  if(typing)box.n=n;const p=n%(T.burst+T.rest),f=sh?(box.n||0):(typing&&p<T.burst&&p%2===0?1:0);
+ G.hatF=inScene?{f,sh}:null;
  const arrow=box.more&&Math.floor(now/T.moreBlinkMs)%2===0;
- const key=[box.name,box.typed,box.text,box.choices?box.choices.join('|')+'#'+box.sel:'',arrow,por?f+':'+sh:'',gEl.clientWidth].join('~');
+ const key=[box.name,box.typed,box.text,box.choices?box.choices.join('|')+'#'+box.sel+'#'+(box.dis||[]).join(''):'',arrow,por?f+':'+sh:'',gEl.clientWidth,inScene].join('~');
  if(key===boxKey)return;boxKey=key;
  const b=BLD.render(dhost,{name:box.name,narrate:!box.name,text:box.text,typed:box.choices?null:box.typed,more:arrow,choices:box.choices,sel:box.sel,
   portrait:por&&(c=>por(c,f,sh)),scale:2});
  // long choice lists scroll inside the box so the box never pushes the portrait off the screen
  const ul=b.querySelector('.bld-c');
- if(ul){const bust=b.querySelector('.bld-bust'),room=gEl.clientHeight-(bust?bust.offsetHeight:b.querySelector('.bld-tab')?18:0)-(b.offsetHeight-ul.offsetHeight)-10;
+ if(ul){const bust=b.querySelector('.bld-bust'),top=bust?bust.offsetHeight:b.querySelector('.bld-tab')?18:0;let room=gEl.clientHeight-top-(b.offsetHeight-ul.offsetHeight)-10;
+  // a greyed choice (spec 013: a question already asked) stays in the list but can't be picked
+  if(box.dis)[...ul.children].forEach((li,i)=>{if(box.dis[i])li.classList.add('dis')});
+  // in Big Hat's back room the list stops above his chin, so his face stays in view (spec 013); it scrolls instead
+  if(hatOnScreen()&&G.hatChin)room=Math.min(room,gEl.clientHeight*(1-G.hatChin/VH)-top-(b.offsetHeight-ul.offsetHeight)-2);
   ul.style.maxHeight=Math.max(60,room)+'px';const on=ul.querySelector('.on');
   if(on){if(on.offsetTop<ul.scrollTop)ul.scrollTop=on.offsetTop;else if(on.offsetTop+on.offsetHeight>ul.scrollTop+ul.clientHeight)ul.scrollTop=on.offsetTop+on.offsetHeight-ul.clientHeight}}
  posMenu();
 }
 function renderMenu(){const m=menu;if(!m)return;
- if(m.inBox){if(box){box.choices=m.items.map(it=>typeof it==='string'?it:it.label);box.sel=m.sel;box.more=false}if(m.onSel)m.onSel(m.sel);return}
+ if(m.inBox){if(box){box.choices=m.items.map(it=>typeof it==='string'?it:it.label);box.dis=m.items.some(it=>it&&it.dis)?m.items.map(it=>it&&it.dis?1:0):null;box.sel=m.sel;box.more=false}if(m.onSel)m.onSel(m.sel);return}
  menuEl.hidden=false;
  menuEl.innerHTML=(m.title?`<div class="mt">${esc(m.title)}</div>`:'')+m.items.map((it,i)=>{const o=typeof it==='string'?{label:it}:it;return`<div class="gi ${i===m.sel?'on':''} ${o.dis?'dis':''}" data-i="${i}"><span class="gc">${i===m.sel?'▶':''}</span>${esc(o.label)}</div>`}).join('')+(m.desc&&m.desc[m.sel]?`<div class="md">${esc(m.desc[m.sel])}</div>`:'');
  if(m.onSel)m.onSel(m.sel);posMenu();const on=menuEl.querySelector('.gi.on');if(on)on.scrollIntoView({block:'nearest'})}
 function posMenu(){if(menuEl.hidden)return;let b=6;const bx=dhost.querySelector('.bld'),tab=bx&&bx.querySelector('.bld-tab');
  if(G.mode==='battle'&&!hud.hidden)b=hud.offsetHeight+8;else if(bx)b=bx.offsetHeight+(tab?tab.offsetHeight:0)+10;menuEl.style.bottom=b+'px'}
 function choose(items,o={}){const first=Math.max(0,items.findIndex(it=>!(it&&it.dis)));return new Promise(res=>{menu={items,sel:o.sel??first,res,cancel:o.cancel,title:o.title,desc:o.desc,onSel:o.onSel,inBox:o.inBox};renderMenu()})}
-function closeMenu(v){const m=menu;menu=null;menuEl.hidden=true;if(m.inBox&&box)box.choices=null;if(Bt)Bt.hover=-1;m.res(v)}
+function closeMenu(v){const m=menu;menu=null;menuEl.hidden=true;if(m.inBox&&box){box.choices=null;box.dis=null}if(Bt)Bt.hover=-1;m.res(v)}
 async function ask(name,text,opts){await say(name,text,{keep:true,instant:false});const r=await choose(opts,{cancel:true,inBox:true});hideTB();return r<0?opts.length-1:r}
 function banner(t,ms=2200){ban.textContent=t;ban.hidden=false;clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,ms)}
 function fade(on){fadeEl.style.opacity=on?1:0;return sleep(340)}
@@ -227,46 +234,57 @@ function drawMapHud(camx,camy,night){
  cx.fillStyle=dim?PC.dim:PC.rust;cx.beginPath();cx.arc(bx+7,by+6,4.5,0,7);cx.fill();pT(MH.a,bx+5,by+1,PC.chipInk,11);
  pT(word,bx+13,by,dim?PC.dim:PC.cream,12);
 }
-// ---- BIG HAT: the handler. Back-office scene reused before and after every mission. ----
-function drawBigHat(x,base,k,t,s=2){
- const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(Math.round(x+a*s),Math.round(base+b*s),Math.round(w*s),Math.round(h*s))};
- // shoulders + vest + bolo
- P(-9,-6,18,6,'#7a4a2c');P(-3,-6,6,6,'#ece4d0');P(-1,-5,2,2,'#3fb8a8');P(-1,-3,1,3,'#1b1414');P(0,-3,1,3,'#1b1414');P(-9,-6,1,6,'#5a341e');P(8,-6,1,6,'#5a341e');
- // face, almost all of it lost under the brim
- P(-4,-12,8,6,'#e9b98f');P(-4,-12,8,4,'#0d0a12');P(-4,-8,8,1,'rgba(13,10,18,.55)');
- // toothpick, shifts sides every so often
- const tp=Math.floor(t/1.3)%3;P(tp===2?-4:1,-7,4,1,'#d9c08a');
- // two pinprick glints in the shadow, rarely
- if((t%7)>6.6){P(-2,-10,1,1,'#ffe9b0');P(1,-10,1,1,'#ffe9b0')}
- // the hat (fixed size; the growing-hat gag was dropped)
- const bw=Math.round(30*k),cw=Math.round(16*k),ch=Math.round(9*k);
- P(-bw/2,-14,bw,2,'#5a3a1e');P(-bw/2,-15,2,1,'#5a3a1e');P(bw/2-2,-15,2,1,'#5a3a1e');
- P(-cw/2,-14-ch,cw,ch,'#6b4626');P(-cw/2,-14-ch,cw,1,'#7e5530');P(-1,-14-ch,2,2,'#4a2f1a');
- P(-cw/2,-16,cw,2,'#1b1414');P(-2,-16,2,2,'#e0c25a');
-}
+// ---- BIG HAT: the handler. Back-room scene reused before and after every mission. ----
+// Spec 013: he is his approved portrait (drawBigHatPortrait below) drawn at double size, a 128 x 128 bust behind the desk,
+// so the scene and the box can never drift apart. The old small desk sprite is gone. The room is the spec 013 mockup's.
+// Big Hat is on screen when the loop draws this scene (not the board, a battle, a menu screen, the party or the map).
+const hatOnScreen=()=>G.scene==='bighat'&&G.mode!=='world'&&!CB&&!Bt&&!SCR&&!PM;
+let hatCv=null;
 function drawOffice(){
- const t=performance.now()/1000,sh=G.shout&&performance.now()<G.shout;
+ const now=performance.now(),t=now/1000,sh=G.shout&&now<G.shout;
+ // the face: his line's mouth frame and shout face come from drawBox (G.hatF); between lines, calm and shut
+ const hf=G.hatF&&box&&box.name==='BIG HAT'?G.hatF:{f:0,sh:false};
+ const fy=Math.round(VH*(VH>=300?.48:.43)),mid=VW/2,dx=mid-85,dy=fy-128;  // fy: the desk top, higher on short screens so the question list fits under his chin. dx, dy: the mockup's room (170 wide, desk at 128) moved onto this screen
+ G.hatChin=fy-10;  // the question list stops above his chin (drawBox)
  cx.save();if(sh)cx.translate(rnd(5)-2,rnd(3)-1);
- const fy=Math.round(VH*.5),mid=VW/2,S3=VH>=170?3:2;
- cx.fillStyle='#161b30';cx.fillRect(-4,-4,VW+8,VH+8);
- cx.fillStyle='#3a2616';cx.fillRect(-4,fy-28,VW+8,VH);for(let x=0;x<VW;x+=12){cx.fillStyle='#2c1c10';cx.fillRect(x,fy-28,1,VH)}
- // corkboard with one photo of a scarecrow, a calendar stuck on October
- cx.fillStyle='#8a6a3a';cx.fillRect(14,18,46,30);cx.fillStyle='#ece4d0';cx.fillRect(20,23,14,16);cx.fillStyle='#d9b552';cx.fillRect(25,26,4,4);cx.fillRect(23,30,8,6);cx.fillStyle='#c0392b';cx.fillRect(26,22,2,2);
- cx.fillStyle='#ece4d0';cx.fillRect(40,24,15,18);cx.fillStyle='#c0392b';cx.fillRect(40,24,15,4);
- // humming fluorescent tube that occasionally gives up
- const on=Math.random()>.03;cx.fillStyle=on?'#e6f0dc':'#4a5048';cx.fillRect(mid-40,4,80,3);
- if(on){const g=cx.createRadialGradient(mid,6,4,mid,6,110);g.addColorStop(0,'rgba(220,240,210,.14)');g.addColorStop(1,'rgba(220,240,210,0)');cx.fillStyle=g;cx.fillRect(0,0,VW,VH)}
- drawBigHat(mid,fy,1,t,S3);
- // desk, a box of crullers, a styrofoam cup
- cx.fillStyle='#4a2f1f';cx.fillRect(mid-72,fy,144,VH-fy);cx.fillStyle='#5e3c26';cx.fillRect(mid-72,fy,144,3);
- cx.fillStyle='#ece4d0';cx.fillRect(mid+26,fy-7,28,7);cx.fillStyle='#d99a2b';cx.fillRect(mid+29,fy-9,8,3);cx.fillRect(mid+40,fy-9,8,3);
- cx.fillStyle='#f4f1e8';cx.fillRect(mid-50,fy-9,8,9);cx.fillStyle='#3a2616';cx.fillRect(mid-49,fy-9,6,1);
+ const r=(x,y,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+dx,y+dy,w,h)},R=(x,y,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x,y,w,h)};
+ // wall, wainscot and floor, edge to edge
+ R(-4,-4,VW+8,VH+8,'#2a2030');for(let x=(dx%12+12)%12;x<VW;x+=12)R(x,0,1,dy+150,'#241a2a');
+ R(-4,dy+112,VW+8,3,'#3a2c3c');R(-4,dy+115,VW+8,35,'#221a28');for(let x=(dx+4)%10;x<VW;x+=10)R(x,dy+115,1,35,'#1c1622');
+ R(-4,dy+150,VW+8,VH,'#1b1f33');for(let y=dy+156;y<VH;y+=8)R(0,y,VW,1,'#161a2c');for(let y=dy+152,i=0;y<VH;y+=8,i++)R((i*23)%60+dx,y,1,8,'#161a2c');
+ // the flickering tube's pool of light
+ const on=Math.random()>.03;
+ if(on){cx.fillStyle='rgba(220,240,230,.06)';cx.beginPath();cx.moveTo(60+dx,70+dy);cx.lineTo(130+dx,70+dy);cx.lineTo(160+dx,150+dy);cx.lineTo(30+dx,150+dy);cx.fill()}
+ // door with a little lit window
+ r(10,62,30,88,'#3a2a34');r(11,63,28,86,'#45333e');r(16,70,18,14,'#d9772b');r(17,71,16,12,'#e8a050');r(24,71,1,12,'#45333e');r(34,108,3,3,'#c0c0c8');
+ r(12,92,26,7,'#e8dcc0');for(let x=14;x<36;x+=3)r(x,94,2,3,'#2a2030');
+ // corkboard with the scarecrow photo, off to his right so the brim never covers it
+ r(98,58,64,44,'#5a3a1c');r(100,60,60,40,'#9a6a3a');for(let i=0;i<40;i++)r(100+(i*37)%60,60+(i*17)%40,1,1,'#84582e');
+ r(106,64,14,18,'#e8dcc0');r(107,65,12,14,'#1b1f33');r(110,66,6,3,'#6e4630');r(109,69,8,1,'#6e4630');r(111,70,4,4,'#d6a43a');r(112,71,1,1,'#1b1f33');r(114,71,1,1,'#1b1f33');r(108,75,10,1,'#8a6a3a');r(112,74,2,5,'#6e4a2a');r(112,63,2,2,'#b5532e');
+ r(126,66,18,12,'#d8cdb4');for(let y=68;y<77;y+=2)r(128,y,13,1,'#8a8070');r(134,64,2,2,'#b5532e');
+ r(146,72,10,14,'#e8dcc0');r(148,74,6,6,'#7a6a8a');r(150,71,2,2,'#b5532e');
+ r(108,86,22,10,'#d6a43a');r(110,88,16,1,'#6e4a2a');r(110,91,12,1,'#6e4a2a');r(118,84,2,2,'#b5532e');
+ cx.strokeStyle='#b5532e';cx.lineWidth=1;cx.beginPath();cx.moveTo(113.5+dx,64+dy);cx.lineTo(135+dx,65+dy);cx.lineTo(151+dx,72+dy);cx.moveTo(135+dx,65+dy);cx.lineTo(119+dx,85+dy);cx.stroke();
+ // Big Hat: the portrait without its backdrop, doubled. The toothpick switches sides every few seconds;
+ // two pinprick glints show in the brim shadow, rarely (Cast).
+ if(!hatCv){hatCv=document.createElement('canvas');hatCv.width=hatCv.height=64}
+ const hc=hatCv.getContext('2d');hc.clearRect(0,0,64,64);drawBigHatPortrait(hc,hf.sh,hf.f,true,Math.floor(t/4)%2===1);
+ const bx=mid-64,by=fy-112;cx.imageSmoothingEnabled=false;cx.drawImage(hatCv,bx,by,128,128);
+ if(!hf.sh&&t%7>6.6){R(bx+54,by+66,1,1,'#ffe9b0');R(bx+73,by+66,1,1,'#ffe9b0')}
+ // the desk in front of him covers his lower vest; a box of crullers and a styrofoam cup on top
+ r(20,128,130,6,'#7a5234');r(20,128,130,1,'#9a6c44');r(22,134,126,22,'#5a3a24');r(22,134,126,1,'#3e2818');r(26,138,30,14,'#4e3220');r(114,138,30,14,'#4e3220');
+ r(108,118,34,10,'#e8dcc0');r(108,118,34,2,'#ff9ec8');r(107,116,36,2,'#d8c8b0');
+ [[112,121],[121,121],[130,121]].forEach(([x,y])=>{r(x,y,7,4,'#d9772b');r(x+1,y,5,1,'#f0a860');r(x+3,y+1,1,2,'#8a4a1c')});
+ r(30,119,7,9,'#d8cdb4');r(37,121,2,4,'#d8cdb4');r(31,119,5,1,'#3a2418');
+ // the tube itself, humming, and now and then giving up
+ R(dx+62,6,46,3,on?'#e8f0e0':'#4a5048');R(dx+60,5,2,5,'#8a8a94');R(dx+108,5,2,5,'#8a8a94');if(on)R(dx+62,9,46,1,'#a0b0a8');  // pinned to the ceiling
  cx.restore();
  if(sh){cx.fillStyle='rgba(170,0,30,.28)';cx.fillRect(0,0,VW,VH)}
 }
 // ---- BIG HAT PORTRAIT: 64 x 64, stands on the text box whenever BIG HAT speaks (Art build pass 2, Nov 21, 2026). ----
-// Drawing code copied from the Asset Library (bighat.js), renamed so it doesn't clash with the desk sprite above.
-function drawBigHatPortrait(c,shout,frame){
+// Drawing code copied from the Asset Library (bighat.js). Spec 013 adds two options for the scene, which draws this same
+// art at double size: noBg leaves out the plain backdrop, and pickL puts the calm face's toothpick in the other corner.
+function drawBigHatPortrait(c,shout,frame,noBg,pickL){
   const SK='#c98a62',SS='#a86a46',SD='#7a4a30',MU='#4a2e1c',MH='#6e4630',MS='#341e12',DK='#0c0a10',TP='#e6c98a',TD='#b8955a';
   const H='#7a5a34',HL='#a07a48',HS='#5a4024',HD='#3a2814',HX='#24180c';
   const V='#6b3a22',VL='#8e522e',VS='#4a2616',CR='#d8cdb4',CS='#b0a68e';
@@ -275,7 +293,7 @@ function drawBigHatPortrait(c,shout,frame){
   const r=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x+ox,y+oy,w,h)};
   const px=(a,col)=>a.forEach(p=>r(p[0],p[1],1,1,col));
   // backdrop (plain; the scene shows behind the dialog box)
-  c.fillStyle='#2b2a35';c.fillRect(0,0,64,64);c.fillStyle='#25242e';c.fillRect(0,52,64,12);
+  if(!noBg){c.fillStyle='#2b2a35';c.fillRect(0,0,64,64);c.fillStyle='#25242e';c.fillRect(0,52,64,12)}
   if(sh){c.fillStyle=f%2?'#e0503a':'#ff7a5a';[[4,8],[7,5],[5,11],[3,14],[56,7],[59,4],[57,11],[60,14],[3,42],[59,43]].forEach(p=>c.fillRect(p[0],p[1],2,1))}
   const open=sh?true:f;
   // vest, shirt, bolo
@@ -299,7 +317,8 @@ function drawBigHatPortrait(c,shout,frame){
     r(23,40,2,4,MU);r(40,40,2,4,MU);r(23,44,1,2,MU);r(41,44,1,2,MU);r(23,40,1,5,MS);r(41,40,1,5,MS);
     if(open){r(28,42,9,3,'#2a0c0a');r(29,42,7,1,'#f0e8d8');r(30,44,5,1,'#a03a32');r(28,45,9,1,'#a85a4a')}
     else{r(27,42,11,1,'#3a1a14');r(28,43,9,1,'#a85a4a')}
-    r(37,42,1,1,'#5a3a2a');r(38,41,2,1,TP);r(40,40,2,1,TP);r(42,39,1,1,TP);r(43,38,1,1,TD);
+    const tp=(x,y,w,col)=>r(pickL?64-x-w:x,y,w,1,col);  // mirrored across his face when pickL
+    tp(37,42,1,'#5a3a2a');tp(38,41,2,TP);tp(40,40,2,TP);tp(42,39,1,TP);tp(43,38,1,TD);
     px([[25,46],[27,47],[29,46],[35,46],[37,47],[39,46],[26,44],[38,44],[31,47],[33,47],[30,48],[34,48]],SS);
     r(32,47,1,2,SD);
   }else{
@@ -324,6 +343,27 @@ function drawBigHatPortrait(c,shout,frame){
   r(9,22,46,1,H);r(0,23,64,3,H);r(3,23,58,1,HL);r(0,25,64,1,HS);
   r(4,26,56,1,HS);r(10,27,44,1,HD);r(16,28,32,1,HX);
   px([[12,24],[20,24],[44,24],[52,24],[6,24],[58,24]],HS);
+}
+// ---- BIG HAT'S TWO QUESTIONS (spec 013): every case's briefing asks them the same way ----
+// topics: the case's four, [{id, label, answer: [line, line], note: 'its INTEL line'}]. Pick one, he answers, and the list
+// comes back with it greyed; after two he says "That's two." No questions ends it at once. The picks save on the case's
+// state in bl.season (intel: [ids]), so a reload keeps the notes and edges; every briefing asks again from none.
+// A save without intel plays as if no questions were asked.
+function intelOf(id=G.case){const s=loadSeason(),e=s.cases[id];return e&&Array.isArray(e.intel)?e.intel.filter(k=>typeof k==='string'):[]}
+const intelOn=k=>intelOf().includes(k);
+function setIntel(ids){const s=loadSeason(),e=s.cases[G.case];if(!e)return;e.intel=ids.slice();store.set(seasonKey(),s)}
+async function twoQuestions(topics){
+ const W=BLS.BRIEF,got=[];setIntel(got);
+ while(got.length<2){
+  await say('BIG HAT',W.ask,{keep:true,instant:got.length>0});
+  const items=topics.map(t=>({label:t.label,dis:got.includes(t.id)})).concat([W.none]);
+  const r=await choose(items,{inBox:true});hideTB();
+  const t=topics[r];if(!t){await say('BIG HAT',W.noQ);return got}
+  got.push(t.id);setIntel(got);
+  for(const l of t.answer)await say('BIG HAT',l);
+  banner(W.banner);
+ }
+ await say('BIG HAT',W.two);return got;
 }
 async function shout(text){G.shout=performance.now()+750;G.shoutPor=true;try{return await say('BIG HAT',text)}finally{G.shoutPor=false}}
 async function bigHatScene(fn){await fade(1);G.mode='scene';G.scene='bighat';await fade(0);await sleep(400);await fn();await fade(1);G.scene=null}

@@ -9,7 +9,7 @@
 // a plain string is narration, ['WHO', 'line'] is someone talking. {code} and {first} are the lead's; other {keys} are
 // filled by the script. Menu words, items and names stay in strings.js.
 const TEXT={
- next:{proof:'Find something Deputy Ross can believe: {n}/3 town clues.',ross:'Take what you\'ve found to Deputy Ross, by his cruiser.',
+ next:{dot:'Start with Dot at the diner, then find something Deputy Ross can believe: {n}/3 town clues.',proof:'Find something Deputy Ross can believe: {n}/3 town clues.',ross:'Take what you\'ve found to Deputy Ross, by his cruiser.',
   gate:'Get through the maze gate, on the east side of town.',maze:'Go through the maze gate, on the east side of town.',
   find:'Find the missing in the corn maze ({n}/3 cut down), then reach its center.',home:'Get home.'},
  rewritten:'This case file was rewritten while you were away. Your team starts it over from the briefing, with everything they carry.',
@@ -17,14 +17,25 @@ const TEXT={
  open1:'SATURDAY · 11:52 PM',
  open2:'A text from an unlisted number: "BACK OF THE DONUT PLACE. EXIT 253. NOW."',
  brief:['The back room of a 24-hour donut shop off I-5. Spurs on linoleum.',['BIG HAT','Agent {code}. Sit.'],'There is no chair.',
-  ['BIG HAT','Marrow Creek, Oregon. Population eight hundred and twelve.'],['BIG HAT','Three folks gone in nine days. All during their Harvest Lantern Walk.'],
-  ['BIG HAT','Local police say they wandered off.'],['BIG HAT','Local police also mailed me a photo of a scarecrow wearin\' one victim\'s wedding ring.'],
+  ['BIG HAT','Agency rang six teams tonight. You were awake.'],
+  ['BIG HAT','Marrow Creek, Oregon. Eight hundred and twelve people and a Dairy Queen that closes at six.'],
+  ['BIG HAT','Three of \'em gone in nine days. All durin\' the Harvest Lantern Walk.'],
+  ['BIG HAT','Local police say they wandered off.'],['BIG HAT','Local police also mailed me a photo. Scarecrow in a church dress, wearin\' one victim\'s wedding ring.'],
   ['BIG HAT','I don\'t care for scarecrows, {first}. A scarecrow is a man with the man taken out.']],
  briefShout:'AND I WILL NOT HAVE IT IN MY JURISDICTION.',
  brief2:['He sets down his cruller. His hand is perfectly steady.'],
- briefQ:'Questions.',briefOpts:['Who are you?','Why us?','No questions.'],
- briefA:['I\'m the fella in the big hat. That\'s the whole file.','You were awake.','Good. I like you. Don\'t make it weird.'],
- brief3:[['BIG HAT','You go in with badges. Town knows you\'re federal. Act like it.'],['BIG HAT','Ask around. Find \'em. Don\'t ring anything you were asked not to ring.']],
+ // Big Hat's two questions (spec 013): the four topics, his two-box answer, the Case file's INTEL line. The edges are in
+ // the scripts below (intelOn('town'), 'photo', 'law', 'maze'). "Two questions", "No questions" and "That's two" are strings.js BRIEF.
+ intel:[
+  {id:'town',label:'The town',answer:['Diner\'s the only thing open durin\' the Walk. Woman named Dot runs it.','Dot\'s known every soul in that town since the Carter administration. Start with the pie.'],
+   note:'Dot runs the diner, the only place open during the Walk. She knows everybody.'},
+  {id:'photo',label:'The scarecrow photo',answer:['Ring\'s real. I had a fella check.','Somebody dressed that scarecrow careful. Like for church. Count how many more they made.'],
+   note:'The ring on the scarecrow is real. Somebody dressed it with care. Count the scarecrows.'},
+  {id:'law',label:'The local law',answer:['One deputy. Ross. Only one who called it in, and he called from his own phone.','He won\'t hand you the key to anything on a hunch. Bring him three things that ain\'t crazy.'],
+   note:'Deputy Ross called it in from his own phone. He needs three things that aren\'t crazy.'},
+  {id:'maze',label:'The corn maze',answer:['Corn maze on the east side. Gate\'s chained till dusk.','You cut that chain loud, the whole town hears it. Find a key or find a quiet tool.'],
+   note:'The gate is chained until dusk. Forcing it is loud.'}],
+ brief3:[['BIG HAT','You go in with badges. Town knows you\'re federal. Act like it.'],['BIG HAT','Ask around. Find \'em. Bring \'em home if they\'ll come.']],
  brief4:[['BIG HAT','And {first}? Be home by Sunday. I don\'t do paperwork on a Sunday.'],'You never see his eyes. Just the brim, and under it, the toothpick, moving.'],
  arrive:'OPERATION STILL HARVEST. Talk to people with A. Press START for your notebook and party.',
  role:{Investigator:'Let\'s knock on some doors.',Healer:'I brought the good bandages.',Analyst:'For the record, I don\'t believe in any of this.',Vanguard:'Point me at it.',Lorekeeper:'I\'ve read about towns like this. None of the endings were happy.',Tech:'No cell signal. That\'s... not great.',Bruiser:'I\'ll do the talking. And the hitting.',Support:'Everybody drink some water.',Tracker:'Corn this tall in October is wrong.',Confessor:'I\'ll pray for us. Somebody should.',Courier:'I\'ve delivered to Marrow Creek. Nobody ever signs.',Undertaker:'Lovely town. Very... still.',Scrapper:'Got my keys, got my mop. Let\'s go.',Morale:'Anybody want a Bomb Pop? No? More for me.'},
@@ -272,8 +283,11 @@ const CASE_ITEMS={
 const LOOT=['bandage','painkillers','energy','roadflare','salt','salts'];
 const townClues=()=>G.clues.filter(c=>['scare','walk','count','drive','bell'].includes(c.id)).length;
 const has=id=>G.clues.some(c=>c.id===id);
+// the briefing's edges (spec 013): the scarecrow photo, +10% on every Search in town (Keegan's pick, Nov 22: the town's
+// scarecrows have no Search of their own); the local law, +10% on Persuade with Ross. +10 is a first guess (spec 013).
+const townEye=()=>intelOn('photo')?10:0,rossEdge=()=>intelOn('law')?10:0;
 const caseNext=()=>{const N=TEXT.next,F=G.flags;
- if(!F.key&&!F.rossNo)return townClues()>=3?N.ross:N.proof.replace('{n}',townClues());
+ if(!F.key&&!F.rossNo)return townClues()>=3?N.ross:(intelOn('town')&&!F.dotM?N.dot:N.proof).replace('{n}',townClues());  // the town intel puts Dot first (spec 013)
  if(!F.volDone)return N.gate;if(!F.gateOpen)return N.maze;if(!F.boss)return N.find.replace('{n}',G.rescued||0);return N.home};
 // overstepping: which step the case is on (open case: Clean, Local chief, Agency call, Federal agents)
 const stepName=()=>stepsOf()[loadSeason().overstep|0]||'Clean';
@@ -285,7 +299,7 @@ async function caseOpening(){
  await said(TEXT.open1);await said(TEXT.open2);
  await bigHatScene(async()=>{
   await play(TEXT.brief);await shout(TEXT.briefShout);await play(TEXT.brief2);
-  const q=await ask('BIG HAT',TEXT.briefQ,TEXT.briefOpts);if(q>=0)await say('BIG HAT',TEXT.briefA[q]);
+  await twoQuestions(TEXT.intel);  // two of four topics, each an INTEL note and an edge (spec 013, engine.js)
   await play(TEXT.brief3);
   await requisition();  // each agent may roll Bureaucracy once for one catalog item (field.js)
   await play(TEXT.brief4);
@@ -325,18 +339,18 @@ function buildTown(){
   {id:'vol',x:28,y:9,dir:'left',talk:talkVol,on:()=>(F.key||F.rossNo)&&!F.volDone}
  ];
  // Hotspots (spec 006 A2): A opens the lead's options with their odds, Look first. once: an option that goes once done.
- O['5,3']={id:'diner',look:TEXT.dinerLook,opts:[{use:'sweep',once:'dinerSalt',ok:async()=>{await said(TEXT.dinerSweep);await pickup('salt')},fail:()=>said(TEXT.dinerNone)}]};
+ O['5,3']={id:'diner',look:TEXT.dinerLook,opts:[{use:'sweep',mod:townEye,once:'dinerSalt',ok:async()=>{await said(TEXT.dinerSweep);await pickup('salt')},fail:()=>said(TEXT.dinerNone)}]};
  O['23,3']={id:'church',name:TEXT.church,look:()=>play(F.bell||F.carving?[TEXT.churchAfter]:TEXT.churchLook),opts:()=>churchOpts(),used:()=>!!((F.bell||F.carving)&&F.churchRest)};
  O['14,7']=O['15,7']={id:'podium',name:TEXT.podium,look:()=>play(F.binder?TEXT.podGone:TEXT.podLook),opts:()=>podiumOpts(),used:()=>has('walk')&&(F.binder||F.binderTried)};
  O['11,7']={id:'pellScare',look:'The Pell family scarecrow. A cheerful straw man in a sweater vest. Its stitched smile is wider than when you first looked.'};
  O['18,7']={id:'ruizScare',look:'The Ruiz family scarecrow. It\'s facing you. You\'re almost sure it was facing the podium a second ago.'};
  O['12,11']={id:'board',name:'NOTICE BOARD',look:()=>play(TEXT.board),opts:()=>has('drive')?[]:[
-  {use:'sweep',ok:()=>findDrive(TEXT.boardSweep)},{use:'paper',ok:()=>findDrive(TEXT.boardPaper)},{use:'examine',ok:()=>findDrive(TEXT.boardExam)}],used:()=>has('drive')};
+  {use:'sweep',mod:townEye,ok:()=>findDrive(TEXT.boardSweep)},{use:'paper',ok:()=>findDrive(TEXT.boardPaper)},{use:'examine',ok:()=>findDrive(TEXT.boardExam)}],used:()=>has('drive')};
  O['8,13']=O['9,13']={id:'cider',name:'CIDER',look:()=>F.cider?said(TEXT.ciderGone):play(TEXT.cider),opts:()=>ciderOpts(),used:()=>!!F.cider&&has('cider')};
  O['12,17']={id:'sign',look:()=>play(TEXT.sign)};
  O['29,9']=O['29,10']={id:'gate',name:TEXT.gate,look:()=>said(F.gateOpen?TEXT.gateOpen:TEXT.gateShut),opts:()=>gateOpts(),used:()=>false};
  O['3,15']=O['4,15']={id:'cruiser',name:'CRUISER',look:()=>play(TEXT.cruiser),opts:()=>cruiserOpts(),used:()=>!!(F.flares&&F.cruiserRest)};
- O['3,11']={id:'hay',look:TEXT.hayLook,opts:[{use:'sweep',once:'hayCrackers',ok:async()=>{await said(TEXT.haySweep);await pickup('firecrackers')},fail:()=>said('Just hay. Warm hay.')}]};
+ O['3,11']={id:'hay',look:TEXT.hayLook,opts:[{use:'sweep',mod:townEye,once:'hayCrackers',ok:async()=>{await said(TEXT.haySweep);await pickup('firecrackers')},fail:()=>said('Just hay. Warm hay.')}]};
  // Mr. Sutter, Pip's dad, behind the south fence (motivation moment: Family; Motivations)
  O['22,17']={id:'sutter',name:'BACKYARD',look:()=>said(F.sutter?TEXT.sutterAfter:TEXT.sutter),
   opts:()=>F.sutter?[]:[{label:TEXT.sutterOpt,show:()=>holdersOf('Family').length>0,run:sutterHome}],used:()=>!!F.sutter};
@@ -400,7 +414,7 @@ const MAPS={town:buildTown,maze:buildMaze};
 
 // ================= TOWN SCRIPTS =================
 async function talkDot(){
- const F=G.flags;if(!F.dot1){F.dot1=1;await play(TEXT.dot1)}
+ const F=G.flags;if(!F.dot1){F.dot1=1;if(!intelOn('town'))await play(TEXT.dot1)}  // the town intel skips her warm-up (spec 013)
  const r=await ask('DOT',TEXT.dotQ,TEXT.dotOpts);
  if(r===0){F.dotM=1;await play(TEXT.dotM);clue('scare',TEXT.cScare)}
  if(r===1){F.dotW=1;await play(TEXT.dotW)}
@@ -457,7 +471,7 @@ async function readCarving(){G.flags.carving=1;await play(TEXT.carving);await sa
 // motivation moment (Family): bringing Mr. Sutter in costs the lead a horror; each Family agent gets 1d4 SAN back
 async function sutterHome(){G.flags.sutter=1;await play(TEXT.sutterDo);await horror(HORRORS.sutter);for(const m of holdersOf('Family'))await motivate(m);checkpoint()}
 function cruiserOpts(){const F=G.flags;return[
- {use:'sweep',show:()=>!F.flares,ok:async()=>{F.flares=1;await said(TEXT.cruiserSweep);await pickup('roadflare')},fail:()=>said('Fast-food bags. A sock. Ross clears his throat.')},
+ {use:'sweep',mod:townEye,show:()=>!F.flares,ok:async()=>{F.flares=1;await said(TEXT.cruiserSweep);await pickup('roadflare')},fail:()=>said('Fast-food bags. A sock. Ross clears his throat.')},
  {label:TEXT.cruiserRest,show:()=>F.volDone&&!F.cruiserRest,run:async()=>{F.cruiserRest=1;await play(TEXT.cruiserRested);await rest(1);checkpoint()}}
 ]}
 // Deputy Ross: 3 town clues get the key, and the deduction (who picks?). At Local chief he needs talking round.
@@ -470,7 +484,7 @@ async function talkRoss(){
  if(stepAt('Local chief')&&!F.rossOk){
   await said(TEXT.rossChief);let ok=false;
   await hotspot({name:'DEPUTY ROSS',opts:[
-   {use:'talk',official:1,ok:async()=>{ok=true;await play(TEXT.rossTalkOk)},fail:()=>said(TEXT.rossTalkNo)},
+   {use:'talk',official:1,mod:rossEdge,ok:async()=>{ok=true;await play(TEXT.rossTalkOk)},fail:()=>said(TEXT.rossTalkNo)},
    {use:'creds',official:1,ok:async()=>{ok=true;await play(TEXT.rossCredOk);await stepBack1()},fail:()=>said(TEXT.rossTalkNo)},
    {item:'cash',label:'Slip him the cash',run:async()=>{ok=true;await said('Ross looks at the roll of twenties for a long time. Then he puts it in his hat.')}}]},'ross');
   if(!ok){F.rossNo=1;await said(TEXT.rossNo);checkpoint();return}
@@ -510,6 +524,8 @@ function gateOpts(){const F=G.flags;if(F.gateOpen||!F.volDone)return[];
   {item:'bolt',label:'Cut the chain',run:async()=>{await said(TEXT.gateCut);await enterMaze()}}]}
 async function enterMaze(){
  G.flags.gateOpen=1;await fade(1);goMap('maze',1,11,'right');checkpoint();await fade(0);await play(TEXT.enter);
+ // the corn maze intel (spec 013): the roamers' beats show on the first way in, as On guard's do, with no roll
+ if(intelOn('maze')&&!G.fs.used.mazeIntel){G.fs.used.mazeIntel=1;G.fs.used.onguard=1;setTrail(G.M.roamers.flatMap(r=>r.path),'beat');await said(TEXT.onguardOk)}
  // Search's On guard (75): entering a danger zone, roll to spot the roamers' beats
  const L=lead();if(skillVal(L.a,'Search')>=75&&!G.fs.used.onguard){G.fs.used.onguard=1;const o=SR.pct(chanceOf(L,'Search'));
   await say('',resultLine('ON GUARD · SEARCH',o),{auto:1000});
@@ -642,6 +658,6 @@ const DEBRIEF_DATA={
 // items: this case's own items. next: the Case file's Next line. quiet: false, an open case (they came as feds).
 // loot: the roamers' drop table. onArea: the case's area-change hook (the clean-up crew).
 const TILEDESC=TEXT.tiles;
-registerCase({id:'still-harvest',card:caseCard,opening:caseOpening,portraits:name=>SHA.portraits[name]||(name==='THE GLEANER'?SHB.portrait:null),
+registerCase({id:'still-harvest',card:caseCard,opening:caseOpening,intel:TEXT.intel,portraits:name=>SHA.portraits[name]||(name==='THE GLEANER'?SHB.portrait:null),
  enemies:EN,sprite:(k,f)=>SHB.sprite(k,f),spriteSize:k=>SHB.size(k),items:CASE_ITEMS,next:caseNext,quiet:false,loot:LOOT,onArea,
  debrief:DEBRIEF_DATA,label:endingLabel,facts:endingFacts});
