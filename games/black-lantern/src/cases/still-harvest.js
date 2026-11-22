@@ -3,9 +3,12 @@
 // Needs engine.js loaded first. Everything here is plain data and small async scripts the engine calls.
 
 // ================= TEXT =================
-// This case's text block. Empty for now: the Still Harvest rebuild moves its dialog, case text and line pools here.
-// Until then the demo's lines stay inline in the scripts below.
-const TEXT={};
+// This case's text block. The Still Harvest rebuild (Demo 5 part C) moves its dialog, case text and line pools here.
+// Until then the demo's lines stay inline in the scripts below. Part A adds the Case file's Next lines.
+const TEXT={
+ next:{proof:'Find proof for Deputy Ross: {n}/3 town clues.',gate:'Take the key to the maze gate, on the east side of town.',
+  maze:'Go through the maze gate, on the east side of town.',find:'Find the missing in the corn maze ({n}/3 cut down), then reach its center.',home:'Get home.'}
+};
 // The case board card (spec 004, step 3). Teaser lines only: no twist, no solution.
 const caseCard={
  file:1,
@@ -18,13 +21,28 @@ const caseCard={
 
 // ================= CASE DATA =================
 const EN={
- crow:{name:'Crowling',hp:10,dex:14,skill:45,dmg:[1,4],san:['0','1'],moves:[['hit',1]],verb:'pecks at',die:'bursts into black feathers'},
- husk:{name:'Husk Scout',hp:15,dex:9,skill:40,dmg:[1,6],san:['0','1d3'],moves:[['hit',3],['san',1]],verb:'grabs at',sanText:'The Husk Scout recites the Scout Oath. Every word is a name you know.',sanHit:['0','1d2'],die:'comes apart into straw and merit badges'},
- hound:{name:'Bale Hound',hp:20,dex:12,skill:50,dmg:[1,8],san:['0','1d3'],moves:[['hit',1]],verb:'bites',die:'collapses into loose hay'},
- long:{name:'Long Man',hp:28,dex:7,skill:50,dmg:[1,10],san:['1','1d6'],moves:[['hit',2],['san',1]],verb:'reaches down for',sanText:'The Long Man bends down and looks at you. Just looks.',sanHit:['0','1d4'],die:'topples like a felled tree'},
- vol:{name:'Volunteer',hp:18,dex:10,skill:45,dmg:[1,6],san:['0','1d3'],moves:[['hit',3],['san',1]],verb:'swings a clipboard at',sanText:'The Volunteer reads your name off the clipboard. Then your mother\'s.',sanHit:['0','1d2'],die:'folds over like an empty coat'},
- gleaner:{name:'The Gleaner',hp:110,dex:11,skill:55,dmg:[2,6],san:['1','1d8'],moves:[['hit',4],['all',2],['san',2]],verb:'reaps',allText:'The Gleaner sweeps its sickles through the corn!',allDmg:[1,6],sanText:'The Gleaner speaks your names, one by one, as if tasting them.',sanHit:['1','1d4'],die:'goes out'}
+ crow:{name:'Crowling',hp:10,dex:14,skill:45,dmg:[1,4],san:['0','1'],moves:[['hit',1]],verb:'pecks at',die:'bursts into black feathers',horror:{tier:'unsettling',kind:'unnatural'}},
+ husk:{name:'Husk Scout',hp:15,dex:9,skill:40,dmg:[1,6],san:['0','1d3'],moves:[['hit',3],['san',1]],verb:'grabs at',sanText:'The Husk Scout recites the Scout Oath. Every word is a name you know.',sanHit:['0','1d2'],die:'comes apart into straw and merit badges',horror:{tier:'disturbing',kind:'unnatural',subj:'scarecrows'}},
+ hound:{name:'Bale Hound',hp:20,dex:12,skill:50,dmg:[1,8],san:['0','1d3'],moves:[['hit',1]],verb:'bites',die:'collapses into loose hay',horror:{tier:'disturbing',kind:'unnatural',subj:'dogs'}},
+ long:{name:'Long Man',hp:28,dex:7,skill:50,dmg:[1,10],san:['1','1d6'],moves:[['hit',2],['san',1]],verb:'reaches down for',sanText:'The Long Man bends down and looks at you. Just looks.',sanHit:['0','1d4'],die:'topples like a felled tree',horror:{tier:'severe',kind:'unnatural'}},
+ vol:{name:'Volunteer',hp:18,dex:10,skill:45,dmg:[1,6],san:['0','1d3'],moves:[['hit',3],['san',1]],verb:'swings a clipboard at',sanText:'The Volunteer reads your name off the clipboard. Then your mother\'s.',sanHit:['0','1d2'],die:'folds over like an empty coat',horror:{tier:'disturbing',kind:'unnatural',subj:'scarecrows'}},
+ gleaner:{name:'The Gleaner',hp:110,dex:11,skill:55,dmg:[2,6],san:['1','1d8'],moves:[['hit',4],['all',2],['san',2]],verb:'reaps',allText:'The Gleaner sweeps its sickles through the corn!',allDmg:[1,6],sanText:'The Gleaner speaks your names, one by one, as if tasting them.',sanHit:['1','1d4'],die:'goes out',horror:{tier:'shattering',kind:'unnatural',subj:'the Gleaner',known:true}}
 };
+// horror on sight (spec 006 A7): each enemy above carries its old SAN size as a tier of the SAN loss table, with its kind
+// and phobia subject. The map's horrors, at their old sizes (spec 006 A7): tier, kind, phobia subject; once per case each.
+const HORRORS={
+ bell:{id:'bell',tier:'disturbing',kind:'unnatural',subj:'scarecrows',label:'Watching the scarecrows move'},
+ voice:{id:'voice',tier:'disturbing',kind:'unnatural',subj:'the Gleaner',all:true,label:'Hearing your name in that voice'}
+};
+// this case's own items (case-only: the pin icon; Big Hat sorts them at the debrief)
+const CASE_ITEMS={
+ coffee:{name:'Thermos coffee',type:'Drink',desc:'Restore 1d4+1 WP.',pin:1,
+  mapUse:async()=>{const t=await pickMember('WHO DRINKS?',()=>true);if(!t)return false;const g=roll(1,4,1);t.wp=Math.min(t.mwp,t.wp+g);await say('',`${t.name} drinks gas-station coffee. +${g} WP.`);return true},
+  battleUse:async(m)=>{const t=await pickAlly({title:'WHO DRINKS?',noKO:true});if(!t)return false;const g=roll(1,4,1);t.wp=Math.min(t.mwp,t.wp+g);await say('',`${t.name} drinks gas-station coffee. +${g} WP.`,{auto:1000});return true}},
+ bell:{name:'Church handbell',type:'Tool',desc:'Battle: every foe flinches and freezes for a round.',pin:1,
+  battleUse:async(m)=>{aliveFoes().forEach(e=>e.stun+=1);await say('',`${m.name} rings the church handbell. BONNNG. Every foe flinches and freezes.`,{auto:1300});return true}}
+};
+const caseNext=()=>{const N=TEXT.next;if(!G.flags.key)return N.proof.replace('{n}',townClues());if(!G.flags.volDone)return N.gate;if(!G.flags.gateOpen)return N.maze;if(!G.flags.boss)return N.find.replace('{n}',G.rescued||0);return N.home};
 const ENC_EARLY=[['crow','crow'],['husk'],['crow'],['hound']];
 const ENC_LATE=[['husk','crow'],['hound','crow'],['crow','crow','crow'],['long'],['husk','husk'],['hound']];
 const ROLE_LINE={Investigator:'Let\'s knock on some doors.',Healer:'I brought the good bandages.',Analyst:'For the record, I don\'t believe in any of this.',Vanguard:'Point me at it.',Lorekeeper:'I\'ve read about towns like this. None of the endings were happy.',Tech:'No cell signal. That\'s... not great.',Bruiser:'I\'ll do the talking. And the hitting.',Support:'Everybody drink some water.',Tracker:'Corn this tall in October is wrong.',Confessor:'I\'ll pray for us. Somebody should.',Courier:'I\'ve delivered to Marrow Creek. Nobody ever signs.',Undertaker:'Lovely town. Very... still.',Scrapper:'Got my keys, got my mop. Let\'s go.',Morale:'Anybody want a Bomb Pop? No? More for me.'};
@@ -82,23 +100,25 @@ function buildTown(){
  g[19][14]=',';g[19][15]=',';
  [[1,14],[1,15],[1,16],[28,14],[28,15],[28,16],[27,16],[2,16],[1,18],[28,18]].forEach(([x,y])=>g[y][x]='T');
  const O={};
+ // out: nothing new to say, so the bubble shows "…" (spec 006 A5); Deputy Ross uses the engine's rule (no new clue since)
  const npcs=[
-  {id:'dot',x:6,y:5,dir:'down',talk:talkDot},
-  {id:'pell',x:14,y:6,dir:'down',talk:talkMayor},
-  {id:'pip',x:21,y:13,dir:'left',talk:talkPip},
+  {id:'dot',x:6,y:5,dir:'down',talk:talkDot,out:()=>!!(G.flags.dotM&&G.flags.dotW)},
+  {id:'pell',x:14,y:6,dir:'down',talk:talkMayor,out:()=>!!(G.flags.pellW&&G.flags.pellM)},
+  {id:'pip',x:21,y:13,dir:'left',talk:talkPip,out:()=>!!G.flags.pipGift},
   {id:'ross',x:6,y:14,dir:'down',talk:talkRoss},
   {id:'vol',x:28,y:9,dir:'left',talk:talkVol,on:()=>G.flags.key&&!G.flags.volDone}
  ];
- O['5,3']=async()=>{await say('','The diner door is locked. A sign in the window: GONE TO THE WALK. BACK SOON. BACK SOON. BACK SOON.')};
- O['23,3']=talkChurch;
+ // Hotspots (spec 006 A2, A7): A opens the lead's options, Look first; a Look-only hotspot just plays its Look.
+ O['5,3']={id:'diner',look:'The diner door is locked. A sign in the window: GONE TO THE WALK. BACK SOON. BACK SOON. BACK SOON.'};
+ O['23,3']={id:'church',name:'CHURCH',look:talkChurch,opts:()=>G.flags.bell?[]:[{label:'Ring the bell',run:ringBell}],used:()=>!!(G.flags.bell&&G.flags.churchAfter)};
  O['14,7']=O['15,7']=talkMayor;
- O['11,7']=async()=>{await say('','The Pell family scarecrow. A cheerful straw man in a sweater vest. Its stitched smile is wider than when you first looked.')};
- O['18,7']=async()=>{await say('','The Ruiz family scarecrow. It\'s facing you. You\'re almost sure it was facing the podium a second ago.')};
- O['12,11']=talkBoard;
- O['8,13']=O['9,13']=talkCider;
- O['12,17']=async()=>{await say('','WELCOME TO MARROW CREEK. HOME OF THE HARVEST LANTERN WALK. POP. 812.');await say('','Someone crossed out 812 in orange crayon and wrote 809. Under that, smaller: 808?')};
- O['29,9']=O['29,10']=talkGate;
- O['3,15']=O['4,15']=async()=>{await say('','Deputy Ross\'s cruiser. Cold coffee cups, a shotgun, and a child\'s drawing of a scarecrow taped to the dash. The scarecrow in the drawing is crying.')};
+ O['11,7']={id:'pellScare',look:'The Pell family scarecrow. A cheerful straw man in a sweater vest. Its stitched smile is wider than when you first looked.'};
+ O['18,7']={id:'ruizScare',look:'The Ruiz family scarecrow. It\'s facing you. You\'re almost sure it was facing the podium a second ago.'};
+ O['12,11']={id:'board',look:talkBoard};
+ O['8,13']=O['9,13']={id:'cider',name:'CIDER',look:talkCider,opts:()=>G.flags.cider?[]:[{label:'Everyone drinks (full heal)',run:drinkCider}],used:()=>!!(G.flags.cider&&G.flags.ciderAfter)};
+ O['12,17']={id:'sign',look:async()=>{await say('','WELCOME TO MARROW CREEK. HOME OF THE HARVEST LANTERN WALK. POP. 812.');await say('','Someone crossed out 812 in orange crayon and wrote 809. Under that, smaller: 808?')}};
+ O['29,9']=O['29,10']={id:'gate',name:'MAZE GATE',look:talkGate,opts:()=>G.flags.key&&G.flags.volDone?[{label:'Go in',run:enterMaze}]:[],used:()=>false};
+ O['3,15']=O['4,15']={id:'cruiser',look:'Deputy Ross\'s cruiser. Cold coffee cups, a shotgun, and a child\'s drawing of a scarecrow taped to the dash. The scarecrow in the drawing is crying.'};
  const warps={'14,19':bounceHome,'15,19':bounceHome};
  return{name:'MARROW CREEK',w:W,h:H,g,O,npcs,warps,light:'dusk',art:SHA,bg:'town'};
 }
@@ -126,12 +146,12 @@ const VICTIMS=[
  {id:'dev',name:'Dev Okoro',see:'A scarecrow in a varsity jacket, earbuds still in.',cue:'The earbuds are playing something. It\'s your own voice, saying your name.',free:'You pull the earbuds out and cut the ropes. Dev Okoro stumbles forward and throws up in the corn.',line:'"How long was I up there? It felt like a week. It felt like I was the field."'},
  {id:'walt',name:'Walter Abbot',see:'A scarecrow with thick glasses, seated politely in a lawn chair someone placed here.',cue:'His hand twitches. He is trying to wave.',free:'You lift the burlap away. Walter Abbot blinks up at you through cracked lenses.',line:'"Seventy-seven Walks. I always said I\'d never go in after dark. Then it asked so nicely."'}
 ];
-const LOOT=['aid','coffee','aid','flare','note'];
+const LOOT=['firstaid','coffee','firstaid','roadflare','note'];
 function buildMaze(){
  if(!MAZE)MAZE=genMaze();
  const {W,H,vict,items}=MAZE,g=MAZE.g.map(r=>r.slice()),O={},vv={};
  [[10,8],[16,8],[10,14],[16,14]].forEach(([x,y])=>g[y][x]='l');
- vict.forEach(([x,y],i)=>{const V=VICTIMS[i];if(G.flags['saved_'+V.id]){g[y][x]='M';return}g[y][x]='V';vv[x+','+y]=i;O[x+','+y]=()=>talkVictim(i)});
+ vict.forEach(([x,y],i)=>{const V=VICTIMS[i];if(G.flags['saved_'+V.id]){g[y][x]='M';return}g[y][x]='V';vv[x+','+y]=i;O[x+','+y]={id:'victim'+i,look:()=>victimLook(i),opts:[{label:'Cut them down',run:()=>cutDown(i)}]}});
  items.forEach(([x,y],i)=>{const k='loot'+i;if(G.flags[k])return;const it=LOOT[i%LOOT.length];g[y][x]=it==='note'?'O':'I';O[x+','+y]=()=>takeLoot(k,it)});
  if(!G.flags.boss){g[11][13]='X';g[10][13]='X'}
  const warps={'0,11':leaveMaze};
@@ -143,37 +163,42 @@ const MAPS={town:buildTown,maze:buildMaze};
 async function talkDot(){
  if(!G.flags.dot1){G.flags.dot1=1;await say('DOT','Hon, you look like you drove all night. We\'re closed for the Walk, but I\'ll tell you what I tell everybody.');await say('DOT','The pie is better than the coffee, and the coffee is better than you\'d think.')}
  const r=await ask('DOT','What can I do you for?',['Ask about the missing','Ask about the Walk','Never mind']);
+ if(r===0)G.flags.dotM=1;if(r===1)G.flags.dotW=1;
  if(r===0){await say('DOT','Carol? Sweetest woman. She made her family\'s scarecrow this year. You should see it. It\'s out in the maze now.');await say('DOT','Spitting image of her. Even has her ring. Every family builds one for the fair, you know.');await say('DOT','This year three of them came out... finished.');clue('scare','Every family builds a scarecrow for the fair. Three of them now look exactly like the missing people.')}
  if(r===1){await say('DOT','Fifty-one years I\'ve walked it. Never once went in the maze after dark, though.');await say('DOT','That\'s just manners. You don\'t go in until you\'re asked.')}
 }
 async function talkMayor(){
  if(!G.flags.may1){G.flags.may1=1;await say('MAYOR PELL','Welcome, welcome! Federal folks! How exciting. Have you tried the cider? Everyone tries the cider.')}
  const r=await ask('MAYOR PELL','What brings you to our little harvest?',['Ask about the Walk','Ask about the missing','Leave']);
+ if(r===0)G.flags.pellW=1;if(r===1)G.flags.pellM=1;
  if(r===0){await say('MAYOR PELL','Every year the whole town carries lanterns through the maze to the center and back. We give thanks for the harvest.');await say('MAYOR PELL','And the harvest gives thanks for us.');await say('MAYOR PELL','Like always. Like always. Like always. Like always.');await say('','He blinks. He smiles. He doesn\'t seem to know he did that.');clue('walk','The Lantern Walk ends at the center of the corn maze. The mayor got stuck repeating himself when he talked about it.')}
  if(r===1){await say('MAYOR PELL','Missing is such a strong word. They\'re simply where they\'re meant to be.');await say('MAYOR PELL','Isn\'t that what we all want? To be where we\'re meant to be?')}
 }
 async function talkPip(){
  await say('PIP','My dad says don\'t count the scarecrows.');await say('PIP','I counted anyway. There\'s one more every morning.');await say('PIP','Yesterday\'s new one had glasses like Mr. Abbot. Mr. Abbot gave me a butterscotch once.');
  clue('count','A kid has been counting scarecrows. There\'s one more every morning. The newest one wears Walter Abbot\'s glasses.');
- if(!G.flags.pipGift){G.flags.pipGift=1;G.items.coffee=(G.items.coffee||0)+1;await say('PIP','You can have my dad\'s coffee. He\'s not using it. He\'s been standing in the backyard since Tuesday.');await say('','Got a Thermos Coffee.')}
+ if(!G.flags.pipGift){G.flags.pipGift=1;await say('PIP','You can have my dad\'s coffee. He\'s not using it. He\'s been standing in the backyard since Tuesday.');await pickup('coffee')}
 }
 async function talkBoard(){
  await say('','MISSING: CAROL HENDERSON (41). DEV OKORO (19). WALTER ABBOT (77).');await say('','All three were last seen boarding the hayride to the corn maze.');await say('','Someone has colored over each face in orange crayon. Carefully. Staying inside the lines.');
  clue('posters','All three missing people were last seen on the hayride to the corn maze.');
 }
+// the cider stand and the church: their old choices are now options on the A menu (spec 006 A7)
 async function talkCider(){
- if(G.flags.cider){await say('','The cider jug is empty. You don\'t remember finishing it.');return}
+ if(G.flags.cider){G.flags.ciderAfter=1;await say('','The cider jug is empty. You don\'t remember finishing it.');return}
  await say('','A folding table under a striped awning. FREE CIDER! PRESSED FROM OUR OWN MAZE APPLES.');
- const r=await ask('','Nobody is behind the table. The cups are already poured.',['Everyone drinks (full heal)','Leave it']);
- if(r===0){G.flags.cider=1;party.forEach(m=>{m.hp=m.mhp;m.wp=m.mwp});await say('','It\'s sweet. Very sweet. Under the sweetness it tastes like old pennies.');await say('','Everyone feels great. Everyone feels like they belong here.')}
+ await say('','Nobody is behind the table. The cups are already poured.');
 }
+async function drinkCider(){G.flags.cider=1;party.forEach(m=>{m.hp=m.mhp;m.wp=m.mwp});await say('','It\'s sweet. Very sweet. Under the sweetness it tastes like old pennies.');await say('','Everyone feels great. Everyone feels like they belong here.')}
 async function talkChurch(){
- if(G.flags.bell){await say('','The church door is unlocked now. The pews are full of scarecrows wearing Sunday clothes. You close the door.');return}
+ if(G.flags.bell){G.flags.churchAfter=1;await say('','The church door is unlocked now. The pews are full of scarecrows wearing Sunday clothes. You close the door.');return}
  await say('','A note on the church door: SERVICES SUSPENDED. PLEASE DO NOT RING THE BELL.');
- const r=await ask('','The bell rope hangs just inside.',['Ring the bell','Leave it alone']);
- if(r===0){G.flags.bell=1;await say('','BONNNNNNG.');await say('','All across town, every scarecrow turns its head toward the church.');await say('','Then, slowly, they turn back.');await sanCheck(['0','1d4'],'Watching the scarecrows move');
-  await say('','By the door you find a brass handbell. Whatever is out there hated that sound. You take the bell.');G.items.bell=1;
-  clue('bell','The scarecrows react to the church bell. You took a brass handbell. It might stop them for a moment.')}
+ await say('','The bell rope hangs just inside.');
+}
+async function ringBell(){
+ G.flags.bell=1;await say('','BONNNNNNG.');await say('','All across town, every scarecrow turns its head toward the church.');await say('','Then, slowly, they turn back.');await horror(HORRORS.bell);
+ await say('','By the door you find a brass handbell. Whatever is out there hated that sound.');await pickup('bell');
+ clue('bell','The scarecrows react to the church bell. You took a brass handbell. It might stop them for a moment.')
 }
 async function talkRoss(){
  if(G.flags.key){await say('DEPUTY ROSS','Gate\'s on the east side. Go. I\'m staying with the car. Somebody has to drive whoever comes back.');return}
@@ -191,9 +216,9 @@ async function talkVol(){
 async function talkGate(){
  if(!G.flags.key){await say('','A heavy gate wrapped in chain. A sign: LANTERN WALK TONIGHT. NO ENTRY BEFORE DUSK.');return}
  if(!G.flags.volDone){return talkVol()}
- const r=await ask('','The key turns. Beyond the gate, the corn is taller than any corn should be.',['Go in','Not yet']);
- if(r===0){G.flags.gateOpen=1;await fade(1);goMap('maze',1,11,'right');G.enc=8;checkpoint();await fade(0);await say('','Somewhere ahead in the dark, a lantern is moving.');await say('','(The maze is dark. Your light shrinks as your SAN drops.)')}
+ await say('','The key turns. Beyond the gate, the corn is taller than any corn should be.');
 }
+async function enterMaze(){G.flags.gateOpen=1;await fade(1);goMap('maze',1,11,'right');G.enc=8;checkpoint();await fade(0);await say('','Somewhere ahead in the dark, a lantern is moving.');await say('','(The maze is dark. Your light shrinks as your SAN drops.)')}
 
 // ================= MAZE SCRIPTS =================
 async function mazeStep(){
@@ -204,21 +229,27 @@ async function mazeStep(){
  if(G.enc<=0){held=[];G.enc=11+rnd(12);const grp=pick((G.fights||0)<3?ENC_EARLY:ENC_LATE);const r=await battle(grp);if(r==='lose')return gameOver()}
 }
 async function leaveMaze(){const r=await ask('','Head back out to town?',['Go back','Stay']);if(r===0){await fade(1);goMap('town',28,10,'left');await fade(0)}else{G.dir='right';await stepBack()}}
-async function talkVictim(i){
+// a victim: Look plays the old lines and the horror; Cut them down is the old choice (Leave them for now is B)
+async function victimLook(i){
  const V=VICTIMS[i];await say('',V.see);await say('',V.cue);
- if(!G.flags['seen_'+V.id]){G.flags['seen_'+V.id]=1;await sanCheck(['0','1d4'],`Recognizing ${V.name}`)}
- const r=await ask('','The twine is knotted tight.',['Cut them down','Leave them for now']);
- if(r===0){G.flags['saved_'+V.id]=1;G.rescued=(G.rescued||0)+1;await say('',V.free);await say(V.name.toUpperCase(),V.line);await say('',`${V.name.split(' ')[0]} limps back toward the gate, toward Deputy Ross.`);G.M=buildMaze();checkpoint()}
+ // after the first one, the party knows what the next scarecrow will be, so they can brace (A4)
+ if(!G.flags['seen_'+V.id]){const known=VICTIMS.some(v=>v!==V&&G.flags['seen_'+v.id]);G.flags['seen_'+V.id]=1;
+  await horror({id:'victim:'+V.id,tier:'disturbing',kind:'unnatural',subj:'scarecrows',known,label:`Recognizing ${V.name}`})}
+ await say('','The twine is knotted tight.');
+}
+async function cutDown(i){
+ const V=VICTIMS[i];if(!G.flags['seen_'+V.id])await victimLook(i);
+ G.flags['saved_'+V.id]=1;G.rescued=(G.rescued||0)+1;await say('',V.free);await say(V.name.toUpperCase(),V.line);await say('',`${V.name.split(' ')[0]} limps back toward the gate, toward Deputy Ross.`);G.M=buildMaze();checkpoint()
 }
 async function takeLoot(k,it){G.flags[k]=1;G.M=buildMaze();
  if(it==='note'){await say('','A torn page from a Lantern Walk program, from 1958:');await say('','"The Gleaner takes only what is offered. Each family offers its likeness. When the likeness is finished, it is harvested."');await say('','Someone has written underneath in pencil: "it gets weaker when they\'re cut down."');clue('lore','The Gleaner feeds on the scarecrows that look like people. Cutting the victims down weakens it.');return}
- G.items[it]=(G.items[it]||0)+1;await say('',`A dropped backpack. Inside: a ${ITEMS[it].name}.`)}
+ const d=itemDef(it);await pickup(it,{line:`a dropped backpack, and inside it, ${d.name}. ${d.desc}`})}
 async function bossIntro(){
  G.flags.bossSeen=1;
  await say('','At the center of the maze something tall is waiting. It is made of every harvest this town ever gave.');
  await say('','Where its face should be, there is a lantern.');
  await say('THE GLEANER','AGENT {code}.');
- await sanCheck(['0','1d3'],'Hearing your name in that voice');
+ await horror(HORRORS.voice);
  const left=3-(G.rescued||0);
  await say('THE GLEANER','YOU CAME WITHOUT BEING OFFERED. NO MATTER.');
  await say('THE GLEANER',left?`I HAVE ${left} ALREADY. YOU WILL MAKE ${left+1}.`:'YOU TOOK MY LIKENESSES. THEN I WILL MAKE NEW ONES. FROM YOU.');
@@ -234,7 +265,7 @@ async function ending(){
  await say('','The lantern goes out. The Gleaner comes apart like a sheaf with the twine cut.');
  await say('','In the dark you hear the corn settle, like a held breath let go.');
  const lost=VICTIMS.filter(V=>!G.flags['saved_'+V.id]);
- if(lost.length)await say('',`The scarecrows still on their poles don't breathe anymore. ${lost.map(v=>v.name).join(' and ')} ${lost.length>1?'are':'is'} gone.`);
+ if(lost.length){await say('',`The scarecrows still on their poles don't breathe anymore. ${lost.map(v=>v.name).join(' and ')} ${lost.length>1?'are':'is'} gone.`);await trigger('death')}
  await fade(1);G.mode='scene';await fade(0);
  const n=G.rescued||0;
  await say('','Dawn. The Lantern Walk never happens. Nobody in Marrow Creek can say why they canceled it.');
@@ -254,14 +285,16 @@ async function ending(){
  const r=await ask('','Who do you lean on?',opts);
  if(r<bonds.length){const g=roll(1,6);L.san=Math.min(L.msan,L.san+g);L.a.bondDmg[r]=(L.a.bondDmg[r]||0)+1;applySan();await say('',`You spend the day with ${bonds[r].name}. You don't talk about Marrow Creek. You laugh at something stupid. It helps. It costs something too.`);await say('',`+${g} SAN. Your bond with ${bonds[r].name} wears a little thinner.`)}
  else{await say('','You sit in the dark kitchen until the sun comes up. You don\'t call anyone.');await say('','No SAN recovered. Your bonds stay intact. For now.')}
- const sq=squad().map(m=>`${m.name}${m.dis?' ('+m.dis+')':''}`).join(', ');
- await say('',`OPERATION STILL HARVEST · CLOSED\nVictims saved: ${n}/3\n${L.name}'s SAN: ${L.san0} → ${L.san}${L.dis?'\nDisorder: '+L.dis:''}\nSquad: ${sq}`);
+ const dn=m=>(m.dis||[]).map(d=>BLS.DISORDERS[d.k].name).join(', ');
+ const sq=squad().map(m=>`${m.name}${dn(m)?' ('+dn(m)+')':''}`).join(', ');
+ await say('',`OPERATION STILL HARVEST · CLOSED\nVictims saved: ${n}/3\n${L.name}'s SAN: ${L.san0} → ${L.san}${dn(L)?'\nDisorder: '+dn(L):''}\nSquad: ${sq}`);
  await ask('','Your file has been updated.',['Save agent and return to the file']);
- L.a.cur={san:L.san,dis:L.dis,ch1:true,saved:n};
+ L.a.cur=Object.assign(L.a.cur||{},{ch1:true,saved:n});
  finish();
 }
 
 // ================= ON THE CASE BOARD =================
 // portraits: the townsfolk's talking faces (spec 005), drawn in cases/still-harvest-art.js, loaded right after this file.
 // A on this card plays caseOpening as Big Hat's briefing (spec 004, step 4; Demo 5 replaces it).
-registerCase({id:'still-harvest',card:caseCard,opening:caseOpening,portraits:name=>SHA.portraits[name]});
+// items: this case's own items. next: the Case file's Next line. quiet: false, an open case (they came as feds; Part C may change it).
+registerCase({id:'still-harvest',card:caseCard,opening:caseOpening,portraits:name=>SHA.portraits[name],items:CASE_ITEMS,next:caseNext,quiet:false});

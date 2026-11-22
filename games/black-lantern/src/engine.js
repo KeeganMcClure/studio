@@ -50,8 +50,6 @@ const ABIL={
  'The Jingle':{wp:3,t:'none',fx:'wpAll',dice:[1,4,1]},
  'Rocket Pop':{wp:2,t:'foe',fx:'dmg',dice:[1,6,1],stun:1},
 };
-const ITEMS=B.ITEMDEF;
-const DIS=BLS.DIS;
 const BLOCK=new Set('TCB#DLlPHFSVKkYyNpGWIOX'.split(''));
 
 // ================= HELPERS =================
@@ -102,7 +100,8 @@ function portraitOf(name){if(!name)return null;if(PORTRAITS[name])return PORTRAI
 function say(name,text,o={}){
  return new Promise(res=>{
   if(dlg)clearTimeout(dlg.to);
-  text=fmt(text);
+  text=fmt(text);logLine(name,text);
+  if(o.auto&&Bt&&fastOn())o.auto=Math.round(o.auto*.5);
   dlg={res,text,done:false,keep:o.keep,auto:o.auto};
   box={name:name||'',text,typed:0,more:false};
   if(o.instant||o.keep&&o.instant!==false&&Bt){finishType();return}
@@ -145,7 +144,7 @@ function renderMenu(){const m=menu;if(!m)return;
  if(m.onSel)m.onSel(m.sel);posMenu();const on=menuEl.querySelector('.gi.on');if(on)on.scrollIntoView({block:'nearest'})}
 function posMenu(){if(menuEl.hidden)return;let b=6;const bx=dhost.querySelector('.bld'),tab=bx&&bx.querySelector('.bld-tab');
  if(G.mode==='battle'&&!hud.hidden)b=hud.offsetHeight+8;else if(bx)b=bx.offsetHeight+(tab?tab.offsetHeight:0)+10;menuEl.style.bottom=b+'px'}
-function choose(items,o={}){return new Promise(res=>{menu={items,sel:o.sel||0,res,cancel:o.cancel,title:o.title,desc:o.desc,onSel:o.onSel,inBox:o.inBox};renderMenu()})}
+function choose(items,o={}){const first=Math.max(0,items.findIndex(it=>!(it&&it.dis)));return new Promise(res=>{menu={items,sel:o.sel??first,res,cancel:o.cancel,title:o.title,desc:o.desc,onSel:o.onSel,inBox:o.inBox};renderMenu()})}
 function closeMenu(v){const m=menu;menu=null;menuEl.hidden=true;if(m.inBox&&box)box.choices=null;if(Bt)Bt.hover=-1;m.res(v)}
 async function ask(name,text,opts){await say(name,text,{keep:true,instant:false});const r=await choose(opts,{cancel:true,inBox:true});hideTB();return r<0?opts.length-1:r}
 function banner(t,ms=2200){ban.textContent=t;ban.hidden=false;clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,ms)}
@@ -157,59 +156,63 @@ function clue(id,text){if(G.clues.some(c=>c.id===id))return;G.clues.push({id,tex
 // The low-SAN look (spec 005) follows the lead's SAN every frame in drawWorld, and the lead card shows the number,
 // so there is nothing to set here any more; callers still call it after a SAN change.
 function applySan(){}
-async function sanCheck(spec,label,who){
- if(Bt&&Bt.ward){Bt.ward=false;await say('',`${label}... but the ward holds. No one loses SAN.`,{auto:1100});return}
- const parts=[];(who||(G.mode==='world'&&!Bt?[lead()]:party)).forEach(m=>{const r=d100(),loss=r<=m.san?dice(spec[0]):dice(spec[1]);m.san=Math.max(0,m.san-loss);if(loss)parts.push(`${m.name} -${loss}`)});
- applySan();if(Bt)updHUD();
- await say('',`${label}. `+(parts.length?'SAN: '+parts.join(', ')+'.':'Everyone keeps it together.'),{auto:1400});
- for(const m of party){if(m.san<=m.bp&&!m.dis&&m.san>0){m.dis=pick(DIS);await say('',`${m.name} hits a breaking point. Something cracks for good. New disorder: ${m.dis}.`,{auto:1800})}}
-}
-const hitPenalty=m=>m.dis?10:0;
+// SAN rolls, bracing, Steadying, Breaking Points and disorders are field.js (spec 006, A4); sanCheck(spec, label) still works there.
+const hitPenalty=m=>-rollMod(m,m.w.sk||'Firearms');  // statuses and flares (field.js)
 
 // ================= BATTLE =================
-function updHUD(){hud.innerHTML=party.map(m=>`<div class="hb ${Bt&&m===Bt.active?'on':''} ${m.ko?'ko':''}"><div class="nm">${esc(m.name)}</div><div>HP <b class="${m.hp<=m.mhp/3?'red':''}">${m.hp}</b>/${m.mhp}</div><div>WP ${m.wp} <span class="sn">S${m.san}</span></div></div>`).join('')}
+function updHUD(){hud.innerHTML=party.map(m=>`<div class="hb ${Bt&&m===Bt.active?'on':''} ${m.ko||m.out?'ko':''}"><div class="nm">${esc(m.name)}</div><div>HP <b class="${m.hp<=m.mhp/3?'red':''}">${m.hp}</b>/${m.mhp}</div><div>WP ${m.wp} <span class="sn">S${m.san}</span></div></div>`).join('')}
 function nameEnemies(en){const c={};en.forEach(e=>c[e.base]=(c[e.base]||0)+1);const s={};en.forEach(e=>{if(c[e.base]>1){s[e.base]=(s[e.base]||0)+1;e.name=e.base+' '+'ABC'[s[e.base]-1]}else e.name=e.base})}
 async function battle(types,o={}){
  held=[];G.mode='battle';gEl.classList.add('battle');
  const en=types.map((t,i)=>({...EN[t],t,base:EN[t].name,hp:o.hp&&i===0?o.hp:EN[t].hp,mhp:o.hp&&i===0?o.hp:EN[t].hp,stun:0,blind:0,mark:false,dead:false,flash:0,alpha:1}));
  nameEnemies(en);
  Bt={en,bg:o.bg||G.M.bg,t:0,boss:!!o.boss,phase:1,focus:0,ward:false,decoy:false,taunt:null,hover:-1,active:null,floaties:[],queue:[]};
- party.forEach(m=>{m.defend=false;m.covering=null;m.stun=0});
+ party.forEach(m=>{m.defend=false;m.covering=null;m.stun=hasSt(m,'stun')?1:0});G.fs.fight=(G.fs.fight|0)+1;
  hud.hidden=false;updHUD();
  await sleep(250);
  await say('',o.intro||`${en.map(e=>e.name).join(', ')} ${en.length>1?'close in':'appears'}!`,{auto:1000});
- for(const t of [...new Set(types)])await sanCheck(EN[t].san,`Seeing ${/^The /.test(EN[t].name)?EN[t].name:'the '+EN[t].name}`);
- if(lead().san<=0)return endBattle('lose');
+ // horror on sight: each enemy type is a horror once per case (its tier and kind come from the case's enemy data)
+ for(const t of [...new Set(types)])await horror(Object.assign({id:'sight:'+t,sight:true,label:`Seeing ${/^The /.test(EN[t].name)?EN[t].name:'the '+EN[t].name}`},EN[t].horror||{spec:EN[t].san}));
+ if(teamDown())return endBattle('lose');
  if(o.onStart)await o.onStart();
  for(;;){
-  Bt.queue=[...party.filter(m=>!m.ko),...en.filter(e=>!e.dead)].map(a=>({a,i:a.dex+rnd(5)})).sort((x,y)=>y.i-x.i).map(x=>x.a);
+  Bt.queue=[...party.filter(m=>!m.ko&&!m.out),...en.filter(e=>!e.dead)].map(a=>({a,i:a.dex+rnd(5)})).sort((x,y)=>y.i-x.i).map(x=>x.a);
   while(Bt.queue.length){
-   const a=Bt.queue.shift();if(a.dead||a.ko)continue;
+   const a=Bt.queue.shift();if(a.dead||a.ko||a.out)continue;
    if(a.a){const r=await memberTurn(a);if(r==='flee')return endBattle('flee')}else await enemyTurn(a);
-   if(lead().ko||lead().san<=0)return endBattle('lose');
+   if(teamDown())return endBattle('lose');
    if(en.every(e=>e.dead))return endBattle('win');
   }
   if(Bt.focus>0)Bt.focus--;en.forEach(e=>{if(e.blind>0)e.blind--});Bt.taunt=null;
   if(Bt.boss&&Bt.phase===1&&en[0].hp<=en[0].mhp/2){Bt.phase=2;await say('','The lantern flares white. The corn leans in to listen. The Gleaner moves faster now.',{auto:1800})}
  }
 }
+// the whole team down (Downed, or out at 0 SAN) loses the fight (Gameplay loop, Game over)
+const teamDown=()=>party.every(m=>m.ko||m.out||m.san<=0);
 async function endBattle(res){
  Bt.active=null;updHUD();
- if(res==='win'){
-  await say('','You survived. For now.',{auto:900});
+ if(res!=='lose'){
+  if(res==='win')await say('','You survived. For now.',{auto:900});
   party.forEach(m=>{if(m.ko){m.ko=false;m.hp=1}m.wp=Math.min(m.mwp,m.wp+2)});
-  if(!Bt.boss&&Math.random()<.35){const it=pick(['aid','coffee','aid']);G.items[it]=(G.items[it]||0)+1;await say('',`You find a ${ITEMS[it].name} in the straw.`,{auto:1100})}
-  G.fights=(G.fights||0)+1;
+  // a stand-in drop until Part C's loot tables: one field item, found the Pickups way
+  if(res==='win'&&!Bt.boss&&Math.random()<.35){hud.hidden=true;Bt=null;await pickup(pick(['firstaid','energy','firstaid']))}
+  if(res==='win')G.fights=(G.fights||0)+1;
  }
- hud.hidden=true;gEl.classList.remove('battle');Bt=null;G.mode='world';hideTB();return res;
+ hud.hidden=true;gEl.classList.remove('battle');Bt=null;G.mode='world';hideTB();
+ sceneEnd();clearStatusAll('stun');
+ // agents who hit 0 SAN in the fight leave when it ends (Losing an agent)
+ if(res!=='lose')for(const m of party.filter(m=>m.out||m.san<=0)){await say('',fillT(SW.zero,{n:m.name}));await loseAgent(m,'0 SAN');if(!party.length)return'lose'}
+ return res;
 }
+function clearStatusAll(k){party.forEach(m=>clearStatus(m,k))}
 function aliveFoes(){return Bt.en.filter(e=>!e.dead)}
 async function pickFoe(){const f=aliveFoes();if(f.length===1)return f[0];const r=await choose(f.map(e=>`${e.name}${e.mark?' ★':''}`),{cancel:true,title:'TARGET',onSel:i=>{Bt.hover=Bt.en.indexOf(f[i])}});return r<0?null:f[r]}
-async function pickAlly(o={}){const r=await choose(party.map(m=>({label:`${m.name}  ${m.ko?'DOWN':m.hp+'/'+m.mhp}`,dis:o.noKO&&m.ko})),{cancel:true,title:o.title||'WHO?'});return r<0?null:party[r]}
+async function pickAlly(o={}){const r=await choose(party.map(m=>({label:`${m.name}  ${m.ko?'DOWN':m.hp+'/'+m.mhp}`,dis:o.noKO&&m.ko||m.out})),{cancel:true,title:o.title||'WHO?'});return r<0?null:party[r]}
 function floaty(e,txt,col){const i=Bt.en.indexOf(e),n=Bt.en.length,x=VW/(n+1)*(i+1);Bt.floaties.push({x,y:VH*.42-20,txt:String(txt),t:0,col:col||'#fff'})}
 async function hurtEnemy(e,d){e.hp=Math.max(0,e.hp-d);e.flash=16;floaty(e,d);if(e.hp<=0&&!e.dead){e.dead=true;await say('',`${e.name} ${e.die}.`,{auto:900})}}
 async function attack(m,e,o={}){
  const w=m.w,sk=clamp(w.skill+(Bt.focus?20:0)-hitPenalty(m),5,99),r=d100();
+ if(w.loud&&!Bt.loud){Bt.loud=1;await trigger('loud')}  // PTSD: the first Loud attack in a fight
  if(o.sure||r<=sk){let dmg=roll(w.dmg[0],w.dmg[1],w.bonus);const crit=!o.sure&&r<=Math.max(1,Math.floor(sk/10));if(crit)dmg*=2;if(e.mark)dmg=Math.ceil(dmg*1.5);
   await say('',`${m.name} ${w.verb}! ${crit?'CRITICAL! ':''}${o.sure?'':`(${r} vs ${sk}) `}${e.name} takes ${dmg}.`,{auto:1000});await hurtEnemy(e,dmg);return true}
  await say('',`${m.name} ${w.verb}... and misses. (${r} vs ${sk})`,{auto:950});return false}
@@ -218,7 +221,7 @@ async function memberTurn(m){
  if(m.stun>0){m.stun--;await say('',`${m.name} is frozen and can't act.`,{auto:900});return}
  for(;;){
   await say('',`What will ${m.name} do?`,{keep:true,instant:true});
-  const nAb=profOf(m.a).abil,itc=Object.values(G.items).reduce((a,b)=>a+b,0);
+  const nAb=profOf(m.a).abil,itc=gearOf(m).it.length+gearOf(m).w.length;
   const c=await choose(['Attack','Skill','Item'+(itc?'':' (none)'),'Defend',{label:'Run',dis:Bt.boss}],{title:m.name.toUpperCase()+` · ${m.w.name}`});
   hideTB();
   if(c===0){const e=await pickFoe();if(!e)continue;await attack(m,e);return}
@@ -256,27 +259,26 @@ async function useAbil(m,name){
  else if(fx==='wpAll'){const parts=party.map(p=>{const g=roll(A.dice[0],A.dice[1],A.dice[2]);p.wp=Math.min(p.mwp,p.wp+g);return`${p.name} +${g}`});await say('',`${m.name} hums the ice cream song. It shouldn't help. It does. WP: ${parts.join(', ')}.`,{auto:1500})}
  updHUD();
 }
+// Battle Items (Item display): only what this agent carries. Their 2 weapons first: picking the other swaps and ends
+// the turn. Then their items. Meds work as on the map; battle-only items wait for Part B's battle (greyed).
 async function itemMenu(m,inBattle){
- const keys=Object.keys(G.items).filter(k=>G.items[k]>0);if(!keys.length){await say('','You have nothing useful.',{auto:inBattle?800:0});return false}
- const r=await choose(keys.map(k=>({label:`${ITEMS[k].name} x${G.items[k]}`,dis:!inBattle&&ITEMS[k].battle})),{cancel:true,title:'ITEMS',desc:keys.map(k=>ITEMS[k].desc)});if(r<0)return false;const k=keys[r];
- if(k==='aid'){const t=await pickAlly({title:'HEAL WHO?'});if(!t)return false;const h=roll(1,8,3);if(t.ko){t.ko=false;t.hp=Math.min(t.mhp,h)}else t.hp=Math.min(t.mhp,t.hp+h);G.items.aid--;await say('',`${t.name} is patched up. +${h} HP.`,{auto:inBattle?1000:0})}
- else if(k==='coffee'){const t=await pickAlly({title:'WHO DRINKS?',noKO:true});if(!t)return false;const g=roll(1,4,1);t.wp=Math.min(t.mwp,t.wp+g);G.items.coffee--;await say('',`${t.name} drinks gas-station coffee. +${g} WP.`,{auto:inBattle?1000:0})}
- else if(k==='flare'){const e=await pickFoe();if(!e)return false;G.items.flare--;const d=roll(2,6,2);await say('',`${m.name} lights a road flare and jams it into the straw! ${e.name} takes ${d}.`,{auto:1100});await hurtEnemy(e,d)}
- else if(k==='bell'){G.items.bell--;aliveFoes().forEach(e=>e.stun+=1);await say('',`${m.name} rings the church handbell. BONNNG. Every foe flinches and freezes.`,{auto:1300})}
- else if(k==='salts'){const t=await pickAlly({title:'WHO?',noKO:true});if(!t)return false;const g=roll(1,4);t.san=Math.min(t.msan,t.san+g);G.items.salts--;applySan();await say('',`${t.name} takes a sharp breath of smelling salts. The world snaps back into focus. +${g} SAN.`,{auto:inBattle?1200:0})}
- else if(k==='tape'){const t=await pickAlly({title:'PATCH WHO?',noKO:true});if(!t)return false;const h=roll(1,4,1);t.hp=Math.min(t.mhp,t.hp+h);G.items.tape--;await say('',`${t.name} gets taped up. It's not pretty. +${h} HP.`,{auto:inBattle?1000:0})}
- else if(k==='tranq'){const e=await pickFoe();if(!e)return false;G.items.tranq--;e.stun+=2;await say('',`${m.name} jabs a tranquilizer into ${e.name}. It sways and goes still.`,{auto:1100})}
- else if(k==='spray'){G.items.spray--;aliveFoes().forEach(e=>e.blind=Math.max(e.blind,2));await say('',`${m.name} empties the pepper spray. The enemies can barely see.`,{auto:1100})}
- if(inBattle)updHUD();return true;
+ const g=gearOf(m),rows=[],acts=[],desc=[];
+ g.w.forEach((it,j)=>{rows.push({label:(j===g.eq?'E ':'')+rowName(it),dis:j===g.eq});desc.push(detailOf(it,m));acts.push(async()=>{g.eq=j;refreshW(m);await say('',`${m.name} switches to the ${m.w.name}.`,{auto:900})})});
+ g.it.forEach(it=>{const d=itemDef(it.k),fx=d.battleUse,ok=it.u>0&&(fx||d.map&&!['flare','roamer','jammer','uv','hotline'].includes(d.map));
+  rows.push({label:rowName(it),dis:!ok});desc.push(ok?d.desc:(it.u>0?IU.battleOnly:IU.spent));
+  acts.push(async()=>{if(fx?await fx(m,it):await useItem(m,it)){spend(m,it);return true}return false})});
+ if(!rows.length){await say('','You have nothing useful.',{auto:800});return false}
+ const r=await choose(rows,{cancel:true,title:'ITEMS · '+m.name.toUpperCase(),desc});if(r<0)return false;
+ const res=await acts[r]();if(res===false)return false;updHUD();return true;
 }
 async function enemyTurn(e){
  if(e.stun>0){e.stun--;await say('',`${e.name} is stunned.`,{auto:800});return}
  const n=Bt.boss&&e.t==='gleaner'&&Bt.phase===2?2:1;
- for(let i=0;i<n;i++){if(lead().ko)return;await enemyAct(e)}
+ for(let i=0;i<n;i++){if(teamDown())return;await enemyAct(e)}
 }
 async function enemyAct(e){
  const pool=[];e.moves.forEach(([mv,w])=>{for(let i=0;i<w;i++)pool.push(mv)});let mv=pick(pool);
- const alive=party.filter(m=>!m.ko);if(!alive.length)return;
+ const alive=party.filter(m=>!m.ko&&!m.out);if(!alive.length)return;
  if(mv==='san'){await say('',e.sanText,{auto:1300});let spec=e.sanHit;if(e.t==='gleaner'&&G.flags.cider)spec=[spec[0],'1d6'];await sanCheck(spec,'The words get inside');return}
  if(mv==='all'){await say('',e.allText,{auto:1000});for(const m of alive){const r=d100(),hit=e.skill-(e.blind?30:0)-(m.defend?20:0);if(r<=hit){let d=roll(e.allDmg[0],e.allDmg[1]);if(m.defend)d=Math.ceil(d/2);await hurtMember(m,d)}}return}
  let t=Bt.taunt&&!Bt.taunt.ko?Bt.taunt:pick(alive);
@@ -286,22 +288,24 @@ async function enemyAct(e){
  if(r<=hit){let d=roll(e.dmg[0],e.dmg[1]);if(t.defend)d=Math.ceil(d/2);await say('',`${e.name} ${e.verb} ${t.name}! ${d} damage.`,{auto:1000});await hurtMember(t,d)}
  else await say('',`${e.name} ${e.verb} ${t.name}... and misses.`,{auto:900});
 }
-async function hurtMember(m,d){m.hp=Math.max(0,m.hp-d);hud.classList.add('shake');setTimeout(()=>hud.classList.remove('shake'),250);updHUD();if(m.hp<=0&&!m.ko){m.ko=true;updHUD();await say('',m===lead()?`${m.name} goes down.`:`${m.name} goes down!`,{auto:1000})}}
+async function hurtMember(m,d){if(wearing(m,'armor'))d=Math.max(0,d-1);if(d>0)m.hurt=G.fs.fight|0;m.hp=Math.max(0,m.hp-d);hud.classList.add('shake');setTimeout(()=>hud.classList.remove('shake'),250);updHUD();if(m.hp<=0&&!m.ko){m.ko=true;updHUD();await say('',m===lead()?`${m.name} goes down.`:`${m.name} goes down!`,{auto:1000})}}
 
 // ================= WORLD =================
 function passable(x,y){const M=G.M;if(x<0||y<0||x>=M.w||y>=M.h)return false;if(BLOCK.has(M.g[y][x]))return false;if(M.npcs.some(n=>(!n.on||n.on())&&n.x===x&&n.y===y))return false;return true}
-function goMap(name,x,y,dir){hud.hidden=true;gEl.classList.remove('battle');G.map=name;G.M=MAPS[name]();StudioMove.place(G,x,y,dir);
+function goMap(name,x,y,dir,o={}){hud.hidden=true;gEl.classList.remove('battle');if(G.fs&&G.map&&G.map!==name&&!o.restore)G.fs.area=1;G.map=name;G.M=MAPS[name]();StudioMove.place(G,x,y,dir);
  banner(G.M.name);}
 function update(){
  if(G.mode!=='world')return;
- StudioMove.update(G,StudioMove.last(held),{passable,busy:()=>G.busy||dlg||menu,arrive:()=>run(onStep)});
+ if(!G.busy&&!dlg&&!menu&&!PM&&!SCR&&!G.mv&&fieldDue()){held=[];run(fieldTick);return}  // area-change ticks (field.js)
+ StudioMove.update(G,StudioMove.last(held),{passable,busy:()=>G.busy||dlg||menu||PM||SCR,arrive:()=>run(onStep)});
 }
 async function onStep(){const M=G.M,k=G.x+','+G.y;if(M.warps&&M.warps[k]){held=[];return M.warps[k]()}if(M.onStep)await M.onStep()}
 async function interact(){
  const [tx,ty]=StudioMove.ahead(G),M=G.M,k=tx+','+ty;
  const n=M.npcs.find(n=>(!n.on||n.on())&&n.x===tx&&n.y===ty);
- if(n){n.dir={up:'down',down:'up',left:'right',right:'left'}[G.dir];held=[];await n.talk(n);return}
- if(M.O[k]){held=[];await M.O[k]();return}
+ if(n){n.dir={up:'down',down:'up',left:'right',right:'left'}[G.dir];held=[];await n.talk(n);G.fs.talked[n.id]=G.clues.length;return}
+ // a hotspot is a script (a function) or data that opens the lead's options (field.js, spec 006 A2)
+ if(M.O[k]){held=[];const h=M.O[k];if(typeof h==='function')await h();else await hotspot(h,k);return}
  const ch=M.g[ty]&&M.g[ty][tx];if(ch&&TILEDESC[ch]){held=[];await say('',TILEDESC[ch])}
 }
 function cam(){return StudioMove.camera(G,G.M.w,G.M.h,VW,VH)}
@@ -338,7 +342,7 @@ function drawWorld(){
  M.props.forEach(p=>p.lights.forEach(([x,y,r,a,pool])=>(pool?pools:glows).push([x-camx,y-camy,r,a])));
  if(M.light==='dusk')SHELF.dusk(cx,glows.concat(pools),now);
  else if(night){
-  const lamp=StudioLight.mix(LOOK.lamp[0],LOOK.lamp[1],k),ring=[[G.px+8-camx,G.py+6-camy,StudioLight.mix(LOOK.lantern[0],LOOK.lantern[1],k)]];
+  const lamp=StudioLight.mix(LOOK.lamp[0],LOOK.lamp[1],k),ring=[[G.px+8-camx,G.py+6-camy,StudioLight.mix(LOOK.lantern[0],LOOK.lantern[1],k)*(G.fs&&G.fs.flareMap===G.map?1.6:1)]];
   pools.forEach(([x,y])=>ring.push([x,y,lamp]));
   if(M.boss)ring.push([13*16+8-camx,11*16-38-camy,LOOK.boss+Math.random()*4]);
   StudioLight.night(cx,{dark:LOOK.dark,alpha:LOOK.alpha,warm:LOOK.warm,pools:ring,glows:glows.map(([x,y,r,a])=>[x,y,r*.7,a*.6])});
@@ -362,6 +366,7 @@ function drawMapHud(camx,camy,night){
  const hp=`${L.hp}/${L.mhp}`;pT(pFit(L.name.toUpperCase(),cw-30-pW(hp,13),13),x+26,y+1,PC.gold,13);pT(hp,x+cw-4-pW(hp,13),y+1,PC.cream,13);
  pT(MH.hp,x+26,y+9,PC.lav,11);pBar(x+26+pW(MH.hp,11)+2,y+12,cw-32-pW(MH.hp,11),L.hp/L.mhp,PC.green);
  const wp=`${MH.wp} ${L.wp} · `;pT(wp,x+26,y+18,PC.lav,12);pT(`${MH.san} ${L.san}`,x+26+pW(wp,12),y+18,L.san<LOOK.lowSan?PC.pink:PC.lav,12);
+ drawLeadIcons(x,y,cw,ch);  // status icons and the low-health pulse (field.js)
  // NIGHT tag, top right, night maps only
  if(night){const tw=pW(MH.night,13)+19,th=14;let tx=VW-tw-3,ty=3;if(overlaps(me,[tx,ty,tw,th]))ty=VH-th-3;
   pBox(tx,ty,tw,th,PC.navy,PC.cream);
@@ -370,17 +375,20 @@ function drawMapHud(camx,camy,night){
  // A bubble over the person or thing the lead faces, only when A would use it now (hidden hotspots stay hidden)
  if(G.busy||G.mv||G.mode!=='world')return;
  const [ax,ay]=StudioMove.ahead(G),M=G.M,n=M.npcs.find(n=>(!n.on||n.on())&&n.x===ax&&n.y===ay);let word,bx,top,bot;
- if(n){word=MH.talk;bx=n.x*16+8;bot=n.y*16+14;top=bot-(n.id==='pip'?24:28)}
- else if(M.O[ax+','+ay]){word=MH.look;const p=M.props.find(p=>(p.tx===ax||p.tx===ax-1)&&(p.ty===ay||p.ty===ay-1)&&M.O[p.tx+','+p.ty]);
+ let dim=false,out=false;
+ if(n){word=MH.talk;bx=n.x*16+8;bot=n.y*16+14;top=bot-(n.id==='pip'?24:28);out=talkedOut(n)}
+ else if(M.O[ax+','+ay]){word=MH.look;dim=hotUsed(M.O[ax+','+ay],ax+','+ay);const p=M.props.find(p=>(p.tx===ax||p.tx===ax-1)&&(p.ty===ay||p.ty===ay-1)&&M.O[p.tx+','+p.ty]);
   bx=p?p.x:ax*16+8;top=p?p.top:ay*16;bot=p?p.y:ay*16+16}
  else return;
- const w=pW(word,12)+17,h=12,below=G.dir==='down';bx=clamp(Math.round(bx-camx-w/2),2,VW-w-2);
+ // talked out: a small "…" instead of the speech bubble; a used hotspot's bubble turns grey (Quality of life)
+ if(out)word='…';const w=out?pW(word,12)+8:pW(word,12)+17,h=12,below=G.dir==='down';bx=clamp(Math.round(bx-camx-w/2),2,VW-w-2);
  let by=below?bot-camy+5:top-camy-h-5;by=clamp(Math.round(by),2,VH-h-2);
  const px=clamp(Math.round((n?n.x*16+8:(bx+camx+w/2))-camx),bx+4,bx+w-4);
- pBox(bx,by,w,h,PC.navy,PC.cream);
- if(below){pR(px-2,by-2,5,1,PC.cream);pR(px-1,by-3,3,1,PC.cream);pR(px,by-4,1,1,PC.cream)}else{pR(px-2,by+h,5,1,PC.cream);pR(px-1,by+h+1,3,1,PC.cream);pR(px,by+h+2,1,1,PC.cream)}
- cx.fillStyle=PC.rust;cx.beginPath();cx.arc(bx+7,by+6,4.5,0,7);cx.fill();pT(MH.a,bx+5,by+1,PC.chipInk,11);
- pT(word,bx+13,by,PC.cream,12);
+ const ln=dim?PC.dim:PC.cream;pBox(bx,by,w,h,PC.navy,ln);
+ if(below){pR(px-2,by-2,5,1,ln);pR(px-1,by-3,3,1,ln);pR(px,by-4,1,1,ln)}else{pR(px-2,by+h,5,1,ln);pR(px-1,by+h+1,3,1,ln);pR(px,by+h+2,1,1,ln)}
+ if(out){pT(word,bx+4,by,PC.lav,12);return}
+ cx.fillStyle=dim?PC.dim:PC.rust;cx.beginPath();cx.arc(bx+7,by+6,4.5,0,7);cx.fill();pT(MH.a,bx+5,by+1,PC.chipInk,11);
+ pT(word,bx+13,by,dim?PC.dim:PC.cream,12);
 }
 function drawBattle(){
  const t=Bt.t++,pal=BGPAL[Bt.boss?'boss':Bt.bg];
@@ -496,76 +504,71 @@ async function bigHatScene(fn){await fade(1);G.mode='scene';G.scene='bighat';awa
 function drawScene(){if(G.scene==='bighat')return drawOffice();cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+rnd(20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
 // Logic runs at 60 ticks a second on any screen (engine/clock.js); frames with no tick due are skipped.
 const clock=StudioClock.make();
-function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(CB)drawBoard();else if(G.mode==='battle'&&Bt)drawBattle();else if(PM)drawParty();else if(G.mode==='world')drawWorld();else drawScene();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
+function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(CB)drawBoard();else if(G.mode==='battle'&&Bt)drawBattle();else if(SCR)drawScr();else if(PM)drawParty();else if(G.mode==='world')drawWorld();else drawScene();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
 function fit(){const v=StudioMove.fit(gEl,cv);if(!v)return;VW=v.w;VH=v.h;gEl.style.setProperty('--pu',(64*v.boxW/VW)+'px');boxKey='';posMenu()}
 window.addEventListener('resize',()=>{if(G.active)fit()});
 
 async function gameOver(){
  held=[];G.mode='scene';
  const L=lead();
- await say('',L.san<=0?'Agent {code} walks into the corn, smiling, and does not come back.':'Agent {code} doesn\'t get up. The lantern goes out.');
+ await say('',L&&L.san<=0?'Agent {code} walks into the corn, smiling, and does not come back.':'Agent {code} doesn\'t get up. The lantern goes out.');
  const r=await ask('','The file stays open.',['Retry from checkpoint','Quit to title']);
  if(r===0){await fade(1);restore(G.cp);await fade(0)}else quit();
 }
 
 // ================= SAVE / FLOW =================
-function snap(){return JSON.stringify({case:G.case,map:G.map,x:G.x,y:G.y,dir:G.dir,party,lead:G.lead|0,flags:G.flags,clues:G.clues,items:G.items,fights:G.fights,enc:G.enc,rescued:G.rescued})}
+// fs: the field state (field.js): backpack, used hotspots, who was talked to, perks used, the Log, recruits due and more
+function snap(){return JSON.stringify({case:G.case,map:G.map,x:G.x,y:G.y,dir:G.dir,party,lead:G.lead|0,flags:G.flags,clues:G.clues,fs:G.fs,fights:G.fights,enc:G.enc,rescued:G.rescued})}
 function checkpoint(){G.cp=snap();store.set(B.key('game'),G.cp)}
-function restore(s){const o=JSON.parse(s);G.case=o.case||(CASES[0]&&CASES[0].id);party=o.party;G.lead=o.lead>=0&&o.lead<party.length?o.lead|0:0;G.flags=o.flags;G.clues=o.clues;G.items=o.items;G.fights=o.fights;G.enc=o.enc;G.rescued=o.rescued||0;G.mode='world';goMap(o.map,o.x,o.y,o.dir);applySan()}
+function restore(s){const o=JSON.parse(s);G.case=o.case||(CASES[0]&&CASES[0].id);party=o.party;G.lead=o.lead>=0&&o.lead<party.length?o.lead|0:0;G.flags=o.flags;G.clues=o.clues;G.fights=o.fights;G.enc=o.enc;G.rescued=o.rescued||0;
+ fieldRestore(o);G.mode='world';goMap(o.map,o.x,o.y,o.dir,{restore:true});applySan()}
 function enter(){G.active=true;scr.classList.add('gaming');fit();cancelAnimationFrame(raf);clock.reset();raf=requestAnimationFrame(loop)}
-function leave(){G.active=false;PM=null;CB=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
+function leave(){G.active=false;PM=null;CB=null;SCR=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
 function quit(){checkpoint();leave();B.goto('title');B.render()}
 // The end of a case (spec 004, step 5): the case is stamped closed in bl.season, then the lead's dossier opens as
 // before, and leaving the dossier opens the case board. The demo's one ending saves as "closed".
 function finish(ending){
  store.set(B.key('game'),null);const a=lead().a;const id=G.case;closeCase(id,ending);B.S.afterCase=true;B.S.stampCase=id;
- a.id=a.id||Date.now();const R=B.S.roster,i=R.findIndex(x=>x.id===a.id);const copy=JSON.parse(JSON.stringify(a));if(i>=0)R[i]=copy;else R.unshift(copy);store.set(B.key('roster'),R);
+ // every agent in the field carries SAN, disorders, Breaking Point, Adapted marks and gear back to the roster;
+ // statuses clear at the end-of-case heal-up; the backpack goes to bl.party (spec 006, Saves)
+ const R=B.S.roster;live().forEach(m=>{const x=carry(m);x.id=x.id||Date.now()+rnd(1000);const i=R.findIndex(y=>y.id===x.id);const copy=JSON.parse(JSON.stringify(x));if(i>=0)R[i]=copy;else if(x===a)R.unshift(copy)});store.set(B.key('roster'),R);
+ store.set(B.key('party'),{pack:G.fs?G.fs.pack:[]});
  B.S.a=a;B.S.view=true;leave();B.goto('dossier');B.render();B.toast('FILED. CHAPTER ONE CLOSED.');
 }
-function startKit(){const it={aid:1};const add=(k,n)=>{it[k]=(it[k]||0)+n};
- const s=B.specOf(lead().a);if(s)Object.entries(s.items).forEach(([k,n])=>add(k,n));else{add('aid',1);add('coffee',1);add('flare',1)}
- party.slice(1).forEach(m=>{const t=B.specOf(m.a);if(t)add(Object.keys(t.items)[0],1)});return it}
 // Starts a case (A on its card): its briefing (the case's opening) plays first. Seat 1 leads.
 async function start(agent,squad,id){
  const c=caseById(id)||CASES[0];
  party=[member(agent),...squad.map(member)];
- G=Object.assign(G,{active:true,case:c.id,lead:0,flags:{},clues:[],items:startKit(),fights:0,enc:10,rescued:0,busy:0,mode:'scene',scene:null});
+ G=Object.assign(G,{active:true,case:c.id,lead:0,flags:{},clues:[],fights:0,enc:10,rescued:0,busy:0,mode:'scene',scene:null,map:null});
+ fieldStart();  // each agent's kit and items, the backpack, the field state (field.js)
  MAZE=null;enter();applySan();
  run(c.opening);
 }
 function resume(){const s=store.get(B.key('game'),null);if(!s)return false;G=Object.assign(G,{active:true,busy:0,mode:'world'});MAZE=null;enter();
  // a checkpoint that won't open goes back to the title with a message instead of freezing; the save is kept
  try{restore(s)}catch(e){console.warn('Checkpoint would not open:',e);leave();B.goto('title');B.render();B.toast('CHECKPOINT WON\'T OPEN');return false}
- G.cp=s;return true}
+ G.cp=s;
+ // Last time (Quality of life): one box with where you were and the Case file's Next goal
+ const c=caseById(G.case),nx=c&&c.next?c.next():'';
+ run(()=>say('',fillT(MMW.lastTime,{m:G.M.name})+(nx?'\n'+fillT(MMW.lastNext,{g:nx}):'')));
+ return true}
 
 // ================= PAUSE =================
-async function pauseMenu(){
- held=[];
- for(;;){
-  // Dev build only (never Release): a row that finishes the case at once, for testing the case board on a phone
-  const dev=!!(window.Studio&&Studio.channel==='dev'),rows=['Party','Items','Notebook','Save & quit',...(dev?['Dev: finish case']:[]),'Close'];
-  const r=await choose(rows,{cancel:true,title:'MENU · '+G.M.name});
-  if(rows[r]==='Dev: finish case'){finish();return}
-  if(r===0)await openParty();
-  else if(r===1){await itemMenu(lead(),false);hideTB()}
-  else if(r===2){if(!G.clues.length)await say('NOTEBOOK','Nothing yet. Talk to the townsfolk.');for(const c of G.clues)await say('NOTEBOOK',c.text);if(!G.flags.key)await say('NOTEBOOK',`Deputy Ross wants proof: ${townClues()}/3 town clues.`)}
-  else if(r===3){quit();return}
-  else return;
- }
-}
+// The map menu is field.js (spec 006, A5).
 
 // ================= INPUT =================
 function input(k){
  if(!G.active)return;
  if(CB){boardPress(k);return}
  if(dlg){if(k==='a'||k==='b'){if(!dlg.done)finishType();else closeDlg()}return}
- if(PM){partyPress(k);return}
  if(menu){const n=menu.items.length;
   if(k==='up'){menu.sel=(menu.sel-1+n)%n;renderMenu()}
   else if(k==='down'){menu.sel=(menu.sel+1)%n;renderMenu()}
   else if(k==='a'){const it=menu.items[menu.sel];if(it&&it.dis)return;closeMenu(menu.sel)}
   else if(k==='b'&&menu.cancel){closeMenu(-1)}
   return}
+ if(SCR){if(!SCR.lock)scrPress(k);return}
+ if(PM){partyPress(k);return}
  if(G.mode==='world'&&!G.busy&&!G.mv){if(k==='a')run(interact);else if(k==='start')run(pauseMenu)}
  if(k==='select')mapSelect();
 }
@@ -576,5 +579,6 @@ menuEl.addEventListener('click',e=>{const el=e.target.closest('.gi');if(!el||!me
 // The shelf's Continue button opens straight into the case checkpoint (launcher.md, Title cards).
 // With no checkpoint (only agents on the roster) the title screen opens as usual.
 window.addEventListener('load',()=>{if(window.Studio&&Studio.continued&&!G.active)resume()});
-window.BLG={start,resume,input,hold,get active(){return G.active},
- board:o=>board(Object.assign({stamp:o&&o.from==='finish'?B.S.stampCase:null},o)),seasonClosed:()=>seasonClosed(),newSeason:()=>newSeason(),_t:{hp:(i,n)=>{party[i].hp=n},status:(i,k)=>{const m=party[i];m.st=m.st||[];if(!m.st.includes(k))m.st.push(k)},lead:()=>G.lead|0,fight:t=>run(async()=>{const r=await battle(t);if(r==='lose')await gameOver()}),go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,boss:()=>run(bossIntro),finish:()=>finish(),board:()=>CB}};
+window.BLG={start,resume,input,hold,recruitBuilt:a=>recruitBuilt(a),get active(){return G.active},
+ board:o=>board(Object.assign({stamp:o&&o.from==='finish'?B.S.stampCase:null},o)),seasonClosed:()=>seasonClosed(),newSeason:()=>newSeason(),_t:{hp:(i,n)=>{party[i].hp=n},status:(i,k)=>{const m=party[i];m.st=m.st||[];if(!m.st.includes(k))m.st.push(k)},
+ box:()=>box&&box.text||"",skipBox:()=>{if(dlg){if(!dlg.done)finishType();if(dlg)closeDlg()}},hot:h=>run(()=>hotspot(h,'test')),run:fn=>run(()=>fn({party,G,lead,horror,trigger,addStatus,pickup,loseAgent,say})),scr:()=>SCR&&SCR.kind,lead:()=>G.lead|0,fight:t=>run(async()=>{const r=await battle(t);if(r==='lose')await gameOver()}),go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,boss:()=>run(bossIntro),finish:()=>finish(),board:()=>CB}};

@@ -14,7 +14,7 @@ const IRIS=['#6b4426','#8a6a2e','#4a7a4e','#3f6fa8','#7a8494'];
 const STEPS=['profession','stats','skills','identity','bonds','motives','dossier'];
 const TWEAKABLE=['identity','bonds','motives','dossier'];  // Tweak: name, face, backstory, Bond names, motivations
 const profOf=a=>PROFS.find(p=>p.id===(a&&a.prof));
-// Today's engine reads kit items and weapon through specOf; the profession's stand-in pack fills it until the Demo 5 item rules.
+// Retired Nov 22 (Demo 5 part A): play now gives each agent their own kit (field.js). Kept for anything still asking.
 const specOf=a=>{const p=profOf(a);return p?{items:p.pack,weapon:p.weapon}:null};
 
 // ---------- STATE ----------
@@ -46,7 +46,7 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
 // in order, bringing old saves forward before anything reads them. Before upgrading, the old
 // saves are copied to bl.backup. Rules: never change an old step; a new save shape gets a new
 // step and SAVE_V goes up by one. Saves from before numbering count as version 0.
-const SAVE_V=4;
+const SAVE_V=5;
 const fillAgent=a=>{if(!a||typeof a!=='object'||Array.isArray(a))return null;const d=newAgent();
   const o=Object.assign(d,a);o.look=Object.assign(newAgent().look,a.look||{});o.stats=Object.assign(newAgent().stats,a.stats||{});
   if(!o.picks||typeof o.picks!=='object')o.picks={};if(!Array.isArray(o.bonds))o.bonds=[];if(!Array.isArray(o.motives))o.motives=[];return o};
@@ -113,6 +113,25 @@ const UPGRADES={
     if(g!==null){try{const o=JSON.parse(g);if(!o||!Array.isArray(o.party)||!o.party.length)throw 0;
         if(!o.case)o.case='still-harvest';store.set(K('game'),JSON.stringify(o))}
       catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
+  },
+  // 4 → 5 (Nov 22, spec 006 Demo 5 part A, field rules): each agent carries their own kit and items, and the party
+  // shares a backpack. The old shared item pack in the checkpoint becomes backpack items (in its new field state, fs);
+  // the old disorder names become the Bible's six (as [{k, s}]); bl.party (the backpack between cases) and
+  // bl.settings (Fast battles) are added. Agents get their kit (handgun, kit weapon, kit item) when play next reads them.
+  5(){
+    const OLDDIS={'Jumpy':'ptsd','Night terrors':'sleep','Counting compulsion':'paranoia','Hypervigilance':'paranoia','Hollow stare':'depression','Can\'t stop smiling':'phobia'};
+    const OLDITEM={aid:'firstaid',coffee:'coffee',flare:'roadflare',bell:'bell',salts:'salts',tape:'bandage',spray:'bearspray'};
+    const dis=x=>Array.isArray(x)?x:x&&OLDDIS[x]?[OLDDIS[x]==='phobia'?{k:'phobia',s:'the dark'}:{k:OLDDIS[x]}]:[];
+    const fixA=a=>{if(a&&typeof a==='object'&&a.cur&&typeof a.cur==='object')a.cur.dis=dis(a.cur.dis);return a};
+    const r=store.get(K('roster'),[]);store.set(K('roster'),(Array.isArray(r)?r:[]).map(fixA));
+    const g=store.get(K('game'),null);
+    if(g!==null){try{const o=JSON.parse(g);if(!o||!Array.isArray(o.party)||!o.party.length)throw 0;
+        const pack=[];Object.entries(o.items||{}).forEach(([k,n])=>{const nk=OLDITEM[k];for(let i=0;i<(+n||0)&&nk;i++)pack.push({k:nk,u:1})});
+        if(!o.fs)o.fs={pack};delete o.items;
+        o.party.forEach(m=>{m.dis=dis(m.dis);fixA(m.a);m.st=Array.isArray(m.st)?m.st:[]});store.set(K('game'),JSON.stringify(o))}
+      catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
+    if(store.get(K('party'),null)===null)store.set(K('party'),{pack:[]});
+    if(store.get(K('settings'),null)===null)store.set(K('settings'),{fast:false});
   }
 };
 function upgradeSaves(){
@@ -230,7 +249,9 @@ const prevStep=()=>{
   if(S.step==='roster'){const back=S.seatPick!==null?'team':'title';S.seatPick=null;return goto(back)}
   if(S.step==='team'||S.step==='pick'||S.step==='title'||S.step==='confirm')return goto('title');
 };
-function leaveEdit(){if(!S.leaveArm){S.leaveArm=true;return toast('B AGAIN TO DROP THIS EDIT')}S.a=newAgent();S.edit=null;S.tweak=false;goto(S.team?'team':'title');toast('EDIT DROPPED')}
+function leaveEdit(){if(!S.leaveArm){S.leaveArm=true;return toast('B AGAIN TO DROP THIS EDIT')}S.a=newAgent();S.edit=null;S.tweak=false;
+  if(S.recruit){S.recruit=false;goto('title');if(window.BLG)BLG.recruitBuilt(null);return}  // back to Big Hat's three recruits (spec 006 A6)
+  goto(S.team?'team':'title');toast('EDIT DROPPED')}
 const nextRow=lab=>R(lab||'Next ▶',{cls:'go',a:nextStep});
 
 const V={};
@@ -403,7 +424,7 @@ function dossierCard(a){
   const top=Object.keys(SKILLS).map(k=>[k,skillVal(a,k)]).sort((x,y)=>y[1]-x[1]).slice(0,6);
   const feats=STATS.map(k=>feature(k,a.stats[k])).filter(Boolean);
   const h=t=>`<h3 style="font:8px var(--px);color:var(--scr-hi);margin:7px 0 2px">${t}</h3>`;
-  return`<div class="card"><div class="top"><img class="pix face" src="${portraitURL(a,3)}" width="96" height="96" alt="Agent portrait"><div class="who"><div class="n">${esc(a.name||'Unnamed Agent')}</div><div class="hi">AGENT ${esc(a.code||surname(a))}</div><div>${esc(p.name)}</div><div class="small">${esc(p.team)}</div>${a.cur?`<div class="red">SAN now ${a.cur.san}/${d.SAN}${a.cur.dis?' · '+esc(a.cur.dis):''}</div>`:''}<span class="stamp">CLEARED</span></div></div>
+  return`<div class="card"><div class="top"><img class="pix face" src="${portraitURL(a,3)}" width="96" height="96" alt="Agent portrait"><div class="who"><div class="n">${esc(a.name||'Unnamed Agent')}</div><div class="hi">AGENT ${esc(a.code||surname(a))}</div><div>${esc(p.name)}</div><div class="small">${esc(p.team)}</div>${a.cur?`<div class="red">SAN now ${a.cur.san}/${d.SAN}${(Array.isArray(a.cur.dis)?a.cur.dis:[]).length?' · '+esc(a.cur.dis.map(x=>(BLS.DISORDERS[x.k]||{}).name).join(', ')):''}</div>`:''}<span class="stamp">CLEARED</span></div></div>
   ${a.backstory?`<div class="small" style="margin-top:5px;color:var(--scr-fg)">${esc(a.backstory)}</div>`:''}
   <div class="sgrid">${STATS.map(k=>`<span><span class="small">${k}</span> ${a.stats[k]}</span>`).join('')}</div>
   <div class="sgrid" style="grid-template-columns:repeat(4,1fr)"><span><span class="small">HP</span> ${d.HP}</span><span><span class="small">WP</span> ${d.WP}</span><span><span class="small">SAN</span> ${d.SAN}</span><span><span class="small">BP</span> ${d.BP}</span></div>
@@ -416,6 +437,8 @@ function dossierCard(a){
 function done(){
   const a=S.a;for(const st of steps()){const pr=problem(a,st);if(pr){goto(st);return toast(pr)}}
   a.bonds.forEach(b=>{if(b.score==null)b.score=a.stats.CHA});a.name=a.name.trim();
+  // a recruit built mid-case goes straight back into the case (spec 006 A6)
+  if(S.recruit){a.id=newId();const c=clone(a);S.recruit=false;S.a=newAgent();goto('title');if(window.BLG)BLG.recruitBuilt(c);return}
   const T=S.team,i=S.edit,was=T.seats[i];a.id=a.id||newId();  // a tweak keeps the agent's id; a rebuild is a new person
   T.seats[i]=clone(a);T.state[i]=S.tweak?'tweaked':was?'rebuilt':'built';T.opt[i]=0;
   S.a=newAgent();S.edit=null;S.tweak=false;S.sel.team=i;goto('team');toast('SEAT '+(i+1)+' FILLED');
@@ -428,7 +451,7 @@ V.dossier=()=>{
     rows.push(R(S.clearArm?'Press A again to shred':'Shred this file',{cls:'warn',a:()=>{if(!S.clearArm){S.clearArm=true;return}S.roster=S.roster.filter(x=>x.id!==a.id);store.set(K('roster'),S.roster);leaveView();toast('FILE SHREDDED')}}));
     rows.push(R(S.afterCase?'Back to the case board':'Back to roster',{a:leaveView}));
   }else{
-    rows.push(R('Done ▶',{cls:'go',val:`seat ${S.edit+1}`,a:done}));
+    rows.push(R('Done ▶',{cls:'go',val:S.recruit?'recruit':`seat ${S.edit+1}`,a:done}));
     rows.push(R(S.saved?'Filed ✓':'File to roster too',{a:()=>{const pr=steps().map(st=>problem(a,st)).find(Boolean);if(pr)return toast(pr);a.id=a.id||newId();fileToRoster(a);S.saved=true;toast('FILED UNDER '+(a.code||'?'))}}));
     rows.push(R('Copy agent code',{a:()=>copyCode(a)}));
   }
