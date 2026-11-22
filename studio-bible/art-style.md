@@ -24,6 +24,7 @@ Sources: Black Lantern Art and Rushlight Art (Look, Art across games, Palette), 
 
 - Each game has its own base palette, listed in its `bible.md`. Each region or case adds a few accent colors.
 - Shared across games: SAN pink `#ff4fa3` and SAN cyan `#3ff0e8` mark low sanity, so it reads the same everywhere.
+- A game may show low SAN its own way instead (set Nov 21, 2026). Its `bible.md` then names the signal and keeps it readable: text, the HUD, enemies and usable things are never hidden. Life After uses phantoms and SAN grit, and uses cyan for usable things.
 
 ## Fonts and sound
 
