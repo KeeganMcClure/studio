@@ -15,7 +15,7 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 - [x] Setup: create this bible (Nov 21).
 - [x] Controls: Select opens companion orders, L opens the bag, R opens the map (Nov 21). See Controls and screens.
 - [x] Studio bible: `controls.md` lets a game give L/R their own jobs, and `ui.md` lets a game with one fixed lead leave out Make lead (Nov 21).
-- [ ] The clock: how many in-game minutes a step and each action cost, so a day lands at 10 to 15 minutes of play. Season length is set (14 days).
+- [x] The clock: how many in-game minutes a step and each action cost, so a day lands at 10 to 15 minutes of play (Nov 21). See Time and seasons, The clock.
 - [ ] The map generator: how big the starting town and its countryside are, what building and area types exist, and how fast places run dry.
 - [ ] Needs and SAN numbers: how fast hunger, sleep and SAN drop, what each refills, and what happens at each low point.
 - [ ] Combat numbers: hit chances, damage, weapons, noise per action, and how zombies and raiders choose a move.
@@ -112,7 +112,13 @@ None yet.
 
 - **Day and night** (set Nov 21). Time moves when you act: each step or action uses in-game minutes. Days are for scavenging; nights are far more dangerous, with more zombies out and raiders attacking shelters.
 - **Night is your choice** (set Nov 21): hole up (sleep, craft, talk, defend) or go out. Going out is how you get what people guard: raiders and survivors watch the best places by day and sleep at night, so you can sneak in. The cost: zombies are hard to see, sound carries farther (a bigger noise ring), your flashlight draws zombies and uses batteries, and getting caught makes enemies of that group.
-- **Day length** (set Nov 21): about 10 to 15 minutes of play, so one day fits one sitting. Exact minutes per action: To do.
+- **Day length** (set Nov 21): about 10 to 15 minutes of play, so one day fits one sitting.
+- **The clock** (Keegan, Nov 21). Exact numbers are tuned in playtests.
+  - **Steps:** 1 in-game minute per map step.
+  - **Actions:** search a spot 10 minutes, eat 10, bandage 5, pick a lock 20 (force it 5), a small craft 15, a big build 1 to 2 hours, a fight turn 1 minute. A house takes about an hour to clear, so a day fits 6 to 8 places.
+  - **Day and night:** dawn is 6 AM all year. Dusk is 9 PM in summer, 7 PM in spring and fall, and 5 PM in winter.
+  - **Sleep:** pick 1 to 10 hours, any time. 8 hours is a full rest, and a nap helps a little. An attack or a noise can wake you.
+  - **Travel between sections:** walking takes 3 hours, a bike 1 hour, and driving 20 minutes (it burns gas and is loud). You may meet someone on the road.
 - **Season length** (set Nov 21): 14 days. A year is 56 days, about 10 to 14 hours of play.
 - **Starting season** (set Nov 21): pick it when you set up a new world, or leave it random. Summer is gentler, winter is brutal.
 - **Menus and time** (set Nov 21): looking is free. Opening the bag, map or notes stops the clock. Doing something (eating, bandaging, reloading, crafting) costs in-game minutes and, in a fight, your turn.
