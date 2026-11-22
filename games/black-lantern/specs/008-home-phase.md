@@ -173,5 +173,5 @@ The home phase is Black Lantern's own (`home.js`, a new part loaded after `debri
 
 ## Bible notes for the Designer (no change made here)
 
-- Systems → Sanity: Sabbatical says a recruit "fills in" but not what happens when the agent comes back. Keegan picked Nov 22 that the player chooses who keeps the seat each time (A6). A later bible PR should write that into Sanity.
+- Systems → Sanity: Sabbatical says a recruit "fills in" but not what happens when the agent comes back. Keegan picked Nov 22 that the player chooses who keeps the seat each time (A6). This PR adds that line to Sanity.
 - Systems → Home scenes: Use's Bond loss doesn't say which Bond. This spec picks one at random among those above 0, since the agent is hiding it from everyone.
