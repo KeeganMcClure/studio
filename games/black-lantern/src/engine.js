@@ -19,69 +19,19 @@ const lead=()=>party[G.lead|0]||party[0];
 const squad=()=>party.filter(m=>m!==lead());
 const DIRS=StudioMove.DIRS;  // walking, the camera and the canvas fit are shared: engine/move.js
 
-// ================= DATA =================
-const ABIL={
- 'Badge Flash':{wp:2,t:'foe',fx:'stun',n:1,skill:'Persuade'},
- 'Double Tap':{wp:3,t:'foe',fx:'multi',n:2},
- 'Triage':{wp:3,t:'ally',fx:'heal',dice:[2,6,4]},
- 'Sedate':{wp:3,t:'foe',fx:'stun',n:2,skill:'Medicine'},
- 'Analyze':{wp:2,t:'foe',fx:'mark'},
- 'Jury-Rig':{wp:3,t:'foe',fx:'dmg',dice:[2,6,2]},
- 'Suppress':{wp:3,t:'none',fx:'blindAll',n:2},
- 'Cover':{wp:2,t:'ally',fx:'cover'},
- 'Recall Lore':{wp:2,t:'none',fx:'markAll'},
- 'Ward':{wp:3,t:'none',fx:'ward'},
- 'Overclock':{wp:2,t:'ally',fx:'extra'},
- 'Spoof':{wp:2,t:'none',fx:'decoy'},
- 'Baton':{wp:2,t:'foe',fx:'hitstun'},
- 'Command Voice':{wp:2,t:'none',fx:'taunt'},
- 'Patch Up':{wp:2,t:'ally',fx:'heal',dice:[1,8,4],revive:true},
- 'Adrenaline':{wp:3,t:'ally',fx:'extra'},
- 'Bear Spray':{wp:3,t:'none',fx:'blindAll',n:2},
- 'Read the Woods':{wp:2,t:'none',fx:'focus'},
- 'Last Rites':{wp:4,t:'none',fx:'sanAll',dice:[1,6,1]},
- 'Sermon':{wp:3,t:'none',fx:'stunAll',chance:55},
- 'Certified Delivery':{wp:2,t:'ally',fx:'heal',dice:[1,6,2],wp2:2},
- 'Dog Sense':{wp:2,t:'foe',fx:'surehit'},
- 'Composure':{wp:2,t:'none',fx:'ward'},
- 'Final Arrangements':{wp:3,t:'foe',fx:'dmg',dice:[3,6,0]},
- 'Mop Sweep':{wp:3,t:'none',fx:'dmgAll',dice:[1,6,1]},
- 'Knows the Building':{wp:2,t:'none',fx:'escape'},
- 'The Jingle':{wp:3,t:'none',fx:'wpAll',dice:[1,4,1]},
- 'Rocket Pop':{wp:2,t:'foe',fx:'dmg',dice:[1,6,1],stun:1},
-};
+// Battle moves, items and enemy cards: battle.js (spec 006 part B), strings.js (BLS.MOVES) and each case.
 const BLOCK=new Set('TCB#DLlPHFSVKkYyNpGWIOX'.split(''));
 
 // ================= HELPERS =================
 const fmt=t=>t.replace(/\{code\}/g,lead().a.code||((lead().a.name||'').split(' ').pop()||'?').toUpperCase()).replace(/\{first\}/g,lead().name);
-// Weapon from the profession (Bible: Starting kit; dice from Combat numbers). STR 13+ adds +1 Melee damage.
+// Weapon from the profession (Bible: Starting kit; dice from Combat numbers); STR bonus for melee (field.js strBonus).
 function weaponFor(a){const p=profOf(a),W=B.WEAP[(p&&p.weapon)||'handgun']||B.WEAP.handgun;
- return{name:W.name,skill:clamp(skillVal(a,W.skill)+(W.hit||0),5,99),dmg:W.dmg,bonus:(W.plus||0)+(W.melee&&a.stats.STR>=13?1:0),verb:W.verb}}
+ return{name:W.name,skill:clamp(skillVal(a,W.skill)+(W.hit||0),5,99),dmg:W.dmg,bonus:(W.plus||0)+(W.melee||W.thrown?strBonus(a.stats.STR):0),verb:W.verb}}
 function member(a){const d=derived(a),c=a.cur||{};return{a,name:(a.name||'Agent').split(' ')[0].slice(0,9)||'Agent',hp:d.HP,mhp:d.HP,wp:d.WP,mwp:d.WP,san:c.san??d.SAN,msan:d.SAN,san0:c.san??d.SAN,bp:d.BP,dis:c.dis||null,dex:a.stats.DEX,w:weaponFor(a),ko:false,stun:0}}
 
 // ================= SPRITES =================
 // Maps and townsfolk are drawn by each case's own art (spec 005: Still Harvest's is cases/still-harvest-art.js, on the Shared Shelf).
-// Agents use agent-sprite.js. Battle sprites stay here until Demo 5.
-function drawEnemy(t,x,y,tm,e){
- if(e&&e.flash>0&&(e.flash%4)<2)return;
- const sx=e&&e.shake?(Math.random()*4-2):0;x=Math.round(x+sx);y=Math.round(y);
- const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};
- const f=Math.floor(tm/10)%2;
- if(t==='crow'){P(-8,-6,16,10,'#151018');P(-7,-10,9,6,'#151018');P(-5,-9,2,2,'#ff8a1e');P(-12,-8,5,2,'#d9a43a');if(f)P(-2,-15,12,7,'#251d2e');else P(0,-4,15,4,'#251d2e');P(8,-3,7,3,'#151018');P(-2,4,1,5,'#d9a43a');P(2,4,1,5,'#d9a43a')}
- else if(t==='husk'){P(-6,-17,12,4,'#3e5c3a');P(-8,-13,15,1,'#2d4429');P(-6,-13,12,10,'#c9a36a');P(-4,-10,2,2,'#2a1a10');P(2,-10,2,2,'#2a1a10');P(-3,-6,6,1,'#2a1a10');P(-9,-12,3,4,'#e0c25a');P(6,-11,3,4,'#e0c25a');P(-7,-3,14,12,'#b59a5a');P(-3,-3,6,4,'#c0392b');P(3,1,2,2,'#f2c94c');P(-10,-2+f,3,9,'#b59a5a');P(-10,7+f,3,3,'#e0c25a');P(7,-2,3,9,'#b59a5a');P(7,7,3,3,'#e0c25a');P(-5,9,4,8,'#4b4b3a');P(1,9,4,8,'#4b4b3a')}
- else if(t==='hound'){P(-15,-6,28,12,'#d9b552');for(let i=-13;i<12;i+=5)P(i,-6,1,12,'#b8963a');P(10,-13,11,10,'#d9b552');P(16,-10,2,2,'#ff3b3b');P(12,-3,9,3,'#6a4a1a');P(13,-3,1,2,'#fff');P(16,-3,1,2,'#fff');P(19,-3,1,2,'#fff');P(-12,6,3,7-f,'#b8963a');P(-6,6,3,6+f,'#b8963a');P(3,6,3,7-f,'#b8963a');P(8,6,3,6+f,'#b8963a');P(-19,-9,5,3,'#e0c25a')}
- else if(t==='long'){const s=Math.round(Math.sin(tm*.04)*2);P(-9+s,-46,18,2,'#1b1414');P(-5+s,-54,10,8,'#1b1414');P(-5+s,-44,10,11,'#d9c8a0');P(-3+s,-41,1,1,'#000');P(2+s,-41,1,1,'#000');P(-1+s,-37,2,4,'#000');P(-4,-33,8,32,'#4a3a2e');P(-11,-32,7,28,'#4a3a2e');P(4,-32,7,28,'#4a3a2e');P(-11,-4,7,5,'#e0c25a');P(4,-4,7,5,'#e0c25a');P(-4,-1,3,18,'#2e241c');P(1,-1,3,18,'#2e241c')}
- else if(t==='vol'){P(-7,-24,14,13,'#c9a36a');P(-4,-20,2,2,'#000');P(2,-20,2,2,'#000');P(-5,-16,10,1,'#2a1a10');P(-6,-17,1,1,'#2a1a10');P(5,-17,1,1,'#2a1a10');P(-7,-12,14,1,'#8a6a2a');P(-8,-11,16,17,'#e8dcc0');P(-8,-11,5,17,'#ff7a1a');P(3,-11,5,17,'#ff7a1a');P(-8,-4,5,2,'#e6e6e6');P(3,-4,5,2,'#e6e6e6');P(-11,-10,3,12,'#ff7a1a');P(-11,2,3,3,'#e0c25a');P(8,-10,3,10,'#ff7a1a');P(9,-2+f,7,9,'#a07a4a');P(10,-1+f,5,7,'#f4f4f4');P(-6,6,5,12,'#3b4a6b');P(1,6,5,12,'#3b4a6b')}
- else if(t==='gleaner'){
-  const ph2=Bt&&Bt.phase===2,fl=.55+.35*Math.sin(tm*.18)+Math.random()*.1;
-  const g=cx.createRadialGradient(x,y-50,4,x,y-50,60);g.addColorStop(0,ph2?`rgba(255,255,240,${.45*fl})`:`rgba(255,190,80,${.4*fl})`);g.addColorStop(1,'rgba(255,150,40,0)');cx.fillStyle=g;cx.fillRect(x-60,y-110,120,120);
-  for(let i=0;i<14;i++)P(-6-i*2,-34+i*5,12+i*4,5,i%2?'#4a3a18':'#3a2c10');
-  for(let k=0;k<11;k++)P(-33+k*6,36+(k%2)*3,2,9,'#8a7030');
-  P(-36,-18+f,8,30,'#3a2c10');P(-44,10+f,12,2,'#c8c8d4');P(-46,4+f,2,8,'#c8c8d4');P(28,-18-f,8,30,'#3a2c10');P(32,10-f,12,2,'#c8c8d4');P(44,4-f,2,8,'#c8c8d4');
-  if(ph2){for(let k=0;k<6;k++)P(-18+k*7,-8+(k%3)*9,2,1,'#ff3b3b')}
-  P(-3,-42,6,8,'#2a1f0a');P(-10,-64,20,23,'#1b1414');P(-8,-61,16,17,ph2?`rgba(255,255,230,${fl})`:`rgba(255,${170+rnd(30)},70,${fl})`);P(-2,-57,4,9,'#fff3c2');P(-6,-68,12,4,'#1b1414');P(-2,-72,4,4,'#1b1414');P(-10,-53,20,1,'#1b1414');
- }
-}
+// Agents use agent-sprite.js on the map and agent-back.js in battle; enemies' battle sprites come from each case (spec 006 B3).
 
 // ================= MAPS =================
 const mk=(w,h,f)=>Array.from({length:h},()=>Array(w).fill(f));
@@ -157,138 +107,9 @@ function clue(id,text){if(G.clues.some(c=>c.id===id))return;G.clues.push({id,tex
 // so there is nothing to set here any more; callers still call it after a SAN change.
 function applySan(){}
 // SAN rolls, bracing, Steadying, Breaking Points and disorders are field.js (spec 006, A4); sanCheck(spec, label) still works there.
-const hitPenalty=m=>-rollMod(m,m.w.sk||'Firearms');  // statuses and flares (field.js)
 
 // ================= BATTLE =================
-function updHUD(){hud.innerHTML=party.map(m=>`<div class="hb ${Bt&&m===Bt.active?'on':''} ${m.ko||m.out?'ko':''}"><div class="nm">${esc(m.name)}</div><div>HP <b class="${m.hp<=m.mhp/3?'red':''}">${m.hp}</b>/${m.mhp}</div><div>WP ${m.wp} <span class="sn">S${m.san}</span></div></div>`).join('')}
-function nameEnemies(en){const c={};en.forEach(e=>c[e.base]=(c[e.base]||0)+1);const s={};en.forEach(e=>{if(c[e.base]>1){s[e.base]=(s[e.base]||0)+1;e.name=e.base+' '+'ABC'[s[e.base]-1]}else e.name=e.base})}
-async function battle(types,o={}){
- held=[];G.mode='battle';gEl.classList.add('battle');
- const en=types.map((t,i)=>({...EN[t],t,base:EN[t].name,hp:o.hp&&i===0?o.hp:EN[t].hp,mhp:o.hp&&i===0?o.hp:EN[t].hp,stun:0,blind:0,mark:false,dead:false,flash:0,alpha:1}));
- nameEnemies(en);
- Bt={en,bg:o.bg||G.M.bg,t:0,boss:!!o.boss,phase:1,focus:0,ward:false,decoy:false,taunt:null,hover:-1,active:null,floaties:[],queue:[]};
- party.forEach(m=>{m.defend=false;m.covering=null;m.stun=hasSt(m,'stun')?1:0});G.fs.fight=(G.fs.fight|0)+1;
- hud.hidden=false;updHUD();
- await sleep(250);
- await say('',o.intro||`${en.map(e=>e.name).join(', ')} ${en.length>1?'close in':'appears'}!`,{auto:1000});
- // horror on sight: each enemy type is a horror once per case (its tier and kind come from the case's enemy data)
- for(const t of [...new Set(types)])await horror(Object.assign({id:'sight:'+t,sight:true,label:`Seeing ${/^The /.test(EN[t].name)?EN[t].name:'the '+EN[t].name}`},EN[t].horror||{spec:EN[t].san}));
- if(teamDown())return endBattle('lose');
- if(o.onStart)await o.onStart();
- for(;;){
-  Bt.queue=[...party.filter(m=>!m.ko&&!m.out),...en.filter(e=>!e.dead)].map(a=>({a,i:a.dex+rnd(5)})).sort((x,y)=>y.i-x.i).map(x=>x.a);
-  while(Bt.queue.length){
-   const a=Bt.queue.shift();if(a.dead||a.ko||a.out)continue;
-   if(a.a){const r=await memberTurn(a);if(r==='flee')return endBattle('flee')}else await enemyTurn(a);
-   if(teamDown())return endBattle('lose');
-   if(en.every(e=>e.dead))return endBattle('win');
-  }
-  if(Bt.focus>0)Bt.focus--;en.forEach(e=>{if(e.blind>0)e.blind--});Bt.taunt=null;
-  if(Bt.boss&&Bt.phase===1&&en[0].hp<=en[0].mhp/2){Bt.phase=2;await say('','The lantern flares white. The corn leans in to listen. The Gleaner moves faster now.',{auto:1800})}
- }
-}
-// the whole team down (Downed, or out at 0 SAN) loses the fight (Gameplay loop, Game over)
-const teamDown=()=>party.every(m=>m.ko||m.out||m.san<=0);
-async function endBattle(res){
- Bt.active=null;updHUD();
- if(res!=='lose'){
-  if(res==='win')await say('','You survived. For now.',{auto:900});
-  party.forEach(m=>{if(m.ko){m.ko=false;m.hp=1}m.wp=Math.min(m.mwp,m.wp+2)});
-  // a stand-in drop until Part C's loot tables: one field item, found the Pickups way
-  if(res==='win'&&!Bt.boss&&Math.random()<.35){hud.hidden=true;Bt=null;await pickup(pick(['firstaid','energy','firstaid']))}
-  if(res==='win')G.fights=(G.fights||0)+1;
- }
- hud.hidden=true;gEl.classList.remove('battle');Bt=null;G.mode='world';hideTB();
- sceneEnd();clearStatusAll('stun');
- // agents who hit 0 SAN in the fight leave when it ends (Losing an agent)
- if(res!=='lose')for(const m of party.filter(m=>m.out||m.san<=0)){await say('',fillT(SW.zero,{n:m.name}));await loseAgent(m,'0 SAN');if(!party.length)return'lose'}
- return res;
-}
-function clearStatusAll(k){party.forEach(m=>clearStatus(m,k))}
-function aliveFoes(){return Bt.en.filter(e=>!e.dead)}
-async function pickFoe(){const f=aliveFoes();if(f.length===1)return f[0];const r=await choose(f.map(e=>`${e.name}${e.mark?' ★':''}`),{cancel:true,title:'TARGET',onSel:i=>{Bt.hover=Bt.en.indexOf(f[i])}});return r<0?null:f[r]}
-async function pickAlly(o={}){const r=await choose(party.map(m=>({label:`${m.name}  ${m.ko?'DOWN':m.hp+'/'+m.mhp}`,dis:o.noKO&&m.ko||m.out})),{cancel:true,title:o.title||'WHO?'});return r<0?null:party[r]}
-function floaty(e,txt,col){const i=Bt.en.indexOf(e),n=Bt.en.length,x=VW/(n+1)*(i+1);Bt.floaties.push({x,y:VH*.42-20,txt:String(txt),t:0,col:col||'#fff'})}
-async function hurtEnemy(e,d){e.hp=Math.max(0,e.hp-d);e.flash=16;floaty(e,d);if(e.hp<=0&&!e.dead){e.dead=true;await say('',`${e.name} ${e.die}.`,{auto:900})}}
-async function attack(m,e,o={}){
- const w=m.w,sk=clamp(w.skill+(Bt.focus?20:0)-hitPenalty(m),5,99),r=d100();
- if(w.loud&&!Bt.loud){Bt.loud=1;await trigger('loud')}  // PTSD: the first Loud attack in a fight
- if(o.sure||r<=sk){let dmg=roll(w.dmg[0],w.dmg[1],w.bonus);const crit=!o.sure&&r<=Math.max(1,Math.floor(sk/10));if(crit)dmg*=2;if(e.mark)dmg=Math.ceil(dmg*1.5);
-  await say('',`${m.name} ${w.verb}! ${crit?'CRITICAL! ':''}${o.sure?'':`(${r} vs ${sk}) `}${e.name} takes ${dmg}.`,{auto:1000});await hurtEnemy(e,dmg);return true}
- await say('',`${m.name} ${w.verb}... and misses. (${r} vs ${sk})`,{auto:950});return false}
-async function memberTurn(m){
- m.defend=false;m.covering=null;Bt.active=m;updHUD();
- if(m.stun>0){m.stun--;await say('',`${m.name} is frozen and can't act.`,{auto:900});return}
- for(;;){
-  await say('',`What will ${m.name} do?`,{keep:true,instant:true});
-  const nAb=profOf(m.a).abil,itc=gearOf(m).it.length+gearOf(m).w.length;
-  const c=await choose(['Attack','Skill','Item'+(itc?'':' (none)'),'Defend',{label:'Run',dis:Bt.boss}],{title:m.name.toUpperCase()+` · ${m.w.name}`});
-  hideTB();
-  if(c===0){const e=await pickFoe();if(!e)continue;await attack(m,e);return}
-  if(c===1){const s=await choose(nAb.map(x=>({label:`${x[0]} (${ABIL[x[0]].wp} WP)`,dis:m.wp<ABIL[x[0]].wp})),{cancel:true,title:`SKILL · ${m.wp} WP`,desc:nAb.map(x=>x[1])});if(s<0)continue;const r=await useAbil(m,nAb[s][0]);if(r===false)continue;if(r==='flee')return'flee';return}
-  if(c===2){const r=await itemMenu(m,true);if(r===false)continue;return}
-  if(c===3){m.defend=true;await say('',`${m.name} braces and watches the dark.`,{auto:800});return}
-  if(c===4){if(Math.random()<.6){await say('','You back away into the corn. You get away!',{auto:1000});return'flee'}await say('','There\'s nowhere to run!',{auto:900});return}
- }
-}
-async function useAbil(m,name){
- const A=ABIL[name];let tgt=null;
- if(A.t==='foe'){tgt=await pickFoe();if(!tgt)return false}
- if(A.t==='ally'){tgt=await pickAlly({title:name.toUpperCase(),noKO:!A.revive});if(!tgt)return false;if(A.fx==='extra'&&(tgt===m))return false}
- m.wp-=A.wp;updHUD();
- const fx=A.fx;
- if(fx==='stun'){const sk=skillVal(m.a,A.skill),r=d100();if(r<=sk){tgt.stun+=A.n;await say('',`${m.name} uses ${name}! (${r} vs ${sk}) ${tgt.name} is stunned.`,{auto:1100})}else await say('',`${m.name} uses ${name}... it doesn't take. (${r} vs ${sk})`,{auto:1100})}
- else if(fx==='multi'){for(let i=0;i<A.n&&!tgt.dead;i++)await attack(m,tgt)}
- else if(fx==='heal'){const h=roll(A.dice[0],A.dice[1],A.dice[2]);if(tgt.ko){tgt.ko=false;tgt.hp=Math.min(tgt.mhp,h);await say('',`${m.name} gets ${tgt.name} back on their feet! (+${h} HP)`,{auto:1100})}else{tgt.hp=Math.min(tgt.mhp,tgt.hp+h);if(A.wp2)tgt.wp=Math.min(tgt.mwp,tgt.wp+A.wp2);await say('',`${m.name} uses ${name}. ${tgt.name} recovers ${h} HP${A.wp2?' and '+A.wp2+' WP':''}.`,{auto:1100})}}
- else if(fx==='mark'){tgt.mark=true;await say('',`${m.name} studies ${tgt.name} and finds the weak seam. It takes extra damage now. ★`,{auto:1300})}
- else if(fx==='markAll'){aliveFoes().forEach(e=>e.mark=true);await say('',`${m.name} remembers an old woodcut of things like these. Every foe takes extra damage now. ★`,{auto:1400})}
- else if(fx==='dmg'){const d=roll(A.dice[0],A.dice[1],A.dice[2]);await say('',`${m.name} uses ${name}! ${tgt.name} takes ${d}.`,{auto:1000});if(A.stun){tgt.stun+=A.stun}await hurtEnemy(tgt,tgt.mark?Math.ceil(d*1.5):d)}
- else if(fx==='surehit'){await attack(m,tgt,{sure:true})}
- else if(fx==='hitstun'){const hit=await attack(m,tgt);if(hit&&!tgt.dead){tgt.stun+=1;await say('',`${tgt.name} is stunned.`,{auto:800})}}
- else if(fx==='blindAll'){aliveFoes().forEach(e=>e.blind=A.n);await say('',`${m.name} uses ${name}! The enemies can barely see straight.`,{auto:1100})}
- else if(fx==='cover'){m.covering=tgt;await say('',`${m.name} steps in front of ${tgt.name}.`,{auto:900})}
- else if(fx==='ward'){Bt.ward=true;await say('',`${m.name} steadies everyone. The next horror won't touch your minds.`,{auto:1200})}
- else if(fx==='extra'){Bt.queue.unshift(tgt);await say('',`${m.name} uses ${name}! ${tgt.name} acts next.`,{auto:1000})}
- else if(fx==='decoy'){Bt.decoy=true;await say('',`${m.name} rigs a phone to play footsteps in the corn. Decoy set.`,{auto:1100})}
- else if(fx==='taunt'){Bt.taunt=m;m.defend=true;await say('',`${m.name} bellows. Every eye turns toward them.`,{auto:1000})}
- else if(fx==='focus'){Bt.focus=2;await say('',`${m.name} reads the ground and calls out where they'll come from. Party +20 to hit for 2 rounds.`,{auto:1400})}
- else if(fx==='sanAll'){const parts=party.map(p=>{const g=roll(A.dice[0],A.dice[1],A.dice[2]);p.san=Math.min(p.msan,p.san+g);return`${p.name} +${g}`});applySan();await say('',`${m.name} speaks old words of comfort. SAN: ${parts.join(', ')}.`,{auto:1500})}
- else if(fx==='stunAll'){let n=0;aliveFoes().forEach(e=>{if(rnd(100)<A.chance){e.stun+=1;n++}});await say('',`${m.name} preaches into the dark. ${n?n+' of them hesitate.':'Nothing listens.'}`,{auto:1200})}
- else if(fx==='dmgAll'){await say('',`${m.name} uses ${name}!`,{auto:700});for(const e of aliveFoes()){const d=roll(A.dice[0],A.dice[1],A.dice[2]);await hurtEnemy(e,e.mark?Math.ceil(d*1.5):d)}}
- else if(fx==='escape'){if(Bt.boss){party.forEach(p=>p.defend=true);await say('',`${m.name} pulls everyone behind a hay wagon. The party braces.`,{auto:1200})}else{await say('',`${m.name} knows a gap in the corn. You slip away.`,{auto:1100});return'flee'}}
- else if(fx==='wpAll'){const parts=party.map(p=>{const g=roll(A.dice[0],A.dice[1],A.dice[2]);p.wp=Math.min(p.mwp,p.wp+g);return`${p.name} +${g}`});await say('',`${m.name} hums the ice cream song. It shouldn't help. It does. WP: ${parts.join(', ')}.`,{auto:1500})}
- updHUD();
-}
-// Battle Items (Item display): only what this agent carries. Their 2 weapons first: picking the other swaps and ends
-// the turn. Then their items. Meds work as on the map; battle-only items wait for Part B's battle (greyed).
-async function itemMenu(m,inBattle){
- const g=gearOf(m),rows=[],acts=[],desc=[];
- g.w.forEach((it,j)=>{rows.push({label:(j===g.eq?'E ':'')+rowName(it),dis:j===g.eq});desc.push(detailOf(it,m));acts.push(async()=>{g.eq=j;refreshW(m);await say('',`${m.name} switches to the ${m.w.name}.`,{auto:900})})});
- g.it.forEach(it=>{const d=itemDef(it.k),fx=d.battleUse,ok=it.u>0&&(fx||d.map&&!['flare','roamer','jammer','uv','hotline'].includes(d.map));
-  rows.push({label:rowName(it),dis:!ok});desc.push(ok?d.desc:(it.u>0?IU.battleOnly:IU.spent));
-  acts.push(async()=>{if(fx?await fx(m,it):await useItem(m,it)){spend(m,it);return true}return false})});
- if(!rows.length){await say('','You have nothing useful.',{auto:800});return false}
- const r=await choose(rows,{cancel:true,title:'ITEMS · '+m.name.toUpperCase(),desc});if(r<0)return false;
- const res=await acts[r]();if(res===false)return false;updHUD();return true;
-}
-async function enemyTurn(e){
- if(e.stun>0){e.stun--;await say('',`${e.name} is stunned.`,{auto:800});return}
- const n=Bt.boss&&e.t==='gleaner'&&Bt.phase===2?2:1;
- for(let i=0;i<n;i++){if(teamDown())return;await enemyAct(e)}
-}
-async function enemyAct(e){
- const pool=[];e.moves.forEach(([mv,w])=>{for(let i=0;i<w;i++)pool.push(mv)});let mv=pick(pool);
- const alive=party.filter(m=>!m.ko&&!m.out);if(!alive.length)return;
- if(mv==='san'){await say('',e.sanText,{auto:1300});let spec=e.sanHit;if(e.t==='gleaner'&&G.flags.cider)spec=[spec[0],'1d6'];await sanCheck(spec,'The words get inside');return}
- if(mv==='all'){await say('',e.allText,{auto:1000});for(const m of alive){const r=d100(),hit=e.skill-(e.blind?30:0)-(m.defend?20:0);if(r<=hit){let d=roll(e.allDmg[0],e.allDmg[1]);if(m.defend)d=Math.ceil(d/2);await hurtMember(m,d)}}return}
- let t=Bt.taunt&&!Bt.taunt.ko?Bt.taunt:pick(alive);
- if(Bt.decoy){Bt.decoy=false;await say('',`${e.name} lunges at the decoy in the corn. The phone shatters.`,{auto:1100});return}
- const cov=party.find(p=>p.covering===t&&!p.ko&&p!==t);if(cov){await say('',`${cov.name} takes the hit for ${t.name}!`,{auto:800});t=cov}
- const hit=e.skill-(e.blind?30:0)-(t.defend?20:0),r=d100();
- if(r<=hit){let d=roll(e.dmg[0],e.dmg[1]);if(t.defend)d=Math.ceil(d/2);await say('',`${e.name} ${e.verb} ${t.name}! ${d} damage.`,{auto:1000});await hurtMember(t,d)}
- else await say('',`${e.name} ${e.verb} ${t.name}... and misses.`,{auto:900});
-}
-async function hurtMember(m,d){if(wearing(m,'armor'))d=Math.max(0,d-1);if(d>0)m.hurt=G.fs.fight|0;m.hp=Math.max(0,m.hp-d);hud.classList.add('shake');setTimeout(()=>hud.classList.remove('shake'),250);updHUD();if(m.hp<=0&&!m.ko){m.ko=true;updHUD();await say('',m===lead()?`${m.name} goes down.`:`${m.name} goes down!`,{auto:1000})}}
+// The battle is battle.js (spec 006 part B); the studio's battle frame is engine/battle.js.
 
 // ================= WORLD =================
 function passable(x,y){const M=G.M;if(x<0||y<0||x>=M.w||y>=M.h)return false;if(BLOCK.has(M.g[y][x]))return false;if(M.npcs.some(n=>(!n.on||n.on())&&n.x===x&&n.y===y))return false;return true}
@@ -334,7 +155,7 @@ function drawWorld(){
  // Only the lead walks the map (Bible, Art, Maps). Agent sprites from agent-sprite.js; lantern at night only; a blink every few seconds.
  const blink=!moving&&(now%3400)<150?1:0;
  spr.push({y:G.py+13,f:()=>BLA.draw(cx,L.a,G.px+8-camx,G.py+13-camy,G.dir,fr,blink,night)});
- if(M.boss)spr.push({y:11*16+14,f:()=>drawEnemy('gleaner',13*16+8-camx,11*16+14-camy,now/16)});
+ if(M.boss){const c=caseById(G.case),img=c&&c.sprite&&c.sprite('gleaner',Math.floor(now/400)%2);if(img)spr.push({y:11*16+14,f:()=>cx.drawImage(img,13*16+8-camx-img.width/2,11*16+40-camy-img.height)})}
  spr.sort((a,b)=>a.y-b.y).forEach(s=>s.f());
  // light
  const k=StudioLight.fade(sourFade,L.san<LOOK.lowSan,now),glows=[],pools=[];
@@ -358,6 +179,7 @@ function headOf(a){const k=JSON.stringify([a.prof,a.look]);let c=headCache.get(k
  const v=BLA.sprite(a,'down',0,0,false);c=document.createElement('canvas');c.width=c.height=16;c.getContext('2d').drawImage(v.c,v.ax-8,v.ay-27,16,16,0,0,16,16);headCache.set(k,c);return c}
 function overlaps(a,b){return a[0]<b[0]+b[2]&&b[0]<a[0]+a[2]&&a[1]<b[1]+b[3]&&b[1]<a[1]+a[3]}
 function drawMapHud(camx,camy,night){
+ if(G.noHud)return;  // the still behind a battle (battle.js) is the map alone
  if(box||menu||!menuEl.hidden)return;  // hidden while the dialog box or a menu is up
  const L=lead(),me=[G.px+8-camx-8,G.py+13-camy-28,16,30];
  // card: face, name, HP numbers and bar, WP · SAN (SAN pink below 40)
@@ -389,17 +211,6 @@ function drawMapHud(camx,camy,night){
  if(out){pT(word,bx+4,by,PC.lav,12);return}
  cx.fillStyle=dim?PC.dim:PC.rust;cx.beginPath();cx.arc(bx+7,by+6,4.5,0,7);cx.fill();pT(MH.a,bx+5,by+1,PC.chipInk,11);
  pT(word,bx+13,by,dim?PC.dim:PC.cream,12);
-}
-function drawBattle(){
- const t=Bt.t++,pal=BGPAL[Bt.boss?'boss':Bt.bg];
- for(let y=0;y<VH;y+=2){const off=Math.sin(y*.06+t*.035)*12+t*.35;const idx=Math.floor((y+off)/9);cx.fillStyle=pal[((idx%pal.length)+pal.length)%pal.length];cx.fillRect(0,y,VW,2)}
- cx.fillStyle='rgba(0,0,0,.18)';for(let x=0;x<VW;x+=4){const o=Math.sin(x*.08+t*.05)*6;cx.fillRect(x,0,2,VH*.12+o)}
- const n=Bt.en.length;
- Bt.en.forEach((e,i)=>{if(e.dead){e.alpha=Math.max(0,e.alpha-.04)}if(e.alpha<=0)return;const x=VW/(n+1)*(i+1),y=Bt.boss?VH*.62:VH*.48;cx.globalAlpha=e.alpha;drawEnemy(e.t,x,y,t,e);cx.globalAlpha=1;if(e.flash>0)e.flash--;
-  if(Bt.hover===i){cx.fillStyle='#ffd166';const ay=y-(e.t==='long'?62:e.t==='gleaner'?80:28)+Math.sin(t*.2)*2;cx.fillRect(x-3,ay,7,2);cx.fillRect(x-2,ay+2,5,2);cx.fillRect(x-1,ay+4,3,2)}
-  if(e.stun>0&&!e.dead){cx.fillStyle='#ffd166';cx.font='8px "Press Start 2P",monospace';cx.fillText('z',x+12+Math.sin(t*.1)*3,y-20)}});
- cx.font='9px "Press Start 2P",monospace';cx.textAlign='center';
- Bt.floaties=Bt.floaties.filter(f=>f.t<50);Bt.floaties.forEach(f=>{f.t++;cx.fillStyle='#000';cx.fillText(f.txt,f.x+1,f.y-f.t*.5+1);cx.fillStyle=f.col;cx.fillText(f.txt,f.x,f.y-f.t*.5)});cx.textAlign='left';
 }
 // ---- BIG HAT: the handler. Back-office scene reused before and after every mission. ----
 function drawBigHat(x,base,k,t,s=2){
@@ -531,6 +342,8 @@ function finish(ending){
  store.set(B.key('game'),null);const a=lead().a;const id=G.case;closeCase(id,ending);B.S.afterCase=true;B.S.stampCase=id;
  // every agent in the field carries SAN, disorders, Breaking Point, Adapted marks and gear back to the roster;
  // statuses clear at the end-of-case heal-up; the backpack goes to bl.party (spec 006, Saves)
+ // Minor injuries last through the next case and clear at that case's end-of-case heal-up (Lasting injuries)
+ live().forEach(m=>{const a=m.a;if(Array.isArray(a.inj))a.inj=a.inj.filter(x=>!(x.tier==='minor'&&--x.left<=0))});
  const R=B.S.roster;live().forEach(m=>{const x=carry(m);x.id=x.id||Date.now()+rnd(1000);const i=R.findIndex(y=>y.id===x.id);const copy=JSON.parse(JSON.stringify(x));if(i>=0)R[i]=copy;else if(x===a)R.unshift(copy)});store.set(B.key('roster'),R);
  store.set(B.key('party'),{pack:G.fs?G.fs.pack:[]});
  B.S.a=a;B.S.view=true;leave();B.goto('dossier');B.render();B.toast('FILED. CHAPTER ONE CLOSED.');
@@ -567,6 +380,8 @@ function input(k){
   else if(k==='a'){const it=menu.items[menu.sel];if(it&&it.dis)return;closeMenu(menu.sel)}
   else if(k==='b'&&menu.cancel){closeMenu(-1)}
   return}
+ if(Bt&&Bt.ui){battlePress(k);return}  // the battle's own menus (battle.js)
+ if(Bt)return;
  if(SCR){if(!SCR.lock)scrPress(k);return}
  if(PM){partyPress(k);return}
  if(G.mode==='world'&&!G.busy&&!G.mv){if(k==='a')run(interact);else if(k==='start')run(pauseMenu)}
@@ -581,4 +396,5 @@ menuEl.addEventListener('click',e=>{const el=e.target.closest('.gi');if(!el||!me
 window.addEventListener('load',()=>{if(window.Studio&&Studio.continued&&!G.active)resume()});
 window.BLG={start,resume,input,hold,recruitBuilt:a=>recruitBuilt(a),get active(){return G.active},
  board:o=>board(Object.assign({stamp:o&&o.from==='finish'?B.S.stampCase:null},o)),seasonClosed:()=>seasonClosed(),newSeason:()=>newSeason(),_t:{hp:(i,n)=>{party[i].hp=n},status:(i,k)=>{const m=party[i];m.st=m.st||[];if(!m.st.includes(k))m.st.push(k)},
- box:()=>box&&box.text||"",skipBox:()=>{if(dlg){if(!dlg.done)finishType();if(dlg)closeDlg()}},hot:h=>run(()=>hotspot(h,'test')),run:fn=>run(()=>fn({party,G,lead,horror,trigger,addStatus,pickup,loseAgent,say})),scr:()=>SCR&&SCR.kind,lead:()=>G.lead|0,fight:t=>run(async()=>{const r=await battle(t);if(r==='lose')await gameOver()}),go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,boss:()=>run(bossIntro),finish:()=>finish(),board:()=>CB}};
+ box:()=>box&&box.text||"",skipBox:()=>{if(dlg){if(!dlg.done)finishType();if(dlg)closeDlg()}},hot:h=>run(()=>hotspot(h,'test')),run:fn=>run(()=>fn({party,G,lead,horror,trigger,addStatus,pickup,loseAgent,say})),scr:()=>SCR&&SCR.kind,lead:()=>G.lead|0,fight:t=>run(async()=>{const r=await battle(t);if(r==='lose')await gameOver()}),go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,boss:()=>run(bossIntro),finish:()=>finish(),board:()=>CB,
+ bt:()=>Bt?{ui:Bt.ui?Bt.ui.kind:null,sel:Bt.ui?Bt.ui.sel:null,rows:Bt.ui&&Bt.ui.rows?Bt.ui.rows.map(r=>r.label+(r.dis?'*':'')):null,round:Bt.round,msg:Bt.msg,en:Bt.en.map(e=>[e.name,e.hp,e.dead||e.gone]),party:party.map(m=>[m.name,m.hp,m.wp,m.san,!!m.ko,!!m.dead])}:null}};

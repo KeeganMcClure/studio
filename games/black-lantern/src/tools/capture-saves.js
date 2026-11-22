@@ -5,7 +5,7 @@
 //   mid-chapter.json the team started (all 3 filed), plus a Chapter One checkpoint after walking the town,
 //                    with Select pressed once so seat 2 leads (since save version 3), and the season with
 //                    Still Harvest open (since save version 4), and since version 5 each agent's kit and items,
-//                    a found Bandage and seat 1 Bleeding
+//                    a found Bandage and seat 1 Bleeding, and since version 6 a lasting injury on seat 1
 //   closed.json      the same game after the case is finished (through the test hook BLG._t.finish(), which runs
 //                    the case's real ending step), back on the title: Still Harvest closed, CLOSED 1 (since version 4)
 // Usage: node tools/build.js && node tools/capture-saves.js <label>   (label goes in the file names, e.g. 2026-11-21)
@@ -59,6 +59,8 @@ const write = (name, note, keys) => {
   // since save version 5 (spec 006, Demo 5 part A): a found item, a status on seat 1, and the lead's kit in the checkpoint
   await page.evaluate(() => { BLG._t.status(0, 'bleed'); BLG._t.run(o => o.pickup('bandage')); }); await page.waitForTimeout(200);
   for (let i = 0; i < 10 && await page.evaluate(() => !!BLG._t.box()); i++) { await page.keyboard.press('z'); await page.waitForTimeout(150); }
+  // since save version 6 (spec 006, Demo 5 part B): a lasting injury on seat 1 (Bad knee, Rehab)
+  await page.evaluate(() => BLG._t.run(o => { o.party[0].a.inj = [{ k: 6, tier: 'serious' }]; }));
   // Start → Save (the last row; Up wraps to it), then Quit to title
   await page.keyboard.press('Enter'); await page.waitForTimeout(300);
   await page.keyboard.press('ArrowUp'); await page.waitForTimeout(80);

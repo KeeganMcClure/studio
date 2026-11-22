@@ -20,13 +20,26 @@ const caseCard={
 };
 
 // ================= CASE DATA =================
+// Enemy cards (Combat: Enemies and difficulty, Combat numbers). Stand-ins at the bible's tiers until Part C writes the
+// case's real cards: HP, DEX, attack %, damage dice, special moves, what it resists, its weakness (Identify shows it),
+// threat skulls, horror on sight, and tags (beast, living, human, unnatural, burns, lightshy) the moves and items read.
 const EN={
- crow:{name:'Crowling',hp:10,dex:14,skill:45,dmg:[1,4],san:['0','1'],moves:[['hit',1]],verb:'pecks at',die:'bursts into black feathers',horror:{tier:'unsettling',kind:'unnatural'}},
- husk:{name:'Husk Scout',hp:15,dex:9,skill:40,dmg:[1,6],san:['0','1d3'],moves:[['hit',3],['san',1]],verb:'grabs at',sanText:'The Husk Scout recites the Scout Oath. Every word is a name you know.',sanHit:['0','1d2'],die:'comes apart into straw and merit badges',horror:{tier:'disturbing',kind:'unnatural',subj:'scarecrows'}},
- hound:{name:'Bale Hound',hp:20,dex:12,skill:50,dmg:[1,8],san:['0','1d3'],moves:[['hit',1]],verb:'bites',die:'collapses into loose hay',horror:{tier:'disturbing',kind:'unnatural',subj:'dogs'}},
- long:{name:'Long Man',hp:28,dex:7,skill:50,dmg:[1,10],san:['1','1d6'],moves:[['hit',2],['san',1]],verb:'reaches down for',sanText:'The Long Man bends down and looks at you. Just looks.',sanHit:['0','1d4'],die:'topples like a felled tree',horror:{tier:'severe',kind:'unnatural'}},
- vol:{name:'Volunteer',hp:18,dex:10,skill:45,dmg:[1,6],san:['0','1d3'],moves:[['hit',3],['san',1]],verb:'swings a clipboard at',sanText:'The Volunteer reads your name off the clipboard. Then your mother\'s.',sanHit:['0','1d2'],die:'folds over like an empty coat',horror:{tier:'disturbing',kind:'unnatural',subj:'scarecrows'}},
- gleaner:{name:'The Gleaner',hp:110,dex:11,skill:55,dmg:[2,6],san:['1','1d8'],moves:[['hit',4],['all',2],['san',2]],verb:'reaps',allText:'The Gleaner sweeps its sickles through the corn!',allDmg:[1,6],sanText:'The Gleaner speaks your names, one by one, as if tasting them.',sanHit:['1','1d4'],die:'goes out',horror:{tier:'shattering',kind:'unnatural',subj:'the Gleaner',known:true}}
+ crow:{name:'Crowling',tier:'weak',hp:6,dex:14,hit:40,dmg:'1d3',skulls:1,tags:['beast','living','unnatural','lightshy'],resist:[],weak:'light',weakLine:'Light-shy. A road flare will send it reeling.',
+  moves:[['hit',1]],verb:'pecks at',die:'bursts into black feathers',face:[4,4,22],horror:{tier:'unsettling',kind:'unnatural'}},
+ husk:{name:'Husk Scout',tier:'ordinary',hp:13,dex:9,hit:45,dmg:'1d3+1',skulls:1,tags:['unnatural','burns'],resist:['shaken'],weak:'fire',weakLine:'Dry straw. Fire takes it fast. Nothing in there to scare.',
+  moves:[['hit',3],['san',1]],verb:'grabs at',sanText:'The Husk Scout recites the Scout Oath. Every word is a name you know.',sanHit:['0','1d2'],die:'comes apart into straw and merit badges',face:[10,0,24],horror:{tier:'disturbing',kind:'unnatural',subj:'scarecrows'}},
+ hound:{name:'Bale Hound',tier:'ordinary',hp:15,dex:12,hit:50,dmg:'1d3+1',skulls:2,tags:['beast','unnatural','burns'],resist:['poison'],weak:'fire',weakLine:'A hay bale that thinks it\'s a dog. It burns. Poison does nothing.',
+  moves:[['hit',2],['bleed',1]],verb:'bites',die:'collapses into loose hay',face:[48,0,24],horror:{tier:'disturbing',kind:'unnatural',subj:'dogs'}},
+ long:{name:'Long Man',tier:'tough',hp:22,dex:7,hit:55,dmg:'1d4+1',skulls:2,tags:['unnatural'],resist:['bleed'],weak:null,weakLine:'No blood in him to spill. Slow. Hit him before he moves.',
+  moves:[['hit',2],['san',1]],verb:'reaches down for',sanText:'The Long Man bends down and looks at you. Just looks.',sanHit:['0','1d4'],die:'topples like a felled tree',face:[8,0,24],horror:{tier:'severe',kind:'unnatural'}},
+ vol:{name:'Volunteer',tier:'tough',hp:24,dex:10,hit:50,dmg:'1d4+1',skulls:2,tags:['unnatural','burns'],resist:[],weak:'fire',weakLine:'A coat stuffed with straw. Keep it away from candles.',
+  moves:[['hit',3],['san',1]],verb:'swings a clipboard at',sanText:'The Volunteer reads your name off the clipboard. Then your mother\'s.',sanHit:['0','1d2'],die:'folds over like an empty coat',face:[11,0,24],horror:{tier:'disturbing',kind:'unnatural',subj:'scarecrows'}},
+ gleaner:{name:'The Gleaner',tier:'boss',boss:true,hp:60,dex:11,hit:55,dmg:'1d4+2',allDmg:'1d3',skulls:3,tags:['unnatural','burns'],resist:['stun2','poison','bleed'],weak:'fire',
+  weakLine:'Every harvest this town gave it. Dry as kindling. It can\'t be stunned two turns running.',glow:true,face:[34,2,32],
+  records:()=>G.clues.some(c=>c.id==='lore'),
+  moves:[['hit',4],['all',2],['san',2]],verb:'reaps',allText:'The Gleaner sweeps its sickles through the corn!',sanText:'The Gleaner speaks your names, one by one, as if tasting them.',get sanHit(){return G.flags.cider?['1','1d6']:['1','1d4']},die:'goes out',
+  phase2:{at:.5,hit:5,moves:{all:1},line:'The lantern flares white. The corn leans in to listen. The Gleaner moves faster now.'},
+  horror:{tier:'shattering',kind:'unnatural',subj:'the Gleaner',known:true}}
 };
 // horror on sight (spec 006 A7): each enemy above carries its old SAN size as a tier of the SAN loss table, with its kind
 // and phobia subject. The map's horrors, at their old sizes (spec 006 A7): tier, kind, phobia subject; once per case each.
@@ -46,7 +59,6 @@ const caseNext=()=>{const N=TEXT.next;if(!G.flags.key)return N.proof.replace('{n
 const ENC_EARLY=[['crow','crow'],['husk'],['crow'],['hound']];
 const ENC_LATE=[['husk','crow'],['hound','crow'],['crow','crow','crow'],['long'],['husk','husk'],['hound']];
 const ROLE_LINE={Investigator:'Let\'s knock on some doors.',Healer:'I brought the good bandages.',Analyst:'For the record, I don\'t believe in any of this.',Vanguard:'Point me at it.',Lorekeeper:'I\'ve read about towns like this. None of the endings were happy.',Tech:'No cell signal. That\'s... not great.',Bruiser:'I\'ll do the talking. And the hitting.',Support:'Everybody drink some water.',Tracker:'Corn this tall in October is wrong.',Confessor:'I\'ll pray for us. Somebody should.',Courier:'I\'ve delivered to Marrow Creek. Nobody ever signs.',Undertaker:'Lovely town. Very... still.',Scrapper:'Got my keys, got my mop. Let\'s go.',Morale:'Anybody want a Bomb Pop? No? More for me.'};
-const BGPAL={town:['#3a1f3f','#4b2a4a','#6b3a4a','#8a4a3a','#6b3a4a'],maze:['#24170a','#3d2a12','#5a3c18','#6e4a1c','#3d2a12'],boss:['#14040e','#3a0a1e','#5c0f24','#2a0a3a','#5c0f24','#7a1530']};
 const TILEDESC={P:'A pumpkin. Someone carved a face in it, then a second, smaller face inside the mouth.',H:'A hay bale. Warm, like something was just sleeping in it.',L:'A paper lantern on a post. The candle burns but gives off no heat.',C:'Corn, taller than you. It rustles, though there\'s no wind.',T:'An old oak in full autumn color.',F:'A split-rail fence.',B:'Shingles. A crow on the roof watches you and does not blink.','#':'Clapboard and peeling paint.'};
 
 // ================= OPENING (Big Hat's briefing) =================
@@ -209,7 +221,7 @@ async function talkRoss(){
 }
 async function talkVol(){
  await say('VOLUNTEER','Hi there! Harvest Committee! The maze is closed until the Walk.');await say('VOLUNTEER','You don\'t have a lantern. You can\'t go in without a lantern. You\'d get lost.');await say('VOLUNTEER','You\'d get FOUND.');await say('VOLUNTEER','Here. Let me hold your faces for you.');
- const r=await battle(['vol'],{intro:'The Volunteer\'s sack head splits into a wider smile!'});
+ const r=await battle(['vol'],{story:true,intro:'The Volunteer\'s sack head splits into a wider smile!'});
  if(r==='lose')return gameOver();
  G.flags.volDone=1;await say('','The volunteer folds over like an empty coat. Straw spills out of the sleeves.');await say('','His clipboard has a list of names. Three are crossed out. The fourth line is blank, waiting.');checkpoint();
 }
@@ -226,7 +238,7 @@ async function mazeStep(){
  if(inClear&&!G.flags.boss){held=[];return bossIntro()}
  if(inClear)return;
  G.enc=(G.enc??10)-1;
- if(G.enc<=0){held=[];G.enc=11+rnd(12);const grp=pick((G.fights||0)<3?ENC_EARLY:ENC_LATE);const r=await battle(grp);if(r==='lose')return gameOver()}
+ if(G.enc<=0){held=[];G.enc=11+rnd(12);const grp=pick((G.fights||0)<3?ENC_EARLY:ENC_LATE);const r=await battle(grp,{roamer:true});if(r==='lose')return gameOver()}
 }
 async function leaveMaze(){const r=await ask('','Head back out to town?',['Go back','Stay']);if(r===0){await fade(1);goMap('town',28,10,'left');await fade(0)}else{G.dir='right';await stepBack()}}
 // a victim: Look plays the old lines and the horror; Cut them down is the old choice (Leave them for now is B)
@@ -254,7 +266,7 @@ async function bossIntro(){
  await say('THE GLEANER','YOU CAME WITHOUT BEING OFFERED. NO MATTER.');
  await say('THE GLEANER',left?`I HAVE ${left} ALREADY. YOU WILL MAKE ${left+1}.`:'YOU TOOK MY LIKENESSES. THEN I WILL MAKE NEW ONES. FROM YOU.');
  checkpoint();
- const hp=110-22*(G.rescued||0);
+ const hp=60-8*(G.rescued||0);  // the bible's rebuilt Gleaner: 60 HP, −8 per rescued victim (Combat numbers)
  const r=await battle(['gleaner'],{boss:true,hp,intro:'The Gleaner unfolds to its full height!',onStart:async()=>{if(G.rescued)await say('',`It looks thinner than it should. Cutting down ${G.rescued===1?'one victim':G.rescued+' victims'} weakened it.`,{auto:1500})}});
  if(r==='lose')return gameOver();
  G.flags.boss=1;await ending();
@@ -297,4 +309,5 @@ async function ending(){
 // portraits: the townsfolk's talking faces (spec 005), drawn in cases/still-harvest-art.js, loaded right after this file.
 // A on this card plays caseOpening as Big Hat's briefing (spec 004, step 4; Demo 5 replaces it).
 // items: this case's own items. next: the Case file's Next line. quiet: false, an open case (they came as feds; Part C may change it).
-registerCase({id:'still-harvest',card:caseCard,opening:caseOpening,portraits:name=>SHA.portraits[name],items:CASE_ITEMS,next:caseNext,quiet:false});
+registerCase({id:'still-harvest',card:caseCard,opening:caseOpening,portraits:name=>SHA.portraits[name]||(name==='THE GLEANER'?SHB.portrait:null),
+ enemies:EN,sprite:(k,f)=>SHB.sprite(k,f),spriteSize:k=>SHB.size(k),items:CASE_ITEMS,next:caseNext,quiet:false});

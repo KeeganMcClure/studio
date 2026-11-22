@@ -13,7 +13,7 @@
 
 const FI=BLS.ITEMS,IU=BLS.ITEMUI,DZ=BLS.DISORDERS,SW=BLS.SANW,MMW=BLS.MAPMENU,SOPT=BLS.SKILLOPT,SKW=BLS.SKILLW,REC=BLS.RECRUITS,RW=BLS.RECRUITW;
 const SR=StudioRoll;
-const fillT=(t,o)=>String(t).replace(/\{(\w)\}/g,(_,k)=>o[k]??'');
+const fillT=(t,o)=>String(t).replace(/\{(\w+)\}/g,(x,k)=>k.length===1||k in o?o[k]??'':x);  // {n} and longer keys ({wn}); unknown long ones like {code} stay
 const live=()=>party.filter(m=>!m.gone);
 
 // ================= SETTINGS (bl.settings) =================
@@ -27,10 +27,12 @@ const isWeap=it=>!!itemDef(it.k).w;
 const isWorn=it=>!!itemDef(it.k).worn;
 function gearOf(m){const a=m.a;if(!a.gear||!Array.isArray(a.gear.w))a.gear={w:[],eq:0,it:[],worn:[]};const g=a.gear;g.it=g.it||[];g.worn=g.worn||[];return g}
 function slotsUsed(m){return gearOf(m).it.length}
+// STR bonus for melee, fists and thrown weapons (Combat numbers, Delta Green; set Nov 19)
+const strBonus=v=>v<=4?-2:v<=8?-1:v<=12?0:v<=16?1:2;
 function refreshW(m){
  const g=gearOf(m),eq=g.w[g.eq]||g.w[0],key=eq?itemDef(eq.k).w:'fists',W=B.WEAP[key]||B.WEAP.fists,a=m.a;
  if(!g.w[g.eq])g.eq=0;
- m.w={key,name:W.name,skill:clamp(skillVal(a,W.skill)+(W.hit||0),5,99),dmg:W.dmg,bonus:(W.plus||0)+(W.melee&&a.stats.STR>=13?1:0),verb:W.verb,loud:!!W.loud,sk:W.skill,hit:W.hit||0};
+ m.w={key,name:W.name,skill:clamp(skillVal(a,W.skill)+(W.hit||0),5,99),dmg:W.dmg,bonus:(W.plus||0)+(W.melee||W.thrown?strBonus(a.stats.STR):0),verb:W.verb,loud:!!W.loud,sk:W.skill,hit:W.hit||0,melee:!!W.melee,thrown:!!W.thrown};
 }
 // Every agent starts a case with a handgun plus their profession's kit weapon and kit item (Starting kit).
 // Kit items (marked with the owner's id) refill at the start of each case; everything else carries over.
@@ -169,6 +171,7 @@ async function horror(h,o={}){
   const r=SR.pct(m.san-(m.high==='shrooms'?20:0));const pass=adapted||r.ok;
   loss=dice(pass?spec[0]:spec[1]);
   if(braced.has(m)){half=true;note=' braced'}
+  else if(m.braceB&&Bt){half=true;m.braceB=false;note=' braced'}
   else if(m.nerve){half=true;m.nerve=false;note=' pills'}
   else if(h.ident&&(G.fs.ident||[]).includes(h.ident)&&skillVal(m.a,'Occult')>=90){half=true;note=' read up'}
   // Steadying: a teammate at 40%+ Empathy rolls when this agent fails, once per horror each, no turn
