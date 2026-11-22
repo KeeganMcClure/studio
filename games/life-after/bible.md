@@ -13,9 +13,9 @@ This game's build bible. Started 2026-11-21 from Keegan's first-pass answers in 
 One item per chat, in order, biggest open decisions first. The Designer ticks the item when its task is done and adds new items where they belong.
 
 - [x] Setup: create this bible (Nov 21).
-- [x] Controls: Select opens companion orders (Nov 21). L/R still open.
-- [ ] Controls: what L/R step through.
-- [ ] The clock: how many in-game minutes a step and each action cost, so a day lands at 10 to 15 minutes of play; how long a season is.
+- [x] Controls: Select opens companion orders, L opens the bag, R opens the map (Nov 21). See Controls and screens.
+- [ ] Studio bible: a `controls.md` and `ui.md` PR letting a game give L/R their own jobs and leave out Make lead (see Conflicts).
+- [ ] The clock: how many in-game minutes a step and each action cost, so a day lands at 10 to 15 minutes of play. Season length is set (14 days).
 - [ ] The map generator: how big the starting town and its countryside are, what building and area types exist, and how fast places run dry.
 - [ ] Needs and SAN numbers: how fast hunger, sleep and SAN drop, what each refills, and what happens at each low point.
 - [ ] Combat numbers: hit chances, damage, weapons, noise per action, and how zombies and raiders choose a move.
@@ -113,6 +113,9 @@ None yet.
 - **Day and night** (set Nov 21). Time moves when you act: each step or action uses in-game minutes. Days are for scavenging; nights are far more dangerous, with more zombies out and raiders attacking shelters.
 - **Night is your choice** (set Nov 21): hole up (sleep, craft, talk, defend) or go out. Going out is how you get what people guard: raiders and survivors watch the best places by day and sleep at night, so you can sneak in. The cost: zombies are hard to see, sound carries farther (a bigger noise ring), your flashlight draws zombies and uses batteries, and getting caught makes enemies of that group.
 - **Day length** (set Nov 21): about 10 to 15 minutes of play, so one day fits one sitting. Exact minutes per action: To do.
+- **Season length** (set Nov 21): 14 days. A year is 56 days, about 10 to 14 hours of play.
+- **Starting season** (set Nov 21): pick it when you set up a new world, or leave it random. Summer is gentler, winter is brutal.
+- **Menus and time** (set Nov 21): looking is free. Opening the bag, map or notes stops the clock. Doing something (eating, bandaging, reloading, crafting) costs in-game minutes and, in a fight, your turn.
 - **Seasons** (set Nov 21), each with its own pluses and minuses. First pass (Claude's call, for review):
 
 | Season | Plus | Minus |
@@ -175,6 +178,13 @@ None yet.
 - **Mixed, and they remember you** (set Nov 21): loners, families, traders and raider gangs. Each group starts friendlier or more hostile, then shifts with how you treat it: help, trade, theft, a spared life or a killing.
 - **Trade** (set Nov 21): barter, no money. Values shift with need, the season and how much a group trusts you. Medicine is worth the most.
 
+## Controls and screens
+
+- **Buttons** (set Nov 21): D-pad moves and faces, A acts, B goes back, Start opens the full menu, Select opens companion orders. L opens the bag and R opens the map; both stop the clock. Inside the bag and the map, L and R flip between pages.
+- **Top bar** (set Nov 21): day, clock, the four need bars and a small season mark, as in the baseline mockup. Your weapon and ammo show only in fights.
+- **Bag** (set Nov 21): a grid of slots. Pockets are one row, and each bag adds rows of item squares with pixel icons, counts and a wear mark. L and R flip to companions' bags. A uses an item, B goes back.
+- **Party menu** (set Nov 21): the studio's party cards (`studio-bible/ui.md`) for you and each companion: portrait, needs, wounds, traits, the rough bond word, and Give item. No Make lead, since you always play your own survivor.
+
 ## Shelter
 
 - **Claim and fortify a building** (set Nov 21): pick a real building on the map, board up doors and windows, and add beds, storage and traps on its tile grid.
@@ -233,5 +243,6 @@ Found while drafting (Nov 21). Each needs a decision or a separate `studio-bible
 - **Battle screen** (`studio-bible/ui.md`, Battle screen): describes a head-on battle screen. Life After fights on the map and has none. Settled Nov 21: the section now applies only to games that have a battle screen.
 - **Select** (`studio-bible/controls.md`, Buttons): settled Nov 21 (Keegan). Select opens companion orders (Follow, Hold here, Sneak, Fight), and `controls.md` lets a game with no lead to cycle give Select its own job.
 - **Low SAN signal** (`studio-bible/art-style.md`, Color): makes pink and cyan the shared low-SAN mark. Settled Nov 21: `art-style.md` now lets a game show low SAN its own way, and Life After uses phantoms and SAN grit, with cyan for usable things.
-- **Party menu** (`studio-bible/ui.md`, Party menu, added Nov 21 from Black Lantern spec 002): assumes a lead you can swap, with Make lead and Select cycling. Life After keeps one survivor as lead, so it has no Make lead and Select opens orders instead. Open: whether Life After uses the party cards (bond, traits, Give item) without Make lead. To do: Companions.
+- **Party menu** (`studio-bible/ui.md`, Party menu, added Nov 21 from Black Lantern spec 002): assumes a lead you can swap, with Make lead and Select cycling. Life After keeps one survivor as lead, so it has no Make lead and Select opens orders instead. Settled Nov 21: Life After uses the party cards without Make lead (see Controls and screens). Open: a `ui.md` line saying a game with one fixed lead leaves out Make lead and Select cycling.
+- **L/R** (`studio-bible/controls.md`, Buttons): says L/R step previous and next. Life After uses L for the bag and R for the map (Keegan, Nov 21). Open: a `controls.md` line letting a game give L/R their own jobs, like Select.
 
