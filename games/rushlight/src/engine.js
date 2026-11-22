@@ -15,7 +15,7 @@ const lead=()=>party[G.lead|0]||party[0];  // a lead index, not the first seat (
 const DIRS=StudioMove.DIRS;  // walking, the camera and the canvas fit are shared: engine/move.js
 
 // ================= DATA =================
-const BLOCK=new Set('TCB#DLlPHFSVKkYyNpGWIOX'.split(''));
+const BLOCK=new Set('TCB#DLlPHFSVKkYyNpGWIOXE'.split(''));
 
 // ================= HELPERS =================
 const fmt=t=>party.length?t.replace(/\{merc\}/g,lead().name).replace(/\{first\}/g,lead().name):t;
@@ -107,7 +107,7 @@ function drawBox(){
 function renderMenu(){const m=menu;if(!m)return;
  if(m.inBox){if(box){box.choices=m.items.map(it=>typeof it==='string'?it:it.label);box.sel=m.sel;box.more=false}if(m.onSel)m.onSel(m.sel);return}
  menuEl.hidden=false;
- const rows=sel=>(m.title?`<div class="mt">${esc(m.title)}</div>`:'')+m.items.map((it,i)=>{const o=typeof it==='string'?{label:it}:it;return`<div class="gi ${i===sel?'on':''} ${o.dis?'dis':''}" data-i="${i}"><span class="gc">${i===sel?'▶':''}</span>${esc(o.label)}</div>`}).join('');
+ const rows=sel=>(m.title?`<div class="mt">${esc(m.title)}</div>`:'')+m.items.map((it,i)=>{const o=typeof it==='string'?{label:it}:it;const ic=o.icon&&window.RL_ICONS&&RL_ICONS[String(o.icon).toLowerCase()];return`<div class="gi ${i===sel?'on':''} ${o.dis?'dis':''}" data-i="${i}"><span class="gc">${i===sel?'▶':''}</span>${ic?`<img class="gic" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(ic)}">`:''}${esc(o.label)}</div>`}).join('');
  // one fixed width, measured once when the menu opens from its widest row plus the cursor, never from the selected row
  if(!m.w)m.w=StudioMenu.lockWidth(menuEl,rows(-1));
  menuEl.innerHTML=rows(m.sel)+(m.desc&&m.desc[m.sel]?`<div class="md">${esc(m.desc[m.sel])}</div>`:'');
@@ -149,7 +149,7 @@ function cam(){return StudioMove.camera(G,G.M.w,G.M.h,VW,VH)}
 function drawWorld(){
  const M=G.M,[camx,camy]=cam();cx.fillStyle='#0a0710';cx.fillRect(0,0,VW,VH);
  const x0=Math.floor(camx/16),y0=Math.floor(camy/16);
- for(let ty=y0;ty<=y0+Math.ceil(VH/16)+1;ty++)for(let tx=x0;tx<=x0+Math.ceil(VW/16)+1;tx++){const ch=M.g[ty]&&M.g[ty][tx];if(!ch)continue;let v=(tx*7+ty*13)%4;if(ch==='V')v=M.vv[tx+','+ty];if(ch==='T')v=(tx*3+ty*5)%3;cx.drawImage(tile(ch,v),tx*16-camx,ty*16-camy)}
+ if(M.town)drawStreet(M,camx,camy);else for(let ty=y0;ty<=y0+Math.ceil(VH/16)+1;ty++)for(let tx=x0;tx<=x0+Math.ceil(VW/16)+1;tx++){const ch=M.g[ty]&&M.g[ty][tx];if(!ch)continue;let v=(tx*7+ty*13)%4;if(ch==='V')v=M.vv[tx+','+ty];if(ch==='T')v=(tx*3+ty*5)%3;cx.drawImage(tile(ch,v),tx*16-camx,ty*16-camy)}
  const spr=[];
  M.npcs.forEach(n=>{if(n.on&&!n.on())return;spr.push({y:n.y*16,f:()=>cx.drawImage(RLSP.map(n.sp,n.look),n.x*16+1-camx,n.y*16+16-26-camy)})});
  // the other mercs follow the lead, a tile apart, along the lead's own steps (spec 003, 10)
@@ -193,7 +193,9 @@ function begin(rn){
  if(!rn.region)rn.region=makeRegion(rn);
  enter();
  // a street or site the company stood in (Parts C and D), else the region map; a march saved mid-road picks up again
- const p=rn.place;if(p&&p.map&&MAPS[p.map]){G.mode='world';goMap(p.map,p.x,p.y,p.dir)}else enterRegion();
+ if(!rn.boards)makeTowns(rn);
+ const p=rn.place;if(p&&p.map&&p.map.startsWith('town_')){G.town=p.map.slice(5);MAPS[p.map]=()=>townMap(G.town)}
+ if(p&&p.map&&MAPS[p.map]){G.mode='world';goMap(p.map,p.x,p.y,p.dir)}else enterRegion();
  applySan();saveRun();
  if(rn.region.trip)run(async()=>{await say('','On the road, where you left off.',{auto:900});await walk()});
 }
@@ -204,7 +206,10 @@ G.onLead=()=>{G.trail=[];saveRun()};
 async function pauseMenu(){
  held=[];
  for(;;){
-  const r=await choose(['Party','Items','Export','Title','Close'],{cancel:true,title:'MENU · '+(G.mode==='region'?'THE WITHY MARCH':G.M.name)});
+  const rows=['Party','Items','Export','Title','Close'];if(G.town&&G.mode==='world')rows.splice(2,0,'Sleep rough');
+  const r0=await choose(rows,{cancel:true,title:'MENU · '+(G.mode==='region'?'THE WITHY MARCH':G.M.name)});
+  if(rows[r0]==='Sleep rough'){G.run.day++;await eatDay();await camp({road:false});await say('','You sleep rough by the wall. Free, and it feels it.');continue}
+  const r=r0<0?-1:['Party','Items','Export','Title','Close'].indexOf(rows[r0]);
   if(r===0)await openParty();
   else if(r===1)await openItems(G.lead|0);
   else if(r===2)await showExport();

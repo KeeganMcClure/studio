@@ -14,6 +14,9 @@ const SCEN = {
     ['night attack: 2 road bandits', 'night', "()=>[0,1].map(()=>RLG._t.foe('bandit'))", {}],
     ['night attack: the rooks', 'rooks', "()=>[0,1,2,3].map(()=>RLG._t.foe('rook'))", {}],
   ],
+  c: [
+    ['the reeve\'s men or bounty hunters: 2 men-at-arms', 'maa', "()=>[0,1].map(()=>RLG._t.foe('manatarms'))", {}],
+  ],
 };
 (async () => {
   const browser = await chromium.launch();
@@ -28,7 +31,7 @@ const SCEN = {
         const rows = await page.evaluate(async ([s, mk, o]) => await RLG._t.sim(s, eval(mk), 20, o), [seed, mk, o]);
         const n = rows.length, avg = k => (rows.reduce((a, r) => a + r[k], 0) / n).toFixed(1);
         console.log(`  ${seed}: wins ${rows.filter(r => r.res === 'win').length}/${n} · fights with a merc Downed ${rows.filter(r => r.downs).length} · ` +
-          `HP lost ${avg('hpLost')} · rounds ${avg('rounds')} · rations taken ${avg('taken')} (net ${avg('netRations')})`);
+          `HP lost ${avg('hpLost')} · rounds ${avg('rounds')} (max ${Math.max(...rows.map(r => r.rounds))}) · rations taken ${avg('taken')} (net ${avg('netRations')})`);
       }
     }
   }

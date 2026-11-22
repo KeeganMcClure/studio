@@ -67,3 +67,32 @@ Keegan's standing approvals for this run: no questions; pick what the bible and 
 - **Who eats** shows as two rows (Eat: the pre-filled names, or Change who eats), so one tap confirms it.
 - **New art not yet filed** (add to Part A's list): the parchment chart, point glyphs, claws and the Key, drawn in
   `src/region.js`.
+
+## Spec 005: Part C, towns
+
+- **Tuning check: 2 men-at-arms (the reeve's men at Wanted, bounty hunters at Outlawed), MISSED on one seed.**
+  20 fights per seed with the seed's Free Company, auto-played; men-at-arms with their 1 armor (crits ignore it).
+  Pass: no merc goes down in more than 2 fights, and no fight past 12 rounds.
+  - 0001-A: 1 fight with a merc Downed · 12.7 HP lost · 6.5 rounds (longest 11). Pass.
+  - 4242-C: **6 fights with a merc Downed** · 12.1 HP lost · 7.3 rounds (**longest 13**). Miss.
+  - 9021-M: 0 · 9.3 HP lost · 5.3 rounds (longest 7). Pass.
+  HP lost sits in the spec's 12–16 band. Seed 4242-C's Free Company is the weak one again (the same seed missed Part B's
+  felled tree). Not retuned; re-run after Part D adds the company's own armor.
+- **Harrowford's hire pool sits at the inn** (a "Mercs for hire" row at the Drowned Goose): spec 005 gives Harrowford a
+  pool of 3 but lists no hiring corner on its street; Saint Ebbe's has its corner by the well.
+- **The Counter's bill** uses CR-COUNT-DESC ("Long, low and all teeth."), since the Text Library has no CR-COUNT-BOARD
+  row. The Noonwife is spoken by the prior, so her card shows CR-NOON-DESC as the job's words.
+- **Prices the bible doesn't set:** holy water 5; cold iron and silver 15 (Uncommon); the apothecary's drugs 15
+  (Uncommon); a tool with no rarity in the Item list (caltrops, manacles, bodkin bolts, repair kit, snare) 5 (Common);
+  ale 1 (the tavern's own price in spec 005). Weapons follow Prices' Common 8 / Uncommon 25.
+- **Brothel and blessing are priced per merc** (5 and 10), as Recovery's "17 coin a head (inn 2, brothel 5, rite 10)".
+- **Outlaws Hated** doubles bandit events by turning a quarter of other road events into the felled tree (the felled
+  tree is 25% of the table, so that about doubles it).
+- **Lord Hated** sets the lord's men on the company each time it walks into either town, since both are his holdings.
+- **The contract card** is a dialog box (the bill's words, WHERE, PAYS, XP, THREAT, MOMENT on separate lines) with Take it
+  and Back, over the street; the board itself is a list of its bills. The full painted board of Mockup 6 (bills pinned on
+  oak boards) is not drawn yet — a deviation from the approved mockup, kept simpler so the card's information is all
+  there; noted for the Designer's review in play.
+- **Crime witnesses:** robbing on the two main roads counts as "busy" (−40%); anywhere else as seen (−20%), since the
+  victims are right there.
+- **New art not yet filed** (add to the list): the two streets' buildings and props in `src/town-art.js`.

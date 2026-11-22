@@ -17,7 +17,7 @@ const T=(id,o)=>window.RLT(id,o);
 const RLP=window.Studio?Studio.savePrefix('rl.'):'rl.',K=k=>RLP+k;
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 // The save version (studio-bible/saves.md): each change to what a save holds adds a step here. Old steps never change.
-const VERSION=2;
+const VERSION=3;
 const newLedger=()=>({bestiary:{},dead:[],companies:[]});
 // Each step takes the save as one object {run, ledger, draft, legacy} and returns it at the next version.
 const STEPS_UP={
@@ -26,7 +26,10 @@ const STEPS_UP={
  1:o=>{o.legacy=null;if(o.draft&&o.draft.prof)o.draft=null;if(o.run&&!o.run.seed)o.run=null;if(!o.ledger)o.ledger=newLedger();return o},
  // 1 → 2 (spec 004): the company leaves the stand-in town for Harrowford on day 1; the larder is set from the old ration
  // count (15 at most); the region is filled from the run's seed (makeRegion, region.js); each merc starts fed
- 2:o=>{const r=o.run;if(r){r.place=null;r.day=1;r.rations=Math.min(15,r.rations|0);r.region=makeRegion(r);(r.party||[]).forEach(m=>{m.hunger=0})}return o}
+ 2:o=>{const r=o.run;if(r){r.place=null;r.day=1;r.rations=Math.min(15,r.rations|0);r.region=makeRegion(r);(r.party||[]).forEach(m=>{m.hunger=0})}return o},
+ // 2 → 3 (spec 005): the boards, the pool's order, givers, hire pools, townsfolk, rumors, factions, the Hue and cry and the
+ // between-contracts flags, all filled from the seed as if the company had just arrived (makeTowns, town.js)
+ 3:o=>{const r=o.run;if(r)makeTowns(r);return o}
 };
 function upgradeSave(o,from){for(let v=from+1;v<=VERSION;v++)o=STEPS_UP[v](o);o.version=VERSION;return o}
 // On open: back up older saves first (all rl.* keys in one block), then run each step above the stored version.

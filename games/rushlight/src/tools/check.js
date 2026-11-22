@@ -224,7 +224,7 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
       if (T.version === 0 && (r.run || r.roster)) probs.push('old Black Lantern keys kept');
       if (T.keys['rl.run'] && !(await page.evaluate(() => RLG.resume()))) probs.push('the run did not open');
       if (T.keys['rl.run'] && await page.evaluate(() => RLG._t.party().length) !== 3) probs.push('the company did not load');
-      if (T.expect) { const got = await page.evaluate(() => { const r = RLG._t.G().run; return { at: r.region && r.region.at, day: r.day, rations: r.rations, trip: !!(r.region && r.region.trip), hungry: RLG._t.party().some(m => m.hunger > 0) }; });
+      if (T.expect) { const got = await page.evaluate(() => { const r = RLG._t.G().run; return { at: r.region && r.region.at, day: r.day, rations: r.rations, trip: !!(r.region && r.region.trip), hungry: RLG._t.party().some(m => m.hunger > 0), contracts: (r.contracts || []).length, hue: r.hue }; });
         for (const k in T.expect) if (got[k] !== T.expect[k]) probs.push(`${k} is ${got[k]}, expected ${T.expect[k]}`); }
       probs.push(...errors);
       console.log(`${probs.length ? 'FAIL' : 'ok  '} test save: ${f}`); probs.forEach(p => console.log('     - ' + p)); failed += probs.length;
@@ -251,11 +251,11 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
         if (R.roam.cat.road === R.roam.rooks.road) out.push('the cat and the rooks share a road');
         // every point reachable by known roads once the hidden road is found (and the den shown)
         Object.keys(MARCH.points).forEach(k => scout(k)); findHidden(); ['CR-MONK-SIGN-1', 'CR-MONK-SIGN-2', 'CR-MONK-SIGN-3'].forEach(addSign); Object.keys(MARCH.points).forEach(k => scout(k));
-        for (const k of Object.keys(MARCH.points)) if (k !== 'harrow' && !route('harrow', k)) out.push('no route to ' + k);
+        for (const k of Object.keys(MARCH.points)) if (k !== 'harrow' && MARCH.points[k].kind !== 'lie' && !route('harrow', k)) out.push('no route to ' + k);
         // march from Harrowford to every point and back, auto-played (road events and roamers included)
         g.auto = { cmd: () => 0, list: (t, rows) => Math.max(0, rows.findIndex(x => !x.dis)), menu: items => Math.max(0, items.indexOf('Leave')), choice: () => 0 };
         g.dev = { fast: true };
-        for (const k of Object.keys(MARCH.points)) { if (k === 'harrow') continue;
+        for (const k of Object.keys(MARCH.points)) { if (k === 'harrow' || MARCH.points[k].kind === 'lie') continue;
           run.rations = 15; run.purse = 99; party.forEach(m => { m.hp = m.mhp; m.ko = false; });
           await march(k); if (!RLG.active) { out.push('the company was wiped on the way to ' + k); break; }
           if (R.trip) out.push('stuck on the road to ' + k);
@@ -311,6 +311,87 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
     await page.evaluate(() => { const g = RLG._t.G(); g.auto = null; g.dev = {}; });
     bad.push(...errors);
     console.log(`${bad.length ? 'FAIL' : 'ok  '} spec 004: the March on 3 seeds, marches, food, camp and inn, every road event by D-pad and tap, the coin`);
+    bad.forEach(p => console.log('     - ' + p)); failed += bad.length;
+    await ctx.close();
+  }
+
+  // 9. spec 005 (Part C): streets, boards and the pool, shops and prices, haggling, reading, hiring, rumors, the Hue and cry
+  {
+    const bad = [];
+    const ctx = await browser.newContext({ viewport: { width: 375, height: 667 }, hasTouch: true });
+    const page = await ctx.newPage(); const errors = [];
+    page.on('pageerror', e => errors.push('page error: ' + e.message));
+    await page.goto(url); await page.waitForTimeout(500);
+    const res = await page.evaluate(async () => {
+      const out = [], fixed = v => () => (v - 1) / 100 + 0.001;
+      const setup = async seed => { if (RLG.active) RLG._t.quit(); await RLG.newRun(seed); const g = RLG._t.G(); g.dev = { fast: true };
+        g.auto = { cmd: () => 0, list: (t, rows) => Math.max(0, rows.findIndex(x => !x.dis)), menu: items => Math.max(0, items.findIndex(x => (x.label || x) === 'Leave')), choice: () => 0 }; return g; };
+      for (const seed of ['0001-A', '4242-C', '9021-M']) {
+        const g = await setup(seed), r = g.run, B_ = r.boards;
+        for (const k of ['harrow', 'ebbe']) { enterTown(k, 'left'); drawWorld(); if (!G.M || !G.M.town) out.push(`${seed}: ${k} street did not load`); }
+        if (B_.posted.length !== 4) out.push(`${seed}: ${B_.posted.length} jobs posted, not 4`);
+        for (const t of ['harrow', 'ebbe']) if (!B_.posted.some(j => JOBS[j].town === t)) out.push(`${seed}: nothing posted at ${t}`);
+        let guard = 0; while (B_.posted.length && guard++ < 10) await takeJob(B_.posted[0]);
+        if (B_.taken.length !== 6) out.push(`${seed}: only ${B_.taken.length} of 6 jobs could be taken`);
+        if (B_.posted.length) out.push(`${seed}: the boards still show work after all 6 were taken`);
+        if (!r.contracts.every(c => c.next)) out.push(`${seed}: a taken job has no Next line`);
+        // drop a board job: back on the board; drop a giver job: −1 favor
+        const town0 = r.fac.town.step * 2 + r.fac.town.fav; await dropJob('pell'); if (!B_.posted.includes('pell')) out.push('a dropped board job did not go back up');
+        await dropJob('wool'); if (r.fac.town.step * 2 + r.fac.town.fav !== town0 - 1) out.push('dropping a giver job did not cost a favor');
+      }
+      // shops: prices, Wary +25%, Town Trusted −10% at market, Mend all's total
+      { const g = await setup('0001-A'), r = g.run;
+        if (priceOf('jack', 'smith') !== 10 || priceOf('mail', 'smith') !== 40 || priceOf('bandage', 'market') !== 5 || priceOf('sword', 'smith') !== 25) out.push('a shop price is off the bible');
+        r.fac.town.step = 1; if (priceOf('mail', 'smith') !== 50) out.push('Wary did not add 25%'); r.fac.town.step = 3; if (priceOf('cudgel', 'market') !== 7) out.push('Town Trusted did not take 10% off at market'); r.fac.town.step = 2;
+        party[0].gear.w1.wear = 2; party[1].gear.body = { id: 'jack', wear: 1 }; if (mendTotal() !== 6 + 3 + 3) out.push('Mend all total is ' + mendTotal());
+        r.purse = 100; g.auto.menu = (items, o) => o && o.title === 'MEND' ? 0 : Math.max(0, items.findIndex(x => (x.label || x) === 'Leave')); await mend(); if (r.purse !== 88 || mendTotal()) out.push('Mend all charged ' + (100 - r.purse));
+        // buy then sell at half
+        r.purse = 50; let step = 0; g.auto.menu = (items, o) => { if (o && /^SMITH/.test(o.title)) return step++ ? items.length - 1 : 1 + SHOPS.smith.indexOf('jack') - 1 + 0; return Math.max(0, items.findIndex(x => (x.label || x) === 'Leave')); };
+        await shop('harrow', 'smith'); if (r.purse !== 40 || !r.pack.some(p => p.id === 'jack')) out.push('buying a padded jack cost ' + (50 - r.purse));
+        g.auto.menu = (items, o) => o && o.title === 'SELL' ? items.length - 1 : Math.max(0, items.findIndex(x => (x.label || x) === 'Leave')); const before = r.purse; await sell('smith'); if (r.purse - before < 5) out.push('selling the jack paid ' + (r.purse - before)); }
+      // haggling: pass +25%, fail closes, fumble closes and −1 favor; Letters 40% hides a board card's words and threat
+      for (const [roll, want] of [[5, 'pass'], [95, 'fail'], [100, 'fumble']]) { const g = await setup('0001-A'), r = g.run, gv = r.givers.guild; gv.quirk = 'Pious';
+        if (!r.boards.posted.includes('wool')) r.boards.posted.push('wool');
+        const fav = r.fac.town.step * 2 + r.fac.town.fav; let n = 0;
+        g.auto.menu = (items, o) => { const L = items.map(x => x.label || x); if (o && o.title && /guild master/.test(o.title)) return n++ ? L.indexOf('Leave') : 0; const h = L.findIndex(x => /^Haggle/.test(x)); if (h >= 0 && !gv.haggled.wool) return h; return L.indexOf('Back') >= 0 ? L.indexOf('Back') : 0; };
+        StudioRoll.use(fixed(roll)); await giverPlace('guild'); StudioRoll.use(null);
+        if (gv.haggled.wool !== want) out.push(`haggle on ${roll}: ${gv.haggled.wool}, expected ${want}`);
+        if (want === 'pass' && jobPay('wool') !== Math.round(Math.round(40 * 1.25) * 1.25)) out.push('a passed haggle did not add 25%: ' + jobPay('wool'));
+        if (want === 'fumble' && r.fac.town.step * 2 + r.fac.town.fav !== fav - 1) out.push('a fumbled haggle did not cost a favor'); }
+      { const g = await setup('0001-A'); party.forEach(m => m.sk.Letters = 10); const L1 = cardLines('pell', false).join('|'); party[0].sk.Letters = 40; const L2 = cardLines('pell', false).join('|');
+        if (/THREAT/.test(L1) || /Wanted: Pell/.test(L1)) out.push('a board card showed its words or threat with nobody at Letters 40%'); if (!/THREAT/.test(L2) || !/Pell/.test(L2)) out.push('a board card hid its words with Letters 40%'); }
+      // hiring: greyed with a full company; fills an empty seat; Weak-willed deserts when hungry
+      { const g = await setup('0001-A'), r = g.run, pool = r.hires.harrow; r.purse = 99; const n0 = pool.length;
+        g.auto.menu = (items, o) => { const L = items.map(x => x.label || x); if (o && /MERCS/.test(o.title || '')) return g.hired ? L.indexOf('Leave') : (g.hired = 1, 0); return 0; };
+        await hireCorner('harrow'); if (pool.length !== n0) out.push('a hire was made with a full company');
+        party[2].dead = true; party[2].gone = 'test'; g.hired = 0; await hireCorner('harrow'); if (pool.length !== n0 - 1 || party.filter(m => !m.dead).length !== 3) out.push('a hire did not fill the empty seat');
+        const h = party[2]; h.weak = true; h.hunger = 2; StudioRoll.use(fixed(99)); r.rations = 0; await eatDay(); StudioRoll.use(null); if (!h.dead) out.push('a Weak-willed hire did not desert on the third unfed day'); }
+      // rumors: every one can be bought; true ones show what they name; lies show a ? that comes to nothing
+      for (const seed of ['0001-A', '4242-C']) { const g = await setup(seed), r = g.run; r.purse = 99;
+        for (let i = 0; i < 8; i++) await buyRumor();
+        if (r.rumors.bought !== 8) out.push(seed + ': not every rumor could be bought');
+        if (!RG().hiddenFound) out.push(seed + ': the hidden road rumor did not show it');
+        for (const k of ['camp', 'cause', 'sallow', 'crook', 'lie1', 'lie2']) if (!knownPt(k)) out.push(`${seed}: rumor did not show ${k}`);
+        if (!RG().signs.length) out.push(seed + ': RU-MONK gave no sign');
+        await openPoint('lie1'); if (!r.rumors.lies.lie1.found) out.push(seed + ': a lie was not struck out'); }
+      // the Hue and cry: a crime's mark and odds, climbing, fights at Wanted and Outlawed, settling three ways
+      { const g = await setup('0001-A'), r = g.run;
+        if (crimeMark('town') !== '✖ crime · Luck 10%' || crimeMark('seen') !== '✖ crime · Luck 30%' || crimeMark('unseen') !== '✖ crime · Luck 50%') out.push('crime marks show the wrong odds');
+        StudioRoll.use(fixed(90)); await crime('seen', 'test'); StudioRoll.use(null); if (r.hue !== 1) out.push('a failed crime roll did not climb');
+        StudioRoll.use(fixed(90)); await crime('seen', 'test'); StudioRoll.use(null); if (r.hue !== 2 || r.fac.lord.step !== 1 || !r.reeveScene) out.push('Wanted did not drop the Lord and set the reeve scene');
+        g.auto.menu = items => { const L = items.map(x => x.label || x); return L.findIndex(x => /^Fight/.test(x)) >= 0 ? L.findIndex(x => /^Fight/.test(x)) : 0; };
+        let fought = 0; const b0 = battle; window.battleSpy = 0; const prevB = battle;
+        r.purse = 0; await reeveScene('harrow'); if (!G.lastStats || !G.lastStats.rounds) out.push('the reeve\'s men fight did not open'); else fought = G.lastStats.rounds;
+        if (fought > 12) out.push('the reeve\'s men fight ran ' + fought + ' rounds');
+        r.hue = 2; r.purse = 30; g.auto.menu = (items, o) => { const L = items.map(x => x.label || x); return o && /REEVE/.test(o.title || '') ? (g.paid ? L.indexOf('Leave') : (g.paid = 1, 0)) : 0; }; await PLACES.reeve('harrow'); if (r.hue !== 1 || r.purse !== 0) out.push('blood-money did not settle a step for 30');
+        party[0].sk.Letters = 80; r.hue = 2; g.paid = 0; g.auto.menu = (items, o) => { const L = items.map(x => x.label || x); return o && /REEVE/.test(o.title || '') ? (g.paid ? L.indexOf('Leave') : (g.paid = 1, 1)) : 0; }; StudioRoll.use(fixed(5)); await PLACES.reeve('harrow'); StudioRoll.use(null); if (r.hue !== 1) out.push('a Writ did not settle a step');
+        r.hue = 2; g.paid = 0; party[0].writUsed = 0; g.auto.menu = (items, o) => { const L = items.map(x => x.label || x); return o && /REEVE/.test(o.title || '') ? (g.paid ? L.indexOf('Leave') : (g.paid = 1, 2)) : 0; }; StudioRoll.use(fixed(97)); await PLACES.reeve('harrow'); StudioRoll.use(null); if (r.hue !== 3) out.push('a failed talk with the reeve did not climb');
+        if (r.fac.lord.step !== 0) out.push('Outlawed did not drop the Lord to Hated');
+        g.dev.event = 'storm'; StudioRoll.use(fixed(1)); const res = await roadEvent({ road: 'hs', to: 'cause', day: 1, extra: 0 }); StudioRoll.use(null); if (!G.lastStats || G.lastStats.rounds === fought && !res) out.push('no bounty hunters at Outlawed'); }
+      RLG._t.G().auto = null; return out;
+    });
+    bad.push(...res, ...errors);
+    console.log(`${bad.length ? 'FAIL' : 'ok  '} spec 005: streets, the pool of 6, shops and prices, haggling, reading, hiring, rumors, the Hue and cry`);
     bad.forEach(p => console.log('     - ' + p)); failed += bad.length;
     await ctx.close();
   }

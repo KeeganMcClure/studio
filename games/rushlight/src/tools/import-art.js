@@ -1,5 +1,6 @@
 // Copies the approved battle sprites out of the Rushlight Asset Library (https://claude.ai/artifact/WYgm7Gn8afLE51Pce94ynt)
 // into art/creatures.js, unchanged: each sprite page's first <svg> (its 1x drawing), minus the page background.
+// and the item type icons (art/icons/rushlight-icons-items-v1.html, beside the sprites folder) into window.RL_ICONS.
 // Usage: node tools/import-art.js <folder holding the library's art/sprites/*.html files>
 const fs = require('fs'), path = require('path');
 const dir = process.argv[2];
@@ -17,5 +18,14 @@ for (const [k, f] of Object.entries(PICK)) {
   out += ` ${k}:${JSON.stringify(svg)}, // rushlight-sprites-${f}\n`;
 }
 out += '};\n';
+// the 13 item type icons (rushlight-icons-items-v1), each <symbol> as its own 12 x 12 drawing
+const icons = path.join(dir, '..', 'icons', 'rushlight-icons-items-v1.html');
+if (fs.existsSync(icons)) {
+  const html = fs.readFileSync(icons, 'utf8');
+  out += '// Item type icons, copied unchanged from rushlight-icons-items-v1 (approved Nov 20)\nwindow.RL_ICONS={\n';
+  for (const m of html.matchAll(/<symbol id="t-([a-z]+)" viewBox="0 0 12 12">([\s\S]*?)<\/symbol>/g))
+    out += ` ${m[1]}:${JSON.stringify('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" width="12" height="12" shape-rendering="crispEdges">' + m[2].replace(/\n\s*/g, '') + '</svg>')},\n`;
+  out += '};\n';
+}
 fs.writeFileSync(path.join(__dirname, '..', 'art', 'creatures.js'), out);
 console.log('wrote art/creatures.js', (out.length / 1024).toFixed(1) + ' KB');
