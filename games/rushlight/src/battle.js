@@ -93,10 +93,12 @@ async function attack(m,e,o){
  showRes(R_.line(BW.skill[w.skill]||w.skill.toUpperCase(),r,BW.words),r);
  if(r.fumble){await bsay(`${m.name}: ${BW.fumble[die(BW.fumble.length)-1]}`,1000);return false}
  if(!r.ok){await bsay(`${m.name} misses ${e.name}.`,900);return false}
- let d=rollDice(w.dmg)+(w.melee?strBonus(m.stats.STR):0);if(o.half)d=Math.floor(d/2);if(r.crit)d*=2;if(o.double)d*=2;d=Math.max(1,d);
+ let d=rollDice(w.dmg)+(w.melee?strBonus(m.stats.STR):0);if(o.half)d=Math.floor(d/2);if(r.crit)d*=2;if(o.double)d*=2;
+ // armor: a foe's armor comes off each hit, never below 1; crits ignore it (Combat, Armor)
+ if(e.armor&&!r.crit)d-=e.armor;d=Math.max(1,d);
  await bsay(`${m.name} hits ${e.name} for ${d}.${r.crit?' A crit.':''}`,1000);hurtFoe(e,d);return true;
 }
-function hurtFoe(e,d){Bt.stats.dealt+=Math.min(d,e.hp);e.hp=Math.max(0,e.hp-d);e.flash=16;floaty(e,d);if(e.hp<=0)e.dead=true}
+function hurtFoe(e,d){Bt.stats.dealt+=Math.min(d,e.hp);e.hp=Math.max(0,e.hp-d);e.flash=16;floaty(e,d);if(e.hp<=0&&!e.dead){e.dead=true;(Bt.stats.killed=Bt.stats.killed||[]).push(e.base)}}
 // Skills: the battle moves of Shooting and Melee at 40% (Carried rules, Battle moves). The rest come in Part D.
 async function skillMenu(m){
  const w=weaponOf(m),rows=[],acts=[];

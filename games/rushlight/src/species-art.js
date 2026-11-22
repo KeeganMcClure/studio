@@ -141,7 +141,7 @@ function portrait(k,look){
 function mixHex(a,b,k){const A=parseInt(a.slice(1),16),Bb=parseInt(b.slice(1),16);const ch=s=>[s>>16,(s>>8)&255,s&255];const x=ch(A),y=ch(Bb);
  return '#'+x.map((v,i)=>Math.round(v+(y[i]-v)*k).toString(16).padStart(2,'0')).join('')}
 // shade 0 lighter, 1 the sheet's coat, 2 darker: the same palette family, pulled toward Bone or Peat
-function skin(k,look){const S=SP[k],sh=look&&look.shade!=null?look.shade:1;if(sh===1)return S;
+function skin(k,look){const S0=SP[k],sh=look&&look.shade!=null?look.shade:1;const S=look&&look.coat?Object.assign({},S0,{coat:look.coat,coatD:mixHex(look.coat,PEAT,.3)}):S0;if(sh===1)return S;
  const to=sh===0?BONE:PEAT,amt=sh===0?.22:.28,o=Object.assign({},S);
  ['fur','furD','ear','spine','spineL'].forEach(c=>{if(o[c]&&o[c]!==PEAT&&o[c]!==BONE)o[c]=mixHex(o[c],to,amt)});return o}
 function faceParts(F,k,look,S,cx,cy,rx,ry,E,N){
@@ -171,7 +171,7 @@ function toCanvas(key,w,h,fn){if(cache[key])return cache[key];const c=document.c
 const lk=l=>l?[l.shade==null?1:l.shade,l.mark|0,l.neck|0].join(''):'100';
 window.RLSP={SP,ORDER,mixHex,
  portrait:(k,look,s=1)=>toCanvas('p'+k+lk(look)+s,64*s,64*s,x=>portrait(k,look||{}).draw(x,0,0,s)),
- map:(k,look)=>toCanvas('m'+k+(look&&look.shade!=null?look.shade:1),14,26,x=>mapSprite(k,look).draw(x,0,0,1)),
+ map:(k,look)=>toCanvas('m'+k+(look&&look.shade!=null?look.shade:1)+(look&&look.coat||''),14,26,x=>mapSprite(k,look).draw(x,0,0,1)),
  back:(k,look)=>toCanvas('b'+k+(look&&look.shade!=null?look.shade:1),30,40,x=>backView(k,look).draw(x,0,0,1)),
  coin:k=>toCanvas('c'+k,15,16,x=>coinGrid(k).draw(x,0,0,1))};
 })();

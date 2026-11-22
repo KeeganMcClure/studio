@@ -36,7 +36,7 @@ const knownRoad=r=>RG().roads.includes(r);
 const otherEnd=(r,k)=>RD[r][0]===k?RD[r][1]:RD[r][0];
 const denFound=()=>RG().signs.length>=3;
 // a road can be shown once one end is known; the seed's hidden road waits to be found; den roads wait for 3 signs
-function roadShowable(r){const R=RD[r];if(R[3]==='den')return denFound();if(r===RG().hidden&&!RG().hiddenFound)return false;return true}
+function roadShowable(r){const R=RD[r];if(R[3]==='den')return denFound();if(P_[R[1]].kind==='lie')return !!(G.run.rumors&&G.run.rumors.lies[R[1]]);if(r===RG().hidden&&!RG().hiddenFound)return false;return true}
 // Arriving at a point shows every road leaving it, with a ? at far ends not yet known (scouting)
 function scout(k){const g=RG();if(!g.known.includes(k))g.known.push(k);Object.keys(RD).forEach(r=>{if((RD[r][0]===k||RD[r][1]===k)&&roadShowable(r)&&!g.roads.includes(r))g.roads.push(r)})}
 function revealRoad(r){const g=RG();if(!g.roads.includes(r))g.roads.push(r)}
@@ -87,7 +87,10 @@ function drawChart(ox,oy){
  // far ends not yet known: a pencil ? where a shown road leads
  g.roads.forEach(id=>RD[id].slice(0,2).forEach(k=>{if(!knownPt(k)){const p=P_[k];pT('?',ox+p.x-3,oy+p.y-8,INKL,16)}}));
  // points
- Object.keys(P_).forEach(k=>{if(!knownPt(k))return;const p=P_[k],x=ox+p.x,y=oy+p.y;glyph(p.kind,x,y);
+ (g.seals||[]).forEach(k=>{const p=P_[k];if(!p)return;const x=ox+p.x+8,y=oy+p.y-12;cx.fillStyle='#9a4528';cx.beginPath();cx.arc(x,y,4,0,7);cx.fill();pR(x-1,y-1,2,2,'#5e1a18')});
+ Object.keys(P_).forEach(k=>{if(!knownPt(k))return;const p=P_[k],x=ox+p.x,y=oy+p.y;
+  if(p.kind==='lie'){const L=(G.run.rumors||{lies:{}}).lies[k]||{};pT('?',x-3,y-8,INKL,16);if(L.found){cx.strokeStyle=INK;cx.beginPath();cx.moveTo(x-6,y-6);cx.lineTo(x+6,y+6);cx.stroke()}pT(p.name,x-pW(p.name,11)/2,y+8,INKL,11);return}
+  glyph(p.kind,x,y);
   const nm=p.kind==='town'?p.name:p.name,big=p.kind==='town';pT(nm,x-pW(nm,big?13:12)/2,y+8,INK,big?13:12)});
  // signs: margin notes by Lowmoor Pit's hills (Part D adds them where they're found)
  // the cursor
@@ -113,7 +116,7 @@ function drawStrip(){const g=RG(),r=G.run;pR(0,0,VW,SH,'rgba(44,38,33,.97)');pR(
  // row 2: the Hue and cry pips and the four factions (their rules come in Part C; here they only draw)
  const hue=(r.hue|0);pT('HUE',3,24,'#857e72',12);for(let k=0;k<4;k++)pR(22+k*6,28,4,6,k<hue?'#9a4528':'#4d4134');
  const F=[['LORD','lord'],['CHURCH','church'],['TOWN','town'],['OUTLAWS','outlaws']];let fx=52;
- F.forEach(([n,k])=>{const st=(r.fac&&r.fac[k]&&r.fac[k].step)||'NEUTRAL',t=n[0]+' '+st;pT(t,fx,24,'#c4b99e',11);fx+=pW(t,11)+6});
+ F.forEach(([n,k])=>{const st=r.fac&&r.fac[k]?['HATED','WARY','NEUTRAL','TRUSTED','SWORN'][r.fac[k].step]:'NEUTRAL',t=n[0]+' '+st;pT(t,fx,24,'#c4b99e',11);fx+=pW(t,11)+6});
 }
 function drawInset(r){const w=46,h=40,x=r.x+r.w-w-3,y=r.y+3;pR(x,y,w,h,'#1c1814');pR(x+1,y+1,w-2,h-2,PARCH);
  Object.keys(P_).forEach(k=>{if(!knownPt(k))return;const p=P_[k];pR(x+1+p.x*(w-2)/MARCH.w-1,y+1+p.y*(h-2)/MARCH.h-1,3,3,k===RG().at?'#9a4528':INK)});
@@ -139,11 +142,11 @@ function drawKey(){pR(0,0,VW,VH,'rgba(28,24,20,.7)');const w=200,h=168,x=(VW-w)/
  cx.drawImage(RLSP.coin(lead().sp),x+14,yy-4);pT('The company (the lead)',x+42,yy-2,PAL.bone,14);pT('L or B: close',x+8,y+h-16,PAL.ash,13)}
 function drawContracts(){pR(0,0,VW,VH,PAL.peat);pBox(4,4,VW-8,18,PAL.soot,PAL.bone);pT('CONTRACTS',9,9,PAL.tallow,8,PXf);let y=28;
  const cs=(G.run.contracts||[]).filter(c=>!c.done);if(!cs.length){pT(RW.noContracts,8,y,'#c4b99e',15);y+=18}
- else cs.forEach(c=>{pT(pFit(c.title,VW-16,15),8,y,PAL.bone,15);pT(pFit('NEXT: '+(c.next||''),VW-16,13),8,y+13,'#c4b99e',13);y+=30});
+ else cs.forEach((c,i)=>{if(typeof CP_SEL!=='undefined'&&i===CP_SEL%cs.length)pR(4,y-1,3,12,PAL.tallow);pT(pFit(c.title,VW-16,15),8,y,PAL.bone,15);pT(pFit('NEXT: '+(c.next||''),VW-16,13),8,y+13,'#c4b99e',13);y+=30});
  pT(RW.signs,8,y+4,PAL.tallow,8,PXf);y+=18;const sg=RG().signs;if(!sg.length){pT(RW.noSigns,8,y,'#c4b99e',15);y+=14}
  sg.forEach(id=>{pWrap(RLT(id),VW-16,14,3).forEach(l=>{pT(l,8,y,PAL.bone,14);y+=12});y+=3});
  if(typeof drawContractsExtra==='function')y=drawContractsExtra(y);
- pT('R or B: back',8,VH-16,PAL.ash,13)}
+ pT(cs.length?'A: keep or drop · R or B: back':'R or B: back',8,VH-16,PAL.ash,13)}
 
 // ================= MAP INPUT =================
 function regionPress(k){
@@ -189,7 +192,7 @@ async function walk(){
   }
   // a leg ends at a point: arrive, scout, and ask whether to go on
   g.at=L.to;MAPV.cur=L.to;scout(L.to);g.trip.leg++;
-  if(g.trip.leg>=g.trip.legs.length){g.trip=null;saveRun();await say('',`You reach ${P_[g.at].name}.`,{auto:900});await openPoint(g.at);return}
+  if(g.trip.leg>=g.trip.legs.length){g.trip=null;atSite(g.at);saveRun();await say('',`You reach ${P_[g.at].name}.`,{auto:900});await openPoint(g.at);return}
   saveRun();
   const go=await choose([`Go on to ${P_[g.trip.legs[g.trip.leg].to].name}`,`Stop at ${P_[g.at].name}`],{title:P_[g.at].name.toUpperCase()});
   if(go!==0){g.trip=null;saveRun();await openPoint(g.at);return}
@@ -285,6 +288,7 @@ async function restInn(pay=true){
 // ================= POINT CARDS (until Parts C and D build the streets and sites) =================
 async function openPoint(k){
  const p=P_[k];if(typeof openPlace==='function'&&await openPlace(k))return;
+ if(p.kind==='lie'){const L=G.run.rumors.lies[k];await say('',RLT('RU-NOTHING'));if(L)L.found=1;return}
  if(p.kind==='town'){
   for(;;){const r=G.run,c=await choose(['Rest at the inn','Sleep rough',`Buy rations (1 gr each)`,'Leave'],{cancel:true,title:p.name});
    if(c===0){if(await restInn())r.day++}
@@ -307,6 +311,8 @@ async function roadEvent(L){
  if(!kind){for(let t=0;t<5&&!kind;t++){const r=d100();kind=EVENTS.find(e=>r<=e[0])[1];if(kind==='sign'&&!signRoadOk(L))kind=null}}
  if(G.dev&&G.dev.event)G.dev.event=null;
  if(!kind)kind='storm';
+ // Outlaws Hated: bandit road events come twice as often
+ if(kind!=='tree'&&G.run.fac&&G.run.fac.outlaws.step===0&&d100()<=25)kind='tree';
  if(typeof eventHook==='function'){const h=await eventHook(kind,L);if(h)return h==='none'?null:h}
  return EV[kind](L);
 }
@@ -331,12 +337,14 @@ const EV={
    for(const m of pm){const s=StudioRoll.die(4);m.san=Math.min(m.msan,m.san+s);await say('',`${m.name} needed that. +${s} SAN.`,{auto:G.auto?1:1200})}applySan();return null}
   await say('',RLT('RE-REFUGEE-PASS'));return null},
  async wound(L){const m=best('First Aid');const c=await evAsk(RLT('RE-WOUND-1'),[`Help (First Aid · ${odds(m,'First Aid')})`,'Pass by']);
-  if(c!==0)return null;const o=StudioRoll.pct(m.sk['First Aid']||0);
+  if(c!==0)return null;return woundHelp(m)}};
+async function woundHelp(m){{const o=StudioRoll.pct(m.sk['First Aid']||0);
   if(o.ok){await say('',RLT('RE-WOUND-SAVED'));const g=RG();if(!g.hiddenFound){findHidden();await say('',`He marks a road you didn't know: ${roadName(g.hidden)}.`)}
    else{const un=Object.keys(P_).filter(k=>!knownPt(k)&&P_[k].kind!=='den');if(un.length){const k=un[rnd(un.length)];scout(k);g.known=g.known.filter(x=>x!==k).concat([k]);
     Object.keys(RD).forEach(r=>{if(RD[r].includes(k)&&roadShowable(r)&&RD[r].some(q=>q!==k&&knownPt(q)))revealRoad(r)});await say('',`He tells you how to find ${P_[k].name}.`)}}
    return null}
-  await say('',RLT('RE-WOUND-DIED'));return null},
+  await say('',RLT('RE-WOUND-DIED'));return null}}
+Object.assign(EV,{
  async proc(L){const faith=alive().find(m=>m.mot.includes('Faith'));
   const opts=['Wait for them (+1 day)','Walk through (CON × 5 each)'];if(faith)opts.push(`${faith.name} walks with them (+1d4 SAN)`);
   const c=await evAsk(RLT('RE-PROC-1'),opts);
@@ -348,7 +356,7 @@ const EV={
  async storm(L){L.extra++;await say('',RLT('RE-STORM-1'),{auto:G.auto?1:1400});return null},
  async sign(L){const id=['CR-MONK-SIGN-1','CR-MONK-SIGN-2','CR-MONK-SIGN-3','CR-MONK-SIGN-4'].find(s=>!RG().signs.includes(s));
   RG().signStrange=1;if(id){addSign(id);await say('',RLT(id));await say('','You write it down. Something under the hills.',{auto:G.auto?1:1200})}return null}
-};
+});
 // a strange sign comes only within 2 roads of Lowmoor Pit, once per run
 function signRoadOk(L){if(RG().signStrange)return false;const near=new Set(['crook','cause','pit','ebbe','hollin','harrow']);return RD[L.road].slice(0,2).some(k=>near.has(k))&&['ec','ok','hs','cp','sp'].includes(L.road)}
 const distrust=m=>m&&(m.sp==='fox'||m.sp==='stoat')?-10:0;
@@ -395,3 +403,7 @@ async function wipe(){
  if(typeof deathScreen==='function'){await deathScreen();return}
  await say('','Nobody gets up.');store.set(B.key('run'),null);G.run.ended=true;leave();B.goto('title');B.render();
 }
+
+// Until Part D's pay screen clears them, the between-contracts SAN at the inn, brothel and blessing clears when the
+// company reaches a site it holds a contract for (spec 005, 5)
+function atSite(k){const r=G.run;if(!r.contracts)return;if(r.contracts.some(c=>!c.done&&JOBS[c.id].site===k)&&!r.partD){r.between={bless:{},brothel:{}};RG().innSan={}}}
