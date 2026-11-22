@@ -29,18 +29,20 @@ async function battle(foes,o={}){
  held=[];hideTB();
  const en=foes.map(E=>Object.assign({},E,{foe:true,base:E.name,mhp:E.hp,dead:false,flash:0,alpha:1,defend:false}));
  nameFoes(en);
- G.mode='battle';gEl.classList.add('battle');ban.hidden=true;
- Bt={en,t:0,round:0,queue:[],ui:null,log:'',res:null,hits:[],roamer:!!o.roamer,bg:o.bg||'dusk',count:o.countdown?Object.assign({},o.countdown):null,active:null,floaties:[]};
- party.forEach(m=>{m.defend=false;if(m.hp<=0)m.ko=true});
+ const prev=G.mode==='battle'?'world':G.mode;G.mode='battle';gEl.classList.add('battle');ban.hidden=true;
+ Bt={en,t:0,round:0,queue:[],ui:null,log:'',res:null,hits:[],roamer:!!o.roamer,bg:o.bg||'dusk',count:o.countdown?Object.assign({},o.countdown):null,active:null,floaties:[],prev,o,stats:{dealt:0,taken:0,took:0}};
+ if(o.stunFirst)en.forEach(e=>e.stun=1);
+ party.forEach(m=>{m.defend=false;if(m.hp<=0&&!m.dead)m.ko=true});
  await bsay(o.intro||`${en.map(e=>e.name).join(', ')} ${en.length>1?'close in.':'is here.'}`,1100);
  for(;;){
   Bt.round++;
   Bt.queue=turnOrder();
+  if(Bt.round===1&&o.ambush&&!party.some(m=>!m.dead&&m.sp==='mouse'))Bt.queue=[...Bt.queue.filter(a=>a.foe),...Bt.queue.filter(a=>!a.foe)];
   while(Bt.queue.length){
    const a=Bt.queue[0];
-   if(a.foe){if(!a.dead)await foeTurn(a)}else if(!a.ko){const r=await mercTurn(a);if(r==='flee')return endBattle('flee')}
+   if(a.foe){if(!a.dead){if(a.stun>0){a.stun--;await bsay(`${a.name} is Stunned and loses the turn.`,700)}else await foeTurn(a)}}else if(!a.ko){const r=await mercTurn(a);if(r==='flee')return endBattle('flee')}
    Bt.queue.shift();Bt.active=null;
-   if(party.every(m=>m.ko))return endBattle('lose');
+   if(party.every(m=>m.ko||m.dead))return endBattle('lose');
    if(en.every(e=>e.dead))return endBattle('win');
   }
   if(Bt.count){Bt.count.n--;if(Bt.count.n<=0){await bsay(Bt.count.end||'The bell rings. It is over for today.',1400);return endBattle('time')}}
@@ -48,17 +50,20 @@ async function battle(foes,o={}){
 }
 function nameFoes(en){const c={};en.forEach(e=>c[e.base]=(c[e.base]||0)+1);const s={};en.forEach(e=>{if(c[e.base]>1){s[e.base]=(s[e.base]||0)+1;e.name=e.base+' '+'ABCD'[s[e.base]-1]}else e.name=e.base})}
 // DEX order, highest first; ties go to mercs (Combat, Basics)
-function turnOrder(){const dx=a=>a.foe?a.dex:a.stats.DEX;return [...party.filter(m=>!m.ko),...Bt.en.filter(e=>!e.dead)].sort((a,b)=>(dx(b)-dx(a))||((a.foe?1:0)-(b.foe?1:0)))}
+function turnOrder(){const dx=a=>a.foe?a.dex:a.stats.DEX;return [...party.filter(m=>!m.ko&&!m.dead),...Bt.en.filter(e=>!e.dead)].sort((a,b)=>(dx(b)-dx(a))||((a.foe?1:0)-(b.foe?1:0)))}
 function endBattle(res){
- Bt.active=null;const out=res;
+ Bt.active=null;const out=res,prev=Bt.prev;
+ // the rooks' rations: any rook killed drops what it took (Thieves)
+ const back=Bt.en.filter(e=>e.thief&&e.dead).reduce((a,e)=>a+(e.took|0),0);if(back&&G.run)G.run.rations=Math.min(15,G.run.rations+back);
+ G.lastStats=Object.assign({},Bt.stats,{rounds:Bt.round,back,res});
  party.forEach(m=>{m.defend=false;if(m.ko&&res!=='lose'){m.ko=false;m.hp=Math.max(1,m.hp)}});
- gEl.classList.remove('battle');Bt=null;G.mode='world';hideTB();return out;
+ gEl.classList.remove('battle');Bt=null;G.mode=prev||'world';hideTB();return out;
 }
 const aliveFoes=()=>Bt.en.filter(e=>!e.dead);
 // a log line across the top; waits ms, or until A
-function bsay(text,ms=900){Bt.log=text;return new Promise(res=>{Bt.ui={kind:'msg',res:()=>{clearTimeout(t);Bt.ui=null;res()}};const t=setTimeout(()=>{if(Bt&&Bt.ui&&Bt.ui.kind==='msg')Bt.ui.res()},fastOn()?Math.round(ms*.45):ms)})}
-function bcmd(m){return new Promise(res=>{Bt.ui={kind:'cmd',m,sel:m.bsel||0,res:i=>{m.bsel=i;res(i)}}})}
-function blist(title,rows,o={}){return new Promise(res=>{Bt.ui={kind:'list',title,rows,sel:Math.max(0,rows.findIndex(r=>!r.dis)),top:0,res,hover:o.hover}})}
+function bsay(text,ms=900){Bt.log=text;if(G.auto)return Promise.resolve();return new Promise(res=>{Bt.ui={kind:'msg',res:()=>{clearTimeout(t);Bt.ui=null;res()}};const t=setTimeout(()=>{if(Bt&&Bt.ui&&Bt.ui.kind==='msg')Bt.ui.res()},fastOn()?Math.round(ms*.45):ms)})}
+function bcmd(m){if(G.auto)return Promise.resolve(G.auto.cmd(m));return new Promise(res=>{Bt.ui={kind:'cmd',m,sel:m.bsel||0,res:i=>{m.bsel=i;res(i)}}})}
+function blist(title,rows,o={}){if(G.auto)return Promise.resolve(G.auto.list(title,rows,o));return new Promise(res=>{Bt.ui={kind:'list',title,rows,sel:Math.max(0,rows.findIndex(r=>!r.dis)),top:0,res,hover:o.hover}})}
 const fastOn=()=>!!(G.dev&&G.dev.fast);
 
 // ================= MERCS =================
@@ -91,7 +96,7 @@ async function attack(m,e,o){
  let d=rollDice(w.dmg)+(w.melee?strBonus(m.stats.STR):0);if(o.half)d=Math.floor(d/2);if(r.crit)d*=2;if(o.double)d*=2;d=Math.max(1,d);
  await bsay(`${m.name} hits ${e.name} for ${d}.${r.crit?' A crit.':''}`,1000);hurtFoe(e,d);return true;
 }
-function hurtFoe(e,d){e.hp=Math.max(0,e.hp-d);e.flash=16;floaty(e,d);if(e.hp<=0)e.dead=true}
+function hurtFoe(e,d){Bt.stats.dealt+=Math.min(d,e.hp);e.hp=Math.max(0,e.hp-d);e.flash=16;floaty(e,d);if(e.hp<=0)e.dead=true}
 // Skills: the battle moves of Shooting and Melee at 40% (Carried rules, Battle moves). The rest come in Part D.
 async function skillMenu(m){
  const w=weaponOf(m),rows=[],acts=[];
@@ -110,14 +115,15 @@ async function pickMerc(title){const rows=party.map(p=>({label:p.name,right:p.ko
 // ================= FOES =================
 async function foeTurn(e){
  Bt.active=e;await later(350);
- const alive=party.filter(m=>!m.ko);if(!alive.length)return;
+ const alive=party.filter(m=>!m.ko&&!m.dead);if(!alive.length)return;
  const t=alive[R_.die(alive.length)-1],r=R_.pct(e.hit);
  showRes(R_.line(e.name.toUpperCase(),r,BW.words),r);
- if(r.ok){let d=Math.max(1,rollDice(e.dmg));if(r.crit)d*=2;if(t.defend)d=Math.floor(d/2);d=Math.max(1,d);await bsay(`${e.name} hits ${t.name} for ${d}.`,1000);hurtMerc(t,d)}
+ if(r.ok){let d=Math.max(1,rollDice(e.dmg));if(r.crit)d*=2;if(t.defend)d=Math.floor(d/2);d=Math.max(1,d);await bsay(`${e.name} hits ${t.name} for ${d}.`,1000);hurtMerc(t,d);
+  if(e.thief&&G.run&&G.run.rations>0){G.run.rations--;e.took=(e.took|0)+1;Bt.stats.took++;await bsay(`${e.name} makes off with a ration.`,700)}}
  else await bsay(`${e.name} misses ${t.name}.`,900);
 }
-function hurtMerc(m,d){m.hp=Math.max(0,m.hp-d);m.shk=10;if(m.hp<=0)m.ko=true}
-const later=ms=>sleep(fastOn()?Math.round(ms*.45):ms);
+function hurtMerc(m,d){Bt.stats.taken+=Math.min(d,m.hp);m.hp=Math.max(0,m.hp-d);m.shk=10;if(m.hp<=0){m.ko=true;m.downs=(m.downs|0)+1;Bt.stats.downs=(Bt.stats.downs|0)+1}}
+const later=ms=>G.auto?Promise.resolve():sleep(fastOn()?Math.round(ms*.45):ms);
 function showRes(text,o){Bt.res={text:text.replace(/ (HIT|MISS|CRIT|FUMBLE)$/,' '),word:o.crit?'CRIT':o.fumble?'FUMBLE':o.ok?'HIT':'MISS',col:o.ok?PAL.tallow:PAL.ash,until:Bt.t+90}}
 function floaty(e,txt){Bt.floaties.push({e,txt:String(txt),t:0})}
 
@@ -141,7 +147,9 @@ function drawScene(L){
  bR(0,hz,VW,h-hz,s[2]);for(let x=0;x<VW;x+=6)bR(x+(x/6%2)*3,hz+4+((x*7)%9),2,1,PAL.peat);
  bR(0,hz,VW,1,PAL.peat);
 }
-function spriteOf(e){return e.sprite&&RLArt.sprite(e.sprite)}
+const folkCache={};
+function spriteOf(e){if(e.sprite)return RLArt.sprite(e.sprite);if(e.group)return RLArt.sprite(e.group);
+ if(e.sp){const k=e.sp+(e.look?e.look.shade:1);if(!folkCache[k]){const s=RLSP.map(e.sp,e.look),c=document.createElement('canvas');c.width=28;c.height=52;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(s,0,0,28,52);folkCache[k]=c}return folkCache[k]}return null}
 function foeX(i){const n=Bt.en.length;return Math.round(26+(VW-26)/(n+1)*(i+1))}
 function drawBattle(){
  Bt.t++;const t=Bt.t,tall=Math.max(0,...Bt.en.map(e=>{const s=spriteOf(e);return s?s.height:40}));
@@ -151,11 +159,13 @@ function drawBattle(){
  Bt.en.forEach((e,i)=>{
   if(e.dead)e.alpha=Math.max(0,e.alpha-.04);if(e.alpha<=0)return;
   const x=foeX(i),s=spriteOf(e),by=L.enemyY;cx.globalAlpha=e.alpha;
-  if(!(e.flash>0&&e.flash%4<2)){if(s){cx.imageSmoothingEnabled=false;cx.drawImage(s,Math.round(x-s.width/2),by-s.height)}else bR(x-10,by-30,20,30,PAL.ash)}
+  const lead=e.group&&Bt.en.find(f=>f.group===e.group);
+  if(!(e.flash>0&&e.flash%4<2)){if(e.group){if(lead===e&&s){const gx=Math.round((foeX(Bt.en.indexOf(Bt.en.filter(f=>f.group===e.group)[0]))+foeX(Bt.en.lastIndexOf(Bt.en.filter(f=>f.group===e.group).slice(-1)[0])))/2);cx.globalAlpha=Math.max(.3,Bt.en.filter(f=>f.group===e.group&&!f.dead).length/Bt.en.filter(f=>f.group===e.group).length);cx.drawImage(s,Math.round(gx-s.width/2),by-s.height)}}
+   else if(s){cx.imageSmoothingEnabled=false;cx.drawImage(s,Math.round(x-s.width/2),by-s.height)}else bR(x-10,by-30,20,30,PAL.ash)}
   if(e.flash>0)e.flash--;cx.globalAlpha=1;
   const hov=Bt.ui&&Bt.ui.kind==='list'&&Bt.ui.hover&&Bt.ui.hover(Bt.ui.sel)===e;
   if(hov){const ay=by-(s?s.height:30)-8+Math.sin(t*.2)*2;bR(x-3,ay,7,2,PAL.tallow);bR(x-2,ay+2,5,2,PAL.tallow);bR(x-1,ay+4,3,2,PAL.tallow)}
-  if(!e.dead)plate(e,x,by+2,i);
+  if(!e.dead)plate(e,x,by+2+(e.group?(i%2)*24:0),i);
  });
  // damage numbers
  Bt.floaties=Bt.floaties.filter(f=>f.t<50);Bt.floaties.forEach(f=>{f.t++;const i=Bt.en.indexOf(f.e),x=foeX(i),y=L.enemyY-30-f.t*.5;bT(f.txt,x-3+1,y+1,PAL.peat,16);bT(f.txt,x-3,y,PAL.bone,16)});
@@ -183,7 +193,7 @@ function drawBattle(){
 function cmdDetail(m,sel){const w=weaponOf(m);return [`${w.name} · ${w.dmg} · ${hitChance(m,null)}%`,`${m.wp} WP`,`${m.slots.length} in slots`,Bt.roamer?'Defend or Flee':'Defend'][sel]}
 // the nameplate: name, level, threat skulls, and an HP bar hatched and marked ??? until Identified
 function plate(e,x,y){
- const nm=`${e.name} L${e.lvl||1}`,sk=e.skulls||1,w=Math.max(54,bW(nm,13)+sk*7+8),x0=Math.round(Math.max(26,Math.min(VW-2-w,x-w/2)));
+ const nm=`${e.name} L${e.lvl||1}`,sk=e.skulls||1,w=Math.min(VW-28,Math.max(Bt.en.length>2?40:54,bW(nm,13)+sk*7+8)),x0=Math.round(Math.max(26,Math.min(VW-2-w,x-w/2)));
  SB.box(cx,x0,y,w,22,'rgba(28,24,20,.9)',PAL.line,1);bT(nm,x0+3,y-1,PAL.bone,13);
  for(let k=0;k<sk;k++)skull(x0+w-4-(k+1)*7,y+2);
  const bx=x0+3,bw=w-6,by=y+13;

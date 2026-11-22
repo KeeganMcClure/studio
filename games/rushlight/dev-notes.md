@@ -36,3 +36,34 @@ Keegan's standing approvals for this run: no questions; pick what the bible and 
 - **New art not yet filed in the Asset Library** (for the Designer to file): the face parts (3 coat shades per species,
   scar, torn ear, grey muzzle, kerchief, hood) and the six coin tokens, all drawn in `src/species-art.js` on the species
   sheet's grid. Filing them means republishing the 5.5 MB library page, which I didn't risk doing unasked.
+
+## Spec 004: Part B, the Withy March
+
+- **Tuning check: felled tree (3 road bandits), MISSED on one seed.** 20 fights per seed, the seed's own Free Company,
+  fresh each fight, auto-played (everyone uses Fight on the first target), spec 002's combat (no armor, quirks or
+  breaking yet). Pass: no merc goes down in more than 2 of 20 fights.
+  - 0001-A: 0 fights with a merc Downed · 6.1 HP lost · 3.6 rounds. Ambushed: 0 · 9.0 HP.
+  - 4242-C: **5 fights with a merc Downed** · 9.0 HP lost · 4.0 rounds. Ambushed: 7 Downed, 1 loss · 10.9 HP.
+  - 9021-M: 0 fights with a merc Downed · 5.8 HP lost · 3.5 rounds. Ambushed: 1 · 9.3 HP.
+  The spec expected 10–14 HP lost with no merc down; the real loss is lower on average (6–9), but on 4242-C one merc with
+  low HP keeps going down. Not retuned. Part D's armor (the jack and kettle hat) should soften this; it's re-run there.
+- **Tuning check: night attacks, PASSED on HP, rooks' rations MISSED.**
+  - 2 road bandits: 4.8 / 3.9 / 4.0 HP lost (pass: under 8). Downed in 0 / 1 / 0 fights of 20.
+  - Rooks: 5.8 / 7.1 / 5.4 HP lost (pass). They take 2.7 / 3.5 / 2.8 rations a fight while it lasts, but with no
+    breaking until Part D every rook dies and drops what it took, so the net loss is 0 (pass wants 1–3). Expected to
+    pass once Skittish rooks break and fly off in Part D; re-run there.
+- **The regional tic is RT-SET-1, always.** Spec 004 says the seed picks the March's tic from the RT- rows, but the Text
+  Library row RT-SET-1 says it's fixed to the Withy March (slice), and the others are "drawn at run start, one set per
+  March". The library is the newer, approved source, so the slice keeps RT-SET-1.
+- **Map positions** are mine, placed to match the approved chart: the river through Harrowford, Saint Ebbe's east,
+  Hollin north, the causeway south, the camp west, Crookback and Lowmoor Pit south-east. Hollin – Crookback crosses the
+  main road east of Harrowford; it reads fine on the chart. The open question (can the chart fit 8 points at 2× without
+  a tab hiding a town?) didn't come up: the chart scrolls with the cursor and the tabs sit at the chart's edges.
+- **Nights at hamlets and wild sites:** the point cards there only have Leave (as the spec says), so the company's
+  nights are camps on the road or nights in town until Parts C and D build the places.
+- **Horror on sight, quirks and breaking** wait for Part D, as the spec says fights use what spec 002 built. The
+  Corpse-candle and Lampwalkers cost no SAN on sight yet.
+- **A wipe** in Part B ends the run and returns to the title (rl.run cleared), until Part E's death screen.
+- **Who eats** shows as two rows (Eat: the pre-filled names, or Change who eats), so one tap confirms it.
+- **New art not yet filed** (add to Part A's list): the parchment chart, point glyphs, claws and the Key, drawn in
+  `src/region.js`.
