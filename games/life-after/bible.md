@@ -20,7 +20,7 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 - [x] Needs and SAN numbers: how fast hunger, sleep and SAN drop, what each refills, and what happens at each low point (Nov 21). See Needs, The numbers.
 - [x] Combat numbers: hit chances, damage, weapons, noise per action, and how zombies and raiders choose a move (Nov 21). See Combat, The numbers. Each weapon's exact damage and wear go in spec 001.
 - [x] Your survivor: each job's skills and starting items, each trait's effect, the want list, the looks parts, the 8 templates, and how fast skills grow with use (Nov 21). See `survivor.md`: 12 jobs and 12 templates now.
-- [ ] Rumors and late threats: the first rumor list, how the raider leader forms, and horde timing.
+- [x] Rumors and late threats: the first rumor list, how the raider leader forms, and horde timing (Nov 21). See The map, Rumors and late threats.
 - [ ] Companions: the skill, fear and want lists; how bond is counted (hidden); the order rules; the short-job odds; the first set of arc parts and evening scenes.
 - [ ] Shelter: what can be built, what it costs, and how a night attack plays out.
 - [x] Crafting and items: the first recipe list and item list, with look-alike brand names (Nov 21). See `items.md`.
@@ -110,6 +110,12 @@ None yet.
 - **The world runs down** (set Nov 21). Each building is looted once; food and supplies near your shelter thin out. Food spoils, the power fails and raiders grow bolder. By the second or third season you must travel further and craft more, which costs time and risk, and you may have to move hideouts. That keeps a long game moving.
 - **What pulls you forward** (set Nov 21): rumors from radio calls, notes and survivors point to far places worth the trip (a military depot, a seed vault, a safe zone). Some are real and some are traps. Your survivor's want gives the trip a reason.
 - **Bigger threats grow from the world** (set Nov 21): raider gangs merge under a leader who hunts you by name, and big hordes drift through each season. They grow from what you did, not on a timer.
+- **Rumors and late threats** (Keegan, Nov 21). Exact numbers are tuned in playtests.
+  - **Traps:** about 1 rumor in 3 is a trap. Hints give it away to a careful player: an odd voice on the radio, a note that's too perfect, a survivor who won't meet your eyes.
+  - **First rumor list** (Claude's first pass, for review): a National Guard depot with guns and medicine; a seed vault at the old farm co-op; a safe zone named on the radio; a hospital wing that still has power; a fuel truck stuck on the interstate; a doctor said to have the cure; a survivor camp taking in people; a family member's name on a church notice board (for Find family). Each can be real or a trap.
+  - **The raider leader** rises from either of two things: a hidden grudge (each raider you kill, rob or shame adds to it) or your wealth (a big, well-stocked hideout that raiders know about). Past a line, gangs merge under a named leader who hunts you.
+  - **Hordes:** at most 1 a season. Your noise adds to a hidden pull, and when it's high a horde of 30 to 60 drifts through over a day. The radio or the sky warns you; you hide, flee or fight with traps. Quiet players rarely face one.
+  - **A secret hideout** (Keegan, Nov 21): raiders only come for a hideout they know about. They find out if they follow you home, see cooking smoke by day or light at night, hear it from a raider you let go, or hear it from a trader or on the CB radio. You stay hidden by taking the long way home, cooking without smoke, blacking out windows (a craft) and hiding the entrance. Moving to a new hideout resets it.
 - **Vehicles** (set Nov 21): cars are rare and costly. Most are dead; one that runs needs gas, a battery and repairs. It carries a lot fast but is loud. Bikes and skateboards are quieter ways to get around.
 - **Weather and events** (set Nov 21): grounded. Storms, fog, heat waves, blizzards, a horde passing through, a raider push. A working radio (with batteries) warns you a day ahead; without one you read the sky, which is less sure. First list: To do.
 - **Map view** (`studio-bible/art-style.md`): Stardew-style 3/4 top-down, 16 px tiles, building fronts and faces.
@@ -212,7 +218,7 @@ None yet.
 
 - **Claim and fortify a building** (set Nov 21): pick a real building on the map, board up doors and windows, and add beds, storage and traps on its tile grid.
 - **What you build** (set Nov 21): defenses (boards, traps, a lookout, a rain barrel) plus a few comforts (a real bed, a stove, a radio corner) that help sleep, food and SAN.
-- **What brings attacks** (set Nov 21): your choices. Noise, light, cooking smoke and how long you stay raise the odds, and raiders come if they know where you live. Quiet nights are common.
+- **What brings attacks** (set Nov 21): your choices. Noise, light, cooking smoke and how long you stay raise the odds, and raiders come if they know where you live (see The map, A secret hideout). Quiet nights are common.
 - **You play attacks out** (set Nov 21): you're woken, then fight turn by turn inside your building: hold doors, fix boards, place companions. If you're away, it's worked out from your defenses. Barricades take damage and need repair.
 - **Attacks must never be a chore** (Keegan, Nov 21): short (a few minutes), each with a twist (a weak board gives way, a companion panics, raiders shout a deal through the door), with real choices beyond swinging (fall back a room, light a fire trap, slip out the back). A small attack your defenses clearly win is settled in one line.
 - **Moving** (set Nov 21): when the area runs dry, you can move. You take only what you can carry: your bags, your companions' bags and a working car. Builds stay behind, but some can be stripped for parts.
