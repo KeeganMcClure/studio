@@ -371,16 +371,18 @@ Every case uses this breakdown as its template: briefing, investigation, fights,
 
 ### Adding a new case
 
-Cases start from your DG notes or take them as inspiration (set Nov 19). You sign off on one thing, the pitch; everything after it is a surprise in play.
+Cases start from your DG notes or take them as inspiration (set Nov 19). You sign off on one thing, the pitch; everything after it is a surprise in play. Reworked Nov 22 for the studio repo, where everything public is readable by anyone, so each step names who does it and where it lives.
 
-1. **Gather seeds.** Claude draws on Case seeds, Flavor and the notes inventory (claude/evernote-dg-notes-inventory.md), and swaps every ⚠ name and any published-scenario material for originals.
-2. **Pitch 2–3 options.** Each pitch card shows only: title, setting, a one-paragraph hook with no twist, the monster theme, the night treatment, its heaviest themes (see Mature content) and which seeds it uses. Arc touches never appear here.
-3. **You pick one.** Your only sign-off. If a pitch is flagged as too big for 1–2 hours, you also choose: trim it to one case, or split it into Part 1 and Part 2 (Part 2 unlocks after Part 1).
-4. **Case file.** Claude designs the rest in claude/cases/\<case>.md, which you don't open: twist, internal logic, maps, clue IDs, the choices that matter, the 8–10 skills it supports, 1–2 motivation moments, enemy cards, and a boss with phases and a weakening choice. Every deduction must map to clue IDs.
-5. **Write.** Claude writes every scene and line in your voice (see Voice): weird specific details, gallows humor. No review before play.
-6. **Art.** Claude makes the case's art within the Art rules, checking the Shared and Seasonal shelves first.
-7. **Ending.** Debrief with Big Hat, a cover-story choice, a home scene with a Bond, and a saved SAN outcome; the boss and ending react to choices.
-8. **Build and check.** Boss tuning check, playtest checklist at iPhone SE size, then publish. You play it first; what you find goes to Bugs or the Ideas inbox.
+1. **Gather seeds (Designer).** Draw on Case seeds and Flavor below, and swap every ⚠ name and any published-scenario material for originals. The full notes inventory (claude/evernote-dg-notes-inventory.md) stays in the Black Lantern Claude Project files.
+2. **Pitch (Designer).** Pitches go in `games/black-lantern/pitches/`, one file per round, and are public-safe: title, setting, a one-paragraph hook with no twist, the monster theme, the night treatment, its heaviest themes (see Mature content), open or quiet case (see Overstepping), and which seeds it uses. Arc touches never appear here. A round pitches 3 options for one board spot; you pick one per round, on a card in the project.
+3. **You pick one.** Your only sign-off. If a pitch is flagged as too big for 1–2 hours, you also choose: trim it to one case, or split it into Part 1 and Part 2 (Part 2 unlocks after Part 1). Unpicked pitches stay in the round's file and can come back in a later round.
+4. **Case spec (Designer).** A public-safe spec in `specs/`, made from `specs/case-spec-template.md`: the card text, setting and maps by name, the day and night plan, how many story fights and danger zones, threat skulls and how many enemy types, the 8–10 skills it calls on, which motivation types its 1–2 moments aim at, open or quiet, its ending labels, its art needs (Shared Shelf first), and its season slot. Like spec 006, it names no culprit, twist, solution or hidden clue.
+5. **Case file (Developer, secret).** At the start of the story build, the Developer designs the rest in claude/cases/\<case>.md in the Black Lantern Claude Project files, which you don't open: twist, internal logic, clue IDs, the choices that matter, enemy cards, the boss with phases and a weakening choice, and any arc touches. Every deduction must map to clue IDs. It never goes in the repo.
+6. **Build in two parts (Developer)**, one session each, like Demo 4 and Demo 5: (A) maps and art, with the case's own art on its own Asset Library page and anything generic proposed to the Shared Shelf only with your OK; (B) story and play, with every line written in your voice (see Voice) in the case's text block, no review before play.
+7. **Ending.** Debrief with Big Hat, a cover-story choice, the home phase, and a saved SAN outcome; the boss and ending react to choices (specs 007 and 008).
+8. **Check and ship.** Boss tuning check, `npm run check` at all three sizes, and the playtest checklist. The case joins the season's queue in the season data file (spec 009). You play it first on Dev; what you find goes to Bugs or the Ideas inbox. The Designer runs a rules check against its spec (`studio-bible/rules-checks.md`), and it reaches Release when you say so.
+
+**Agency cases** skip steps 2 and 3: they come from the secret arc file, so no pitch is shown. Their case spec covers only the public parts (card text, maps, art, fight count), and the Developer designs the rest from the arc file in step 5.
 
 ### Your original material
 
