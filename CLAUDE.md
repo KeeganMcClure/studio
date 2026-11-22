@@ -8,7 +8,8 @@ Keegan is the designer and isn't a programmer. Explain choices briefly in plain 
 - Read the relevant `bible.md`, `studio-bible/` files and spec before building any feature.
 - Put anything two games could use in `engine/`, never inside one game.
 - After each feature or fix, add a dated entry to the game's `changelog.md`: what was built, what is left, and any deviations from the spec.
-- Never change a bible or spec. If one is wrong or unclear, stop and ask Keegan.
+- In the same PR, tick the matching To do item in the game's `bible.md` (`- [ ]` → `- [x]`) and add one indented `Done <date>:` line under it in plain words. If a bug fix closes a line in Bugs, tick that too. If the work only finishes part of an item, leave it unticked and say what's left in the changelog.
+- Never change a bible or spec, apart from the To do and Bugs ticks above. If one is wrong or unclear, stop and ask Keegan.
 - Target: web/PWA, iPhone SE first, GBA-style controls, canvas 240 px wide with the height fitting the screen (up to 320), scaled with crisp pixels, offline play, save export and import.
 - Plain HTML canvas, no game framework. All art is drawn in code. No pixel art tool.
 - New work deploys to Dev. Release only when Keegan says so.
