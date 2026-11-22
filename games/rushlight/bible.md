@@ -507,6 +507,29 @@ The first batch covers all five kinds below (set Nov 20). Names and picks are Cl
 | Road events | Bandits at a felled tree, a lord's toll, refugees, a wounded traveler, a flagellant procession, a storm or snow (+1 day), a broken axle, a strange sign pointing toward the den |
 | Surprises | A site off the map found by leaving the road; a hamlet empty on arrival; a rumor that's an ambush; a town that shuts its gates (plague or a lord's order); a sign of next region's great creature, too early |
 
+### The slice's Withy March
+
+Set Nov 22 (spec 004). The vertical slice cuts the Withy March to 8 hand-placed points and 10 roads; the seed varies which side road is hidden, where the roamers are, the regional tic and every roll. The slice is always autumn, since the Noonwife needs a harvest. The mockup's shrine, old field, gibbet and Withy Mill come back with the full region.
+
+- **Points:** HARROWFORD (river-crossing town, the start), SAINT EBBE'S (monastery town), Hollin (hamlet with fields and a bell tower: the Noonwife), Sallow End (hamlet: Severa), the charcoal camp (Pell), the osier causeway (the Withy Hag), Crookback (emptied plague village: the Counter), Lowmoor Pit (flooded mine: the Hollow Monk's den). The wool buyer's escort runs the main road between the two towns.
+- **Roads, in days:** Harrowford to Saint Ebbe's 2 and to Hollin 1 (both main); Harrowford to the charcoal camp 1 and to the osier causeway 1; Saint Ebbe's to Sallow End 1 and to Crookback 2; Hollin to Crookback 2; Sallow End to Hollin 3; Crookback to Lowmoor Pit 1; the osier causeway to Lowmoor Pit 2. One of Hollin–Crookback or Sallow End–Hollin is hidden by the seed; the two den roads show when the den is found.
+- **Known at start:** the two towns, Hollin and the main roads. Arriving anywhere shows every road leaving it.
+- **Roamers meet the company on roads** in the slice: the hedge cat and the rooks on two side roads, the Corpse-candle on a road touching Crookback, and the Lampwalkers on a road one step from a den road. Sneak past (Stealth), fight or turn back; the Lampwalkers are waited out or fought.
+
+**Road events (set Nov 22, spec 004; Claude's first draft, tuned in playtest).** One roll per travel day (25% in region 1), then the table. Night attacks at camp are rooks or two road bandits.
+
+| d100 | Event | Choices |
+| --- | --- | --- |
+| 1–25 | Bandits at a felled tree | Pay 2 per merc, or fight 3 road bandits (Ambushed unless On guard or a mouse) |
+| 26–40 | A lord's toll | Pay 1 per merc; Persuade to pass free (fail: pay double); or go round, +1 day |
+| 41–55 | Refugees | Give 2 rations (a Protect the innocent moment) or pass by; Rob them where crimes apply |
+| 56–70 | A wounded traveler | First Aid: he shows a hidden road or point; fail, he dies. Or pass by |
+| 71–80 | A flagellant procession | Wait, +1 day; or walk through, each merc CON × 5 or Sickened (a Faith moment if one walks with them) |
+| 81–95 | Storm or snow | +1 day |
+| 96–100 | A strange sign | Within 2 roads of the den, one of the great creature's signs, once per region; else reroll |
+
+A broken axle needs a cart, so it waits for mules and carts.
+
 ### Contracts
 
 Set Nov 20. Each contract template picks its own shape, and the work splits evenly between creatures and people.
