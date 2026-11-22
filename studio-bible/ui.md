@@ -8,6 +8,7 @@ Sources: Black Lantern Art (Faces and sprites, Light and mood) and Rushlight Art
 - A box along the bottom of the screen with a light border and 3 lines of VT323 text.
 - The 64 × 64 portrait stands on top of the box at the map's pixel size, with the speaker's name in caps on a tab beside it.
 - Signs: tab only, no portrait. Narration: no tab.
+- When the speaker is drawn large in the scene in front of you (a cutscene, a briefing), the box shows the name tab only, no portrait. The portrait is for speakers you can't see up close: talk on the map, voices off screen, lines over a menu or a board (Black Lantern spec 013, Nov 22, 2026).
 - Short lines, typewriter effect. A ▼ marks advance.
 - Questions show their choices inside the box, under the question line, with a cursor. Tapping a choice also works, and a long list scrolls inside the box.
 - Each game paints the box in its own palette.
