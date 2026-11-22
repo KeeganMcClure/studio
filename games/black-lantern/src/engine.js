@@ -320,7 +320,10 @@ function drawWorld(){
  const st=art.paint(M);
  cx.fillStyle='#0a0710';cx.fillRect(0,0,VW,VH);cx.drawImage(st.c,-camx,-camy);
  const spr=[],moving=!!G.mv,fr=StudioMove.walkFrame(G),midX=camx+VW/2,midY=camy+VH/2;
- M.props.forEach(p=>{if(Math.abs(p.x-midX)<VW/2+60&&p.y>camy-8&&p.top<camy+VH+8)spr.push({y:p.y,f:()=>p.draw(cx,-camx,-camy)})});
+ // a piece with a canopy (a tree) turns see-through while the lead stands behind it
+ const me=[G.px+1,G.py-15,14,28];
+ M.props.forEach(p=>{if(Math.abs(p.x-midX)<VW/2+60&&p.y>camy-8&&p.top<camy+VH+8)spr.push({y:p.y,f:()=>{const see=p.canopy&&G.py+13<p.y&&overlaps(me,p.canopy);
+  if(see)cx.globalAlpha=.45;p.draw(cx,-camx,-camy);cx.globalAlpha=1}})});
  // townsfolk stand still; they turn to face the lead when spoken to, and blink now and then
  M.npcs.forEach((n,i)=>{if(n.on&&!n.on())return;const fx=n.x*16+8-camx,fy=n.y*16+13-camy,bl=(now+i*1100)%4100<150?1:0;
   spr.push({y:n.y*16+13,f:()=>{const v=art.folk(n.id,n.dir,bl);cx.fillStyle='rgba(0,0,0,.3)';cx.fillRect(Math.round(fx-5),Math.round(fy-1),10,2);cx.drawImage(v.c,Math.round(fx-v.ax),Math.round(fy-v.ay))}})});

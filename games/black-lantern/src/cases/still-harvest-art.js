@@ -55,12 +55,14 @@ const VICTIM=[
   strawman(R,P,E,C,big,{pole:false,legs:false,shirt:'#5a6a7a',pants:'#4a4038',
    head:(R,P,C)=>{for(const x of[20,28]){C(x,12,3.6,'#2a2030');C(x,12,2.4,'#bfe3ff');C(x,12,1.2,ST)}R(23,12,2,1,'#2a2030');R(20,17,9,1,ST)}});
   R(15,46,18,6,'#4a4038',{sh:3});R(15,52,6,10,'#4a4038');R(27,52,6,10,'#4a4038');R(14,61,8,3,STRAW);R(26,61,8,3,STRAW)}}];
-// Deputy Ross's cruiser, two tiles wide, nose to the left
-const CRUISER={size:[70,46,3,6],anchor:[32,40],lights:[],draw({R,P,big}){const W='#e8e8e8',BK='#1b1b2a',GL='#5a7ab0';
- R(14,2,36,14,W,{sh:6});R(17,5,14,9,GL);R(33,5,14,9,shade(GL,-.15));R(17,5,14,2,shade(GL,.35));R(22,-2,10,4,'#d33');R(32,-2,10,4,'#35f');
- R(-2,16,66,16,W,{sh:8});R(-2,21,66,4,BK);R(28,16,1,16,shade(W,-.3));R(36,26,4,4,'#d6a43a');
- R(-3,18,3,4,'#ffd166');R(63,18,2,4,'#c0392b');R(-3,29,68,3,shade(W,-.4));
- for(const x of[6,46]){R(x,27,12,12,'#111014');R(x+3,30,6,6,'#9aa0a6');R(x+5,32,2,2,'#4a4a52')}}};
+// Deputy Ross's cruiser, nose to the left. Car-sized (about 52 x 27 px, twice a person's length); it still blocks only its two tiles
+const CRUISER={size:[112,64,4,8],anchor:[52,54],lights:[],draw({R,P,big}){const W='#e8e8e8',BK='#1b1b2a',GL='#5a7ab0',GD=shade(GL,-.15);
+ R(42,-4,10,5,'#d33');R(52,-4,10,5,'#35f');R(40,1,24,2,'#2a2a34');
+ R(26,3,54,19,W,{sh:8});R(30,6,22,13,GL);R(55,6,21,13,GD);R(30,6,22,3,shade(GL,.35));R(55,6,21,3,shade(GD,.3));R(52,6,3,13,W);
+ R(-2,22,108,20,W,{sh:12});R(-2,22,108,2,shade(W,.2));R(-2,29,108,5,BK);R(52,22,1,20,shade(W,-.3));R(26,22,1,20,shade(W,-.25));
+ R(58,35,6,6,'#d6a43a');R(60,34,2,8,'#d6a43a');R(30,25,6,2,shade(W,-.35));R(62,25,6,2,shade(W,-.35));
+ R(-3,24,4,5,'#ffd166');R(102,24,4,5,'#c0392b');R(-4,40,112,3,shade(W,-.45));
+ for(const x of[10,76]){R(x-2,36,20,4,shade(W,-.5));R(x,38,16,16,'#111014');R(x+4,42,8,8,'#9aa0a6');R(x+7,45,2,2,'#4a4a52')}}};
 // the cider stand: a folding table under a striped awning, two tiles wide
 const CIDER={size:[66,64,1,10],anchor:[32,56],lights:[],draw({R,P}){const W='#f4f1e8',RD='#c0392b',WD='#5a3e2b';
  R(3,4,3,52,WD);R(58,4,3,52,WD);
@@ -138,7 +140,8 @@ function paint(M){
   // trees, buildings and the fence, back to front
   const items=[];
   // trees on the map's edge stand just outside it, so their crowns frame the town without hiding the fence, the sign or the lead
-  for(let y=0;y<M.h;y++)for(let x=0;x<M.w;x++)if(M.g[y][x]==='T'){const v=(x*3+y*5)%3,a=get('tree'+v,()=>autumn.tree(v));
+  // trees inside the map stand up with the pieces and people instead (SHA.props), so the cruiser and the lead sort with them
+  for(let y=0;y<M.h;y++)for(let x=0;x<M.w;x++)if(M.g[y][x]==='T'&&!standingTree(M,x,y)){const v=(x*3+y*5)%3,a=get('tree'+v,()=>autumn.tree(v));
    let fx=x*T+8,fy=y*T+15;if(y===M.h-1)fy+=40;else if(x===0)fx-=14;else if(x===M.w-1)fx+=14;
    items.push({y:fy,f:()=>g.drawImage(a.c,Math.round(fx-a.ax),Math.round(fy-a.ay))})}
   for(const b of buildingsOf(M))items.push({y:b.fb,f:()=>building(g,b,glows)});
@@ -147,6 +150,8 @@ function paint(M){
  }
  return still[key]={c,glows};
 }
+// a tree off the map's edge and below the shop row is a standing piece, sorted by its feet like everything else
+const standingTree=(M,x,y)=>y>=2&&y<M.h-1&&x>0&&x<M.w-1;
 // buildings: each run of roof (B) over a wall row (#) with its door (D) becomes one front, 3/4 view
 function buildingsOf(M){const out=[],seen=new Set();
  for(let y=0;y<M.h;y++)for(let x=0;x<M.w;x++){if(M.g[y][x]!=='B'||seen.has(x+','+y))continue;
@@ -194,6 +199,9 @@ function props(M){
    else if(v===2)put(get('pile',()=>autumn.PILE),cx,fy+1,x,y);
    else out.push({tx:x,ty:y,x:cx,y:fy,top:fy-10,draw:(c,ox,oy)=>autumn.jackOLantern(c,cx+ox,y*T+10+oy,T),lights:[[cx,y*T+10,1.1*T,.5,false]]});}
   else if(ch==='H'){const a=get('hay'+((x+y)%2),()=>autumn.hay((x+y)%2===0));put(a,cx,fy,x,y)}
+  else if(ch==='T'&&standingTree(M,x,y)){const v=(x*3+y*5)%3,a=get('tree'+v,()=>autumn.tree(v)),X=Math.round(cx-a.ax),Y=Math.round(y*T+15-a.ay);
+   // canopy: while the lead is behind it, the engine draws the tree see-through so the lead never disappears
+   put(a,cx,y*T+15,x,y,{extra:{canopy:[X+6,Y,a.c.width-12,a.c.height-14]}})}
   else if(ch==='S')put(get('crow'+(x<M.w/2?'pell':'ruiz'),()=>SCARECROW(x<M.w/2?'pell':'ruiz')),cx,fy,x,y);
   else if(ch==='V'){const i=(M.vv&&M.vv[x+','+y])|0;put(get('victim'+i,()=>VICTIM[i%3]),cx,fy,x,y)}
   else if(ch==='K'){seen.add((x+1)+','+y);put(get('cruiser',()=>CRUISER),x*T+16,fy+1,x,y)}
