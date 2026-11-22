@@ -224,12 +224,95 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
       if (T.version === 0 && (r.run || r.roster)) probs.push('old Black Lantern keys kept');
       if (T.keys['rl.run'] && !(await page.evaluate(() => RLG.resume()))) probs.push('the run did not open');
       if (T.keys['rl.run'] && await page.evaluate(() => RLG._t.party().length) !== 3) probs.push('the company did not load');
+      if (T.expect) { const got = await page.evaluate(() => { const r = RLG._t.G().run; return { at: r.region && r.region.at, day: r.day, rations: r.rations, trip: !!(r.region && r.region.trip), hungry: RLG._t.party().some(m => m.hunger > 0) }; });
+        for (const k in T.expect) if (got[k] !== T.expect[k]) probs.push(`${k} is ${got[k]}, expected ${T.expect[k]}`); }
       probs.push(...errors);
       console.log(`${probs.length ? 'FAIL' : 'ok  '} test save: ${f}`); probs.forEach(p => console.log('     - ' + p)); failed += probs.length;
       await ctx.close();
     }
-    console.log(`${bad.length ? 'FAIL' : 'ok  '} spec 003: seeds repeat, Blank company by D-pad and tap, reopen mid-creator and in town, Export/Import`);
+    console.log(`${bad.length ? 'FAIL' : 'ok  '} spec 003: seeds repeat, Blank company by D-pad and tap, reopen mid-creator and on the map, Export/Import`);
     bad.forEach(p => console.log('     - ' + p)); failed += bad.length;
+  }
+
+  // 8. spec 004 (Part B): the March on 3 seeds, marches, food, camp and inn, every road event and choice, the coin
+  {
+    const bad = [];
+    const ctx = await browser.newContext({ viewport: { width: 375, height: 667 }, hasTouch: true });
+    const page = await ctx.newPage(); const errors = [];
+    page.on('pageerror', e => errors.push('page error: ' + e.message));
+    await page.goto(url); await page.waitForTimeout(500);
+    for (const seed of ['0001-A', '4242-C', '9021-M']) {
+      const r = await page.evaluate(async seed => {
+        const out = [];
+        if (RLG.active) RLG._t.quit();
+        await RLG.newRun(seed); const g = RLG._t.G(), run = g.run, R = run.region;
+        // roamers on legal roads
+        for (const k of ['cat', 'rooks', 'candle', 'lamp']) if (!ROAMER_ROADS[k].includes(R.roam[k].road)) out.push(`${k} on ${R.roam[k].road}`);
+        if (R.roam.cat.road === R.roam.rooks.road) out.push('the cat and the rooks share a road');
+        // every point reachable by known roads once the hidden road is found (and the den shown)
+        Object.keys(MARCH.points).forEach(k => scout(k)); findHidden(); ['CR-MONK-SIGN-1', 'CR-MONK-SIGN-2', 'CR-MONK-SIGN-3'].forEach(addSign); Object.keys(MARCH.points).forEach(k => scout(k));
+        for (const k of Object.keys(MARCH.points)) if (k !== 'harrow' && !route('harrow', k)) out.push('no route to ' + k);
+        // march from Harrowford to every point and back, auto-played (road events and roamers included)
+        g.auto = { cmd: () => 0, list: (t, rows) => Math.max(0, rows.findIndex(x => !x.dis)), menu: items => Math.max(0, items.indexOf('Leave')), choice: () => 0 };
+        g.dev = { fast: true };
+        for (const k of Object.keys(MARCH.points)) { if (k === 'harrow') continue;
+          run.rations = 15; run.purse = 99; party.forEach(m => { m.hp = m.mhp; m.ko = false; });
+          await march(k); if (!RLG.active) { out.push('the company was wiped on the way to ' + k); break; }
+          if (R.trip) out.push('stuck on the road to ' + k);
+          run.rations = 15; await march('harrow'); if (!RLG.active) { out.push('wiped coming back from ' + k); break; } }
+        g.auto = null;
+        return out;
+      }, seed);
+      r.forEach(x => bad.push(`seed ${seed}: ${x}`));
+    }
+    // food: 9 rations and no foraging, hungry on day 4, Who eats, Starving costs 1 HP and 1 SAN, a meal clears it
+    const food = await page.evaluate(async () => {
+      const out = [];
+      if (RLG.active) RLG._t.quit(); await RLG.newRun('0001-A'); const g = RLG._t.G(), run = g.run;
+      g.auto = { cmd: () => 0, list: () => 0, menu: items => Math.max(0, items.indexOf('Leave')), choice: () => 0 }; g.dev = { fast: true, noforage: true, noevents: true };
+      run.rations = 9; let hungryDay = 0;
+      for (let d = 1; d <= 5; d++) { g.whoEats = 0; await eatDay(); if (!hungryDay && party.some(m => m.hunger)) { hungryDay = d; if (!g.whoEats) out.push('no Who eats box'); } }
+      if (hungryDay !== 4) out.push('went hungry on day ' + hungryDay + ', not 4');
+      const m = party.find(x => x.hunger >= 2); if (!m) out.push('nobody Starving on day 5');
+      else { const hp = m.hp, san = m.san; run.rations = 0; await eatDay(); if (m.hp !== Math.max(1, hp - 1) || m.san !== san - 1) out.push('Starving did not cost 1 HP and 1 SAN');
+        run.rations = 15; await eatDay(); if (m.hunger || m.st.includes('Starving')) out.push('a meal did not clear Starving'); }
+      // camp: heal and WP back (none for the Hungry); inn: 2 gr a merc, SAN once; sleep rough free
+      party.forEach(x => { x.hp = 1; x.wp = 0; x.hunger = 0; }); party[1].hunger = 1;
+      await camp({ road: false }); if (party[0].hp < 2 || party[0].wp !== party[0].mwp) out.push('camp did not heal and refill'); if (party[1].wp !== 0) out.push('a Hungry merc got WP back');
+      run.purse = 20; const san0 = party.map(x => x.san); party.forEach(x => x.san = Math.max(1, x.san - 5));
+      await restInn(); if (run.purse !== 14) out.push('the inn charged ' + (20 - run.purse));
+      const sanA = party.map(x => x.san); await restInn(); if (party.map(x => x.san).join() !== sanA.join()) out.push('inn SAN came twice');
+      const p0 = run.purse; g.auto.menu = (items) => items.indexOf('Sleep rough') >= 0 ? (g.slept ? 3 : (g.slept = 1, 1)) : 0; await openPoint('harrow'); if (run.purse !== p0) out.push('sleeping rough cost coin');
+      // meat rots after 2 days and is cooked at camp
+      run.rations = 0; RLG._t.G().run.region.meat = [{ n: 2, d: 2 }]; tickMeat(); await camp({ road: false }); if (run.rations !== 2) out.push('meat was not cooked into rations');
+      run.region.meat = [{ n: 2, d: 2 }]; tickMeat(); tickMeat(); if (run.region.meat.length) out.push('meat did not rot');
+      // the coin token follows the lead
+      const l0 = g.lead; mapSelect(); drawRegion(); if (g.lead === l0) out.push('the lead did not change'); else if (party[g.lead].sp !== party[l0].sp && RLSP.coin(party[g.lead].sp) === RLSP.coin(party[l0].sp)) out.push('the coin did not change');
+      g.auto = null; return out;
+    });
+    food.forEach(x => bad.push('food and camp: ' + x));
+    // every road event, forced, with every choice, by D-pad (keys) and by tap
+    const EVS = { tree: 2, toll: 3, refugee: 2, wound: 2, proc: 2, storm: 1, sign: 1 };
+    for (const how of ['keys', 'tap']) for (const [ev, n] of Object.entries(EVS)) for (let c = 0; c < n; c++) {
+      await page.evaluate(async () => { if (RLG.active) RLG._t.quit(); await RLG.newRun('0001-A'); const g = RLG._t.G(); g.run.purse = 50; g.run.rations = 9;
+        g.auto = { cmd: () => 0, list: (t, rows) => Math.max(0, rows.findIndex(x => !x.dis)) }; g.dev = { fast: true }; });
+      await page.evaluate(ev => { const g = RLG._t.G(); g.dev.event = ev; g.evDone = 0; run(async () => { await roadEvent({ road: 'hs', to: 'cause', day: 1, extra: 0 }); g.evDone = 1; }); }, ev);
+      for (let k = 0; k < 120; k++) {
+        const st = await page.evaluate(() => { const g = RLG._t.G(); const li = document.querySelectorAll('#gdlg .bld-c li'); return { done: g.evDone, choices: li.length, dlg: !!document.querySelector('#gdlg .bld'), menu: !document.getElementById('gmenu').hidden }; });
+        if (st.done) break;
+        if (st.choices) {
+          if (how === 'tap') { await page.locator('#gdlg .bld-c li').nth(Math.min(c, st.choices - 1)).click(); }
+          else { for (let q = 0; q < c; q++) await page.keyboard.press('ArrowDown'); await page.keyboard.press('z'); }
+        } else if (st.menu) await page.keyboard.press('z'); else await page.keyboard.press('z');
+        await page.waitForTimeout(40);
+      }
+      if (!await page.evaluate(() => RLG._t.G().evDone)) bad.push(`${how}: road event ${ev}, choice ${c + 1} never finished`);
+    }
+    await page.evaluate(() => { const g = RLG._t.G(); g.auto = null; g.dev = {}; });
+    bad.push(...errors);
+    console.log(`${bad.length ? 'FAIL' : 'ok  '} spec 004: the March on 3 seeds, marches, food, camp and inn, every road event by D-pad and tap, the coin`);
+    bad.forEach(p => console.log('     - ' + p)); failed += bad.length;
+    await ctx.close();
   }
   await browser.close();
   console.log(failed ? `\n${failed} problem(s) found.` : '\nAll automatic checks passed.');

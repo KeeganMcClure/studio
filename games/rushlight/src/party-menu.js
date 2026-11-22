@@ -22,7 +22,7 @@ function cycleLead(){return setLead(StudioParty.next(party.length,G.lead|0,canLe
 // Select on the map, only while the lead is free to walk. The new lead takes the old lead's tile and facing (the
 // map keeps one position for the company, so that holds by itself). Presses while it can't are ignored, not saved.
 function mapSelect(){
- if(!StudioParty.canSwap({battle:!!Bt||G.mode==='battle',dialog:!!dlg,menu:!!menu||!!PM,cutscene:G.mode!=='world',moving:!!G.mv,busy:!!G.busy}))return;
+ if(!StudioParty.canSwap({battle:!!Bt||G.mode==='battle',dialog:!!dlg,menu:!!menu||!!PM,cutscene:G.mode!=='world'&&G.mode!=='region',moving:!!G.mv,busy:!!G.busy}))return;
  if(cycleLead())banner(PW.banner+lead().name.toUpperCase());
 }
 

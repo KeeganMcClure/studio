@@ -17,13 +17,16 @@ const T=(id,o)=>window.RLT(id,o);
 const RLP=window.Studio?Studio.savePrefix('rl.'):'rl.',K=k=>RLP+k;
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 // The save version (studio-bible/saves.md): each change to what a save holds adds a step here. Old steps never change.
-const VERSION=1;
+const VERSION=2;
 const newLedger=()=>({bestiary:{},dead:[],companies:[]});
 // Each step takes the save as one object {run, ledger, draft, legacy} and returns it at the next version.
 const STEPS_UP={
  // 0 → 1 (spec 003): the setup copy's Black Lantern-shaped test data (rl.roster, rl.game, an agent draft) goes;
  // nothing in it is a real run. The ledger is made if missing.
- 1:o=>{o.legacy=null;if(o.draft&&o.draft.prof)o.draft=null;if(o.run&&!o.run.seed)o.run=null;if(!o.ledger)o.ledger=newLedger();return o}
+ 1:o=>{o.legacy=null;if(o.draft&&o.draft.prof)o.draft=null;if(o.run&&!o.run.seed)o.run=null;if(!o.ledger)o.ledger=newLedger();return o},
+ // 1 → 2 (spec 004): the company leaves the stand-in town for Harrowford on day 1; the larder is set from the old ration
+ // count (15 at most); the region is filled from the run's seed (makeRegion, region.js); each merc starts fed
+ 2:o=>{const r=o.run;if(r){r.place=null;r.day=1;r.rations=Math.min(15,r.rations|0);r.region=makeRegion(r);(r.party||[]).forEach(m=>{m.hunger=0})}return o}
 };
 function upgradeSave(o,from){for(let v=from+1;v<=VERSION;v++)o=STEPS_UP[v](o);o.version=VERSION;return o}
 // On open: back up older saves first (all rl.* keys in one block), then run each step above the stored version.
@@ -330,9 +333,9 @@ list.addEventListener('input',e=>{const t=e.target,b=t.dataset.bind;if(!b)return
 list.addEventListener('focusout',e=>{if(e.target.tagName==='INPUT')setTimeout(()=>{if(!list.contains(document.activeElement)||document.activeElement.tagName!=='INPUT')render(false)},0)});
 setInterval(()=>{if(S.step==='title'&&!(window.RLG&&RLG.active))drawLantern()},180);
 
-openSaves();
 window.RL={key:K,S,store,render,goto,toast,esc,build,rollDraft,skillsOf,finalStats,tradeOf,seedNum,seedText,streams,exportCode,readCode,applyCode,openSaves,upgradeSave,VERSION,newLedger,abandonRun,
  // checks (spec 003): the company a seed offers, and its next rerolls
  _t:{draftFor:seed=>{S.draft=freshDraft(seed);pickTemplate(0);return S.draft},pickTemplate,reroll,signOn,S}};
-render();
+// the saves open and the title draws once every part has loaded (an upgrade step can need region.js)
+window.addEventListener('DOMContentLoaded',()=>{openSaves();render()});
 })();

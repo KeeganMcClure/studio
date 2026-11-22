@@ -65,6 +65,7 @@ async function stepBack(){const [dx,dy]=DIRS[G.dir];if(passable(G.x+dx,G.y+dy)){
 let box=null,boxKey='';
 const PORTRAITS={}; // speaker name -> (ctx, frame, shouting) 64 x 64
 function say(name,text,o={}){
+ if(G.auto&&G.auto.menu){if(G.auto.said)G.auto.said.push(fmt(text));return Promise.resolve()}
  return new Promise(res=>{
   if(dlg)clearTimeout(dlg.to);
   text=fmt(text);
@@ -113,9 +114,9 @@ function renderMenu(){const m=menu;if(!m)return;
  if(m.onSel)m.onSel(m.sel);posMenu();const on=menuEl.querySelector('.gi.on');if(on)on.scrollIntoView({block:'nearest'})}
 function posMenu(){if(menuEl.hidden)return;let b=6;const bx=dhost.querySelector('.bld'),tab=bx&&bx.querySelector('.bld-tab');
  if(G.mode==='battle'&&!hud.hidden)b=hud.offsetHeight+8;else if(bx)b=bx.offsetHeight+(tab?tab.offsetHeight:0)+10;menuEl.style.bottom=b+'px'}
-function choose(items,o={}){return new Promise(res=>{menu={items,sel:o.sel||0,res,cancel:o.cancel,title:o.title,desc:o.desc,onSel:o.onSel,inBox:o.inBox};renderMenu()})}
+function choose(items,o={}){if(G.auto&&G.auto.menu)return Promise.resolve(G.auto.menu(items,o));return new Promise(res=>{menu={items,sel:o.sel||0,res,cancel:o.cancel,title:o.title,desc:o.desc,onSel:o.onSel,inBox:o.inBox};renderMenu()})}
 function closeMenu(v){const m=menu;menu=null;menuEl.hidden=true;StudioMenu.unlock(menuEl);if(m.inBox&&box)box.choices=null;if(Bt)Bt.hover=-1;m.res(v)}
-async function ask(name,text,opts){await say(name,text,{keep:true,instant:false});const r=await choose(opts,{cancel:true,inBox:true});hideTB();return r<0?opts.length-1:r}
+async function ask(name,text,opts){if(G.auto&&G.auto.menu){await say(name,text);return G.auto.menu(opts,{title:text})}await say(name,text,{keep:true,instant:false});const r=await choose(opts,{cancel:true,inBox:true});hideTB();return r<0?opts.length-1:r}
 function banner(t){ban.textContent=t;ban.hidden=false;clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,2200)}
 function fade(on){fadeEl.style.opacity=on?1:0;return sleep(340)}
 async function run(fn){G.busy=(G.busy||0)+1;try{await fn()}catch(e){console.error(e)}finally{G.busy--}}
@@ -128,7 +129,7 @@ function applySan(){const m=lead();if(!m)return;const fr=clamp(m.san/m.msan,0,1)
 
 // ================= WORLD =================
 function passable(x,y){const M=G.M;if(x<0||y<0||x>=M.w||y>=M.h)return false;if(BLOCK.has(M.g[y][x]))return false;if(M.npcs.some(n=>(!n.on||n.on())&&n.x===x&&n.y===y))return false;return true}
-function goMap(name,x,y,dir){hud.hidden=true;gEl.classList.remove('battle');G.map=name;G.M=MAPS[name]();StudioMove.place(G,x,y,dir);G.trail=[];
+function goMap(name,x,y,dir){hud.hidden=true;gEl.classList.remove('battle','region');G.map=name;G.M=MAPS[name]();StudioMove.place(G,x,y,dir);G.trail=[];
  banner(G.M.name);saveRun()}
 function update(){
  if(G.mode!=='world')return;
@@ -172,7 +173,7 @@ function lights(M,camx,camy){
 function drawTitleCard(){cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+Math.floor(Math.random()*20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
 // Logic runs at 60 ticks a second on any screen (engine/clock.js); frames with no tick due are skipped.
 const clock=StudioClock.make();
-function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(G.mode==='battle'&&Bt)drawBattle();else if(IV)drawItems();else if(PM)drawParty();else if(G.mode==='world')drawWorld();else drawTitleCard();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
+function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(G.mode==='battle'&&Bt)drawBattle();else if(IV)drawItems();else if(PM)drawParty();else if(G.mode==='region')drawRegion();else if(G.mode==='world')drawWorld();else drawTitleCard();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
 function fit(){const v=StudioMove.fit(gEl,cv);if(!v)return;VW=v.w;VH=v.h;gEl.style.setProperty('--pu',(64*v.boxW/VW)+'px');boxKey='';if(menu&&!menu.inBox){menu.w=0;renderMenu()}posMenu()}
 window.addEventListener('resize',()=>{if(G.active)fit()});
 
@@ -182,14 +183,19 @@ window.addEventListener('resize',()=>{if(G.active)fit()});
 let DICE=null;
 function useDice(saved){DICE=StudioSeed.load(saved);StudioRoll.use(DICE)}
 function saveRun(){const r=G.run;if(!r||r.ended)return;r.party=party;r.lead=G.lead|0;if(DICE)r.streams.dice=DICE.save();
- if(G.M&&G.mode==='world')r.place={map:G.map,x:G.x,y:G.y,dir:G.dir};store.set(B.key('run'),r)}
+ if(G.M&&G.mode==='world')r.place={map:G.map,x:G.x,y:G.y,dir:G.dir};else if(G.mode==='region')r.place=null;store.set(B.key('run'),r)}
 function enter(){G.active=true;scr.classList.add('gaming');sanEl.hidden=false;fit();cancelAnimationFrame(raf);clock.reset();raf=requestAnimationFrame(loop)}
 function leave(){saveRun();G.active=false;PM=null;IV=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;exportEl.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[];StudioRoll.use(null)}
 function quit(){leave();B.goto('title');B.render()}
 // Sign them on: the company drops into the stand-in town (spec 003, 10; Part C replaces it with Harrowford)
-function begin(run){
- G=Object.assign(G,{active:true,run,lead:run.lead|0,flags:{},busy:0,mode:'world',trail:[]});party=run.party;useDice(run.streams.dice);
- enter();const p=run.place||{map:'standin',x:3,y:7,dir:'right'};goMap(p.map,p.x,p.y,p.dir);applySan();saveRun();
+function begin(rn){
+ G=Object.assign(G,{active:true,run:rn,lead:rn.lead|0,flags:{},busy:0,mode:'region',trail:[]});party=rn.party;useDice(rn.streams.dice);
+ if(!rn.region)rn.region=makeRegion(rn);
+ enter();
+ // a street or site the company stood in (Parts C and D), else the region map; a march saved mid-road picks up again
+ const p=rn.place;if(p&&p.map&&MAPS[p.map]){G.mode='world';goMap(p.map,p.x,p.y,p.dir)}else enterRegion();
+ applySan();saveRun();
+ if(rn.region.trip)run(async()=>{await say('','On the road, where you left off.',{auto:900});await walk()});
 }
 function resume(){const r=store.get(B.key('run'),null);if(!r||r.ended||!r.party)return false;begin(r);return true}
 G.onLead=()=>{G.trail=[];saveRun()};
@@ -198,7 +204,7 @@ G.onLead=()=>{G.trail=[];saveRun()};
 async function pauseMenu(){
  held=[];
  for(;;){
-  const r=await choose(['Party','Items','Export','Title','Close'],{cancel:true,title:'MENU · '+G.M.name});
+  const r=await choose(['Party','Items','Export','Title','Close'],{cancel:true,title:'MENU · '+(G.mode==='region'?'THE WITHY MARCH':G.M.name)});
   if(r===0)await openParty();
   else if(r===1)await openItems(G.lead|0);
   else if(r===2)await showExport();
@@ -254,6 +260,7 @@ function input(k){
   else if(k==='a'){const it=menu.items[menu.sel];if(it&&it.dis)return;closeMenu(menu.sel)}
   else if(k==='b'&&menu.cancel){closeMenu(-1)}
   return}
+ if(G.mode==='region'){regionPress(k);return}
  if(k==='select'){mapSelect();return}
  if(G.mode==='world'&&!G.busy&&!G.mv){if(k==='a')run(interact);else if(k==='start')run(pauseMenu)}
 }
@@ -268,7 +275,7 @@ window.addEventListener('pagehide',()=>{if(G.active)saveRun()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&G.active)saveRun()});
 // A canvas tap goes to the battle, the party list or the items page when one is open
 cv.addEventListener('click',e=>{if(!G.active)return;const r=cv.getBoundingClientRect();if(!r.width)return;
- const x=(e.clientX-r.left)*VW/r.width,y=(e.clientY-r.top)*VH/r.height;if(G.mode==='battle'&&Bt)battleTap(x,y);else if(IV)itemsPress(x<VW/3?'l':x>VW*2/3?'r':'b');else if(PM)partyTap(x,y)});
+ const x=(e.clientX-r.left)*VW/r.width,y=(e.clientY-r.top)*VH/r.height;if(G.mode==='battle'&&Bt)battleTap(x,y);else if(IV)itemsPress(x<VW/3?'l':x>VW*2/3?'r':'b');else if(PM)partyTap(x,y);else if(G.mode==='region'&&!menu&&!dlg)regionTap(x,y)});
 
 // ================= NEW RUNS FOR THE CHECKS (spec 003; src/CLAUDE.md rule 5) =================
 // RLG.newRun(seed): makes the first company a seed offers, checks every template's mercs against the rules, signs on
@@ -287,10 +294,20 @@ async function newRun(seedArg){
  return {ok:!problems.length,problems};
 }
 window.RLG={begin,resume,input,hold,newRun,saveRun,get active(){return G.active},
- _t:{start:testStart,fight:(o={})=>{run(async()=>{const r=await battle([Object.assign({},TEST_FOE)],Object.assign({roamer:true,bg:'noon',countdown:{label:'NOON BELL',n:12}},o));G.lastFight=r});return true},
+ _t:{start:testStart,sim,foe:(k,o)=>foe(k,o),fight:(o={})=>{run(async()=>{const r=await battle([Object.assign({},TEST_FOE)],Object.assign({roamer:true,bg:'noon',countdown:{label:'NOON BELL',n:12}},o));G.lastFight=r});return true},
   go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,Bt:()=>Bt,PM:()=>PM,IV:()=>IV,EX:()=>EX,lead:()=>G.lead|0,quit}};
 
 // ================= TEST HOOKS (the automatic checks only) =================
 // A test fight against one stand-in enemy (spec 002). Its numbers are placeholders, not a real card (those come in Part D).
 const TEST_FOE={name:'Stand-in',lvl:1,skulls:1,hp:16,dex:11,hit:45,dmg:'1d4+1',sprite:'noonwife',faceless:true,known:false,foe:true};
 function testStart(seed){if(!G.active)newRun(seed||'0001-A')}
+// Tuning sims (spec 004 onward): the seed's Free Company, fresh each fight, against foes made by mk(), auto-played
+// (Fight, at the first target), with the run's own dice. Returns one row per fight.
+async function sim(seed,mk,n,o={}){
+ await newRun(seed);const base=JSON.parse(JSON.stringify(party)),out=[];
+ G.auto={cmd:()=>0,list:(t,rows)=>Math.max(0,rows.findIndex(r=>!r.dis)),menu:items=>Math.max(0,items.indexOf('Leave')),choice:()=>0};
+ for(let i=0;i<n;i++){party=JSON.parse(JSON.stringify(base));G.lead=0;G.run.party=party;G.run.rations=o.rations==null?9:o.rations;
+  const hp0=party.reduce((a,m)=>a+m.hp,0),r0=G.run.rations;
+  const res=await battle(mk(),Object.assign({},o.battle||{}));
+  out.push({res,downs:party.filter(m=>m.downs).length,hpLost:hp0-party.reduce((a,m)=>a+m.hp,0),taken:(G.lastStats||{}).took|0,netRations:r0-G.run.rations,rounds:(G.lastStats||{}).rounds|0})}
+ G.auto=null;return out}
