@@ -16,7 +16,7 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 - [x] Controls: Select opens companion orders, L opens the bag, R opens the map (Nov 21). See Controls and screens.
 - [x] Studio bible: `controls.md` lets a game give L/R their own jobs, and `ui.md` lets a game with one fixed lead leave out Make lead (Nov 21).
 - [x] The clock: how many in-game minutes a step and each action cost, so a day lands at 10 to 15 minutes of play (Nov 21). See Time and seasons, The clock.
-- [ ] The map generator: how big the starting town and its countryside are, what building and area types exist, and how fast places run dry.
+- [x] The map generator: how big the starting town and its countryside are, what building and area types exist, and how fast places run dry (Nov 21). See The map, Generator.
 - [ ] Needs and SAN numbers: how fast hunger, sleep and SAN drop, what each refills, and what happens at each low point.
 - [ ] Combat numbers: hit chances, damage, weapons, noise per action, and how zombies and raiders choose a move.
 - [ ] Your survivor: each job's skills and starting items, each trait's effect, the want list, the looks parts, the 8 templates, and how fast skills grow with use.
@@ -30,7 +30,7 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 - [ ] Weather and events: the first list, how often each comes, and how sure the warnings are.
 - [ ] Difficulty presets: what Gentle, Standard and Harsh change, in numbers.
 - [ ] Cover: 120 × 80 cover art (`studio-bible/launcher.md`). The Developer adds `game.json` when the game is ready for the shelf.
-- [ ] Spec 001: the first playable slice, cited against this bible. Set Nov 21: survive a week alone. A small generated town, the survivor builder with all 8 jobs, scavenging, hunger and sleep, map combat with the noise ring, day and night, one hideout and the death screen. No companions yet.
+- [ ] Spec 001: the first playable slice, cited against this bible. Set Nov 21: survive a week alone. A small generated town (the houses and highway strip sections), the survivor builder with all 8 jobs, scavenging, hunger and sleep, map combat with the noise ring, day and night, one hideout and the death screen. No companions yet.
 
 ### Bugs
 
@@ -99,6 +99,11 @@ None yet.
 - **Generated each game** (set Nov 21): one town plus its countryside, new every time.
 - **Big enough to last** (set Nov 21): the map has to carry a long one-life game through several seasons.
 - **Sections** (set Nov 21): 5 big walkable sections, each with many places to search: downtown (diner, pharmacy, hardware store, police station), houses (homes, school, church), the highway strip (gas station, motel, big-box store), the farm belt, and the woods and lake. The first slice can use a smaller cut.
+- **Generator** (Keegan, Nov 21). Exact numbers are tuned in playtests.
+  - **Section size:** 60 × 60 tiles, with about 15 to 20 places to search. Walking across takes about an hour, and one section feeds you for about a season.
+  - **What changes each game:** every game has the same 5 section types. The streets, buildings, loot and where each section sits are new every time.
+  - **What comes back:** a looted building stays empty. Only what moves refills. Wild food grows back by season, traders bring new stock, and raider camps fill up with what they take.
+  - **First slice:** the houses and highway strip sections, with one road trip between them.
 - **Getting around** (set Nov 21): walk tile by tile inside a section. Travel between sections on a road map: drive (fast, loud, needs gas), bike or skateboard, or walk (slow, and you may have to camp). Road trips cost time and can bring road events.
 - **Learning the map** (set Nov 21): places start hidden until you see them. A found road map (from a gas station) shows the roads. Your survivor marks places as looted, dangerous or promising.
 - **The world runs down** (set Nov 21). Each building is looted once; food and supplies near your shelter thin out. Food spoils, the power fails and raiders grow bolder. By the second or third season you must travel further and craft more, which costs time and risk, and you may have to move hideouts. That keeps a long game moving.
