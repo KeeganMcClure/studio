@@ -19,7 +19,8 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 - [ ] The map generator: how big the starting town and its countryside are, what building and area types exist, and how fast places run dry.
 - [ ] Needs and SAN numbers: how fast hunger, sleep and SAN drop, what each refills, and what happens at each low point.
 - [ ] Combat numbers: hit chances, damage, weapons, noise per action, and how zombies and raiders choose a move.
-- [ ] Your survivor: each job's skills and starting items, each trait's effect, the looks parts, the 8 templates, and how fast skills grow with use.
+- [ ] Your survivor: each job's skills and starting items, each trait's effect, the want list, the looks parts, the 8 templates, and how fast skills grow with use.
+- [ ] Rumors and late threats: the first rumor list, how the raider leader forms, and horde timing.
 - [ ] Companions: the skill, fear and want lists; how bond is counted (hidden); the order rules; the short-job odds; the first set of arc parts and evening scenes.
 - [ ] Shelter: what can be built, what it costs, and how a night attack plays out.
 - [ ] Crafting and items: the first recipe list and item list, with look-alike brand names.
@@ -90,13 +91,19 @@ None yet.
   - **Four traits:** one good and one bad plain-life trait, plus one good and one bad personality trait. Plain-life traits each have one clear effect (good: Light Sleeper, Strong Back, Steady Hands, Iron Gut; bad: Smoker, Bad Knee, Nearsighted, Hothead). Personality traits shift SAN and how people react to you (good: Brave, Calm, Kind; bad: Jumpy, Greedy, Stubborn). Companions use the same lists. Effects: To do.
   - **Looks from parts:** body type, skin tone, face, hair style and color, clothes colors and age range (young adult to older). They show on the map sprite and the portrait, built from the same parts as companions and zombies.
   - **Templates:** one ready-made survivor per job, with a name (for example Rita, the night-shift nurse), traits and looks already picked. You can change any of it.
+- **A want** (set Nov 21): your survivor also has a want (find family, get home, make something last). It gives a long run a thread with no ending, and rumors can tie into it.
 - **Getting better** (set Nov 21): skills grow with use. There's no XP screen.
 
 ## The map
 
 - **Generated each game** (set Nov 21): one town plus its countryside, new every time.
-- **Big enough to last** (set Nov 21): the map has to carry a long one-life game through several seasons. First pass: a town center ringed by farms, woods, a highway and one or two smaller spots further out (a truck stop, a trailer park, a campground).
+- **Big enough to last** (set Nov 21): the map has to carry a long one-life game through several seasons.
+- **Sections** (set Nov 21): 5 big walkable sections, each with many places to search: downtown (diner, pharmacy, hardware store, police station), houses (homes, school, church), the highway strip (gas station, motel, big-box store), the farm belt, and the woods and lake. The first slice can use a smaller cut.
+- **Getting around** (set Nov 21): walk tile by tile inside a section. Travel between sections on a road map: drive (fast, loud, needs gas), bike or skateboard, or walk (slow, and you may have to camp). Road trips cost time and can bring road events.
+- **Learning the map** (set Nov 21): places start hidden until you see them. A found road map (from a gas station) shows the roads. Your survivor marks places as looted, dangerous or promising.
 - **The world runs down** (set Nov 21). Each building is looted once; food and supplies near your shelter thin out. Food spoils, the power fails and raiders grow bolder. By the second or third season you must travel further and craft more, which costs time and risk, and you may have to move hideouts. That keeps a long game moving.
+- **What pulls you forward** (set Nov 21): rumors from radio calls, notes and survivors point to far places worth the trip (a military depot, a seed vault, a safe zone). Some are real and some are traps. Your survivor's want gives the trip a reason.
+- **Bigger threats grow from the world** (set Nov 21): raider gangs merge under a leader who hunts you by name, and big hordes drift through each season. They grow from what you did, not on a timer.
 - **Vehicles** (set Nov 21): cars are rare and costly. Most are dead; one that runs needs gas, a battery and repairs. It carries a lot fast but is loud. Bikes and skateboards are quieter ways to get around.
 - **Weather and events** (set Nov 21): grounded. Storms, fog, heat waves, blizzards, a horde passing through, a raider push. A working radio (with batteries) warns you a day ahead; without one you read the sky, which is less sure. First list: To do.
 - **Map view** (`studio-bible/art-style.md`): Stardew-style 3/4 top-down, 16 px tiles, building fronts and faces.
@@ -118,17 +125,21 @@ None yet.
 ## Needs
 
 - **Four needs** (set Nov 21): hunger, health, sleep and SAN. No thirst meter: water counts as food.
-- **Hunger:** drops through the day. Eating refills it. Starving drains health.
+- **On screen** (set Nov 21): four small bars in the top bar, plus body cues (a stomach-growl line, yawning, limping, the phantoms).
+- **Hunger:** drops through the day. Eating refills it. Starving drains health every hour.
 - **Health:** wounds, infection, cold and starving drain it. Rest and medicine restore it. At zero you die.
-- **Sleep:** drops while awake. Low sleep makes you slower and worse at everything. Sleeping is safest inside the shelter, with a companion on watch.
-- **SAN** (set Nov 21): a light mechanic, not a big deal. It drifts down with darkness, gore, losing companions and no sleep. Low SAN worsens aim and shows as phantoms and grit, not the studio's pink and cyan edges (see Art, and Conflicts). It never takes control away from you.
+- **Sleep:** drops while awake. Low sleep makes you slower and worse at everything. At zero you pass out where you stand (set Nov 21). Sleeping is safest inside the shelter, with a companion on watch.
+- **SAN** (set Nov 21): a light mechanic, not a big deal. It drifts down with darkness, gore, losing companions and no sleep. Low SAN worsens aim and shows as phantoms and grit, not the studio's pink and cyan edges (see Art, and Conflicts). Only at zero SAN does it take control, and only for a few turns: you freeze or run (set Nov 21).
 - **Joy restores SAN** (set Nov 21): a shared meal, a quiet night on watch together, a companion's arc paying off, a romance scene, finding something that was loved before (a cassette, a photo). People refill what the dark drains, so bonds are part of survival.
+- **Vices** (set Nov 21): cigarettes, booze and pills lift SAN fast, at a cost. Booze makes you clumsy while drunk (worse aim, bigger noise ring), a lit cigarette glows in the dark and can be seen at night, and pills slow you. Lean on one and you crave it. A Smoker starts hooked. Vices trade well.
 
 ## Combat
 
 - **On the map, turn-based** (set Nov 21, after the rough mockup in `mockups/01-combat-compare-rough-v1.png`). There is no separate battle screen. Each step or action is one turn, and zombies, raiders and companions move after you.
 - You see what's coming: the tile each nearby zombie will step to next is marked, and the bottom box shows the target, your weapon and your chance to hit before you swing.
 - **Zombies** (set Nov 21): slow shamblers, deadly in numbers. They follow noise and sight.
+- **Grounded variants** (set Nov 21): all shamblers at heart. Crawlers hide in grass, fresh turns are a bit quicker, bloated ones burst and spread sickness, and frozen ones sit still in winter.
+- **Over a long run** (set Nov 21): old zombies slowly rot and fall apart, but everyone who dies turns, so fresh ones keep coming. Someone you lost may walk back up to you.
 - **Bites** (set Nov 21): a chance of infection. Infection is treatable with rare medicine; untreated, it kills, and the dead come back.
 - **Noise** (set Nov 21): the game has no sound, so noise is drawn as a ring on the map. Every action has a noise size (sneaking, swinging, breaking a door, a gunshot, a car). Zombies inside the ring turn toward it. Guns are strong but loud.
 - **Other people** (set Nov 21): raiders who attack, and traders you can talk and trade with. People fight on the same turn rules as zombies, but they think, take cover and run.
@@ -141,7 +152,8 @@ None yet.
 
 ## Companions
 
-- **Who you play** (set Nov 21): one survivor you control, plus up to 2 companions (a group of 3 at most).
+- **Who you play** (set Nov 21): one survivor you control, plus up to 2 companions who travel with you (a party of 3 at most).
+- **Settlers** (set Nov 21): more people can live at your hideout. They guard, garden and craft, need food, and have their own moods. When you move, each one chooses by mood and bond: come along on a risky trip, stay and keep the old place going (somewhere to return to and trade with), or leave for good.
 - **Simple orders** (set Nov 21): companions act on their own, and you steer them with orders from a quick menu opened with Select: Follow, Hold here, Sneak, Fight. Between orders they follow a short list of rules in order, for example: don't step next to 2 or more zombies, stay inside your noise ring, retreat when badly hurt, never shoot while sneaking, hit whatever threatens you first.
 - **Deaths stick** (set Nov 21): a dead companion is gone. You can meet new people later.
 - **Complex bonds** (set Nov 21). Since you only steer your own survivor, companions carry the depth:
