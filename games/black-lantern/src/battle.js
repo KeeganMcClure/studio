@@ -40,6 +40,10 @@ async function battle(types,o={}){
  // horror on sight: each unnatural enemy type is a horror once per case, for all three, with the brace prompt
  for(const t of [...new Set(types)]){const E=EN[t]||{};if(E.horror)await horror(Object.assign({id:'sight:'+t,sight:true,label:`Seeing ${/^The /.test(E.name)?E.name:'the '+E.name}`},E.horror))}
  if(teamDown())return endBattle('lose');
+ // Seen it before (an arc perk, spec 008): the first fight against each kind of enemy shows its weakness, as Identify
+ const cur=party.find(m=>!m.gone&&m.a.arc&&m.a.arc.perk==='curious');
+ if(cur){cur.a.seenT=cur.a.seenT||[];for(const e of en){if(cur.a.seenT.includes(e.t))continue;cur.a.seenT.push(e.t);G.fs.ident=G.fs.ident||[];if(!G.fs.ident.includes('en:'+e.t))G.fs.ident.push('en:'+e.t);
+  await bsay(fillT(BLS.HOMEW.perkUsed,{p:BLS.HOMEW.perks.curious[0],n:cur.name})+' '+(e.weakLine||''),1400)}}
  if(o.onStart)await o.onStart();
  for(;;){
   Bt.round++;Bt.queue=turnOrder(Bt.first);Bt.first=false;
@@ -150,7 +154,7 @@ const isGun=W=>W&&W.sk!=='Melee'&&!W.thrown&&W.key!=='fists'&&W.sk!=='Athletics'
 // to-hit for a plain Fight, with every modifier (Fight floor 30%; thrown weapons skip the floor)
 function attackChance(m,e,W,mod=0,floor=false){
  let p=skillVal(m.a,W.sk)+(W.hit||0)+rollMod(m,W.sk)+mod;
- if(e&&isFoe(e)){if(chip(e,'exposed'))p+=20;if(e.grapBy&&e.grapBy!==m)p+=20}
+ if(e&&isFoe(e)){if(chip(e,'exposed'))p+=20;if(e.grapBy&&e.grapBy!==m)p+=20;if(e.downedAlly&&m.a.arc&&m.a.arc.perk==='revenge')p+=20}  // Cold head (spec 008)
  if(floor&&!W.thrown)p=Math.max(30,p);return clamp(p,1,99)}
 const fightChance=(m,e)=>attackChance(m,e,m.w,0,true);
 async function doFight(m){
@@ -193,10 +197,13 @@ async function hurtFoe(e,d,src){
  if(e.phase2&&Bt.phase===1&&e.hp<=e.mhp*(e.phase2.at||.5)){Bt.phase=2;e.ph2=true;await bsay(e.phase2.line||fillT(BL_.phase,{e:e.name}),1800)}}
 // damage to an agent: Defend halves (round down), body armor takes 1 off, the frying pan blocks the first hit while Defending
 async function hurtAgent(m,d,src,o={}){
+ // Not on my watch (an arc perk, spec 008): once per fight, an ally takes the hit that would Down this agent, at half damage
+ if(!o.tick&&!o.cover&&d>0&&!m.ko&&m.hp-d<=0){const p=party.find(x=>x!==m&&!x.ko&&!x.gone&&!x.out&&x.a.arc&&x.a.arc.perk==='protect');
+  if(p&&Bt&&!Bt.used['watch'+p.a.id]){Bt.used['watch'+p.a.id]=1;await bsay(fillT(BLS.HOMEW.perkUsed,{p:BLS.HOMEW.perks.protect[0],n:p.name}),900);return hurtAgent(p,Math.floor(d/2),src,{cover:true})}}
  if(!o.tick){if(m.defend&&m.w.key==='pan'&&!m.panUsed){m.panUsed=true;d=0}
   if(m.defend)d=Math.floor(d/2);if(wearing(m,'armor')&&d>0)d=Math.max(0,d-1)}
  if(d>0)m.hurt=G.fs.fight|0;m.hp=Math.max(0,m.hp-d);m.shk=10;if(d>0||!o.tick)floatOn(m,fillT(BL_.dmgFloat,{h:d}),PC.pump);
- if(m.hp<=0&&!m.ko){m.ko=true;m.koT=0;m.wasDowned=true;if(m.grap){m.grap.grapBy=null;m.grap=null}
+ if(m.hp<=0&&!m.ko){m.ko=true;m.koT=0;m.wasDowned=true;if(src&&isFoe(src))src.downedAlly=true;if(m.grap){m.grap.grapBy=null;m.grap=null}
   await bsay(fillT(BL_.downed,{n:m.name}),1000);
   // whoever Downs a snapped teammate makes a Severe violence roll (Losing an agent)
   if(m.out&&src&&src.a&&src!==m)await horror({tier:'severe',kind:'violence',label:`Putting ${m.name} down`},{who:[src]})}}
