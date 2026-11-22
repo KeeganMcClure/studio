@@ -93,7 +93,8 @@ One item per chat, in order, biggest open decisions first. Claude ticks the item
   - [ ] Ready 4 of 5: slice specs, one per part, each citing the bible sections it uses, with a rough mockup only where a place or screen has no art yet, and the tuning check for each fight it adds. The Developer can build each part once its spec merges
     - [x] Part A: new run: Pick a company, the creator for the 6 species and trades, starting kit, run seeds and the dice stream, and the move to the save keys in Tech, Saving (`rl.run`, `rl.ledger`, `rl.draft`) with a save version number
       Done Nov 22: spec 003 (`specs/003-slice-a-new-run.md`). Face parts set in Art, Faces; 33 Draft lines added to the Text Library.
-    - [ ] Part B: the Withy March: the 8-point cut (which points, the second town, roads and days), the region map and the coin marker, travel and rations, camp and inn, road events
+    - [x] Part B: the Withy March: the 8-point cut (which points, the second town, roads and days), the region map and the coin marker, travel and rations, camp and inn, road events
+      Done Nov 22: spec 004 (`specs/004-slice-b-withy-march.md`); your pick, a hand-placed map the seed varies, for the slice only. The slice's March and the Road events table are in World and contracts; 20 Draft lines added to the Text Library.
     - [ ] Part C: towns: the street, the notice board and givers, the contract pool, hiring, shops and the smith, church and rumors, Hue and cry
     - [ ] Part D: contracts on the ground: site maps from room chunks, the 6 slice jobs, battle with Rushlight's numbers, Identify and prep, the pay screen, XP and level picks, trophies and the bestiary
     - [ ] Part E: the end: the Hollow Monk's signs and den, the kill, the ledger screen, the death screen, and what a wipe carries into the next run
@@ -509,7 +510,7 @@ The first batch covers all five kinds below (set Nov 20). Names and picks are Cl
 
 ### The slice's Withy March
 
-Set Nov 22 (spec 004). The vertical slice cuts the Withy March to 8 hand-placed points and 10 roads; the seed varies which side road is hidden, where the roamers are, the regional tic and every roll. The slice is always autumn, since the Noonwife needs a harvest. The mockup's shrine, old field, gibbet and Withy Mill come back with the full region.
+Set Nov 22 (spec 004; your pick: hand-placed for the slice only, while the full game generates each region from its seed). The vertical slice cuts the Withy March to 8 hand-placed points and 10 roads; the seed varies which side road is hidden, where the roamers are, the regional tic and every roll. The slice is always autumn, since the Noonwife needs a harvest. The mockup's shrine, old field, gibbet and Withy Mill come back with the full region.
 
 - **Points:** HARROWFORD (river-crossing town, the start), SAINT EBBE'S (monastery town), Hollin (hamlet with fields and a bell tower: the Noonwife), Sallow End (hamlet: Severa), the charcoal camp (Pell), the osier causeway (the Withy Hag), Crookback (emptied plague village: the Counter), Lowmoor Pit (flooded mine: the Hollow Monk's den). The wool buyer's escort runs the main road between the two towns.
 - **Roads, in days:** Harrowford to Saint Ebbe's 2 and to Hollin 1 (both main); Harrowford to the charcoal camp 1 and to the osier causeway 1; Saint Ebbe's to Sallow End 1 and to Crookback 2; Hollin to Crookback 2; Sallow End to Hollin 3; Crookback to Lowmoor Pit 1; the osier causeway to Lowmoor Pit 2. One of Hollin–Crookback or Sallow End–Hollin is hidden by the seed; the two den roads show when the den is found.

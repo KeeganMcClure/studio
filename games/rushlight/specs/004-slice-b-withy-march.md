@@ -14,7 +14,7 @@ Part A ends with the company signed on and standing in a stand-in town. Part B g
 
 When it's done, you can walk the company from Harrowford around the March, run short of food, camp, get held up at a felled tree, and come back to town to rest. The contract sites are there to visit, but there's no work at them yet: the board, the shops and the jobs come in Parts C and D.
 
-**Waiting on Keegan's pick on the map layout card.** This spec is written for the recommended answer: a hand-placed map that the seed varies. If the pick changes, section 1 changes and the rest holds.
+**Map layout (Keegan's pick, Nov 22):** a hand-placed map that the seed varies, for the slice only. The full game still generates every region from its seed (World and contracts), and that generator is built after the slice.
 
 ## Bible sections this spec relies on
 
