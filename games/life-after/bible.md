@@ -14,7 +14,7 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 
 - [x] Setup: create this bible (Nov 21).
 - [x] Controls: Select opens companion orders, L opens the bag, R opens the map (Nov 21). See Controls and screens.
-- [ ] Studio bible: a `controls.md` and `ui.md` PR letting a game give L/R their own jobs and leave out Make lead (see Conflicts).
+- [x] Studio bible: `controls.md` lets a game give L/R their own jobs, and `ui.md` lets a game with one fixed lead leave out Make lead (Nov 21).
 - [ ] The clock: how many in-game minutes a step and each action cost, so a day lands at 10 to 15 minutes of play. Season length is set (14 days).
 - [ ] The map generator: how big the starting town and its countryside are, what building and area types exist, and how fast places run dry.
 - [ ] Needs and SAN numbers: how fast hunger, sleep and SAN drop, what each refills, and what happens at each low point.
@@ -243,6 +243,6 @@ Found while drafting (Nov 21). Each needs a decision or a separate `studio-bible
 - **Battle screen** (`studio-bible/ui.md`, Battle screen): describes a head-on battle screen. Life After fights on the map and has none. Settled Nov 21: the section now applies only to games that have a battle screen.
 - **Select** (`studio-bible/controls.md`, Buttons): settled Nov 21 (Keegan). Select opens companion orders (Follow, Hold here, Sneak, Fight), and `controls.md` lets a game with no lead to cycle give Select its own job.
 - **Low SAN signal** (`studio-bible/art-style.md`, Color): makes pink and cyan the shared low-SAN mark. Settled Nov 21: `art-style.md` now lets a game show low SAN its own way, and Life After uses phantoms and SAN grit, with cyan for usable things.
-- **Party menu** (`studio-bible/ui.md`, Party menu, added Nov 21 from Black Lantern spec 002): assumes a lead you can swap, with Make lead and Select cycling. Life After keeps one survivor as lead, so it has no Make lead and Select opens orders instead. Settled Nov 21: Life After uses the party cards without Make lead (see Controls and screens). Open: a `ui.md` line saying a game with one fixed lead leaves out Make lead and Select cycling.
-- **L/R** (`studio-bible/controls.md`, Buttons): says L/R step previous and next. Life After uses L for the bag and R for the map (Keegan, Nov 21). Open: a `controls.md` line letting a game give L/R their own jobs, like Select.
+- **Party menu** (`studio-bible/ui.md`, Party menu, added Nov 21 from Black Lantern spec 002): assumes a lead you can swap, with Make lead and Select cycling. Life After keeps one survivor as lead, so it has no Make lead and Select opens orders instead. Settled Nov 21: Life After uses the party cards without Make lead (see Controls and screens). Settled Nov 21: `ui.md` now says a game with one fixed lead leaves out Make lead and Select cycling.
+- **L/R** (`studio-bible/controls.md`, Buttons): says L/R step previous and next. Life After uses L for the bag and R for the map (Keegan, Nov 21). Settled Nov 21: `controls.md` now lets a game give L/R their own jobs.
 

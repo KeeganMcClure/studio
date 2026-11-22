@@ -15,7 +15,7 @@ House rules for every game. Sources: Black Lantern Tech (Screen and controls) an
 | D-pad | Move, move the cursor |
 | A | Confirm, talk |
 | B | Back |
-| L / R | Previous / next (each game says what it steps through) |
+| L / R | Previous / next (each game says what it steps through). A game may give L/R their own jobs in its `bible.md` instead, and use them as previous / next inside its menus (Life After: L opens the bag, R the map, set Nov 21) |
 | Start | Menu |
 | Select | Cycles the lead character on the map (see `ui.md`, Party menu). A game with no lead to cycle gives Select its own job in its `bible.md` (Life After: companion orders, set Nov 21) |
 
