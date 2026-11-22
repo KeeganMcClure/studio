@@ -422,7 +422,8 @@ async function endBattle(res){
  // bleeding out is death, for good (0 HP); the lost agent leaves as at 0 SAN
  for(const m of dead){await loseAgent(m,'bled out');if(!party.length)return'lose'}
  // lasting injuries: every agent Downed during the fight who survived it, Revived or not
- for(const m of hurt){if(party.includes(m))await injuryRoll(m,boss);if(!party.length)return'lose'}
+ for(const m of hurt){if(party.includes(m))await injuryRoll(m,boss||isFinaleCase(G.case));  // +2 in a boss or season finale fight (spec 009)
+ if(!party.length)return'lose'}
  // agents who hit 0 SAN in the fight leave when it ends (Losing an agent)
  for(const m of party.filter(m=>m.out||m.san<=0)){await say('',fillT(SW.zero,{n:m.name}));await loseAgent(m,'0 SAN');if(!party.length)return'lose'}
  // a roamer's drop: 20% from the case's loot table (field.js lootDrop; spec 006 C4)

@@ -7,13 +7,17 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 let html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const parts = [];
-html = html.replace(/<script src="([^"]+)"><\/script>/g, (_, src) => {
+// A part marked data-dev (the Dev-only test season, spec 009) is left out when the launcher builds Release
+// (STUDIO_CHANNEL=release), so it never ships there; every other build keeps it.
+const release = process.env.STUDIO_CHANNEL === 'release';
+html = html.replace(/<script( data-dev)? src="([^"]+)"><\/script>\n?/g, (_, dev, src) => {
+  if (dev && release) return '';
   const file = path.join(root, src);
   if (!fs.existsSync(file)) throw new Error('Missing part: ' + src);
   parts.push(src);
   // keep "</script" inside code from closing the tag early
   const code = fs.readFileSync(file, 'utf8').replace(/<\/script/gi, '<\\/script');
-  return `<script>/* ${src} */\n${code}\n</script>`;
+  return `<script>/* ${src} */\n${code}\n</script>\n`;
 });
 // Local stylesheets (the shared engine/shell.css) are inlined too; Google Fonts stays a link
 html = html.replace(/<link rel="stylesheet" href="([^":]+)">/g, (_, href) => {

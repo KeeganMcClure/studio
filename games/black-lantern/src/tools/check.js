@@ -162,7 +162,10 @@ async function checkBoard(page, name, save, inCase, from) {
   const pause = ms => page.waitForTimeout(ms);
   let s = await season(), before = 0;
   if (name !== 'damaged saves' || s) {
-    if (!s || !s.cases || !s.cases['still-harvest']) return ['no season save with Still Harvest after upgrading'];
+    // saves from the Dev build's test season (spec 009) hold only its stand-in cases; every other save has Still Harvest
+    const test = !!(s && s.cases && Object.keys(s.cases).some(k => /^test-/.test(k)));
+    if (!s || !s.cases || (!s.cases['still-harvest'] && !test)) return ['no season save with Still Harvest after upgrading'];
+    if (test && (!Array.isArray(s.agency) || !Array.isArray(s.past) || !Array.isArray(s.carried) || typeof s.ended !== 'boolean')) problems.push('a season save is missing agency, past, carried or ended');
     if (from < 4 && (s.cases['still-harvest'].state !== 'open' || s.closed !== 0)) problems.push('an upgraded old save should have Still Harvest open and CLOSED 0');
     before = s.closed;
   }
@@ -183,14 +186,14 @@ async function checkBoard(page, name, save, inCase, from) {
   const closed = ((await season()) || {}).closed || 0;
   await page.locator('#list .row', { hasText: 'New game' }).click(); await pause(200);
   const step = await page.evaluate(() => BL.S.step);
-  if (closed > 0 && step !== 'confirm') problems.push('New game with a closed case did not ask first');
-  if (closed === 0 && step !== 'pick') problems.push('New game with nothing closed should go straight to Pick a team');
+  if ((closed > 0 || (((await season()) || {}).season | 0) > 1) && step !== 'confirm') problems.push('New game with a closed case (or past Season 1) did not ask first');
+  if (closed === 0 && (((await season()) || {}).season | 0) <= 1 && step !== 'pick') problems.push('New game with nothing closed should go straight to Pick a team');
   if (step === 'confirm') { await page.locator('#list .row', { hasText: 'Yes' }).click(); await pause(200); }
   await page.locator('#list .row.two').first().click(); await pause(200);
   await page.keyboard.press('Enter'); await pause(400);
   s = await season();
   if (!await board()) problems.push('Your team → START did not open the case board');
-  if (!s || s.cases['still-harvest'].state !== 'open' || s.closed !== 0) problems.push('after New game the board should show Still Harvest open and CLOSED 0');
+  if (!s || !s.cases['still-harvest'] || s.cases['still-harvest'].state !== 'open' || s.closed !== 0) problems.push('after New game the board should show Still Harvest open and CLOSED 0: ' + JSON.stringify(s).slice(0, 200));
   await page.screenshot({ path: path.join(__dirname, '..', 'dist', `check-board-open-${tag}.png`) });
   await page.keyboard.press('x'); await pause(300);
   const back = await page.evaluate(() => ({ step: BL.S.step, team: !!BL.S.team, active: BLG.active }));

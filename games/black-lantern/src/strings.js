@@ -340,6 +340,9 @@ const HOBBY={'Firearms':'shoots skeet on Sundays','Melee':'boxes on weekends','D
 const BOARD={
  season:'SEASON',title:'CASE BOARD',closed:'CLOSED',briefing:'BRIEFING',back:'BACK',stamp:'CLOSED',file:'FILE',
  sticky:['NOBODY','TOUCH MY','CRULLERS.','—BH'],  // Big Hat's sticky note on the cork (mockup)
+ stickyMore:['MORE ON','THE WAY.','—BH'],  // a season with no data file yet (spec 009, step 5)
+ lantern:'LANTERN',finale:'FINALE',agencyPlace:'AGENCY CASE',finalePlace:'SEASON FINALE',files:'{n} files',file1:'1 file',closedFiles:'CLOSED FILES',
+ endTitle:'SEASON {n} CLOSED',endRegular:'Cases closed',endAgency:'Agency cases',endLost:'Agents lost',endStep:'Overstepping',endKeys:'A: next season',
  // New game with a closed case (Skills and menus, Quality of life: Confirm what sticks)
  sure:'Can\'t be undone. Sure?',resetLine:'This starts Season 1 over. Your roster stays.',yes:'Yes, start over',no:'No, back to the title'
 };
