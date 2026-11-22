@@ -61,8 +61,8 @@ async function caseOpening(){
 const townClues=()=>G.clues.filter(c=>['scare','walk','count','posters','bell'].includes(c.id)).length;
 
 // ================= MAPS =================
-const NPCL={
- dot:{skin:1,hair:4,hairC:4,acc:0},pell:{skin:0,hair:3,hairC:5,acc:1},pip:{skin:3,hair:6,hairC:0,acc:0},ross:{skin:2,hair:2,hairC:1,acc:2},vol:{skin:0,hair:3,hairC:0,acc:0}};
+// Each map says its light: 'day', 'dusk' or 'night' (spec 005; Bible, Art, Light and mood). The town is dusk and the maze night,
+// as before. Its art (ground, buildings, pieces, townsfolk and their portraits) is SHA, in cases/still-harvest-art.js.
 
 function buildTown(){
  const W=30,H=20,g=mk(W,H,'.');
@@ -83,11 +83,11 @@ function buildTown(){
  [[1,14],[1,15],[1,16],[28,14],[28,15],[28,16],[27,16],[2,16],[1,18],[28,18]].forEach(([x,y])=>g[y][x]='T');
  const O={};
  const npcs=[
-  {id:'dot',x:6,y:5,dir:'down',look:NPCL.dot,oc:'#d86a8a',talk:talkDot},
-  {id:'pell',x:14,y:6,dir:'down',look:NPCL.pell,oc:'#3a3a5a',talk:talkMayor},
-  {id:'pip',x:21,y:13,dir:'left',look:NPCL.pip,oc:'#e0a030',talk:talkPip},
-  {id:'ross',x:6,y:14,dir:'down',look:NPCL.ross,oc:'#5a6a4a',hat:'#3a3a2a',talk:talkRoss},
-  {id:'vol',x:28,y:9,dir:'left',look:NPCL.vol,oc:'#ff7a1a',sack:true,talk:talkVol,on:()=>G.flags.key&&!G.flags.volDone}
+  {id:'dot',x:6,y:5,dir:'down',talk:talkDot},
+  {id:'pell',x:14,y:6,dir:'down',talk:talkMayor},
+  {id:'pip',x:21,y:13,dir:'left',talk:talkPip},
+  {id:'ross',x:6,y:14,dir:'down',talk:talkRoss},
+  {id:'vol',x:28,y:9,dir:'left',talk:talkVol,on:()=>G.flags.key&&!G.flags.volDone}
  ];
  O['5,3']=async()=>{await say('','The diner door is locked. A sign in the window: GONE TO THE WALK. BACK SOON. BACK SOON. BACK SOON.')};
  O['23,3']=talkChurch;
@@ -100,7 +100,7 @@ function buildTown(){
  O['29,9']=O['29,10']=talkGate;
  O['3,15']=O['4,15']=async()=>{await say('','Deputy Ross\'s cruiser. Cold coffee cups, a shotgun, and a child\'s drawing of a scarecrow taped to the dash. The scarecrow in the drawing is crying.')};
  const warps={'14,19':bounceHome,'15,19':bounceHome};
- return{name:'MARROW CREEK',w:W,h:H,g,O,npcs,warps,dark:false,bg:'town'};
+ return{name:'MARROW CREEK',w:W,h:H,g,O,npcs,warps,light:'dusk',art:SHA,bg:'town'};
 }
 async function bounceHome(){await say('','Big Hat said be home by Sunday. Not yet.');G.dir='up';await stepBack()}
 let MAZE=null;
@@ -135,7 +135,7 @@ function buildMaze(){
  items.forEach(([x,y],i)=>{const k='loot'+i;if(G.flags[k])return;const it=LOOT[i%LOOT.length];g[y][x]=it==='note'?'O':'I';O[x+','+y]=()=>takeLoot(k,it)});
  if(!G.flags.boss){g[11][13]='X';g[10][13]='X'}
  const warps={'0,11':leaveMaze};
- return{name:'THE CORN MAZE',w:W,h:H,g,O,vv,npcs:[],warps,dark:true,bg:'maze',boss:!G.flags.boss,onStep:mazeStep};
+ return{name:'THE CORN MAZE',w:W,h:H,g,O,vv,npcs:[],warps,light:'night',art:SHA,bg:'maze',boss:!G.flags.boss,onStep:mazeStep};
 }
 const MAPS={town:buildTown,maze:buildMaze};
 
@@ -262,5 +262,6 @@ async function ending(){
 }
 
 // ================= ON THE CASE BOARD =================
+// portraits: the townsfolk's talking faces (spec 005), drawn in cases/still-harvest-art.js, loaded right after this file.
 // A on this card plays caseOpening as Big Hat's briefing (spec 004, step 4; Demo 5 replaces it).
-registerCase({id:'still-harvest',card:caseCard,opening:caseOpening});
+registerCase({id:'still-harvest',card:caseCard,opening:caseOpening,portraits:name=>SHA.portraits[name]});

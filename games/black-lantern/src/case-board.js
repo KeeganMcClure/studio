@@ -61,7 +61,7 @@ function board(o={}){
  const cards=boardCards(),first=cards.findIndex(c=>!c.shut);
  CB={from:o.from||'team',sel:first>=0?first:0,stamp:o.stamp?{id:o.stamp,t0:performance.now()+300}:null};
  G=Object.assign(G,{busy:0,mode:'board',scene:null});
- enter();sanEl.hidden=true;ban.hidden=true;
+ enter();ban.hidden=true;
 }
 function closeBoard(){CB=null}
 function boardPress(k){

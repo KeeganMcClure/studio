@@ -93,7 +93,9 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
 - [x] Demo 3 of 6: Case board (season save, open and closed cases), built from the approved case board mockup
 
   Done Nov 21 (spec 004): Your team → START opens the cork board with Still Harvest; A plays the briefing, finishing the case stamps it CLOSED, and New game starts Season 1 over (roster kept). Saves are version 4 with the new `bl.season`.
-- [ ] Demo 4 of 6: Still Harvest rebuild, map and art: its map on the Shared Shelf (then delete legacy-street-kit.js), townsfolk sprites and portraits, night and low-SAN look
+- [x] Demo 4 of 6: Still Harvest rebuild, map and art: its map on the Shared Shelf (then delete legacy-street-kit.js), townsfolk sprites and portraits, night and low-SAN look
+
+  Done Nov 22 (spec 005): the town and corn maze are redrawn on the Shared Shelf in the 3/4 view with nothing moved, the town at dusk and the maze at night, the low-SAN look below 40, the five townsfolk with new map sprites and talking portraits, and the lead card, NIGHT tag and A bubble. The old tile kit and legacy-street-kit.js are gone.
 - [ ] Demo 5 of 6: Still Harvest rebuild, story and play: its text block, branching paths, and fewer but harder fights under the new combat rules
 - [ ] Demo 6 of 6: Debrief and end-of-case improvement (evidence, cover story, skill gains), built from the approved debrief mockup; the finished demo also goes to Drive as a milestone build
 - [x] Turn the hand copies of shelf.js and dialog.js into shared files, so a change on the Shared Shelf or in the Asset Library reaches the game without copying by hand (step 6 of the Claude Code move)
