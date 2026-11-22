@@ -27,7 +27,7 @@ The Text Library and the Asset Library stay on claude.ai. The bible, specs and c
 
 ## The parts
 
-Loaded in this order by `index.html`: the shared `engine/shell.js` (builds the shell around the screen), `engine/input.js` (buttons and keyboard), `engine/move.js` (grid walking, camera, canvas fit) and `engine/clock.js` (logic at 60 ticks a second on any screen), then `strings.js` (shared strings, `window.RLS`), `creator.js` (the creator, portraits, and where presses go, `window.RL`), `engine/shelf.js` (Shared Shelf script, copied unchanged), `agent-sprite.js` (map sprites, `window.RLA`), `engine/dialog.js` (the dialog box, copied unchanged, `window.BLD`), `engine/menu.js` (keeps a list menu one fixed width while the cursor moves, `window.StudioMenu`), `engine.js` (map, dialog, sanity, battle, saves, pause, input, `window.RLG`), then `content/stub.js`.
+Loaded in this order by `index.html`: the shared `engine/shell.js` (builds the shell around the screen), `engine/input.js` (buttons and keyboard), `engine/move.js` (grid walking, camera, canvas fit), `engine/clock.js` (logic at 60 ticks a second on any screen), `engine/light.js` (night pools and the low-SAN sour look, `StudioLight`), `engine/party.js` (lead cycling and the party card list, `StudioParty`), `engine/seed.js` (seeded streams whose position saves, `StudioSeed`), `engine/roll.js` (d100 rolls, crits, fumbles and the result line, `StudioRoll`, pointed at the run's dice stream), `engine/battle.js` (the battle frame, `StudioBattle`) and `engine/patrol.js` (`StudioPatrol`); then `strings.js` (shared strings, `window.RLS`), `creator.js` (the creator and where presses go, `window.RL`), `engine/shelf.js` (Shared Shelf script, copied unchanged), `species-art.js` (the six species' portraits, map sprites, back views and coin tokens from the approved species sheet, `window.RLSP`), `art/creatures.js` and `art/art.js` (the Asset Library's battle sprites, copied unchanged by `tools/import-art.js`, as canvases through `window.RLArt`), `engine/dialog.js` (the dialog box, copied unchanged, `window.BLD`), `engine/menu.js` (`window.StudioMenu`), `engine.js` (map, dialog, sanity, saves, pause, input, `window.RLG`), `battle.js` (Rushlight's battle on the shared frame), `party-menu.js` (who leads, Select, Start → Party), `engine/nearest.js` (`StudioNearest`), `content/text-library.js` (every Text Library line by ID, `window.RL_TEXT`), then `content/stub.js`.
 
 - `index.html` keeps the screen and Rushlight's colors; the shell's layout comes from `engine/shell.css`. `npm run build` inlines the `engine/` files, so `dist/index.html` stays one file.
 - Planned split (Bible, Tech, Code): shell, engine, generator, content data and art in separate parts. Content batches touch only the data parts, so a new creature can't break combat.
@@ -37,10 +37,15 @@ Loaded in this order by `index.html`: the shared `engine/shell.js` (builds the s
 ### Still Black Lantern's (replace as the vertical slice reaches each)
 
 - `creator.js` and `strings.js`: Black Lantern's agent creator, professions, specialties and items. Pick a company replaces them.
-- `engine.js`: the notebook, clues, the maze, the boss intro hook, the case flow (`caseOpening`, `finish` filing to the roster), the game-over text and `startKit`. The seeded generator, contracts and the ledger replace them.
+- `engine.js`: the maze and boss intro hooks and the case flow (`caseOpening`). The seeded generator, contracts and the ledger replace them. The battle, party, dice and darkness code is no longer Black Lantern's (spec 002): it's `battle.js`, `party-menu.js` and the shared `engine/` pieces.
 - `content/stub.js` only exists so the engine boots with no case. It ends at the title and saves nothing.
 - Save keys are `rl.*` (`dev.rl.*` on the site's Dev build, through `RL.key` and `engine/studio.js`), but still Black Lantern's set (`rl.roster`, `rl.draft`, `rl.game`). The slice moves to the Bible's keys (`rl.run`, `rl.ledger`, `rl.draft`) with a save version number, like Black Lantern's `bl.version`.
 - Big Hat, cases, Lantern Boxes, requisition and sound are already gone.
+
+### Shared pieces still to use (spec 002, 6)
+
+- Roamers on site maps walk their beats with `StudioPatrol` (`engine/patrol.js`).
+- The notice board's cursor and the region map's cursor move with `StudioNearest` (`engine/nearest.js`).
 
 ## Rules for every change
 
