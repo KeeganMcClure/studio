@@ -95,7 +95,8 @@ One item per chat, in order, biggest open decisions first. Claude ticks the item
       Done Nov 22: spec 003 (`specs/003-slice-a-new-run.md`). Face parts set in Art, Faces; 33 Draft lines added to the Text Library.
     - [x] Part B: the Withy March: the 8-point cut (which points, the second town, roads and days), the region map and the coin marker, travel and rations, camp and inn, road events
       Done Nov 22: spec 004 (`specs/004-slice-b-withy-march.md`); your pick, a hand-placed map the seed varies, for the slice only. The slice's March and the Road events table are in World and contracts; 20 Draft lines added to the Text Library.
-    - [ ] Part C: towns: the street, the notice board and givers, the contract pool, hiring, shops and the smith, church and rumors, Hue and cry
+    - [x] Part C: towns: the street, the notice board and givers, the contract pool, hiring, shops and the smith, church and rumors, Hue and cry
+      Done Nov 22: spec 005 (`specs/005-slice-c-towns.md`). The slice's towns are in World and contracts; 18 Draft lines added to the Text Library.
     - [ ] Part D: contracts on the ground: site maps from room chunks, the 6 slice jobs, battle with Rushlight's numbers, Identify and prep, the pay screen, XP and level picks, trophies and the bestiary
     - [ ] Part E: the end: the Hollow Monk's signs and den, the kill, the ledger screen, the death screen, and what a wipe carries into the next run
   - [ ] Ready 5 of 5: Text Library sign-off: approve the rows the slice uses (all are Draft today). Drafts work as placeholders while it's built, but the slice's lines are approved before you playtest it
