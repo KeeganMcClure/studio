@@ -115,6 +115,10 @@ async function checkSaves(browser) {
       let want = 0; try { const g = JSON.parse(JSON.parse(save.keys['bl.game'])); if (Number.isInteger(g.lead)) want = g.lead; } catch (e) {}
       const lead = await page.evaluate(() => BLG._t.lead());
       if (lead !== want) problems.push(`seat ${lead + 1} leads, the save had seat ${want + 1}`);
+      // the Last time box (spec 006 A5) opens first: it must name the map and the Case file's Next goal, then close
+      const last = await page.evaluate(() => BLG._t.box());
+      if (!/LAST TIME/.test(last) || !/NEXT/.test(last)) problems.push('no Last time box with the Next goal after Continue');
+      await page.evaluate(() => BLG._t.skipBox()); await page.waitForTimeout(150);
       // Select on the map moves the lead to the next seat, and Start → Party opens and closes
       await page.keyboard.press('Backspace'); await page.waitForTimeout(100);
       const n = await page.evaluate(() => BLG._t.party().length), after = await page.evaluate(() => BLG._t.lead());

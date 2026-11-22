@@ -26,7 +26,7 @@ function faceOf(a,scale){const k=JSON.stringify([a.prof,a.look,scale]);if(!faceC
 
 // ================= WHO LEADS =================
 const statusesOf=m=>(m.st||[]).filter(k=>PST[k]);
-const canLead=i=>{const m=party[i];return !!m&&!m.ko&&m.san>0};  // lost or Downed agents are skipped
+const canLead=i=>{const m=party[i];return !!m&&!m.ko&&m.san>0&&canLeadField(m)};  // lost or Downed agents are skipped, and a flaring phobia won't lead (field.js)
 const lowPulse=m=>m.hp<=3||statusesOf(m).some(k=>PST[k].pulse);  // Quality of life: low-health pulse
 // The lead goes into the checkpoint at once, so it survives closing the game and a Retry from checkpoint.
 function saveLead(){if(!G.cp)return;try{const o=JSON.parse(G.cp);o.lead=G.lead|0;G.cp=JSON.stringify(o);store.set(B.key('game'),G.cp)}catch(e){}}
@@ -45,7 +45,7 @@ function openParty(){return new Promise(res=>{
   count:()=>party.length,lead:()=>G.lead|0,cycle:cycleLead,close:closeParty,pulse:i=>lowPulse(party[i]),
   actions:i=>[{label:PW.makeLead,dis:i===(G.lead|0)||!canLead(i),why:PW.isLead,run:()=>setLead(i)},
    {label:PW.dossier,run:()=>openDossier(i)},
-   {label:PW.give,dis:true,why:PW.giveWhy}],  // greyed until Demo 5 brings item slots (spec 002, Open question 2)
+   {label:PW.give,dis:party.length<2||!gearOf(party[i]).it.length&&!gearOf(party[i]).w.length,why:PW.giveWhy,run:()=>openItems({i,give:true})}],  // spec 006 A1 (field.js)
   paint:{header:paintHeader,card:paintCard,detail:paintDetail},
   colors:{box:PC.deep,border:PC.cream,shadow:'#0a0812',on:PC.cardOn,text:PC.cream,dim:PC.dim,cursor:PC.gold},
   font:VTf(16),headerH:18,cardH:50,gap:4,detailMin:44})};
@@ -74,8 +74,9 @@ function paintCard(c,i,r,st){
  const wp=`WP ${m.wp} · SAN `;pT(wp,x+48,y+33,PC.lav,15);const sx=x+48+pW(wp,15);pT(String(m.san),sx,y+33,m.san<40?PC.pink:PC.lav,15);
  // status chips, right to left; tapping one shows its line in the detail box
  let cr=right;const textEnd=sx+pW(String(m.san),15)+4;
- for(const k of statusesOf(m).reverse()){const s=PST[k],cw=pW(s.chip,13)+6;if(cr-cw<textEnd)break;
-  pR(cr-cw,y+35,cw,11,s.col);pT(s.chip,cr-cw+3,y+34,PC.chipInk,13);st.hit({x:cr-cw-1,y:y+31,w:cw+2,h:17},()=>{PM.list.note=k});cr-=cw+3}
+ const on=Math.floor(performance.now()/400)%2===0;
+ for(const s of chipsOf(m).reverse()){const cw=pW(s.chip,13)+6;if(cr-cw<textEnd)break;
+  if(!(s.flare&&!on)){pR(cr-cw,y+35,cw,11,s.col);pT(s.chip,cr-cw+3,y+34,PC.chipInk,13)}st.hit({x:cr-cw-1,y:y+31,w:cw+2,h:17},()=>{PM.list.note=s.k});cr-=cw+3}
 }
 function paintDetail(c,r,i,st){
  const m=party[i];pBox(r.x,r.y,r.w,r.h,PC.card,PC.cream,2);
@@ -87,9 +88,9 @@ function paintDetail(c,r,i,st){
  const add=(t,col)=>pWrap(t,w,16).forEach(l=>lines.push([l,col]));
  if(st.why)add(st.why,PC.lav);
  else{
-  const ks=statusesOf(m),note=st.note&&ks.includes(st.note)?st.note:null;
-  if(note)add(`${PST[note].name}: ${PST[note].line}`,PC.cream);
-  ks.filter(k=>k!==note).forEach(k=>add(`${PST[k].name}: ${PST[k].line}`,PC.lav));
+  const ks=chipsOf(m),note=ks.find(c=>c.k===st.note);
+  if(note)add(note.line,PC.cream);
+  ks.filter(c=>c!==note).forEach(c=>add(c.line,PC.lav));
   if(!ks.length)add(PW.none,PC.lav);
   if(m.hp<=3)add(PW.lowHP,PC.pump);
  }
@@ -133,7 +134,7 @@ function dossierInfo(m,a,lead,y){
  y+=71;
  // the backstory gets every line the screen has left after the boxes below (134 px); it takes the key hints'
  // room first and is cut short only on screens too small for the whole thing (bug fix: it was cut at 2 lines)
- const fitLines=Math.max(1,Math.floor((VH-4-y-134-4)/12));
+ const fitLines=Math.max(1,Math.floor((VH-4-y-148-4)/12));
  const back=a.backstory?pWrap(a.backstory,228,15,fitLines):[PW.noBack];
  back.forEach((l,k)=>pT(l,8,y+k*12,a.backstory?PC.lav:PC.dim,15));y+=back.length*12+4;
  // HP, WP, SAN with the Breaking Point
@@ -144,12 +145,16 @@ function dossierInfo(m,a,lead,y){
  // the six stats
  BLS.STATS.forEach((k,j)=>{const sx=4+j*39;pBox(sx,y,36,30,PC.card,PC.dim);pT(k,sx+(36-pW(k,14))/2,y+1,PC.lav,14);const v=String(a.stats[k]);pT(v,sx+(36-pW(v,18))/2,y+12,PC.cream,18)});
  y+=34;
- // weapon, to-hit, disorder
- const W=B.WEAP[(profOf(a)||{}).weapon||'handgun']||B.WEAP.handgun,wn=m.w.name.charAt(0).toUpperCase()+m.w.name.slice(1);
- const dice=`${m.w.dmg[0]}d${m.w.dmg[1]}${m.w.bonus?'+'+m.w.bonus:''}`;
- pBox(4,y,232,46,PC.card,PC.dim);
- [[PW.equipped,`${wn} · ${dice}`],[PW.toHit,`${W.skill} ${m.w.skill}%`],[PW.disorder,m.dis||PW.noDis]].forEach(([l,v],k)=>{const ry=y+3+k*14;pT(l,9,ry,PC.lav,15);const t=pFit(v,150,15);pT(t,231-pW(t,15),ry,PC.cream,15)});
- return y+50;
+ // weapon, to-hit, disorders (tap for trigger and flare), Adapted marks as pips (spec 006 A4)
+ const wn=m.w.name.charAt(0).toUpperCase()+m.w.name.slice(1);
+ const dice=`${m.w.dmg[0]}d${m.w.dmg[1]}${m.w.bonus>0?'+'+m.w.bonus:m.w.bonus<0?m.w.bonus:''}`;
+ pBox(4,y,232,60,PC.card,PC.dim);
+ const dz=(m.dis||[]).map(d=>BLS.DISORDERS[d.k].name+(d.s?` (${d.s})`:'')).join(', ');
+ [[PW.equipped,`${wn} · ${dice}`],[PW.toHit,`${m.w.sk||'Firearms'} ${m.w.skill}%`],[PW.disorder,dz||PW.noDis]].forEach(([l,v],k)=>{const ry=y+3+k*14;pT(l,9,ry,PC.lav,15);const t=pFit(v,150,15);pT(t,231-pW(t,15),ry,PC.cream,15)});
+ if((m.dis||[]).length)PM.d.tabs.push({x:4,y:y+30,w:232,h:14,fn:()=>run(async()=>{for(const d of m.dis){const D=BLS.DISORDERS[d.k];await say('',`${D.name}. ${fillT(D.trig,{s:d.s||''})} ${D.flare}`)}})});
+ const ad=m.adapt||{},ry=y+45;pT(PW.adapted,9,ry,PC.lav,15);let px=231;
+ [[PW.adaptH,ad.h|0,ad.H],[PW.adaptV,ad.v|0,ad.V]].forEach(([l,n,done])=>{for(let q=2;q>=0;q--){px-=7;pR(px,ry+5,5,5,done||q<n?PC.mus:PC.plum)}px-=pW(l,14)+3;pT(l,px,ry,PC.lav,14);px-=8});
+ return y+64;
 }
 function dossierSkills(a,y){
  const rows=skillOrder(a),hint=VH-y>=18*13+36?36:0,rh=Math.min(13,Math.floor((VH-4-hint-y)/rows.length));
