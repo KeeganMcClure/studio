@@ -264,10 +264,10 @@ function noise(){roamLoud();const M=G.M;if(M&&M.onLoud)run(M.onLoud)}
 // ================= HOTSPOTS (A2) =================
 // A case's hotspot (M.O[x,y]) is a function (a person, a scripted moment) or data:
 //   {name, look: 'text' | async fn, opts: [...] | fn → [...], used: fn}
-// opts: {use:'force'} a skill unlock (SKILLOPT) with {ok, fail, fumble, crit, mod, once}; {item:'cash', label, run}
+// opts: {use:'force'} a skill unlock (SKILLOPT) with {ok, fail, fumble, crit, mod (a number or fn → number), once}; {item:'cash', label, run}
 // a kit or tool item someone carries; or {label, run} a plain choice. once: an id, so the option goes once it's done.
 function optOf(o,L){
- if(o.use){const S=SOPT[o.use],v=skillVal(L.a,S.skill),lock=v<S.tier,lbl=o.label||S.label,p=chanceOf(L,S.skill,o.mod||0);
+ if(o.use){const S=SOPT[o.use],v=skillVal(L.a,S.skill),lock=v<S.tier,lbl=o.label||S.label,p=chanceOf(L,S.skill,(typeof o.mod==='function'?o.mod():o.mod)||0);  // mod: a number, or a function (spec 013's briefing edges)
   const loud=S.loud&&!(o.use==='force'&&gearOf(L).w.some(w=>itemDef(w.k).w==='crowbar'));
   return{label:lock?`${lbl} · ${S.skill}`:`${lbl} · ${S.skill} ${p}%`,dis:lock,why:lock?fillT(SKW.lacks,{s:S.skill,t:S.tier}):loud?SKW.loud:'',S,p,loud}}
  if(o.item){const h=holderOf(o.item);return{label:o.label||itemDef(o.item).name,dis:!h,why:h?itemDef(o.item).desc:`Nobody carries ${itemDef(o.item).name}.`,h}}
@@ -683,6 +683,9 @@ function pageLines(rules){
   const c=caseById(G.case),next=c&&c.next?c.next():'';
   L.push([MMW.next,PC.mus]);add(next||'—',PC.gold);L.push(['',PC.dim]);
   L.push([`${MMW.clues} (${G.clues.length})`,PC.mus]);if(!G.clues.length)add(MMW.noClues,PC.lav);G.clues.forEach(cl=>add('• '+cl.text,PC.cream));
+  // INTEL (spec 013): Big Hat's answers at the briefing, one line each, below the clues and not counted as clues
+  const tops=(c&&c.intel)||[],got=intelOf().map(k=>tops.find(t=>t.id===k)).filter(Boolean);
+  if(got.length){L.push(['',PC.dim]);L.push([MMW.intel,PC.mus]);got.forEach(t=>add('• '+t.note,PC.cream))}
   L.push(['',PC.dim]);const s=loadSeason(),st=stepsOf();L.push([MMW.overstep,PC.mus]);add(st[clamp(s.overstep|0,0,st.length-1)],PC.cream);
   L.push(['',PC.dim]);L.push(['▸ '+MMW.rules+' (A)',PC.lav]);
  }else{

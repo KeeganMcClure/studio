@@ -51,7 +51,7 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
 // in order, bringing old saves forward before anything reads them. Before upgrading, the old
 // saves are copied to bl.backup. Rules: never change an old step; a new save shape gets a new
 // step and SAVE_V goes up by one. Saves from before numbering count as version 0.
-const SAVE_V=10;
+const SAVE_V=11;
 const fillAgent=a=>{if(!a||typeof a!=='object'||Array.isArray(a))return null;const d=newAgent();
   const o=Object.assign(d,a);o.look=Object.assign(newAgent().look,a.look||{});o.stats=Object.assign(newAgent().stats,a.stats||{});
   if(!o.picks||typeof o.picks!=='object')o.picks={};if(!Array.isArray(o.bonds))o.bonds=[];if(!Array.isArray(o.motives))o.motives=[];return o};
@@ -198,6 +198,13 @@ const UPGRADES={
     const s=store.get(K('season'),null);if(!s||typeof s!=='object'||Array.isArray(s))return;
     if(!Array.isArray(s.agency))s.agency=[];if(typeof s.ended!=='boolean')s.ended=false;if(!Array.isArray(s.past))s.past=[];if(!Array.isArray(s.carried))s.carried=[];
     if(!Array.isArray(s.slots))s.slots=[null,null,null,null,null,null];
+    store.set(K('season'),s);
+  },
+  // 10 → 11 (Nov 22, spec 013 Big Hat's briefing): each case on bl.season.cases may hold intel, the ids of the two
+  // topics asked at its briefing. A case saved before has none, so it plays as if no questions were asked.
+  11(){
+    const s=store.get(K('season'),null);if(!s||typeof s!=='object'||Array.isArray(s)||!s.cases||typeof s.cases!=='object')return;
+    Object.values(s.cases).forEach(e=>{if(e&&typeof e==='object'&&!Array.isArray(e.intel))e.intel=[]});
     store.set(K('season'),s);
   }
 };
