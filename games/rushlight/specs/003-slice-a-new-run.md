@@ -111,7 +111,13 @@ The creator saves into `rl.draft` on every change, so closing the game mid-merc 
 
 ### 6. Faces
 
-Each portrait is the species head from the approved species sheet (Asset Library rushlight-sprites-species-v1) plus face parts. **The parts list waits on Keegan's pick on the face parts card** (Proposed for the bible, below). Until it's set, build the species head with coat shade as the only part.
+Each portrait is the species head from the approved species sheet (Asset Library rushlight-sprites-species-v1) plus three parts (Keegan's pick, Nov 22; now in the bible's Art, Faces):
+
+- **Coat shade:** 3 per species. The species sheet's coat is the middle one; a lighter and a darker shade sit either side of it, from the same palette family.
+- **Mark:** none, a scar, a torn ear or a grey muzzle.
+- **Neckwear:** none, a kerchief or a hood. This is only how the portrait looks; the Hood in the item list is armor and is shown on the gear screen, not here.
+
+That's 36 looks per species. Templates and rerolls pick each part at random from the muster stream; Tweak and the creator's Identity step let the player pick each one. Draw the new parts on the species sheet's own grid and file them in the Asset Library before the build uses them (Tech, Asset Library).
 
 The 40 px head on the seat card is the same portrait scaled down; the map sprite and the battle back view use the merc's coat shade too, so the merc looks the same everywhere.
 
@@ -171,7 +177,7 @@ Until Parts B and C exist, Sign them on drops the company into a **stand-in town
 - Closing mid-creator and reopening picks up the same step. Closing on the stand-in town and reopening loads the same company on the same tile.
 - The version 0 test save opens, is backed up to `rl.backup.v0`, and lands on the title with no run. The version 1 test save opens with its company.
 - Export and then Import of the same code gives the same run.
-- `changelog.md` has a dated entry: what was built, placeholders left (the stand-in town, faces if the parts list isn't set, Draft lines), and any deviations. Tick Part A in the bible.
+- `changelog.md` has a dated entry: what was built, placeholders left (the stand-in town, Draft lines), and any deviations. Tick Part A in the bible.
 
 ## Not in this spec
 
@@ -192,7 +198,7 @@ None. Claude's calls inside the bible's rules, for Keegan to change in review:
 
 ## Proposed for the bible
 
-- **Art → Faces:** the slice's face parts, from Keegan's pick on the card (pending). Added to the bible in this pull request once picked.
+- **Art → Faces:** the slice's face parts (coat shade, mark, neckwear), picked by Keegan on Nov 22 and added to the bible in this pull request.
 
 ## Open questions for the Developer to bring back (don't decide them in code)
 
