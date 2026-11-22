@@ -99,7 +99,8 @@ One item per chat, in order, biggest open decisions first. Claude ticks the item
       Done Nov 22: spec 005 (`specs/005-slice-c-towns.md`). The slice's towns are in World and contracts; 18 Draft lines added to the Text Library.
     - [x] Part D: contracts on the ground: site maps from room chunks, the 6 slice jobs, battle with Rushlight's numbers, Identify and prep, the pay screen, XP and level picks, trophies and the bestiary
       Done Nov 22: spec 006 (`specs/006-slice-d-contracts.md`; two builds: D1 the rules, proved on Pell's camp; D2 the six jobs), 30 Draft text lines, and rough mockups of the four other contract sites, approved Nov 22.
-    - [ ] Part E: the end: the Hollow Monk's signs and den, the kill, the ledger screen, the death screen, and what a wipe carries into the next run
+    - [x] Part E: the end: the Hollow Monk's signs and den, the kill, the ledger screen, the death screen, and what a wipe carries into the next run
+      Done Nov 22: spec 007 (`specs/007-slice-e-the-end.md`). The den at Lowmoor Pit, the kill and the slice's end, burial, the death and ledger screens, and the wipe; 23 Draft lines added to the Text Library.
   - [ ] Ready 5 of 5: Text Library sign-off: approve the rows the slice uses (all are Draft today). Drafts work as placeholders while it's built, but the slice's lines are approved before you playtest it
 - [ ] Shared engine catch-up (spec 002): Rushlight onto the shared battle frame, party menu, rolls and night light, plus the new seeded dice stream in `engine/`. Before slice part A
 - [ ] Vertical slice: one short seeded run, start to finish.
