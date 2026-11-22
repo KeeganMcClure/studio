@@ -53,12 +53,13 @@ function gamesIn(repo, channel) {
 
 // A game with its own build (src/package.json "build") ships src/dist/.
 // Otherwise its src/index.html is bundled into one file.
-function buildGame(g, outDir) {
+function buildGame(g, outDir, channel) {
   const src = path.join(g.dir, 'src');
   const pkg = path.join(src, 'package.json');
   fs.mkdirSync(outDir, { recursive: true });
   if (fs.existsSync(pkg) && (JSON.parse(fs.readFileSync(pkg, 'utf8')).scripts || {}).build) {
-    execSync('npm run build', { cwd: src, stdio: 'inherit' });
+    // the game's build hears which channel it's for, so it can leave Dev-only parts out of Release
+    execSync('npm run build', { cwd: src, stdio: 'inherit', env: { ...process.env, STUDIO_CHANNEL: channel } });
     copyDir(path.join(src, 'dist'), outDir);
   } else {
     fs.writeFileSync(path.join(outDir, 'index.html'), bundle(path.join(src, 'index.html')));
@@ -84,7 +85,7 @@ function main() {
   if (a.release) channels.push(['release', a.release, '']);
   for (const [ch, repo, base] of channels) {
     for (const g of gamesIn(path.resolve(repo), ch)) {
-      buildGame(g, path.join(out, base + g.id));
+      buildGame(g, path.join(out, base + g.id), ch);
       fs.mkdirSync(path.join(out, base + 'covers'), { recursive: true });
       fs.copyFileSync(path.join(g.dir, 'assets', g.cover), path.join(out, base + 'covers', g.id + '.js'));
       shelf[ch].push({ id: g.id, title: g.title, savePrefix: g.savePrefix });

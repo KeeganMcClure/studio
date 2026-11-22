@@ -101,7 +101,7 @@ function closeMenu(v){const m=menu;menu=null;menuEl.hidden=true;if(m.inBox&&box)
 async function ask(name,text,opts){await say(name,text,{keep:true,instant:false});const r=await choose(opts,{cancel:true,inBox:true});hideTB();return r<0?opts.length-1:r}
 function banner(t,ms=2200){ban.textContent=t;ban.hidden=false;clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,ms)}
 function fade(on){fadeEl.style.opacity=on?1:0;return sleep(340)}
-async function run(fn){G.busy=(G.busy||0)+1;try{await fn()}catch(e){console.error(e)}finally{G.busy--}}
+async function run(fn){G.busy=(G.busy||0)+1;try{await fn()}catch(e){console.error(e)}finally{G.busy=Math.max(0,(G.busy||0)-1)}}  // never below 0: a case's ending opens the board, which resets it
 function clue(id,text){if(G.clues.some(c=>c.id===id))return;G.clues.push({id,text});banner('NOTEBOOK UPDATED')}
 
 // ================= SANITY =================
@@ -405,7 +405,7 @@ function resume(){const s=store.get(B.key('game'),null);if(!s)return false;
 // ================= INPUT =================
 function input(k){
  if(!G.active)return;
- if(CB){boardPress(k);return}
+ if(CB&&!dlg&&!menu){boardPress(k);return}  // the board's own scenes (an agency unlock, the season end) use the dialog box
  if(dlg){if(k==='a'||k==='b'){if(!dlg.done)finishType();else closeDlg()}return}
  if(menu){const n=menu.items.length;
   if(k==='up'){menu.sel=(menu.sel-1+n)%n;renderMenu()}
@@ -428,6 +428,6 @@ menuEl.addEventListener('click',e=>{const el=e.target.closest('.gi');if(!el||!me
 // With no checkpoint (only agents on the roster) the title screen opens as usual.
 window.addEventListener('load',()=>{if(window.Studio&&Studio.continued&&!G.active)resume()});
 window.BLG={start,resume,input,hold,recruitBuilt:a=>recruitBuilt(a),get active(){return G.active},
- board:o=>board(Object.assign({stamp:o&&o.from==='finish'?B.S.stampCase:null},o)),seasonClosed:()=>seasonClosed(),newSeason:()=>newSeason(),_t:{hp:(i,n)=>{party[i].hp=n},status:(i,k)=>{const m=party[i];m.st=m.st||[];if(!m.st.includes(k))m.st.push(k)},
+ board:o=>board(Object.assign({stamp:o&&o.from==='finish'?B.S.stampCase:null},o)),seasonClosed:()=>seasonClosed(),seasonNo:()=>loadSeason().season,newSeason:()=>newSeason(),_t:{hp:(i,n)=>{party[i].hp=n},status:(i,k)=>{const m=party[i];m.st=m.st||[];if(!m.st.includes(k))m.st.push(k)},
  box:()=>box&&box.text||"",skipBox:()=>{if(dlg){if(!dlg.done)finishType();if(dlg)closeDlg()}},hot:h=>run(()=>hotspot(h,'test')),run:fn=>run(()=>fn({party,G,lead,horror,trigger,addStatus,pickup,loseAgent,say})),scr:()=>SCR&&SCR.kind,lead:()=>G.lead|0,fight:t=>run(async()=>{const r=await battle(t);if(r==='lose')await gameOver()}),go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,boss:()=>run(bossIntro),finish:()=>finish(),board:()=>CB,
  bt:()=>Bt?{ui:Bt.ui?Bt.ui.kind:null,sel:Bt.ui?Bt.ui.sel:null,rows:Bt.ui&&Bt.ui.rows?Bt.ui.rows.map(r=>r.label+(r.dis?'*':'')):null,round:Bt.round,msg:Bt.msg,en:Bt.en.map(e=>[e.name,e.hp,e.dead||e.gone]),party:party.map(m=>[m.name,m.hp,m.wp,m.san,!!m.ko,!!m.dead])}:null}};
