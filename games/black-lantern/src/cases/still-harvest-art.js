@@ -55,12 +55,14 @@ const VICTIM=[
   strawman(R,P,E,C,big,{pole:false,legs:false,shirt:'#5a6a7a',pants:'#4a4038',
    head:(R,P,C)=>{for(const x of[20,28]){C(x,12,3.6,'#2a2030');C(x,12,2.4,'#bfe3ff');C(x,12,1.2,ST)}R(23,12,2,1,'#2a2030');R(20,17,9,1,ST)}});
   R(15,46,18,6,'#4a4038',{sh:3});R(15,52,6,10,'#4a4038');R(27,52,6,10,'#4a4038');R(14,61,8,3,STRAW);R(26,61,8,3,STRAW)}}];
-// Deputy Ross's cruiser, two tiles wide, nose to the left
-const CRUISER={size:[70,46,3,6],anchor:[32,40],lights:[],draw({R,P,big}){const W='#e8e8e8',BK='#1b1b2a',GL='#5a7ab0';
- R(14,2,36,14,W,{sh:6});R(17,5,14,9,GL);R(33,5,14,9,shade(GL,-.15));R(17,5,14,2,shade(GL,.35));R(22,-2,10,4,'#d33');R(32,-2,10,4,'#35f');
- R(-2,16,66,16,W,{sh:8});R(-2,21,66,4,BK);R(28,16,1,16,shade(W,-.3));R(36,26,4,4,'#d6a43a');
- R(-3,18,3,4,'#ffd166');R(63,18,2,4,'#c0392b');R(-3,29,68,3,shade(W,-.4));
- for(const x of[6,46]){R(x,27,12,12,'#111014');R(x+3,30,6,6,'#9aa0a6');R(x+5,32,2,2,'#4a4a52')}}};
+// Deputy Ross's cruiser, nose to the left. Car-sized (about 52 x 27 px, twice a person's length); it still blocks only its two tiles
+const CRUISER={size:[112,64,4,8],anchor:[52,54],lights:[],draw({R,P,big}){const W='#e8e8e8',BK='#1b1b2a',GL='#5a7ab0',GD=shade(GL,-.15);
+ R(42,-4,10,5,'#d33');R(52,-4,10,5,'#35f');R(40,1,24,2,'#2a2a34');
+ R(26,3,54,19,W,{sh:8});R(30,6,22,13,GL);R(55,6,21,13,GD);R(30,6,22,3,shade(GL,.35));R(55,6,21,3,shade(GD,.3));R(52,6,3,13,W);
+ R(-2,22,108,20,W,{sh:12});R(-2,22,108,2,shade(W,.2));R(-2,29,108,5,BK);R(52,22,1,20,shade(W,-.3));R(26,22,1,20,shade(W,-.25));
+ R(58,35,6,6,'#d6a43a');R(60,34,2,8,'#d6a43a');R(30,25,6,2,shade(W,-.35));R(62,25,6,2,shade(W,-.35));
+ R(-3,24,4,5,'#ffd166');R(102,24,4,5,'#c0392b');R(-4,40,112,3,shade(W,-.45));
+ for(const x of[10,76]){R(x-2,36,20,4,shade(W,-.5));R(x,38,16,16,'#111014');R(x+4,42,8,8,'#9aa0a6');R(x+7,45,2,2,'#4a4a52')}}};
 // the cider stand: a folding table under a striped awning, two tiles wide
 const CIDER={size:[66,64,1,10],anchor:[32,56],lights:[],draw({R,P}){const W='#f4f1e8',RD='#c0392b',WD='#5a3e2b';
  R(3,4,3,52,WD);R(58,4,3,52,WD);
