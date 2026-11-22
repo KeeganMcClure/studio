@@ -395,6 +395,10 @@ Code in Rushlight's Asset Library as rushlight-mockups-site-v1, rushlight-mockup
 
 ![Species sheet rough v1: mouse, rat, hare, hedgehog, badger and fox as portrait, map sprite and battle back view](mockups/27-species-sheet-rough-v1.png)
 
+**Your review (Nov 22): v2.** The badger and fox faces looked odd, the back of the hedgehog's head was odd, and the portraits had no necks. In v2, every portrait has a neck under the jaw going down into the collar. The badger has a white wedge face, and its two dark stripes run from the ears down through the eyes and narrow toward the snout. The fox has a narrower head with an orange bridge down the snout and white cheeks below the eyes. The hedgehog's back view is a round head of streaked spines with dark tips, ending in a short collar of spines over the shoulders. Drawing code: `mockups/28-species-sheet-rough-v2.html`.
+
+![Species sheet rough v2: necks on every portrait, new badger and fox faces, new hedgehog back view](mockups/28-species-sheet-rough-v2.png)
+
 **Mockups to come:** none. The battle screen, town street and region map are all redrawn inside the GBA shell (set Nov 20, see Tech and To do). Every new screen still gets a still mockup before it's built.
 
 **Drawing the unnatural (set Nov 20, from the creature art study).** Each unnatural thing uses 2–4 of these rules, and no two creatures use the same pair, so no two are wrong in the same way. They replace the first draft.
