@@ -23,7 +23,7 @@ Rough picture for the board question: [`009-season-board-rough-v1.png`](009-seas
 | Source | Section | What it sets |
 | --- | --- | --- |
 | `games/black-lantern/bible.md` | Story → Agency arc | Seasons each have their own board; cases in any order; agency cases unlock after a set number of closed cases; the last is the finale; agency cases don't count toward the next unlock; numbers live in the secret arc file |
-| `games/black-lantern/bible.md` | Story → Case board | Cork board of pinned cards; description box; closed cases stamped CLOSED; 5 spots built, a 6th when a 6th case is pitched; the plain list past 6 open cases |
+| `games/black-lantern/bible.md` | Story → Case board | Cork board of pinned cards; description box; closed cases go to a CLOSED pile; always six open regular cases, the rest waiting in a queue (set Nov 22) |
 | `games/black-lantern/bible.md` | Story → Overarching story | The agency arc advances by how many cases you've closed, not which |
 | `games/black-lantern/bible.md` | Systems → Gameplay loop | Game over: new team, the case reopens, the arc keeps its progress |
 | `games/black-lantern/bible.md` | Systems → Personal arcs | An arc still running when a season ends finishes first; the new season's arc starts after it; 9 new arcs each season |
@@ -54,19 +54,20 @@ From the changelog and specs 004, 007 and 008, once they're built:
 - The board reads the season's cases from it. A case file that's loaded but not listed in the current season doesn't pin (so a later season's case can ship early without showing).
 - Still Harvest is listed in Season 1 as a regular case. Whether the demo case counts toward Season 1's unlocks is the arc file's call.
 
-### 2. The board for a full season (Keegan picked Nov 22: closed cases go to a pile)
+### 2. The board for a full season (Keegan picked Nov 22: closed cases go to a pile, and there are always 6 open)
 
-- **Six card spots** for open cases, two rows of three, as in the rough. Cards fill them in file order, regular and agency cases alike.
-- **Closed cases leave their spot** for a **CLOSED pile** in the bottom-left corner: a short stack of greyed cards with the rust CLOSED stamp and the count. When a case closes, its card stamps CLOSED in its spot as today (spec 004, step 5), then slides onto the pile, and the next open case, if any, takes the free spot.
+- **Always six open regular cases.** The board has six card spots, two rows of three, as in the rough. The season's regular cases wait in a hidden queue, and the board shows the first six. When one closes, the next case in the queue pins into the free spot, so six stay open until the queue runs out. Nothing shows how many are waiting.
+- **The queue order** is the season data file's order for now. Whether it's shuffled per season is Season readiness, step 2 (the Ideas inbox's "Random cases each season"); this spec only needs the queue to read its order from one place so that change is small.
+- **Closed cases go to a CLOSED pile** in the bottom-left corner: a short stack of greyed cards with the rust CLOSED stamp and the count. When a case closes, its card stamps CLOSED in its spot as today (spec 004, step 5), slides onto the pile, and the next case from the queue pins on in its place with a short drop.
 - **A on the pile** opens `CLOSED FILES` in the Lantern Bust style: one row per closed case, newest first, with its file or LANTERN number, title and town. B closes it. How each ended stays off the board, as in spec 004.
-- **The bottom row:** the CLOSED pile, the memorial plaque (spec 007), and Big Hat's sticky note. The cursor reaches the pile and the plaque like cards. The sticky note isn't selectable.
-- **The plain list** (spec 004's mockup option B) takes over only when more than 6 cases are open at once (Story → Case board). It lists open cases, then a `CLOSED FILES` row and a `MEMORIAL` row at the bottom.
+- **The bottom row:** the CLOSED pile, the memorial plaque (spec 007), and Big Hat's sticky note, which an open agency case takes over (step 3). The cursor reaches the pile, the plaque and an agency case like cards. The sticky note isn't selectable.
+- **No plain list.** With never more than six regular cases and one agency case open, the board always fits, so the plain list (spec 004's option B) is retired.
 - **Screen sizes:** at 320 × 480 the cork gives up height first, as in spec 004; the six spots and the bottom row always show.
 
 ### 3. Agency cases
 
-- **Unlocking:** after each closed regular case, once the home phase ends and the board opens, the game checks the season data. When `closed` reaches an agency case's unlock count, a short scene plays first: Big Hat in the Lantern Bust box, a line or two from the season data, and the black folder pins on with a thud. Only one unlock plays per board visit; if two are due, the second plays on the next visit.
-- **Never early:** an agency case isn't on the board, the plain list or anywhere else before it unlocks. Nothing hints at how many there are or when they come.
+- **Unlocking:** after each closed regular case, once the home phase ends and the board opens, the game checks the season data. When `closed` reaches an agency case's unlock count, a short scene plays first: Big Hat in the Lantern Bust box, a line or two from the season data, and the black folder pins on with a thud in the bottom row's right-hand spot, covering Big Hat's sticky note. Only one agency case is open at a time: if another is due while one is open, it waits until that one closes, then plays its unlock on the next board visit.
+- **Never early:** an agency case isn't on the board or anywhere else before it unlocks. Nothing hints at how many there are or when they come.
 - **Counting:** closing an agency case doesn't raise `closed` (Story → Agency arc). The header's `CLOSED n` keeps counting regular cases only; a closed agency case still goes on the pile.
 - **The card**, as in the rough: a black folder card with cream text, `LANTERN nn` where a regular card says `FILE nn`, the town in rust, a dark red pin and a red wax seal with a small lantern in the bottom corner. The description box's place line reads `AGENCY CASE · <place>`.
 - **Everything else** is a normal case: briefing, play, debrief, home phase, game over reopening it.
@@ -86,7 +87,7 @@ When the finale's debrief and home phase are done, instead of the board:
 - **What resets:** overstepping goes back to Clean (Skills and menus → Overstepping). Every agent's survived-case count for arc beats starts over at 0 (spec 008, A2), except for an arc still running (next bullet).
 - **What carries:** the roster, the party, the backpack, the memorial, every agent's SAN, disorders, Bonds, injuries and skills, and Sabbaticals in progress (their remaining cases count down in the new season).
 - **Running arcs finish first** (Personal arcs): an agent whose arc hasn't reached beat 3 keeps counting toward it in the new season. After beat 3 plays, their next arc starts at beat 1 from the new season's arcs and counts from their next case.
-- **Regular cases left open** when the finale closes carry over to the next season's board as open cases, pinned before the new season's cases (Keegan picked Nov 22). They count toward the new season's `closed` when closed there.
+- **Regular cases left open** when the finale closes carry over to the next season's board as open cases, first in its queue, ahead of the new season's cases (Keegan picked Nov 22). They count toward the new season's `closed` when closed there.
 - **The next season:** `season` rises by one and the new board opens from the next season data file. If there's no next season file yet, the board opens as `SEASON 2 · CASE BOARD` with only the carried-over cases (if any) and Big Hat's sticky note changed to `MORE ON THE WAY. —BH`. Continue still works; New game still starts Season 1 over.
 
 ### 6. The save (Tech → Saving; `studio-bible/saves.md`)
