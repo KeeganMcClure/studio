@@ -79,17 +79,32 @@ One item per chat, in order, biggest open decisions first. Claude ticks the item
 - [x] Creature art for the slice, batch 1 (still images): battle sprites for the Noonwife (lifted), the Counter and the Hollow Monk, each checked in the battle frame (Nov 21; the Counter and the Monk redrawn in full color as v2 and approved). Picks: battle sprites only, two batches, Severa the owl is the slice's beast job, Folk enemies come from the folk sprite parts.
 - [x] Creature art for the slice, batch 2 (still images): battle sprites for the Corpse-candle, the Lampwalkers, Severa the owl, the hedge cat, the rooks and the Withy Hag's willow-and-skull mask, premade check first, in full color like the v2s, each checked in the battle frame.
 
-  Done Nov 21: all six drawn and filed in the Asset Library and approved Nov 21 as build references. Art has the write-up and three of the six battle images; the Corpse-candle, Severa and Withy Hag images are in the Asset Library and still need adding to Art.
+  Done Nov 21: all six drawn and filed in the Asset Library and approved Nov 21 as build references. Art has the write-up and three of the six battle images; the Corpse-candle, Severa and Withy Hag images were added to Art on Nov 22.
 - [x] Set up the build in Claude Code (set Nov 21), before the vertical slice, so Rushlight's code starts there instead of in a chat. Do it after Black Lantern moves its build to Claude Code (its To do has the item). Design, mockups, the Bible and the Text Library stay where they are; the build copies from them. Steps: (1) fork Black Lantern's repo for the kept parts (input, shell, dialog box, portraits, battle engine, stat, roll and SAN code); (2) decide whether those parts stay forked (Tech's rule now, so neither game can break the other) or become shared files both games read; (3) copy the Tech and Process rules into the repo's CLAUDE.md (edit, never rewrite; the playtest checklist; backups; a Changelog line every task), the same protocol as Black Lantern; (4) set up the bundle step that joins the parts into one HTML file; (5) set up automatic checks for the playtest checklist, (320 × 480, 375 × 550 and 375 × 667, a run saved mid-way still loads, no errors, and new runs on 3 seeds); (6) builds reach the iPhone SE as Black Lantern's do (decided Nov 21): the bundle step's one HTML file is published to the same Rushlight artifact each time, so the link and saves stay.
 
   Done Nov 21: private repo KeeganMcClure/rushlight, a clean copy with no history; your picks, all A: stays forked, clean copy, set up in this chat. CLAUDE.md lists what is still Black Lantern's for the slice to replace. Not published yet; the Rushlight artifact is made at the slice's first build.
+- [ ] Development readiness (set Nov 22): the paper work that lets the Developer build the vertical slice below. In order, since each step unblocks the ones after it; tick this when all five are done
+  - [x] Ready 1 of 5: tidy this bible for the studio repo. Tech (Code, Builds) and Process still describe the old setup: code forked and never shared, a changelog kept inside the bible, and bible tab backups to Drive. Point them at `changelog.md`, `engine/` and Dev on the launcher; add the Corpse-candle, Severa and Withy Hag battle images to Art (they're in the Asset Library); fix the Text Library line in Bugs. Also tell the Developer that `src/CLAUDE.md` still names the frozen Build Bible doc as the source of truth
+    Done Nov 22: Tech, Process and Ported rules now describe the studio repo (shared engine, builds on the launcher's Dev shelf, `changelog.md`, git history as the backup); the three creature pictures are in Art; VO-BOARD-2 is fixed in the Text Library. The note for the Developer went to you in the project thread.
+  - [x] Ready 2 of 5: shared engine catch-up spec. Rushlight moves onto the studio's shared battle frame, party menu, rolls, night light, patrols and cursor (`engine/battle.js`, `party.js`, `roll.js`, `light.js`, `patrol.js`, `nearest.js`), which Black Lantern already uses, before the slice is built on its own old copies. The spec says where Rushlight's rules differ (two weapons, era arms, the Hunch and the rest of Combat)
+    Done Nov 22: spec 002 (`specs/002-shared-engine-catch-up.md`), which also adds a shared seeded dice stream to `engine/`. Its build is the Shared engine catch-up item below the Development readiness list.
+  - [ ] Ready 3 of 5: species sheet mockup: the slice's 6 species (mouse, rat, hare, hedgehog, badger, fox), each as a map sprite, a battle back view and a portrait head part, at their heights in Art, Scale. Premade check first
+  - [ ] Ready 4 of 5: slice specs, one per part, each citing the bible sections it uses, with a rough mockup only where a place or screen has no art yet, and the tuning check for each fight it adds. The Developer can build each part once its spec merges
+    - [ ] Part A: new run: Pick a company, the creator for the 6 species and trades, starting kit, run seeds and the dice stream, and the move to the save keys in Tech, Saving (`rl.run`, `rl.ledger`, `rl.draft`) with a save version number
+    - [ ] Part B: the Withy March: the 8-point cut (which points, the second town, roads and days), the region map and the coin marker, travel and rations, camp and inn, road events
+    - [ ] Part C: towns: the street, the notice board and givers, the contract pool, hiring, shops and the smith, church and rumors, Hue and cry
+    - [ ] Part D: contracts on the ground: site maps from room chunks, the 6 slice jobs, battle with Rushlight's numbers, Identify and prep, the pay screen, XP and level picks, trophies and the bestiary
+    - [ ] Part E: the end: the Hollow Monk's signs and den, the kill, the ledger screen, the death screen, and what a wipe carries into the next run
+  - [ ] Ready 5 of 5: Text Library sign-off: approve the rows the slice uses (all are Draft today). Drafts work as placeholders while it's built, but the slice's lines are approved before you playtest it
+- [ ] Shared engine catch-up (spec 002): Rushlight onto the shared battle frame, party menu, rolls and night light, plus the new seeded dice stream in `engine/`. Before slice part A
 - [ ] Vertical slice: one short seeded run, start to finish.
 
   Scope (set Nov 21, lean): the Withy March cut to about 8 points and 2 towns; a pool of 6 (the Noonwife hunt, the Counter hunt, one beast job (Severa the owl, set Nov 21), the Withy Hag, 2 people jobs (Pell the poacher, the wool buyer)) and the Hollow Monk. In: food, camp and inn, Hue and cry, XP, hiring, trophies, the bestiary. Out: the feud and war contracts, magic, bargainers, debt, the Crown's people, retiring, Quarters, arcs. The run ends at the Monk's death on a ledger screen.
 
 ### Bugs
 
-Text Library: VO-BOARD-2 and any PJ-PELL row that says alive pays double should say alive pays more; bounties pay +50% alive (set Nov 21). Fix when the Text Library is next opened.
+- [x] Text Library: VO-BOARD-2 and any PJ-PELL row that says alive pays double should say alive pays more; bounties pay +50% alive (set Nov 21). Fix when the Text Library is next opened.
+  Fixed Nov 22: VO-BOARD-2 now reads "Alive pays more." No PJ-PELL row said double.
 
 ### Ideas inbox
 
@@ -238,7 +253,7 @@ Every Black Lantern system and what happens to it here, grouped by the Black Lan
 | Black Lantern rule | Verdict | Why |
 | --- | --- | --- |
 | Screen and controls: D-pad, A, B, L/R, Start; fits 375 × 550 and 320 × 480 | Carry | Same phone; the GBA shell carries too, reversing the first full-screen plan (set Nov 20). |
-| Code: one self-contained file, window.BL and window.BLG | Change | Set Nov 20: forked into Rushlight's own file (window.RL and window.RLG); since Nov 21 the shell, input and movement are shared with Black Lantern through the studio's engine/ (spec 001), with both games' checks run on every engine change; the source lives in parts bundled into one self-contained HTML. Seeded generation is new (see Tech). |
+| Code: one self-contained file, window.BL and window.BLG | Change | Set Nov 20: Rushlight's own parts (window.RL and window.RLG) in the studio repo; since Nov 21 anything both games use is shared with Black Lantern through the studio's engine/ (spec 001 first), with both games' checks run on every engine change; the parts are bundled into one self-contained HTML. Seeded generation is new (see Tech). |
 | Game file split into parts | Carry | Same reason. |
 | Saving: one slot, autosave, save on close | Carry | Already roguelike. Set Nov 20: also autosaves every screen and battle round, saves the dice position, and keeps the ledger and bestiary in a save of their own that survives a wipe. |
 | Asset Library | Change | Rushlight keeps its own library. Black Lantern's Shared shelf sat inside its own library; generic art now goes on a standalone Shared Shelf page any game reads, add-only with numbered versions, so no game can break another (set Nov 20, see Art across games in Art). |
@@ -255,7 +270,7 @@ Every Black Lantern system and what happens to it here, grouped by the Black Lan
 
 | Black Lantern rule | Verdict | Why |
 | --- | --- | --- |
-| The road, every-chat steps, backups, playtest checklist, Changelog | Change | Ported to the Process tab with a run in place of a case. |
+| The road, every-chat steps, backups, playtest checklist, Changelog | Change | Ported to the Process tab with a run in place of a case. Since Nov 22 the changelog is `changelog.md` and git history is the backup (see Process). |
 
 ## Art
 
@@ -431,6 +446,12 @@ Claude's calls, for your review: the Corpse-candle's cold blue light (new colors
 ![Battle in the GBA shell: the hedge cat flat in a stalking crouch at a dusk hedge](mockups/22-battle-hedgecat.png)
 
 ![Battle in the GBA shell: four rooks over a ploughed field, one with a ration in its beak](mockups/23-battle-rooks.png)
+
+![Battle in the GBA shell: the Corpse-candle under the gibbet at dusk, a cold blue light in its chest](mockups/24-battle-candle.png)
+
+![Battle in the GBA shell: Severa the owl on the church loft's tie beam](mockups/25-battle-severa.png)
+
+![Battle in the GBA shell: the Withy Hag on the causeway at night](mockups/26-battle-hag.png)
 
 References: from the era, Bosch's hell panels, Bruegel's Triumph of Death, Schongauer's Temptation of Saint Anthony, Dürer's woodcuts, danse macabre prints and manuscript marginalia; modern, Beksiński, Mignola, Junji Ito, Trevor Henderson, and the games Darkwood, Fear & Hunger, Pathologic 2 and Inscryption. Added by the study: Lovecraft fan art on DeviantArt and ArtStation, as the clichés to avoid.
 
@@ -2023,7 +2044,7 @@ The items marked Carry in Skills and menus' Quality of life list, in full. The c
 
 ## Tech
 
-Rushlight is a fork of Black Lantern's game file, played on an iPhone SE inside Black Lantern's GBA-style shell (set Nov 20).
+Rushlight grew out of Black Lantern's game file and now lives in the studio repo beside it, played on an iPhone SE inside the studio's GBA-style shell (set Nov 20; updated Nov 22).
 
 **Screen and controls**
 
@@ -2033,10 +2054,10 @@ Rushlight is a fork of Black Lantern's game file, played on an iPhone SE inside 
 
 **Code**
 
-- **Forked from Black Lantern's file.** Parts both games use move into the studio's shared `engine/` instead of being copied by hand (set Nov 21; first the shell, input and movement, spec 001). Neither game may break the other: every change under `engine/` runs both games' automatic checks before it merges. Kept: input, shell, dialog box, portraits, the battle engine, and the stat, roll and SAN code. Stripped: cases, agency material, Lantern Boxes and requisition, sound. `window.BL` and `window.BLG` become `window.RL` and `window.RLG`. Until a part moves into `engine/`, a fix in one game is copied to the other by hand when it applies. No Black Lantern story or case file ever loads in Rushlight, shared engine or not. window.BLS and window.BLA became window.RLS and window.RLA too; the Shared Shelf script and the dialog box keep their library names.
-- **Source in parts:** shell, engine, generator, content data and art. Content batches touch only the data parts, so a new creature can't break combat. A bundle step joins the parts into one self-contained HTML for publishing and backups.
+- **Shared engine, own game parts (updated Nov 22).** Rushlight began on Nov 21 as a clean copy of Black Lantern's kept parts (input, shell, dialog box, portraits, the battle engine, and the stat, roll and SAN code); cases, agency material, Lantern Boxes and requisition, and sound were stripped. Anything both games use lives in the studio's shared `engine/` (set Nov 21; first the shell, input and movement, spec 001), and Rushlight moves onto the rest of the shared parts before the vertical slice (To do, Ready 2 of 5). Neither game may break the other: every change under `engine/` runs both games' automatic checks before it merges. `window.BL` and `window.BLG` become `window.RL` and `window.RLG`. Until a part moves into `engine/`, a fix in one game is copied to the other by hand when it applies. No Black Lantern story or case file ever loads in Rushlight, shared engine or not. window.BLS and window.BLA became window.RLS and window.RLA too; the Shared Shelf script and the dialog box keep their library names.
+- **Source in parts:** shell, engine, generator, content data and art. Content batches touch only the data parts, so a new creature can't break combat. A bundle step joins the parts into one self-contained HTML.
 - Outside assets as in Black Lantern: Google Fonts only (Press Start 2P and VT323), all art drawn in code on canvas, no audio.
-- Edit the existing parts, never rewrite from scratch. After each change: syntax check, the Process playtest checklist, republish to the same artifact, backup, Changelog line.
+- Edit the existing parts, never rewrite from scratch. After each change: `npm run check`, the Process playtest checklist, commit and push (which puts the build on the launcher's Dev shelf), and a `changelog.md` entry.
 
 **Seeds**
 
@@ -2060,42 +2081,42 @@ Rushlight is a fork of Black Lantern's game file, played on an iPhone SE inside 
 
 Rushlight's own [Asset Library](https://claude.ai/artifact/WYgm7Gn8afLE51Pce94ynt) page holds its finished art and drawing code, and the build reads its art from there; generic pieces come from the standalone [Shared Shelf](https://claude.ai/artifact/Jmv2FBeGHXczqy7juZW8dL) page at the version Rushlight names. Art first drawn during a build is filed in the Asset Library under the Art across games naming before the build uses it, so no art lives only inside a build (set Nov 20). Art code doesn't live in project files (set Nov 20; see Art across games in Art).
 
-**Text Library (set Nov 20).** In-game text (name lists, contract templates, road events, rumors and margin notes, creature ledger entries, item names and info lines, barks and dialog, death screen and Muster roll text) lives in a Rushlight Text Library Sheet, one row per line: ID, pool, text, conditions, state (draft or approved) and where used. The build's content data reads from it; the Bible keeps the rules and examples only, and a creature card names its rows on a Text line. Made Nov 20 as a Sheet: Rushlight Text Library (https://claude.ai/artifact/QNKtwsJvEkAtTDnn4LDSNA), 97 rows, all Draft. IDs are AREA-SUBJECT-KIND-N (CR creatures, VO Voice samples, NM names, QT Quarters scenes, ARC personal arcs, PJ people jobs, TX texture bank, BR recurring things, SY sayings, RT regional tics); {merc} and {species} mark slots the build fills. New lines go into the Sheet first and are marked Approved once you OK them.
+**Text Library (set Nov 20).** In-game text (name lists, contract templates, road events, rumors and margin notes, creature ledger entries, item names and info lines, barks and dialog, death screen and Muster roll text) lives in a Rushlight Text Library Sheet, one row per line: ID, pool, text, conditions, state (draft or approved) and where used. The build's content data reads from it; the Bible keeps the rules and examples only, and a creature card names its rows on a Text line. Made Nov 20 as a Sheet: Rushlight Text Library (https://claude.ai/artifact/QNKtwsJvEkAtTDnn4LDSNA); 507 rows by Nov 21, all Draft. IDs are AREA-SUBJECT-KIND-N (CR creatures, VO Voice samples, NM names, QT Quarters scenes, ARC personal arcs, PJ people jobs, TX texture bank, BR recurring things, SY sayings, RT regional tics); {merc} and {species} mark slots the build fills. New lines go into the Sheet first and are marked Approved once you OK them.
 
-**Builds**
+**Builds (updated Nov 22)**
 
-The live game is the "Rushlight" HTML artifact. The code lives in the studio repo (KeeganMcClure/studio) under `games/rushlight/src/`. It began on Nov 21 as a clean copy of Black Lantern's kept parts with no git history, and no Black Lantern case or story ever loads in Rushlight. It follows the same protocol as Black Lantern (set Nov 21): Claude Code works in the repo and runs the playtest checks, the CLAUDE.md files there carry these Tech and Process rules, and the bundle step's one HTML file is published to this same artifact each time, so the link and saves stay. The artifact is made at the vertical slice's first build; its link then goes here and in CLAUDE.md. Dated copies go to the Rushlight backups folder in Google Drive as rushlight-build-YYYY-MM-DD.html, never to project files (set Nov 20; see Process).
+The code lives in the studio repo (KeeganMcClure/studio) under `games/rushlight/src/`; the old KeeganMcClure/rushlight repo is the Nov 21 setup copy and is no longer used. Every push to `main` puts the bundled build on the launcher's Dev shelf, which is where you play it (`studio-bible/launcher.md`); Rushlight moves to Release only when you say so. Claude Code works in the repo and runs the checks, and the CLAUDE.md files there carry these Tech and Process rules. Git keeps every version, so there are no separate dated build copies.
 
 ## Process
 
-How we build Rushlight, from first idea to a finished run (set Nov 19, 2026, ported from Black Lantern's). Claude follows this every chat and logs every build or Bible change in the Changelog below.
+How we build Rushlight, from first idea to a finished run (set Nov 19, 2026, ported from Black Lantern's). Claude follows this every chat. Builds are logged in `changelog.md`, and bible changes go in as pull requests (`studio-bible/studio.md`).
 
 **The road**
 
 1. **Foundations:** design pillars, art direction, this Bible.
 2. **Paper design:** the run loop, the map generator, contracts, money, the ported rules, mercenaries, skills, combat, voice. Cheap to change, so it's settled before code.
-3. **Tech prep:** the game file in parts, Black Lantern's GBA-style shell, forked and the seeded generator, so every later build is cheaper and safer.
+3. **Tech prep:** the game file in parts, the studio's shared engine and GBA-style shell, and the seeded generator, so every later build is cheaper and safer.
 4. **Vertical slice:** one short seeded run with a few towns, a creature hunt and a people job, played start to finish. If one run feels right start to finish, the design works.
 5. **Content production**, repeated per batch: pitch → paper design → art → build → playtest → polish → publish. A batch is a set of hand-made parts: town types, creatures, contract templates, events.
 6. **Upkeep:** fix Bugs, keep old saves working, sort the Ideas inbox.
 
 **Every chat**
 
-1. Claude reads the Bible tab the task needs.
+Updated Nov 22 for the studio's two roles (`studio-bible/studio.md`, Roles).
+
+1. Claude reads the section of this bible the task needs.
 2. One task, named up front.
 3. Decisions come as multiple choice, with Claude's pick marked.
-4. Claude builds or makes a still mockup; you test and/or approve.
-5. Claude updates the Bible: ticks the To do item, records decisions where they belong, updates the Ported rules table, files any Bugs, and adds a Changelog line.
-6. Claude backs up (see Backups).
-7. Claude tells you when to start a fresh chat.
+4. The Designer writes a spec or makes a still mockup; the Developer builds from a merged spec; you test and/or approve.
+5. The Designer changes this bible only in a pull request you merge: it ticks paper To do items, records decisions where they belong, updates the Ported rules table and files Bugs. The Developer ticks build items and adds a `changelog.md` entry in the same pull request as the build.
+6. Claude tells you when to start a fresh chat.
 
 **Backups**
 
-- **Game:** after every build, a dated copy goes to the Rushlight backups folder in Google Drive as rushlight-build-YYYY-MM-DD.html, never to project files, which load into every chat (set Nov 20). Keep the last 5 builds plus milestone builds (the vertical slice, each finished content batch); delete older ones.
-- **Bible:** before a task edits a tab, that tab's markdown export goes to the Rushlight backups folder in Google Drive as rushlight-bible-YYYY-MM-DD-tab.md (tabs touched only, set Nov 20); a full export of every tab at milestones (the vertical slice, each finished content batch). The doc's version history covers everything between. Never to project files: a backup there loads into every chat and gets mistaken for the live Bible (set Nov 20).
+- **Game and bible (updated Nov 22):** both live in the studio repo, and git history keeps every version of each, so the old Drive copies (dated builds and bible tab exports) have stopped. Older copies already in the Rushlight backups folder stay as they are.
 - **Your run:** the save lives in your phone's browser and vanishes if Safari data is cleared. Export the save code (Start → Export, see Tech) before big updates.
 
-**Playtest checklist** (run before every publish)
+**Playtest checklist** (run before every push to Dev)
 
 - Loads with no errors or blank screen.
 - Fits at 375 × 550 and 320 × 480; nothing cut off.
