@@ -95,7 +95,8 @@ One item per chat, in order, biggest open decisions first. Claude ticks the item
       Done Nov 22: spec 003 (`specs/003-slice-a-new-run.md`). Face parts set in Art, Faces; 33 Draft lines added to the Text Library.
     - [x] Part B: the Withy March: the 8-point cut (which points, the second town, roads and days), the region map and the coin marker, travel and rations, camp and inn, road events
       Done Nov 22: spec 004 (`specs/004-slice-b-withy-march.md`); your pick, a hand-placed map the seed varies, for the slice only. The slice's March and the Road events table are in World and contracts; 20 Draft lines added to the Text Library.
-    - [ ] Part C: towns: the street, the notice board and givers, the contract pool, hiring, shops and the smith, church and rumors, Hue and cry
+    - [x] Part C: towns: the street, the notice board and givers, the contract pool, hiring, shops and the smith, church and rumors, Hue and cry
+      Done Nov 22: spec 005 (`specs/005-slice-c-towns.md`). The slice's towns are in World and contracts; 18 Draft lines added to the Text Library.
     - [ ] Part D: contracts on the ground: site maps from room chunks, the 6 slice jobs, battle with Rushlight's numbers, Identify and prep, the pay screen, XP and level picks, trophies and the bestiary
     - [ ] Part E: the end: the Hollow Monk's signs and den, the kill, the ledger screen, the death screen, and what a wipe carries into the next run
   - [ ] Ready 5 of 5: Text Library sign-off: approve the rows the slice uses (all are Draft today). Drafts work as placeholders while it's built, but the slice's lines are approved before you playtest it
@@ -516,6 +517,12 @@ Set Nov 22 (spec 004; your pick: hand-placed for the slice only, while the full 
 - **Roads, in days:** Harrowford to Saint Ebbe's 2 and to Hollin 1 (both main); Harrowford to the charcoal camp 1 and to the osier causeway 1; Saint Ebbe's to Sallow End 1 and to Crookback 2; Hollin to Crookback 2; Sallow End to Hollin 3; Crookback to Lowmoor Pit 1; the osier causeway to Lowmoor Pit 2. One of Hollin–Crookback or Sallow End–Hollin is hidden by the seed; the two den roads show when the den is found.
 - **Known at start:** the two towns, Hollin and the main roads. Arriving anywhere shows every road leaving it.
 - **Roamers meet the company on roads** in the slice: the hedge cat and the rooks on two side roads, the Corpse-candle on a road touching Crookback, and the Lampwalkers on a road one step from a den road. Sneak past (Stealth), fight or turn back; the Lampwalkers are waited out or fought.
+
+**The slice's towns (set Nov 22, spec 005; Claude's first draft, tuned in playtest).**
+
+- **Harrowford:** the guild master (Town) gives the wool buyer; the board posts Pell and the Withy Hag. Market, smith, barber-surgeon, the Drowned Goose inn, a tavern, the chapel, a brothel, the reeve. A hire pool of 3, any trades.
+- **Saint Ebbe's:** the prior (Church) gives the Noonwife; the board posts Severa and the Counter. Market, the infirmarer's apothecary, the guesthouse inn, an alehouse, the priory church, the reeve. A hire pool of 2, learned trades first.
+- **Posting:** 4 of the 6 jobs are up at the start, at least one per town; the next goes up as one is taken. The company hires only into an empty seat.
 
 **Road events (set Nov 22, spec 004; Claude's first draft, tuned in playtest).** One roll per travel day (25% in region 1), then the table. Night attacks at camp are rooks or two road bandits.
 
