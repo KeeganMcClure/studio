@@ -32,7 +32,8 @@ function setProf(a,p){if(a.prof!==p.id)a.picks={};a.prof=p.id}
 // and Chronic pain takes 2 off max HP
 const injOf=a=>(Array.isArray(a.inj)?a.inj:[]).map(x=>window.BLS.INJURIES[x&&x.k]).filter(Boolean);
 const derived=a=>{const s=a.stats,hp=injOf(a).reduce((t,I)=>t+(I.hp||0),0);return{HP:Math.max(1,Math.ceil((s.STR+s.CON)/2)+hp),WP:s.POW,SAN:s.POW*5,BP:s.POW*4}};
-function skillVal(a,k){if(!(k in SKILLS))return 0;const p=profOf(a);const v=Math.max(SKILLS[k],(p&&p.skills[k])||0)+20*((a.picks||{})[k]||0);
+// case gains (spec 007, end-of-case improvement) add a.grow[skill]; nothing goes above 99%
+function skillVal(a,k){if(!(k in SKILLS))return 0;const p=profOf(a);const v=Math.min(99,Math.max(SKILLS[k],(p&&p.skills[k])||0)+20*((a.picks||{})[k]||0)+(+((a.grow||{})[k])||0));
  const pen=injOf(a).reduce((t,I)=>t+((I.pen||{})[k]||0),0);return pen?Math.max(SKILLS[k],v+pen):v}
 const picksUsed=a=>Object.values(a.picks).reduce((x,y)=>x+y,0);
 const buyLeft=a=>72-STATS.reduce((t,k)=>t+a.stats[k],0);
@@ -50,7 +51,7 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
 // in order, bringing old saves forward before anything reads them. Before upgrading, the old
 // saves are copied to bl.backup. Rules: never change an old step; a new save shape gets a new
 // step and SAVE_V goes up by one. Saves from before numbering count as version 0.
-const SAVE_V=7;
+const SAVE_V=8;
 const fillAgent=a=>{if(!a||typeof a!=='object'||Array.isArray(a))return null;const d=newAgent();
   const o=Object.assign(d,a);o.look=Object.assign(newAgent().look,a.look||{});o.stats=Object.assign(newAgent().stats,a.stats||{});
   if(!o.picks||typeof o.picks!=='object')o.picks={};if(!Array.isArray(o.bonds))o.bonds=[];if(!Array.isArray(o.motives))o.motives=[];return o};
@@ -158,6 +159,23 @@ const UPGRADES={
     if(g!==null){try{const o=JSON.parse(g);if(!o||!Array.isArray(o.party)||!o.party.length)throw 0;
         if((o.case||'still-harvest')==='still-harvest'){o.case='still-harvest';o.rewrite=true}store.set(K('game'),JSON.stringify(o))}
       catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
+  },
+  // 7 → 8 (Nov 22, spec 007 Demo 6, the debrief): the season keeps a list of evidence hidden from Big Hat
+  // (bl.season.hidden: [{k, case, who}]); every agent counts the cases they closed (a.cases; agents who already closed
+  // Still Harvest count 1); a memorial entry is finished at its case's debrief (done, season, cases). Entries from a
+  // case that's already over are marked finished; one from the case still paused in bl.game waits for its debrief.
+  // A paused checkpoint finishes into the new debrief, so it needs nothing here.
+  8(){
+    const s=store.get(K('season'),null);if(s&&typeof s==='object'&&!Array.isArray(s)&&!Array.isArray(s.hidden)){s.hidden=[];store.set(K('season'),s)}
+    const fixA=a=>{if(a&&typeof a==='object'&&!Number.isInteger(a.cases))a.cases=a.cur&&a.cur.ch1?1:0;return a};
+    const r=store.get(K('roster'),[]);if(Array.isArray(r))store.set(K('roster'),r.map(fixA));
+    let paused=null;const g=store.get(K('game'),null);
+    if(g!==null){try{const o=JSON.parse(g);if(!o||!Array.isArray(o.party)||!o.party.length)throw 0;paused=o.case||null;
+        o.party.forEach(m=>{if(m&&m.a)fixA(m.a)});store.set(K('game'),JSON.stringify(o))}
+      catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
+    const mem=store.get(K('memorial'),null);
+    if(Array.isArray(mem))store.set(K('memorial'),mem.map(x=>{if(!x||typeof x!=='object')return x;if(x.a)fixA(x.a);
+      if(!x.done&&x.case!==paused){x.done=true;if(!Number.isInteger(x.season))x.season=(s&&s.season)|0||1;if(!Number.isInteger(x.cases))x.cases=x.a&&Number.isInteger(x.a.cases)?x.a.cases:0}return x}));
   }
 };
 function upgradeSaves(){

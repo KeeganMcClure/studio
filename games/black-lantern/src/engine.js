@@ -325,7 +325,7 @@ function drawBigHatPortrait(c,shout,frame){
 }
 async function shout(text){G.shout=performance.now()+750;G.shoutPor=true;try{return await say('BIG HAT',text)}finally{G.shoutPor=false}}
 async function bigHatScene(fn){await fade(1);G.mode='scene';G.scene='bighat';await fade(0);await sleep(400);await fn();await fade(1);G.scene=null}
-function drawScene(){if(G.scene==='bighat')return drawOffice();cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+rnd(20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
+function drawScene(){if(G.scene==='bighat'){drawOffice();if(G.db)dbCard();return}if(G.scene==='funeral')return drawFuneral();cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+rnd(20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
 // Logic runs at 60 ticks a second on any screen (engine/clock.js); frames with no tick due are skipped.
 const clock=StudioClock.make();
 function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(CB)drawBoard();else if(G.mode==='battle'&&Bt)drawBattle();else if(SCR)drawScr();else if(PM)drawParty();else if(G.mode==='world')drawWorld();else drawScene();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
@@ -342,31 +342,34 @@ async function gameOver(){
 
 // ================= SAVE / FLOW =================
 // fs: the field state (field.js): backpack, used hotspots, who was talked to, perks used, the Log, recruits due and more
-function snap(){return JSON.stringify({case:G.case,map:G.map,x:G.x,y:G.y,dir:G.dir,party,lead:G.lead|0,flags:G.flags,clues:G.clues,fs:G.fs,fights:G.fights,enc:G.enc,rescued:G.rescued})}
+function snap(){return JSON.stringify({case:G.case,map:G.map,x:G.x,y:G.y,dir:G.dir,party,lead:G.lead|0,flags:G.flags,clues:G.clues,fs:G.fs,fights:G.fights,enc:G.enc,rescued:G.rescued,db:G.db||null})}  // db: the debrief step reached (spec 007)
 function checkpoint(){G.cp=snap();store.set(B.key('game'),G.cp)}
 function restore(s){const o=JSON.parse(s);G.case=o.case||(CASES[0]&&CASES[0].id);party=o.party;G.lead=o.lead>=0&&o.lead<party.length?o.lead|0:0;G.flags=o.flags;G.clues=o.clues;G.fights=o.fights;G.enc=o.enc;G.rescued=o.rescued||0;
- fieldRestore(o);G.mode='world';goMap(o.map,o.x,o.y,o.dir,{restore:true});applySan()}
+ fieldRestore(o);G.db=o.db||null;
+ // paused mid-debrief (spec 007): back in Big Hat's back room at the step reached; the map stays as it was
+ if(G.db){G.map=o.map;G.mode='scene';G.scene='bighat';hud.hidden=true;return}
+ G.mode='world';goMap(o.map,o.x,o.y,o.dir,{restore:true});applySan()}
 function enter(){G.active=true;scr.classList.add('gaming');fit();cancelAnimationFrame(raf);clock.reset();raf=requestAnimationFrame(loop)}
 function leave(){G.active=false;PM=null;CB=null;SCR=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
 function quit(){checkpoint();leave();B.goto('title');B.render()}
-// The end of a case (spec 004, step 5): the case is stamped closed in bl.season, then the lead's dossier opens as
-// before, and leaving the dossier opens the case board. A case passes its ending label (spec 006 C6: clean, costly,
-// worst...) and the facts Demo 6's debrief needs; both save with the case in bl.season.
+// The end of a case (spec 004, step 5; spec 007): the case is stamped closed in bl.season and the case board opens with
+// the CLOSED stamp landing on its card. A case passes its ending label (spec 006 C6: clean, costly, worst...) and the
+// facts the debrief used; both save with the case in bl.season. The debrief (debrief.js) calls this as its last step.
 function finish(ending,facts){
- store.set(B.key('game'),null);const a=lead().a;const id=G.case;closeCase(id,ending,facts);B.S.afterCase=true;B.S.stampCase=id;
- // every agent in the field carries SAN, disorders, Breaking Point, Adapted marks and gear back to the roster;
- // statuses clear at the end-of-case heal-up; the backpack goes to bl.party (spec 006, Saves)
+ store.set(B.key('game'),null);const a=lead().a;const id=G.case;closeCase(id,ending,facts);G.db=null;B.S.stampCase=id;
+ // every agent in the field carries SAN, disorders, Breaking Point, Adapted marks, skill gains and gear back to the
+ // roster, and counts one more case closed; statuses cleared at the debrief's heal-up; the backpack goes to bl.party
  // Minor injuries last through the next case and clear at that case's end-of-case heal-up (Lasting injuries)
- live().forEach(m=>{const a=m.a;if(Array.isArray(a.inj))a.inj=a.inj.filter(x=>!(x.tier==='minor'&&--x.left<=0))});
+ live().forEach(m=>{const a=m.a;if(Array.isArray(a.inj))a.inj=a.inj.filter(x=>!(x.tier==='minor'&&--x.left<=0));a.cases=(a.cases|0)+1});
  const R=B.S.roster;live().forEach(m=>{const x=carry(m);x.id=x.id||Date.now()+rnd(1000);const i=R.findIndex(y=>y.id===x.id);const copy=JSON.parse(JSON.stringify(x));if(i>=0)R[i]=copy;else if(x===a)R.unshift(copy)});store.set(B.key('roster'),R);
  store.set(B.key('party'),{pack:G.fs?G.fs.pack:[]});
- B.S.a=a;B.S.view=true;leave();B.goto('dossier');B.render();B.toast('FILED. CHAPTER ONE CLOSED.');
+ leave();B.goto('title');board({from:'finish',stamp:id});B.toast('FILED. CASE CLOSED.');
 }
 // Starts a case (A on its card): its briefing (the case's opening) plays first. Seat 1 leads.
 async function start(agent,squad,id){
  const c=caseById(id)||CASES[0];
  party=[member(agent),...squad.map(member)];
- G=Object.assign(G,{active:true,case:c.id,lead:0,flags:{},clues:[],fights:0,enc:10,rescued:0,busy:0,mode:'scene',scene:null,map:null});
+ G=Object.assign(G,{active:true,case:c.id,lead:0,db:null,flags:{},clues:[],fights:0,enc:10,rescued:0,busy:0,mode:'scene',scene:null,map:null});
  fieldStart();  // each agent's kit and items, the backpack, the field state (field.js)
  MAZE=null;enter();applySan();
  run(c.opening);
@@ -383,6 +386,7 @@ function resume(){const s=store.get(B.key('game'),null);if(!s)return false;
  // a checkpoint that won't open goes back to the title with a message instead of freezing; the save is kept
  try{restore(s)}catch(e){console.warn('Checkpoint would not open:',e);leave();B.goto('title');B.render();B.toast('CHECKPOINT WON\'T OPEN');return false}
  G.cp=s;
+ if(G.db){run(runDebrief);return true}  // the debrief picks up at the same step (debrief.js)
  // Last time (Quality of life): one box with where you were and the Case file's Next goal
  const c=caseById(G.case),nx=c&&c.next?c.next():'';
  run(()=>say('',fillT(MMW.lastTime,{m:G.M.name})+(nx?'\n'+fillT(MMW.lastNext,{g:nx}):'')));

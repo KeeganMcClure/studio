@@ -187,16 +187,26 @@ const TEXT={
  dawnPell:'Mayor Pell spent the night in Ross\'s back seat. In the morning he\'s just an old man who needs a bathroom.',
  cameo:['At the edge of the cruiser\'s lights stands a tall man in a long coat, a book under his arm.','You look again. It\'s a fence post.'],
  cameoH:'Someone at the edge of the light',
- debrief:['BIG HAT','Agent {code}. Read your preliminary. Twice. Once upside down. Tell me what goes in the official one.'],
- coverQ:'What happened in Marrow Creek?',coverOpts:['Gas leak at the cider mill','Crop fire, nobody hurt','The truth'],
- cover:[[['BIG HAT','Carbon monoxide. Mass hallucination. Cider mill gets condemned. Clean.']],[['BIG HAT','Burn the field, call it an accident. Town\'ll thank you and never know why.'],['BIG HAT','That\'s the job, partner.']],
-  [['BIG HAT','...']]],
- coverShout:'I AM GOING TO WRITE "GAS LEAK."',coverTruth:['BIG HAT','You\'re gonna forget you said that. Go home. Hug somebody.'],
  filed:['BIG HAT','This page. I\'ll file it. Records wants it by Monday.'],
  cruller:'He slides you a cruller across the desk. It is, somehow, still warm.',
- sunday:'Sunday. You made it home.',
- closed:'OPERATION STILL HARVEST · CLOSED\nVictims saved: {n}/3\n{l}\'s SAN: {a} → {b}{d}\nSquad: {s}',
- closedOk:'Save agent and return to the file',fileUpd:'Your file has been updated.'
+ // ---- the debrief (spec 007): Big Hat's lines by ending ({x}/{t} clues found, {v}/{n} saved), what he says about
+ // the choices you made, the cover stories and the lines after them ----
+ db:{
+  clean:[['BIG HAT','All three walked out of the corn. Mayor\'s in county lockup, cryin\' about crop yields.'],['BIG HAT','{x} clues outta {t}. Seen worse bows on uglier packages. Sit.']],
+  costly:[['BIG HAT','Corn\'s quiet. That\'s the good news.'],['BIG HAT','The rest is in your preliminary. I read it twice. It didn\'t get better the second time.'],['BIG HAT','{x} clues outta {t}. {v} of {n} home. Sit.']],
+  worst:[['BIG HAT','Black cars. Men with no faces fillin\' out forms I\'m not cleared to read.'],['SHOUT','THAT WAS MY CASE.'],['BIG HAT','It\'s closed. Not by us. Don\'t ever make me say that sentence again.']],
+  cider:['BIG HAT','You drank the cider. It\'s in the blood work. Lab tech threw up. Don\'t do that again.'],
+  bell:['BIG HAT','Somebody rang a church bell they were asked real nice not to ring. Pastor sent me a fruit basket. I don\'t know what that means.'],
+  wrong:['BIG HAT','Mayor Pell slept in his own bed Friday night. You think about that.'],
+  sutter:['BIG HAT','Pip\'s dad is home. Kid called this office. I don\'t know how the kid got this number.'],
+  caught:['BIG HAT','Man in a Committee sash says you tried to lift his binder. I told him we can\'t read.'],
+  zip:['BIG HAT','Fella you zip-tied talked the whole ride. Mostly about his mother. Some of it was useful.'],
+  gas:'Gas leak at the cider mill',gasPass:[['BIG HAT','Carbon monoxide. Mass hallucination. Cider mill gets condemned. Clean.']],
+  fire:'Crop fire, nobody hurt',firePass:[['BIG HAT','Burn the field, call it an accident. Town\'ll thank you and never know why.']],
+  weak:'Kids, pranks, gone too far',weakPass:[['BIG HAT','Teenagers and scarecrows. Nobody wants to know more than that. You got lucky.']],
+  photo:'A hoax, with photos to prove it',photoPass:[['BIG HAT','Gazette runs your picture under HARVEST HOAX. Letters to the editor for a month. Perfect.']],
+  safe:'Already filed: a quiet weekend',safePass:[['BIG HAT','Paperwork says Marrow Creek had a quiet weekend. Paperwork\'s never wrong.']]
+ }
 };
 const fill=(t,o)=>String(t).replace(/\{(n|m|v|l|a|b|d|s)\}/g,(x,k)=>o[k]??x);
 // plays a list of boxes: a string is narration, ['WHO', 'line'] is speech
@@ -249,14 +259,14 @@ const HORRORS={
 };
 // this case's own items (case-only: the pin icon; Big Hat sorts them at the debrief)
 const CASE_ITEMS={
- coffee:{name:'Thermos coffee',type:'Drink',desc:'Restore 1d4+1 WP.',pin:1,
+ coffee:{name:'Thermos coffee',type:'Drink',desc:'Restore 1d4+1 WP.',pin:1,kind:'ordinary',
   mapUse:async()=>{const t=await pickMember('WHO DRINKS?',()=>true);if(!t)return false;const g=roll(1,4,1);t.wp=Math.min(t.mwp,t.wp+g);await say('',`${t.name} drinks gas-station coffee. +${g} WP.`);return true},
   battleUse:async(m)=>{const t=await pickAlly({title:'WHO DRINKS?',noKO:true});if(!t)return false;const g=roll(1,4,1);t.wp=Math.min(t.mwp,t.wp+g);await say('',`${t.name} drinks gas-station coffee. +${g} WP.`,{auto:1000});return true}},
- bell:{name:'Church handbell',type:'Tool',desc:'Battle: every foe flinches and freezes for a round.',pin:1,
+ bell:{name:'Church handbell',type:'Tool',desc:'Battle: every foe flinches and freezes for a round.',pin:1,kind:'unnatural',
   battleUse:async(m)=>{aliveFoes().forEach(e=>e.stun+=1);await say('',`${m.name} rings the church handbell. BONNNG. Every foe flinches and freezes.`,{auto:1300});return true}},
- binder:{name:'Committee binder',type:'Evidence',desc:'Three names a year since 1958, each signed by the Committee. A fourth line, empty.',pin:1,passive:1},
- clip:{name:'Volunteer\'s clipboard',type:'Evidence',desc:'Three names crossed out in orange crayon. The fourth line is blank.',pin:1,passive:1},
- page:{name:'1958 program page',type:'Evidence',desc:'Torn from a Lantern Walk program. A small "1" is inked in the top corner, in a hand older than the program.',pin:1,passive:1}
+ binder:{name:'Committee binder',type:'Evidence',kind:'ordinary',desc:'Three names a year since 1958, each signed by the Committee. A fourth line, empty.',pin:1,passive:1},
+ clip:{name:'Volunteer\'s clipboard',type:'Evidence',kind:'unnatural',desc:'Three names crossed out in orange crayon. The fourth line is blank.',pin:1,passive:1},
+ page:{name:'1958 program page',type:'Evidence',kind:'unnatural',desc:'Torn from a Lantern Walk program. A small "1" is inked in the top corner, in a hand older than the program.',pin:1,passive:1}
 };
 // a roamer's drop: 20% from this loot table (Where items come from, Loot)
 const LOOT=['bandage','painkillers','energy','roadflare','salt','salts'];
@@ -590,33 +600,38 @@ function endingFacts(label){const F=G.flags;
   choices:{bell:F.bell?'rang':F.carving?'read':null,cider:!!F.cider,binder:F.binder?'taken':F.binderTried?'caught':null,deduce:F.deduce||null,
    sutter:!!F.sutter,page:F.pageAloud?'aloud':F.page?'taken':null,rest:{cruiser:!!F.cruiserRest,church:!!F.churchRest},photo:!!F.photo},
   tried:party.map(m=>({id:m.a.id,skills:m.tried||[]})),
-  lost:(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case).map(x=>({name:x.name,how:x.how}))}}
+  lost:(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case&&!x.done).map(x=>({name:x.name,how:x.how}))}}
 async function ending(o={}){
  const F=G.flags;
  if(!o.worst){await play(TEXT.end1);
   const lost=VICTIMS.filter(V=>!F['saved_'+V.id]);
   if(lost.length){await said(TEXT.endLost,{n:lost.map(v=>v.name).join(' and '),v:lost.length>1?'are':'is'});await trigger('death')}}
  await fade(1);G.mode='scene';await fade(0);
- const n=G.rescued||0;
+ const n=G.rescued||0,L=lead();
  if(!o.worst){await said(TEXT.dawn);await said(n===3?TEXT.dawn3:n?fill(TEXT.dawnSome,{n}):TEXT.dawnNone);if(F.pellHeld)await said(TEXT.dawnPell);
   // one sighting at dawn: the lead rolls, once ever per agent (saved on the agent, so it carries to the roster)
-  const L=lead();if(!L.a.sawTall){L.a.sawTall=1;await play(TEXT.cameo);await horror(HORRORS.cameo,{who:[L]})}}
- await bigHatScene(async()=>{
-  await said(TEXT.debrief);
-  const c=await ask('BIG HAT',TEXT.coverQ,TEXT.coverOpts);F.cover=c;
-  await play(TEXT.cover[c>=0?c:0]);if(c===2){await shout(TEXT.coverShout);await said(TEXT.coverTruth)}
-  if(F.page)await said(TEXT.filed);
-  await said(TEXT.cruller);
- });
- await fade(0);
- await said(TEXT.sunday);
- const L=lead(),dn=m=>(m.dis||[]).map(d=>BLS.DISORDERS[d.k].name).join(', ');
- const sq=squad().map(m=>`${m.name}${dn(m)?' ('+dn(m)+')':''}`).join(', ');
- await say('',fill(TEXT.closed,{n,l:L.name,a:L.san0,b:L.san,d:dn(L)?'\nDisorder: '+dn(L):'',s:sq}));
- await ask('',TEXT.fileUpd,[TEXT.closedOk]);
+  if(!L.a.sawTall){L.a.sawTall=1;await play(TEXT.cameo);await horror(HORRORS.cameo,{who:[L]})}}
  L.a.cur=Object.assign(L.a.cur||{},{ch1:true,saved:n});
- const label=endingLabel();finish(label,endingFacts(label));
+ const label=endingLabel();await debrief(label,endingFacts(label));  // Big Hat's debrief and the case gains (debrief.js)
 }
+
+// ================= THE DEBRIEF (spec 007) =================
+// What debrief.js needs from this case: the clues the card counts, the victims, Big Hat's lines by ending and about
+// the choices, the cover stories (2 with a skill, the weak Luck one, the Camera's, Clean books'), and the line after
+// a bagged item. Which items are unnatural is on CASE_ITEMS (kind).
+const DB=TEXT.db;
+const DEBRIEF_DATA={
+ clues:['scare','count','walk','drive','bell','cider','list','clip','lore'],victims:3,
+ lines:{clean:DB.clean,costly:DB.costly,worst:DB.worst},
+ react:F=>{const c=F.choices||{},out=[];if(c.cider)out.push(DB.cider);if(c.bell==='rang')out.push(DB.bell);if(c.deduce&&c.deduce!=='right')out.push(DB.wrong);
+  if(c.sutter)out.push(DB.sutter);if(c.binder==='caught')out.push(DB.caught);return F.label==='worst'?out.slice(0,1):out.slice(0,2)},
+ zip:[DB.zip],end:[TEXT.cruller],
+ stories:[{name:DB.gas,skill:'Bureaucracy',verb:'paper it',pass:DB.gasPass},{name:DB.fire,skill:'Persuade',verb:'sell it',pass:DB.firePass}],
+ weak:{name:DB.weak,pass:DB.weakPass},
+ camera:{name:DB.photo,skill:'Persuade',verb:'sell it',mod:20,pass:DB.photoPass,show:F=>!!(F.choices&&F.choices.photo)},
+ safe:{name:DB.safe,pass:DB.safePass},
+ bagged:{page:[TEXT.filed]}
+};
 
 // ================= ON THE CASE BOARD =================
 // portraits: the townsfolk's talking faces (spec 005), drawn in cases/still-harvest-art.js, loaded right after this file.
@@ -625,4 +640,5 @@ async function ending(o={}){
 // loot: the roamers' drop table. onArea: the case's area-change hook (the clean-up crew).
 const TILEDESC=TEXT.tiles;
 registerCase({id:'still-harvest',card:caseCard,opening:caseOpening,portraits:name=>SHA.portraits[name]||(name==='THE GLEANER'?SHB.portrait:null),
- enemies:EN,sprite:(k,f)=>SHB.sprite(k,f),spriteSize:k=>SHB.size(k),items:CASE_ITEMS,next:caseNext,quiet:false,loot:LOOT,onArea});
+ enemies:EN,sprite:(k,f)=>SHB.sprite(k,f),spriteSize:k=>SHB.size(k),items:CASE_ITEMS,next:caseNext,quiet:false,loot:LOOT,onArea,
+ debrief:DEBRIEF_DATA,label:endingLabel,facts:endingFacts});

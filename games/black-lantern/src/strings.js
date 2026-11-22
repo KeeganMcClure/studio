@@ -343,6 +343,50 @@ const BOARD={
  // New game with a closed case (Skills and menus, Quality of life: Confirm what sticks)
  sure:'Can\'t be undone. Sure?',resetLine:'This starts Season 1 over. Your roster stays.',yes:'Yes, start over',no:'No, back to the title'
 };
+// ---------- THE DEBRIEF (spec 007, Demo 6; approved debrief mockup) ----------
+// Screen words, the send-off, funeral and goodbye lines (Systems, Losing an agent: Claude writes these without review).
+// {n} the agent's first name, {c} their code, {k} cases closed, {r} the recruit, {s} an overstepping step, {i} an item.
+const DEBRIEF={
+ closed:'CASE CLOSED',clues:'Clues',saved:'Saved',fights:'Fights',overstep:'Overstep',
+ items:'CASE ITEMS',itemsHint:'Big Hat sorts',keep:'KEEP',bag:'BAG',hide:'HIDE',ordinary:'Ordinary',unnatural:'Unnatural',done:'Done',
+ keepLine:'Ordinary: you keep it.',bagLine:'Unnatural: bagged as evidence unless hidden.',hideLine:'Hidden: stays with {n}. Big Hat never sees it.',
+ hideAsk:'Hide the {i} from Big Hat? Can\'t be undone.',hideYes:'Hide it',hideNo:'Bag it',
+ itemKeys:'A: flip · Done: sort them',
+ safeStory:'Already filed: nothing happened',
+ cover:'COVER STORY',coverHint:'What do locals hear?',who:'WHO TELLS IT?',luck:'Luck',safe:'SAFE',weak:'Weak story',
+ stepShort:{Clean:'CLEAN',Noticed:'NOTICED','Local chief':'CHIEF','Agency call':'CALL','Federal agents':'FEDS'},
+ passDrop:'Pass: the case closes quiet, and overstepping drops a step.',passQuiet:'Pass: the case closes quiet.',
+ failClimb:'Fail: it climbs to {s}.',failTop:'Fail: it can\'t climb past {s}.',safeLine:'No roll. Clean books: it always holds.',
+ coverKeys:'A: pick · B: back',tellKeys:'A: tell it · B: back',
+ held:'The story holds.',heldDrop:'The story holds. Overstepping drops to {s}.',
+ broke:'Nobody buys it. Overstepping climbs to {s}.',brokeTop:'Nobody buys it. It can\'t get any worse than {s}.',
+ gains:'CASE GAINS',gainsHint:'Failed it, learned it',noGains:'Nothing failed, nothing learned.',newUnlock:'★ NEW: {u}',
+ patched:'Patched up: HP, WP and statuses reset.',next:'A: continue',
+ recruit:'Big Hat sets a folder on the desk. "Lost one in the corn. Replacement\'s outside. Pick."',
+ // Big Hat's send-off, one line per lost agent: a death (in a fight or at 0 SAN) or a retirement
+ sendDeath:['Agent {c}. {k} cases closed. I\'ll write the family myself. Records spells everything wrong.',
+  'Agent {c}. I had a form for this. I\'ve had it a long time. I hate the form.'],
+ sendDark:'Agent {c} walked off into something I don\'t have a form for. I\'ll make one.',
+ sendRetire:'Agent {c} is off field work. Desk, pension, a fern. {n} earned the fern.',
+ // the funeral (each death) and the retirement goodbye; the recruit stands at the back
+ funeral:['A cemetery off the interstate. Rain that can\'t commit either way.','The casket is closed. The flag is folded wrong. {n} would\'ve said so.',
+  'Big Hat stands at the back with his hat on. Nobody asks him to take it off.'],
+ funeralNew:'{r} stands behind everybody in new shoes, not sure whose funeral this is to them. Somebody hands them a sandwich.',
+ funeralEnd:'Name on the stone: {n}. Spelled right. Big Hat checked.',
+ goodbye:['A going-away cake from Safeway in the back of the donut shop. It says GOOD LUCK in blue.','{n} signs the last form. It\'s mostly about the pension. And the not talking.'],
+ goodbyeNew:'{r} gets the locker. {n} leaves them the good flashlight.',
+ goodbyeEnd:'Big Hat walks {n} out to the car. Says one thing nobody else hears. {n} laughs anyway.',
+ how:{'bled out':'Bled out','0 SAN':'Lost to the dark','retired':'Retired'},
+ // the memorial plaque on the case board (Keegan picked a plaque, Nov 22)
+ memorial:'MEMORIAL',plaque:'IN MEMORY',memCases:'{k} cases',memSeason:'Season {s}',memKeys:'Up/Down: scroll · B: back',memA:'OPEN'
+};
+// Skill unlock names at 40, 75 and 90% (Skills and menus, Skill unlocks), flashed when a case gain crosses one
+const UNLOCKS={Firearms:['Shoot it open','Lights out','Dead eye'],Melee:['Force it','Jump them','Grapple'],Dodge:['Duck','Slip free','Riposte'],
+ Search:['Sweep','On guard','Keen eye'],Forensics:['Examine','Reconstruct','Hardened'],Occult:['Identify','Ward','Seen it in the books'],
+ History:['Dig records','Translate','Local legend'],Science:['Sample','Analyze','Field lab'],Empathy:['Read','Calm','Anchor'],
+ Persuade:['Talk your way in','Lean on them','Silver tongue'],Bureaucracy:['Paper trail','Credentials','Clean books'],Athletics:['Climb and jump','Outrun','Second wind'],
+ Stealth:['Sneak','Blend in','Ghost'],Survival:['Track','Pathfinder','Make camp'],'First Aid':['Patch up','Triage','Steady hands'],
+ Medicine:['Treat','Revive','Sedate'],Computers:['Crack it','Trace','Backdoor'],Craft:['Fix it','Rig','Blow it']};
 // ---------- BATTLE (Bible: Combat; spec 006 part B) ----------
 // The command row, the Guard list, every battle move with its skill, tier and one-line rule, and the battle's lines.
 // {n} the agent, {e} the enemy, {t} a target, {h} HP, {w} WP, {k} turns left.
@@ -417,5 +461,5 @@ const INJURIES=[null,
  {name:'Done with field work',tier:'career',pen:{},line:'Leaves the party'}];
 const STEPNAME={profession:'JOB',stats:'STATS',skills:'SKILLS',identity:'IDENTITY',bonds:'BONDS',motives:'MOTIVATIONS',dossier:'DOSSIER',title:'BLACK LANTERN',roster:'ROSTER',team:'YOUR TEAM',pick:'PICK A TEAM',confirm:'NEW GAME'};
 const STEPSHORT={profession:'JOB',stats:'STATS',skills:'SKILL',identity:'ID',bonds:'BOND',motives:'WHY',dossier:'FILE'};
-return {ROAMW,SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,diceOf,ITEMS,KIT,KITUSES,ITEMUI,DISORDERS,SANW,TIERS,KINDS,SKILLOPT,AUTOPERK,SKILLW,MAPMENU,OVERSTEP,RECRUITS,RECRUITW,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD,MAPHUD,BATTLEW,MOVES,INJURIES};
+return {ROAMW,SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,diceOf,ITEMS,KIT,KITUSES,ITEMUI,DISORDERS,SANW,TIERS,KINDS,SKILLOPT,AUTOPERK,SKILLW,MAPMENU,OVERSTEP,RECRUITS,RECRUITW,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD,MAPHUD,BATTLEW,MOVES,INJURIES,DEBRIEF,UNLOCKS};
 })();
