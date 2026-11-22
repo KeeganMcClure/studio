@@ -3,31 +3,32 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
 <style>
-/* Layout: a handheld console shell — a scrolling CRT screen, then D-pad / L-R over Select-Start / A-B. Single dark look by choice. */
+/* Layout: a handheld console shell — the screen, then D-pad / L-R over Select-Start / A-B.
+   Painted in Rushlight's earth palette (bible Art, Palette; the approved battle mockup's shell: dark leather, Rust A, Blood B). */
 :root{
-  --shell:#3a2e78; --shell-hi:#5242a0; --shell-lo:#221a4c; --bezel:#14111f;
-  --scr-bg:#0d1322; --scr-fg:#ebe5c8; --scr-dim:#7c86a6; --scr-hi:#ffd166; --scr-red:#ff5d73; --scr-grn:#7fe0a3; --scr-line:#1f2a44;
-  --btn:#1c1733; --btn-hi:#2d2650; --btn-a:#c23a5c; --btn-b:#8c2c4a; --label:#b9aee8;
+  --shell:#3b3229; --shell-hi:#4d4134; --shell-lo:#2c2621; --bezel:#1c1814;
+  --scr-bg:#1c1814; --scr-fg:#e6dcc4; --scr-dim:#857e72; --scr-hi:#d9b45a; --scr-red:#c8603a; --scr-grn:#a8b46a; --scr-line:#4d4134;
+  --btn:#1c1814; --btn-hi:#2c2621; --btn-a:#9a4528; --btn-b:#5e1a18; --label:#b3aa98;
   --px:"Press Start 2P", ui-monospace, Menlo, monospace;
   --vt:"VT323", ui-monospace, Menlo, monospace;
   /* shell paint (engine/shell.css) */
-  --page:#100c22; --brand-ink:#5d5888; --led:#3dff8a; --led-off:#3a3a48; --bezel-edge:#0a0812; --btn-ink:#ffe3ec;
+  --page:#141210; --brand-ink:#b3aa98; --led:#d9b45a; --led-off:#3a3028; --bezel-edge:#0e0c0a; --btn-ink:#f2ead6;
   color-scheme:dark;
 }
 </style>
 <link rel="stylesheet" href="../../../engine/shell.css">
 <style>
-.hdr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 9px 6px;font:8px/1.4 var(--px);color:var(--scr-hi);background:#141c33;border-bottom:2px solid var(--scr-line)}
+.hdr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 9px 6px;font:8px/1.4 var(--px);color:var(--scr-hi);background:#2c2621;border-bottom:2px solid var(--scr-line)}
 .hdr #hStep{color:var(--scr-dim)}
 .body{flex:1;min-height:0;display:flex;flex-direction:column}
 .body.side{flex-direction:row}
 .list{flex:1;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;padding:4px 0;scrollbar-width:thin;scrollbar-color:var(--scr-line) transparent}
-.pane{flex:none;border-top:2px solid var(--scr-line);padding:7px 10px;color:var(--scr-fg);max-height:42%;overflow-y:auto;background:#0f172b}
+.pane{flex:none;border-top:2px solid var(--scr-line);padding:7px 10px;color:var(--scr-fg);max-height:42%;overflow-y:auto;background:#231e1a}
 .pane:empty{display:none}
 .body.side .pane{border-top:0;border-left:2px solid var(--scr-line);max-height:none;width:42%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;padding-top:12px}
 .row{display:flex;align-items:center;gap:6px;padding:3px 9px 3px 4px;cursor:pointer;min-height:26px}
 .row .cur{width:12px;flex:none;color:var(--scr-hi);visibility:hidden;font-size:16px}
-.row.on{background:#1a2440}
+.row.on{background:#3b3229;outline:2px solid var(--scr-hi);outline-offset:-2px}
 .row.on .cur{visibility:visible;animation:bob .6s steps(2) infinite}
 .row .lab{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .val{flex:none;display:flex;align-items:center;gap:4px;color:var(--scr-hi)}
@@ -37,10 +38,10 @@
 .row.wrap .lab{white-space:normal;overflow:visible;line-height:.95}
 .row.go .lab{color:var(--scr-grn)}
 .row.warn .lab{color:var(--scr-red)}
-.row.pickd{background:#2a2140}
-.row input{flex:1;min-width:0;font:20px var(--vt);color:var(--scr-fg);background:#0a1020;border:1px solid var(--scr-line);border-radius:2px;padding:1px 5px;outline:none;-webkit-user-select:text;user-select:text}
+.row.pickd{background:#2c2621}
+.row input{flex:1;min-width:0;font:20px var(--vt);color:var(--scr-fg);background:#141210;border:1px solid var(--scr-line);border-radius:2px;padding:1px 5px;outline:none;-webkit-user-select:text;user-select:text}
 .row input:focus{border-color:var(--scr-hi)}
-.tag{font:7px var(--px);color:#0d1322;background:var(--scr-red);padding:2px 3px;margin-left:6px;vertical-align:2px}
+.tag{font:7px var(--px);color:#1c1814;background:var(--scr-red);padding:2px 3px;margin-left:6px;vertical-align:2px}
 .tag.mine{background:var(--scr-grn)}
 .pip{color:var(--scr-grn);letter-spacing:-1px}
 .static{padding:6px 10px;color:var(--scr-dim)}
@@ -49,35 +50,35 @@
 .kv span:nth-child(odd){color:var(--scr-dim)}
 .small{font-size:17px;color:var(--scr-dim)}
 .hi{color:var(--scr-hi)} .red{color:var(--scr-red)} .grn{color:var(--scr-grn)}
-.ftr{padding:5px 9px;font:7px/1.5 var(--px);color:var(--scr-dim);border-top:2px solid var(--scr-line);background:#141c33;min-height:12px}
+.ftr{padding:5px 9px;font:7px/1.5 var(--px);color:var(--scr-dim);border-top:2px solid var(--scr-line);background:#2c2621;min-height:12px}
 .ftr.creep{color:var(--scr-red)}
-canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;background:#16203a;border:2px solid var(--scr-line);max-width:100%}
-.logo{font:13px/1.6 var(--px);color:var(--scr-hi);text-align:center;margin:14px 0 6px;letter-spacing:.06em;text-shadow:2px 2px 0 #6b2d4a}
+canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;background:#2c2621;border:2px solid var(--scr-line);max-width:100%}
+.logo{font:13px/1.6 var(--px);color:var(--scr-hi);text-align:center;margin:14px 0 6px;letter-spacing:.06em;text-shadow:2px 2px 0 #5e1a18}
 .logo small{display:block;font-size:7px;color:var(--scr-dim);letter-spacing:.2em;text-shadow:none}
 .lantern{display:block;margin:6px auto 4px}
-.card{border:2px solid var(--scr-line);margin:4px 8px 8px;padding:8px;background:#0f172b;color:var(--scr-fg)}
+.card{border:2px solid var(--scr-line);margin:4px 8px 8px;padding:8px;background:#231e1a;color:var(--scr-fg)}
 .card .top{display:flex;gap:10px;align-items:flex-start}
 .card .who{min-width:0}
 .card .who .n{font:9px/1.5 var(--px);color:var(--scr-hi);word-break:break-word}
 .stamp{display:inline-block;font:7px var(--px);color:var(--scr-red);border:1px solid var(--scr-red);padding:2px 4px;transform:rotate(-4deg);margin-top:4px}
 .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px 8px;margin-top:6px}
 .squad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:0 8px 8px}
-.squad .m{border:2px solid var(--scr-line);padding:5px;text-align:center;font-size:16px;background:#0f172b;min-width:0}
+.squad .m{border:2px solid var(--scr-line);padding:5px;text-align:center;font-size:16px;background:#231e1a;min-width:0}
 .squad .m .p{color:var(--scr-hi);font-size:15px;overflow-wrap:anywhere}
 .scan{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.18) 2px 3px);mix-blend-mode:multiply}
-.vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(60,0,10,.85));opacity:0;transition:opacity .4s}
-.toast{position:absolute;left:8px;right:8px;bottom:34px;background:#ffd166;color:#0d1322;font:8px/1.5 var(--px);padding:6px 8px;border:2px solid #0d1322;opacity:0;transform:translateY(6px);transition:all .18s;pointer-events:none}
+.vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(94,26,24,.85));opacity:0;transition:opacity .4s}
+.toast{position:absolute;left:8px;right:8px;bottom:34px;background:#d9b45a;color:#1c1814;font:8px/1.5 var(--px);padding:6px 8px;border:2px solid #1c1814;opacity:0;transform:translateY(6px);transition:all .18s;pointer-events:none}
 .toast.show{opacity:1;transform:none}
 .screen.glitch .list,.screen.glitch .hdr{animation:jit 2.7s steps(1) infinite}
 @keyframes jit{0%,91%,100%{transform:none}92%{transform:translate(2px,-1px)}94%{transform:translate(-3px,1px)}96%{transform:translate(1px,0)}}
 @keyframes bob{50%{transform:translateX(2px)}}
 @media (prefers-reduced-motion:reduce){.screen.glitch .list,.screen.glitch .hdr,.row.on .cur{animation:none}}
-#game{position:absolute;inset:0;display:none;overflow:hidden;background:#05040a}
+#game{position:absolute;inset:0;display:none;overflow:hidden;background:#1c1814}
 .screen.gaming #game{display:block}
 .screen.gaming .hdr,.screen.gaming .body,.screen.gaming .ftr{display:none}
 #gcv{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
 .screen.glitch #gcv{animation:jit 2.7s steps(1) infinite}
-.gbox{position:absolute;background:rgba(13,19,34,.94);border:2px solid #ebe5c8;box-shadow:0 0 0 2px #0d1322;border-radius:3px;color:#ebe5c8;font:19px/1.08 var(--vt);padding:5px 8px;box-sizing:border-box}
+.gbox{position:absolute;background:rgba(44,38,33,.96);border:2px solid #e6dcc4;box-shadow:0 0 0 2px #1c1814;border-radius:3px;color:#e6dcc4;font:19px/1.08 var(--vt);padding:5px 8px;box-sizing:border-box}
 /* Lantern Bust dialog box (dialog.js). Text keeps its 2 px unit; the portrait is drawn at the map's pixel size (--pu = 64 map px, set by the engine). */
 #gdlg{position:absolute;inset:0;pointer-events:none}
 #gdlg .bld{pointer-events:auto;cursor:pointer}
@@ -101,9 +102,9 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 #gmenu .mt{font:7px/1.6 var(--px);color:var(--scr-hi);margin:0 0 2px 2px}
 #gmenu .gi{display:flex;gap:4px;padding:1px 2px;cursor:pointer;white-space:nowrap}
 #gmenu .gi .gc{width:12px;color:var(--scr-hi);flex:none}
-#gmenu .gi.on{background:#1a2440}
-#gmenu .gi.dis{color:#5d6680}
-#gmenu .md{font-size:16px;color:var(--scr-dim);border-top:1px solid #2a3554;margin-top:3px;padding-top:2px;white-space:normal}
+#gmenu .gi.on{background:#1c1814}
+#gmenu .gi.dis{color:#857e72}
+#gmenu .md{font-size:16px;color:var(--scr-dim);border-top:1px solid #4d4134;margin-top:3px;padding-top:2px;white-space:normal}
 #ghud{position:absolute;left:4px;right:4px;bottom:4px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}
 #ghud.shake{animation:jit .25s steps(1)}
 .hb{background:rgba(13,19,34,.94);border:2px solid #7c86a6;border-radius:3px;padding:2px 4px;font:16px/1 var(--vt);color:#ebe5c8;min-width:0;overflow:hidden}
@@ -114,13 +115,27 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 #gsan{left:6px;top:6px;padding:1px 6px;font:7px/1.8 var(--px);border-width:1px}
 #gsan b{font-weight:normal;color:var(--scr-hi)}
 #game.battle #gsan,#game.menu #gsan{display:none}
-.gban{position:absolute;top:8px;left:50%;transform:translateX(-50%);font:8px/1.6 var(--px);color:var(--scr-hi);background:rgba(13,19,34,.9);border:1px solid var(--scr-hi);padding:3px 8px;white-space:nowrap}
+.gban{position:absolute;top:8px;left:50%;transform:translateX(-50%);font:8px/1.6 var(--px);color:var(--scr-hi);background:rgba(28,24,20,.92);border:1px solid var(--scr-hi);padding:3px 8px;white-space:nowrap}
 #gfade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .32s}
+/* Pick a company seat cards and the Muster roll (spec 003; Mockup 6) */
+.row.tpl{min-height:18px;padding:1px 9px 1px 4px;font-size:17px}.row.tpl .val{font-size:14px}.row.seatrow .val{display:none}.row.seatrow{padding:2px 4px 2px 0}.row.seatrow .lab{white-space:normal}.row.seatrow .cur{display:none}
+.seat{display:flex;gap:7px;padding:4px 6px;background:#231e1a;border:1px solid #4d4134;font-size:16px;line-height:1;min-width:0}
+.row.on .seat{border:2px solid var(--scr-hi)}.seat.kept{border-left:4px solid var(--scr-hi)}.seat i{color:var(--scr-hi);font-style:normal}
+.seat b{color:var(--scr-hi);font-weight:normal}.seat span,.seat .dim{color:#b3aa98}.seat .si{min-width:0;flex:1}.seat .si>div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seat .bk{color:#c4b99e;font-style:italic}.seat.empty{color:#857e72;justify-content:space-between;padding:10px 8px}
+.seat canvas,.mpane canvas,.muster canvas{image-rendering:pixelated;outline:1px solid #857e72;flex:none;background:#2c2621}
+.acts{display:flex;gap:4px;margin-top:3px;flex-wrap:wrap}.acts em{font:7px/14px var(--px);font-style:normal;padding:0 4px;border:1px solid #5a5048;color:#b3aa98;cursor:pointer}.acts em.on{background:var(--scr-hi);color:#1c1814;border-color:var(--scr-hi)}
+.mpane{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.muster{color:var(--scr-fg);font-size:17px;line-height:1.05;display:grid;gap:3px}.muster .mh{display:flex;gap:8px;align-items:flex-start}.muster .mh>div{flex:1}
+.muster b{font-weight:normal;color:var(--scr-hi)}.seedtag{font:7px var(--px);color:#857e72}.muster .bk{color:#c4b99e;font-style:italic}
+.kv6{display:grid;grid-template-columns:repeat(6,1fr);gap:2px}.kv6 span{border:1px solid #4d4134;text-align:center;color:#b3aa98;font-size:15px}.kv6 b{display:block;font-size:18px}
+#gexport{left:6px;right:6px;top:6px;padding:4px 6px}#gexport textarea{width:100%;height:120px;box-sizing:border-box;font:12px ui-monospace,monospace;background:#141210;color:#e6dcc4;border:1px solid #4d4134;word-break:break-all}
+#gexport .mt{font:7px/1.6 var(--px);color:var(--scr-hi)}#gexport .gi{display:flex;gap:4px;padding:1px 2px;cursor:pointer}#gexport .gi.on{background:#1c1814}#gexport .gc{width:12px;color:var(--scr-hi)}
 
 </style>
 
 <!-- The shell around this screen (bezel, brand strip, buttons) comes from engine/shell.js -->
-<div class="screen" id="screen" data-brand="RUSHLIGHT" data-brand-sub="DOT MATRIX" data-label-l="L: previous step" data-label-r="R: next step" data-label-start="Start: jump to dossier">
+<div class="screen" id="screen" data-brand="RUSHLIGHT" data-brand-sub="THE WITHY MARCH" data-label-l="L" data-label-r="R" data-label-start="Start: menu">
   <div class="hdr"><span id="hTitle"></span><span id="hStep"></span></div>
   <div class="body" id="body"><div class="list" id="list"></div><div class="pane" id="pane"></div></div>
   <div class="ftr" id="ftr"></div>
@@ -141,10 +156,11 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 <script src="../../../engine/roll.js"></script>
 <script src="../../../engine/battle.js"></script>
 <script src="../../../engine/patrol.js"></script>
+<script src="content/text-library.js"></script>
 <script src="strings.js"></script>
+<script src="species-art.js"></script>
 <script src="creator.js"></script>
 <script src="../../../engine/shelf.js"></script>
-<script src="species-art.js"></script>
 <script src="art/creatures.js"></script>
 <script src="art/art.js"></script>
 <script src="../../../engine/dialog.js"></script>
@@ -153,7 +169,6 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 <script src="battle.js"></script>
 <script src="party-menu.js"></script>
 <script src="../../../engine/nearest.js"></script>
-<script src="content/text-library.js"></script>
 <script src="content/stub.js"></script>
 
 

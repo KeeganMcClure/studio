@@ -33,7 +33,7 @@ function openParty(){return new Promise(res=>{
   count:()=>party.length,lead:()=>G.lead|0,cycle:cycleLead,close:closeParty,pulse:i=>party[i].hp<=3,
   actions:i=>[{label:PW.makeLead,dis:i===(G.lead|0)||!canLead(i),why:i===(G.lead|0)?PW.isLead:PW.cant,run:()=>setLead(i)},
    {label:PW.card,run:()=>{PM.view='card';PM.i=i}},
-   {label:PW.give,dis:true,why:PW.giveWhy,run:()=>{}}],
+   {label:PW.give,dis:party.length<2||!party[i].slots.length,why:PW.giveWhy,run:()=>giveItem(i)}],
   paint:{header:paintHeader,card:paintCard,detail:paintDetail},
   colors:{box:PAL.soot,border:PAL.bone,shadow:'#0e0c0a',on:PAL.cardOn,text:PAL.bone,dim:PAL.ash,cursor:PAL.tallow},
   font:VTf(16),headerH:18,cardH:50,gap:4,detailMin:44})};
@@ -67,12 +67,28 @@ function paintDetail(c,r,i,st){
  const lines=[];if(st.why)lines.push(st.why);else{const s=statusChips(m);lines.push(s.length?s.join(', '):PW.none);if(m.hp<=3)lines.push(PW.low)}
  lines.forEach(l=>pWrap(l,w,16,3).forEach(t=>{if(y<r.y+r.h-14){pT(t,x,y,'#c4b99e',16);y+=14}}));
 }
-// Merc card: a placeholder until Part A makes real mercs (name, species, HP, WP, SAN and the weapon)
+// Give item: one of the merc's slot items to another merc with a free slot (8 slots each; bible Items)
+async function giveItem(i){const m=party[i],I=RLS.ITEMS;
+ const k=await choose(m.slots.map(s=>I[s.id].name+(s.n>1?' ×'+s.n:'')),{cancel:true,title:'GIVE WHAT?'});if(k<0)return;
+ const to=party.map((p,j)=>({label:`${p.name}  ${p.slots.length}/8`,dis:j===i||p.slots.length>=8||p.dead}));
+ const t=await choose(to,{cancel:true,title:'TO WHO?'});if(t<0)return;
+ const it=m.slots.splice(k,1)[0];delete it.kit;party[t].slots.push(it);banner(`${I[it.id].name.toUpperCase()} → ${party[t].name.toUpperCase()}`);if(window.RLG)RLG.saveRun();
+}
+// Merc card: the Muster roll for one merc, on the canvas (Up/Down change merc, B back)
 function drawMercCard(m){
- pBox(4,4,VW-8,VH-8,PAL.card,PAL.bone,2);
- pBox(8,8,68,68,PAL.soot,PAL.tallow);cx.drawImage(RLSP.portrait(m.sp,m.look),10,10);
- pT(m.name.toUpperCase(),84,10,PAL.tallow,10,PXf);pT([m.sp,m.trade].filter(Boolean).join(' · '),84,24,PAL.bone,16);
- [['HP',m.hp,m.mhp],['WP',m.wp,m.mwp],['SAN',m.san,m.msan]].forEach(([l,v,mx],k)=>{const y=82+k*14;pT(l,10,y,'#c4b99e',15);pBar(40,y+4,120,v/mx,l==='SAN'?PAL.tallow:l==='WP'?PAL.dusk:PAL.rust);pT(`${v}/${mx}`,166,y,PAL.bone,15)});
- const w=m.w||{};pT(`${w.name||'Fists'} · ${w.dmg||'1d4-1'}`,10,126,PAL.bone,16);
- pT('B: back',10,VH-24,PAL.ash,15);
+ const I=RLS.ITEMS;pBox(2,2,VW-4,VH-4,PAL.card,PAL.bone,2);
+ pBox(6,6,52,52,PAL.soot,PAL.tallow);cx.imageSmoothingEnabled=false;cx.drawImage(RLSP.portrait(m.sp,m.look),0,0,64,64,8,8,48,48);
+ pT(pFit(m.name.toUpperCase(),VW-70,10,PXf),62,8,PAL.tallow,10,PXf);
+ pT(`${RLS.SPECIES[m.sp].name} · ${m.trade} · L${m.lvl}`,62,20,PAL.bone,15);pT(`${m.size} · ${m.trait}`,62,33,'#c4b99e',14);
+ if(G.run)pT(G.run.seed,VW-8-pW(G.run.seed,12),45,PAL.ash,12);
+ let y=60;RLS.STATS.forEach((k,j)=>{const x=6+j*38;pBox(x,y,36,24,PAL.soot,PAL.line);pT(k,x+(36-pW(k,12))/2,y,'#c4b99e',12);const v=String(m.stats[k]);pT(v,x+(36-pW(v,16))/2,y+9,PAL.bone,16)});
+ y+=27;[['HP',m.hp,m.mhp,PAL.rust],['WP',m.wp,m.mwp,PAL.dusk],['SAN',m.san,m.msan,PAL.tallow]].forEach(([l,v,mx,col],k)=>{const x=6+k*76;pT(l,x,y,'#c4b99e',14);pBar(x+22,y+5,30,v/mx,col);pT(`${v}`,x+55,y,l==='SAN'&&v<40?PAL.pink:PAL.bone,14)});
+ y+=13;pT(`Breaking Point ${m.bp} · Luck 50%`,6,y,'#c4b99e',14);y+=13;
+ const sk=Object.keys(RLS.SKILLS).filter(k=>m.sk[k]>RLS.SKILLS[k]).map(k=>`${k} ${m.sk[k]}`).join(' · ');
+ pWrap(sk,VW-12,14,3).forEach(l=>{pT(l,6,y,PAL.bone,14);y+=12});y+=2;
+ pT(pFit(`Kin: ${m.kin.name}, ${m.kin.type.toLowerCase()} · Bond ${m.kin.bond}`,VW-12,14),6,y,PAL.bone,14);y+=12;
+ pT(pFit(`Motivations: ${m.mot.map((x,i)=>i===m.main?x+' (Main)':x).join(', ')}`,VW-12,14),6,y,PAL.bone,14);y+=12;
+ const g=m.gear,nm=x=>x?I[x.id].name:'—';pWrap(`WPN 1 ${nm(g.w1)} · WPN 2 ${nm(g.w2)} · BODY ${nm(g.body)} · HEAD ${nm(g.head)}`,VW-12,14,2).forEach(l=>{pT(l,6,y,'#c4b99e',14);y+=12});
+ pWrap(m.back||'',VW-12,14,2).forEach(l=>{if(y<VH-18){pT(l,6,y,PAL.ash,14);y+=12}});
+ pT('B: back · ▲▼ merc',6,VH-16,PAL.ash,13);
 }

@@ -1,327 +1,338 @@
-// Rushlight (forked from Black Lantern, Nov 21, 2026) · creator.js
-// The agent creator plus the shared shell (buttons, keyboard, portraits). Exposes window.RL.
-// Needs strings.js loaded first.
+// Rushlight · creator.js
+// Everything from the title screen to "Sign them on" (spec 003, slice part A): the title (New run, Continue, Ledger, Import),
+// the run seed, Pick a company (6 templates and Blank, three seat cards, Keep · Reroll · Tweak · Rebuild), the full creator
+// (7 steps), the Muster roll, the save keys with their version number and upgrade steps, and the save code.
+// Also the shell's own screens (rows in the HTML screen, tapped or moved with the D-pad) and where presses go. Exposes window.RL.
+// Needs strings.js (window.RLS), species-art.js (window.RLSP) and engine/seed.js (StudioSeed) loaded first.
 (()=>{
-// ---------- DATA (text lists come from strings.js) ----------
-const {SKILLS,P,PROFS,STATS,STATNAME,FEAT,RELS,FIRST,LAST,MOTIVES,ADJ,NOUN,HAIRCN,HAIRS,EYES,ACC,OUTCN,CREEP,ITEMDEF,WEAP,SP,SPECS,STEPNAME}=window.RLS;
-const SKIN=['#f6d7b8','#e9b98f','#c98e62','#a26a43','#7a4a2c','#4e2f1f'];
-const HAIRC=['#1b1414','#4a2c1a','#8a5a2b','#d8b25a','#b94a2c','#9aa0a6','#ece8de'];
-const OUTC=['#2d3a5c','#3e5c3a','#7a2e3e','#4b3b6e','#8a7a52','#232326','#4f87a3'];
-const specOf=a=>{const L=SPECS[a.prof]||[];return L.find(s=>s.id===a.spec)||L[0]||null};
-const kitText=s=>Object.entries(s.items).map(([k,n])=>`${ITEMDEF[k].name}${n>1?' x'+n:''}`).join(' · ');
-const STEPS=['profession','loadout','stats','skills','bonds','look','identity','dossier'];
-
-// ---------- STATE ----------
-const rnd=n=>Math.floor(Math.random()*n), pick=a=>a[rnd(a.length)];
-const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const {STATS,STATNAME,SKILLS,SPECIES,SIZE,TRADES,TEMPLATES,MOTIVES,KIN,ITEMS,STEPNAME}=window.RLS;
+const ORDER=RLSP.ORDER;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const roll4d6=()=>{const r=[1,2,3,4].map(()=>1+rnd(6)).sort((a,b)=>a-b);return r[1]+r[2]+r[3]};
-const rollStats=()=>Object.fromEntries(STATS.map(k=>[k,roll4d6()]));
-const genCode=()=>pick(ADJ)+' '+pick(NOUN);
-function newAgent(){return {prof:null,spec:null,method:'buy',stats:Object.fromEntries(STATS.map(k=>[k,12])),picks:{},bonds:[],look:{skin:1,hair:0,hairC:1,eyes:0,acc:0,outfitC:-1},name:'',code:'',age:34,motives:[]}}
-const profOf=a=>PROFS.find(p=>p.id===a.prof);
-function setProf(a,p){if(a.prof!==p.id)a.spec=null;a.prof=p.id;a.picks={};const old=a.bonds;a.bonds=[];for(let i=0;i<p.bonds;i++)a.bonds.push(old[i]||{name:'',rel:RELS[i%RELS.length]});}
-function randomProf(){const odd=Math.random()<0.25;return pick(PROFS.filter(p=>!!p.odd===odd));}
-const derived=a=>{const s=a.stats;return{HP:Math.ceil((s.STR+s.CON)/2),WP:s.POW,SAN:s.POW*5,BP:s.POW*4}};
-function skillVal(a,k){const p=profOf(a);return Math.max(SKILLS[k],(p&&p.skills[k])||0)+20*(a.picks[k]||0)}
-const picksUsed=a=>Object.values(a.picks).reduce((x,y)=>x+y,0);
-const buyLeft=a=>72-STATS.reduce((t,k)=>t+a.stats[k],0);
-const feature=(k,v)=>v<=5?FEAT[k][0]:v>=16?FEAT[k][1]:'';
-const randomLook=()=>({skin:rnd(6),hair:rnd(7),hairC:rnd(7),eyes:rnd(3),acc:rnd(7),outfitC:-1});
-function autoPicks(a){let n=8,g=0;const p=profOf(a),keys=Object.keys(p.skills).concat(Object.keys(p.skills),Object.keys(SKILLS));while(n>0&&g++<300){const k=pick(keys);if(skillVal(a,k)+20<=80){a.picks[k]=(a.picks[k]||0)+1;n--}}}
-function randomAgent(){const a=newAgent();a.method='roll';a.stats=rollStats();a.code=genCode();setProf(a,randomProf());a.spec=pick(SPECS[a.prof]).id;a.bonds.forEach(b=>b.name=pick(FIRST));a.look=randomLook();a.name=pick(FIRST)+' '+pick(LAST);a.age=24+rnd(36);a.motives=shuffle(MOTIVES).slice(0,3);autoPicks(a);return a}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const tradeOf=id=>TRADES.find(t=>t.id===id);
+const T=(id,o)=>window.RLT(id,o);
 
-// Save keys start with rl. on Release and dev.rl. on Dev (engine/studio.js), so testing never touches the
-// stable saves. Outside the site (the checks, a published artifact) there is no Dev build, so it stays rl.
+// ================= SAVES =================
+// Keys start with rl. on Release and dev.rl. on Dev (engine/studio.js). Outside the site (the checks) they stay rl.
 const RLP=window.Studio?Studio.savePrefix('rl.'):'rl.',K=k=>RLP+k;
-const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const S={step:'title',sel:{},a:store.get(K('draft'),null)||newAgent(),roster:store.get(K('roster'),[]),san:99,swap:null,squad:null,clearArm:false,saved:false};
-
-
-// ---------- PIXEL PORTRAIT ----------
-function shade(hex,amt){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;const f=v=>Math.max(0,Math.min(255,Math.round(v+amt)));return'#'+[f(r),f(g),f(b)].map(v=>v.toString(16).padStart(2,'0')).join('')}
-function drawPortrait(cv,a,scale,blink){
-  const p=profOf(a)||PROFS[0],L=a.look,ctx=cv.getContext('2d');cv.width=24*scale;cv.height=24*scale;
-  ctx.imageSmoothingEnabled=false;ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,24,24);
-  const px=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h)};
-  const OL='#120c1c',sk=SKIN[L.skin],sd=shade(sk,-28),hc=HAIRC[L.hairC],hd=shade(hc,-25);
-  let oc=L.outfitC>=0?OUTC[L.outfitC]:OUTC[p.color];
-  if(p.outfit==='clerical'&&L.outfitC<0)oc='#1d1b22';
-  const od=shade(oc,-22),ol=shade(oc,24);
-  // long hair behind
-  if(L.hair===1){px(6,7,2,11,hc);px(16,7,2,11,hc);px(5,8,1,9,OL);px(18,8,1,9,OL)}
-  // body
-  px(5,19,14,5,oc);px(6,18,12,1,oc);px(4,19,1,5,OL);px(19,19,1,5,OL);px(5,18,1,1,OL);px(18,18,1,1,OL);px(6,17,4,1,OL);px(14,17,4,1,OL);
-  const o=p.outfit;
-  if(o==='suit'){px(9,18,6,1,'#ece8de');px(10,19,4,1,'#ece8de');px(11,20,2,1,'#ece8de');px(11,19,2,1,'#8c2f39');px(11,20,2,3,'#8c2f39');px(9,19,1,4,od);px(14,19,1,4,od)}
-  else if(o==='labcoat'){px(5,19,14,5,'#e6e6ea');px(6,18,12,1,'#e6e6ea');px(10,18,4,6,oc);px(9,18,1,6,'#b8b8c4');px(14,18,1,6,'#b8b8c4');px(15,21,2,1,'#b8b8c4');px(16,20,1,1,'#2d6ad1')}
-  else if(o==='scrubs'){px(10,18,4,1,sk);px(11,19,2,1,sk);px(15,21,2,1,od)}
-  else if(o==='tactical'){px(7,19,10,5,od);px(8,18,1,6,'#1d1d1f');px(15,18,1,6,'#1d1d1f');px(9,21,2,2,ol);px(13,21,2,2,ol)}
-  else if(o==='cardigan'){px(11,18,2,6,'#e8dcc0');px(10,20,1,1,'#ddd');px(10,22,1,1,'#ddd');px(6,22,3,1,od)}
-  else if(o==='hoodie'){px(8,17,8,2,od);px(10,19,1,3,'#ddd');px(13,19,1,3,'#ddd');px(9,22,6,2,od)}
-  else if(o==='uniform'){px(10,18,4,1,od);px(15,20,2,2,'#f2c94c');px(7,20,3,1,od);px(12,19,1,5,od)}
-  else if(o==='clerical'){px(11,18,2,1,'#f4f4f4')}
-  else if(o==='ranger'){px(6,20,2,2,'#3e5c3a');px(15,20,2,2,'#f2c94c');px(10,18,4,1,od)}
-  else if(o==='mail'){for(let i=0;i<6;i++)px(7+i*2,18+i,2,1,'#5a3e2b');px(15,20,2,1,'#c0392b')}
-  else if(o==='janitor'){px(8,20,8,4,'#3b5b8a');px(9,18,1,2,'#3b5b8a');px(14,18,1,2,'#3b5b8a');px(11,21,2,1,'#f2c94c')}
-  else if(o==='apron'){px(8,19,8,5,'#f4f1e8');px(8,19,8,1,'#e86a92');px(8,22,8,1,'#7fd6e6')}
-  // neck
-  px(10,16,4,2,sk);px(10,16,4,1,sd);px(9,16,1,1,OL);px(14,16,1,1,OL);
-  // head
-  px(8,6,8,10,sk);px(8,5,8,1,OL);px(7,6,1,9,OL);px(16,6,1,9,OL);px(8,15,1,1,OL);px(15,15,1,1,OL);px(9,16,1,0,OL);
-  px(7,10,1,2,sk);px(16,10,1,2,sk);px(6,10,1,2,OL);px(17,10,1,2,OL);
-  // brows/eyes
-  px(9,8,2,1,L.hair===3?sd:hd);px(13,8,2,1,L.hair===3?sd:hd);
-  if(blink){px(9,11,2,1,OL);px(13,11,2,1,OL)}
-  else if(L.eyes===0){px(10,10,1,2,OL);px(13,10,1,2,OL)}
-  else if(L.eyes===1){px(9,10,2,2,'#f4f4f4');px(13,10,2,2,'#f4f4f4');px(10,10,1,2,OL);px(13,10,1,2,OL)}
-  else{px(9,10,2,1,sd);px(13,10,2,1,sd);px(10,11,1,1,OL);px(13,11,1,1,OL);px(9,12,2,1,shade(sk,-15));px(13,12,2,1,shade(sk,-15))}
-  px(12,12,1,1,sd);px(11,14,2,1,'#7a3b3b');
-  // hair front
-  const top=()=>{px(8,4,8,3,hc);px(7,5,1,4,hc);px(16,5,1,4,hc);px(8,3,8,1,OL);px(7,4,1,1,OL);px(16,4,1,1,OL);px(9,6,3,1,hc);px(13,6,2,1,hc)};
-  if(L.hair===0||L.hair===1)top();
-  else if(L.hair===2){px(8,5,8,2,hd)}
-  else if(L.hair===3){px(10,6,2,1,'rgba(255,255,255,.35)')}
-  else if(L.hair===4){top();px(10,1,4,3,hc);px(10,0,4,1,OL);px(9,1,1,2,OL);px(14,1,1,2,OL)}
-  else if(L.hair===5){px(11,1,2,6,hc);px(11,0,2,1,OL)}
-  else if(L.hair===6){px(7,3,10,4,hc);px(6,4,1,4,hc);px(17,4,1,4,hc);px(9,2,2,1,hc);px(13,2,2,1,hc);px(7,7,1,2,hc);px(16,7,1,2,hc);px(10,4,1,1,hd);px(14,5,1,1,hd);px(8,5,1,1,hd)}
-  // accessory
-  const A=L.acc;
-  if(A===1){px(8,9,4,4,OL);px(12,9,4,4,OL);px(9,10,2,2,'#bfe3ff');px(13,10,2,2,'#bfe3ff');if(!blink){px(10,10,1,2,OL);px(13,10,1,2,OL)}}
-  else if(A===2){px(8,10,8,2,OL);px(9,10,1,1,'#5a5a66');px(13,10,1,1,'#5a5a66')}
-  else if(A===3){px(8,12,8,4,hc);px(9,16,6,1,hc);px(12,12,1,1,sd);px(11,14,2,1,'#3a1d1d')}
-  else if(A===4){px(13,12,1,1,'#c0566b');px(14,13,1,1,'#c0566b');px(15,14,1,1,'#c0566b')}
-  else if(A===5){px(17,10,1,2,'#9aa0a6');px(17,12,1,5,'#6d737a')}
-  else if(A===6){px(8,8,8,1,OL);px(12,9,4,4,OL)}
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+// The save version (studio-bible/saves.md): each change to what a save holds adds a step here. Old steps never change.
+const VERSION=1;
+const newLedger=()=>({bestiary:{},dead:[],companies:[]});
+// Each step takes the save as one object {run, ledger, draft, legacy} and returns it at the next version.
+const STEPS_UP={
+ // 0 → 1 (spec 003): the setup copy's Black Lantern-shaped test data (rl.roster, rl.game, an agent draft) goes;
+ // nothing in it is a real run. The ledger is made if missing.
+ 1:o=>{o.legacy=null;if(o.draft&&o.draft.prof)o.draft=null;if(o.run&&!o.run.seed)o.run=null;if(!o.ledger)o.ledger=newLedger();return o}
+};
+function upgradeSave(o,from){for(let v=from+1;v<=VERSION;v++)o=STEPS_UP[v](o);o.version=VERSION;return o}
+// On open: back up older saves first (all rl.* keys in one block), then run each step above the stored version.
+function openSaves(){
+ let v=store.get(K('version'),null);
+ const keys=[];try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith(RLP)&&!k.startsWith(RLP+'backup.'))keys.push(k)}}catch(e){}
+ if(v==null&&!keys.length){store.set(K('version'),VERSION);store.set(K('ledger'),newLedger());return}
+ v=v|0;if(v>=VERSION){if(!store.get(K('ledger'),null))store.set(K('ledger'),newLedger());return}
+ const backup={};keys.forEach(k=>{try{backup[k]=localStorage.getItem(k)}catch(e){}});store.set(K('backup.v'+v),backup);
+ const o=upgradeSave({run:store.get(K('run'),null),ledger:store.get(K('ledger'),null),draft:store.get(K('draft'),null)},v);
+ ['roster','game'].forEach(k=>store.set(K(k),null));
+ store.set(K('run'),o.run);store.set(K('ledger'),o.ledger);store.set(K('draft'),o.draft);store.set(K('version'),VERSION);
 }
-const urlCache={};
-function portraitURL(a,scale){const k=JSON.stringify([a.prof,a.look,scale]);if(!urlCache[k]){const c=document.createElement('canvas');drawPortrait(c,a,scale,false);urlCache[k]=c.toDataURL()}return urlCache[k]}
+// The save code: rl.version, rl.run and rl.ledger as one line of text
+function exportCode(){const o={version:store.get(K('version'),VERSION),run:store.get(K('run'),null),ledger:store.get(K('ledger'),null)};
+ return 'RL1:'+btoa(unescape(encodeURIComponent(JSON.stringify(o))))}
+function readCode(code){try{code=String(code).trim();if(!code.startsWith('RL1:'))return null;const o=JSON.parse(decodeURIComponent(escape(atob(code.slice(4).replace(/\s+/g,'')))));
+ if(!o||typeof o!=='object'||!('run' in o)||!('ledger' in o))return null;return upgradeSave({run:o.run,ledger:o.ledger||newLedger(),draft:null},o.version|0)}catch(e){return null}}
+function applyCode(o){store.set(K('run'),o.run);store.set(K('ledger'),o.ledger);store.set(K('version'),VERSION)}
 
-// ---------- VIEWS ----------
-const R=(label,o={})=>Object.assign({label},o);
+// ================= SEEDS =================
+// A seed is four digits, a dash and a letter (4471-K): 260,000 seeds (spec 003, 2).
+const LET='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const seedNum=s=>{const m=/^(\d{4})-?([A-Z])$/i.exec(String(s).trim());return m?(+m[1])*26+LET.indexOf(m[2].toUpperCase()):null};
+const seedText=n=>String(Math.floor(n/26)).padStart(4,'0')+'-'+LET[n%26];
+const randomSeed=()=>seedText(Math.floor(Math.random()*260000));
+// The run seed makes three streams: the world (region n is the seed plus n), the muster and the dice.
+const streams=n=>({world:StudioSeed.stream(n+1).save(),muster:StudioSeed.stream(StudioSeed.hash('muster:'+n)).save(),dice:StudioSeed.stream(StudioSeed.hash('dice:'+n)).save()});
+
+// ================= ROLLING A MERC =================
+const given=()=>Object.keys(window.RL_TEXT||{}).filter(k=>RL_TEXT[k].p==='name.given').map(k=>RL_TEXT[k].t)
+ .filter(n=>!['Pell','Hester'].includes(n));  // the slice's own cast keep their names (dev-notes, spec 003)
+function roll4d6(R){const r=[0,0,0,0].map(()=>1+R.int(6)).sort((a,b)=>a-b);return r[1]+r[2]+r[3]}
+function pickName(R,used){const pool=given().filter(n=>!used.includes(n));const n=pool.length?pool[R.int(pool.length)]:'Nameless';used.push(n);return n}
+const tradeBase=(tr,k)=>{if(!tr)return SKILLS[k];if(tr.strong.includes(k))return 50;if(tr.backup.includes(k))return ['Melee','Dodge','Athletics'].includes(k)?40:30;return SKILLS[k]};
+// A creator draft {trade, base stats, picks, name, sp, look, back, kin, mot, main} becomes a full merc (spec 003, 7)
+function finalStats(c){const S=SPECIES[c.sp],o={};STATS.forEach(k=>o[k]=clamp((c.base[k]|0)+(S&&S.up===k?2:0)-(S&&S.down===k?2:0),3,18));return o}
+function skillsOf(c){const tr=tradeOf(c.trade),S=SPECIES[c.sp]||{},sz=SIZE[S.size]||{},o={};
+ Object.keys(SKILLS).forEach(k=>{let v=Math.min(80,tradeBase(tr,k)+20*((c.picks||{})[k]|0));if(k==='Stealth')v+=sz.Stealth|0;if(S.skill&&S.skill[k])v+=S.skill[k];o[k]=v});return o}
+function rawSkill(c,k){return Math.min(80,tradeBase(tradeOf(c.trade),k)+20*((c.picks||{})[k]|0))}
+function backText(c){return c.backT!=null?c.backT:c.back?T(c.back):''}
+function build(c,prev){
+ const st=finalStats(c),S=SPECIES[c.sp],tr=tradeOf(c.trade),sz=SIZE[S.size];
+ const hp=Math.ceil((st.STR+st.CON)/2)+sz.hp,wp=st.POW,san=st.POW*5;
+ const m={id:c.id,c:JSON.parse(JSON.stringify(c)),name:c.name,sp:c.sp,trade:tr.name,tradeId:tr.id,look:Object.assign({},c.look),stats:st,sk:skillsOf(c),
+  size:S.size,trait:S.trait,lvl:1,xp:0,hp,mhp:hp,wp,mwp:wp,san,msan:san,bp:san-wp,back:backText(c),
+  kin:{type:c.kin.type,name:c.kin.name,bond:st.CHA},bonds:{},mot:c.mot.slice(),main:c.main|0,adapt:{v:0,h:0},dis:[],st:[],nick:[],ko:false};
+ // gear (spec 003, 7): the trade's weapon in WPN 1, a knife in WPN 2 (the Scribe's knife is WPN 1, WPN 2 empty), armor, the kit item
+ m.gear={w1:{id:tr.weapon,wear:0},w2:tr.weapon==='knife'?null:{id:'knife',wear:0},body:null,head:null,hand:'w1'};
+ tr.armor.forEach(a=>{const it=ITEMS[a];m.gear[it.slot]={id:a,wear:0}});
+ m.slots=[{id:tr.kit,n:tr.n,kit:true}];
+ return m;
+}
+// Rolling a merc for a template seat, a Reroll or a hire (spec 003, 4), all from the muster stream R
+function rollDraft(R,tradeId,used,o={}){
+ const tr=tradeOf(tradeId),vals=[0,1,2,3,4,5].map(()=>roll4d6(R)).sort((a,b)=>b-a),base={};
+ base[tr.key[0]]=vals[0];base[tr.key[1]]=vals[1];
+ const rest=STATS.filter(k=>!tr.key.includes(k)),left=vals.slice(2);
+ rest.forEach(k=>{base[k]=left.splice(R.int(left.length),1)[0]});
+ const sp=ORDER[R.int(ORDER.length)],picks={};
+ const job=[...tr.strong,...tr.backup];
+ if(o.bumps){ // hires: 2-3 bumps (strong, backup, then maybe an odd hobby)
+  picks[tr.strong[R.int(2)]]=1;picks[tr.backup[R.int(2)]]=1;
+  if(o.bumps>2){const odd=Object.keys(SKILLS).filter(k=>!job.includes(k));picks[odd[R.int(odd.length)]]=1}
+ }else{
+  job.forEach(k=>picks[k]=1);const b=tr.backup[R.int(2)];picks[b]=2;
+  const odd=Object.keys(SKILLS).filter(k=>!job.includes(k));for(let i=0;i<3;i++){const k=odd.splice(R.int(odd.length),1)[0];picks[k]=1}
+ }
+ const name=pickName(R,used),look={shade:R.int(3),mark:R.int(4),neck:R.int(3)};
+ const back=`BK-${tr.bk}-${1+R.int(2)}`,kin={type:KIN[R.int(4)],name:pickName(R,used)};
+ const ms=MOTIVES.slice(),mot=[ms.splice(R.int(ms.length),1)[0],ms.splice(R.int(ms.length),1)[0]];
+ return {id:'m'+Math.floor(R.next()*1e9).toString(36),trade:tradeId,method:'roll',base,rerolls:1,picks,name,sp,look,back,backT:null,kin,mot,main:R.int(2),done:true};
+}
+const freeNames=(c,used)=>{[c.name,c.kin&&c.kin.name].forEach(n=>{const i=used.indexOf(n);if(i>=0)used.splice(i,1)})};
+
+// ================= STATE =================
+const S={step:'title',sel:{},draft:null,ed:null,confirm:null,review:0,seedIn:'',seedBad:false,importIn:'',importBad:false,pop:null};
+function freshDraft(seed){const n=seedNum(seed);return {seed,mpos:streams(n).muster,tpl:null,seats:[null,null,null],kept:[false,false,false],used:[],name:''}}
+const muster=()=>StudioSeed.load(S.draft.mpos);
+function withMuster(fn){const R=muster();const r=fn(R);S.draft.mpos=R.save();return r}
+function saveDraft(){if(S.draft)store.set(K('draft'),Object.assign({},S.draft,{step:S.step,ed:S.ed,review:S.review}))}
+function pickTemplate(i){const d=S.draft,tp=TEMPLATES[i];
+ d.seats.forEach(c=>{if(c)freeNames(c,d.used)});d.tpl=tp.id;d.kept=[false,false,false];
+ d.seats=tp.trades.length?withMuster(R=>tp.trades.map(t=>rollDraft(R,t,d.used))):[null,null,null];S.pop=null}
+function reroll(i){const d=S.draft,c=d.seats[i];freeNames(c,d.used);d.seats[i]=withMuster(R=>rollDraft(R,c.trade,d.used));d.kept[i]=false}
+
+// ================= THE SCREENS =================
+const R_=(label,o={})=>Object.assign({label},o);
 const ST=html=>({static:html});
-const goto=step=>{S.step=step;S.swap=null;if(step!=='dossier')S.squad=null;S.clearArm=false};
-const nextStep=()=>{const i=STEPS.indexOf(S.step);if(i>=0&&i<STEPS.length-1){if(!S.a.prof)return toast('PICK A PROFESSION FIRST');if(S.step==='loadout'&&!S.a.spec)return toast('PICK A SPECIALTY');if(S.step==='stats'&&S.a.method==='buy'&&buyLeft(S.a)!==0)return toast('SPEND EXACTLY 72 POINTS');goto(STEPS[i+1])}};
-const prevStep=()=>{const i=STEPS.indexOf(S.step);if(i>0){goto(STEPS[i-1])}else if(i===0||S.step==='roster'){goto('title')}};
-const nextRow=lab=>R(lab||'Next ▶',{cls:'go',a:nextStep});
-
 const V={};
-V.title=()=>{
-  const n=S.roster.length,has=!!S.a.prof;
-  return{rows:[
-    ST(`<canvas class="lantern pix" id="lantern" width="96" height="96" style="border:0;background:transparent"></canvas><div class="logo">RUSHLIGHT<small>BUILD SETUP · NOT THE GAME YET</small></div><div class="static small" style="text-align:center;padding-top:0">Build an agent. Lose them later.</div>`),
-    ...(store.get(K('game'),null)?[R('Continue',{cls:'go',a:()=>{if(window.RLG)RLG.resume()}})]:[]),
-    ...(has?[R('Continue draft',{val:esc(profOf(S.a).name),a:()=>{goto('dossier')}})]:[]),
-    R('New agent',{a:()=>{S.a=newAgent();goto('profession')}}),
-    R('Quick roll',{val:'random',a:()=>{S.a=randomAgent();goto('dossier');toast('A NEW FILE LANDS ON YOUR DESK')}}),
-    R('Roster',{val:n+' on file',a:()=>{goto('roster')}}),
-    // Back to the studio's game shelf, only when the game was opened from it (studio-bible/launcher.md)
-    ...(window.Studio&&Studio.fromShelf?[R('Game shelf',{val:'◀',a:()=>Studio.toShelf()})]:[]),
-    ST(`<div class="small" style="text-align:center;margin-top:6px">Keyboard: arrows · Z = A · X = B · Q/W = L/R · Enter = Start</div>`)
-  ],foot:'A: SELECT'};
-};
-V.roster=()=>{
-  const rows=S.roster.length?S.roster.map((a,i)=>R(esc(a.name||'Unnamed'),{val:esc(profOf(a)?.name||''),a:()=>{S.a=JSON.parse(JSON.stringify(a));goto('dossier')}})):[ST('No agents on file yet. Save one from the dossier screen.')];
-  if(S.roster.length)rows.push(R(S.clearArm?'Press A again to shred all':'Shred roster',{cls:'warn',a:()=>{if(S.clearArm){S.roster=[];store.set(K('roster'),[]);S.clearArm=false;toast('ROSTER SHREDDED')}else{S.clearArm=true}}}));
-  return{rows,foot:'A: OPEN FILE · B: BACK'};
-};
-V.profession=()=>{
-  const a=S.a,rows=[R('?? Random draw',{val:'1 in 4 odd',a:()=>{const p=randomProf();setProf(a,p);S.sel.profession=PROFS.indexOf(p)+1+(p.odd?1:0);toast('DRAWN: '+p.name.toUpperCase()+(p.odd?' (ODDBALL)':''))}})];
-  PROFS.forEach((p,i)=>{if(i===8)rows.push(ST('<h3>ODDBALLS</h3>'));rows.push(R(esc(p.name)+(a.prof===p.id?'<span class="tag mine">YOU</span>':''),{p,a:()=>{setProf(a,p);goto('loadout')}}))});
-  const hov=rows[S.sel.profession||0]?.p;
-  const pane=hov?`<div><span class="hi">${esc(hov.role.toUpperCase())}</span> · ${hov.bonds} bonds</div><div class="small" style="margin:3px 0">${esc(hov.blurb)}</div>${hov.abil.map(x=>`<div><span class="grn">${esc(x[0])}</span> <span class="small">${esc(x[1])}</span></div>`).join('')}<div class="small" style="margin-top:3px">${Object.entries(hov.skills).sort((x,y)=>y[1]-x[1]).slice(0,4).map(([k,v])=>`${k} ${v}%`).join(' · ')}</div>`
-    :`<div class="small">Draws any profession. About one draw in four is an oddball.</div>`;
-  return{rows,pane,foot:'A: CHOOSE · B: BACK · R: NEXT'};
-};
-V.loadout=()=>{
-  const a=S.a,L=SPECS[a.prof]||[];
-  const rows=L.map(s=>R(esc(s.name)+(a.spec===s.id?'<span class="tag mine">YOU</span>':''),{s,a:()=>{a.spec=s.id;goto('stats')}}));
-  const hov=rows[S.sel.loadout||0]?.s||L[0];
-  const w=hov&&hov.weapon?WEAP[hov.weapon]:null;
-  const pane=hov?`<div class="small" style="margin-bottom:3px">${esc(hov.blurb)}</div><div class="hi" style="font:7px/1.8 var(--px)">STARTING KIT</div>`+Object.entries(hov.items).map(([k,n])=>`<div><span class="grn">${esc(ITEMDEF[k].name)}${n>1?' x'+n:''}</span> <span class="small">${esc(ITEMDEF[k].desc)}</span></div>`).join('')+
-    `<div class="hi" style="font:7px/1.8 var(--px);margin-top:3px">WEAPON</div><div class="small" style="color:var(--scr-fg)">${w?`${esc(w.name)} · ${w.skill} · ${w.dmg[0]}d${w.dmg[1]} dmg`:'None issued. You fight with whatever you\'re best at.'}</div><div class="small" style="margin-top:3px">Kit goes in the squad's shared pack. Squadmates each add one item.</div>`:'';
-  return{rows,pane,foot:'A: CHOOSE · B: BACK · R: NEXT'};
-};
-V.stats=()=>{
-  const a=S.a,buy=a.method==='buy',d=derived(a);
-  const tog=()=>{a.method=buy?'roll':'buy';a.stats=a.method==='buy'?Object.fromEntries(STATS.map(k=>[k,12])):rollStats();S.swap=null};
-  const rows=[R('Method',{val:buy?'POINT BUY':'ROLL 4d6',left:tog,right:tog,a:tog})];
-  STATS.forEach(k=>{
-    const v=a.stats[k];
-    const adj=dd=>()=>{if(!buy)return;const nv=v+dd;if(nv<3||nv>18||(dd>0&&buyLeft(a)<=0))return;a.stats[k]=nv};
-    rows.push(R(`${k} <span class="small">${STATNAME[k]}</span>`,{k,cls:S.swap===k?'pickd':'',val:`<span${v>=16?' class="grn"':v<=5?' class="red"':''}>${String(v).padStart(2,' ')}</span>`,left:buy?adj(-1):null,right:buy?adj(1):null,
-      a:buy?adj(1):()=>{if(!S.swap){S.swap=k}else if(S.swap===k){S.swap=null}else{[a.stats[S.swap],a.stats[k]]=[a.stats[k],a.stats[S.swap]];S.swap=null}}}));
-  });
-  if(!buy)rows.push(R('Reroll all',{a:()=>{a.stats=rollStats();S.swap=null}}));
-  rows.push(nextRow());
-  const feats=STATS.map(k=>feature(k,a.stats[k])&&`<div class="small">${k}: ${esc(feature(k,a.stats[k]))}</div>`).filter(Boolean).join('');
-  const pane=`<div class="kv" style="grid-template-columns:repeat(4,auto 1fr)"><span>HP</span><span class="hi">${d.HP}</span><span>WP</span><span class="hi">${d.WP}</span><span>SAN</span><span class="hi">${d.SAN}</span><span>BP</span><span class="hi">${d.BP}</span></div>`+
-    (buy?`<div style="margin-top:3px">Points left: <span class="${buyLeft(a)===0?'grn':'red'}">${buyLeft(a)}</span> <span class="small">(3–18 each)</span></div>`:`<div class="small" style="margin-top:3px">${S.swap?'Now pick a stat to swap with '+S.swap+'.':'A on two stats to swap them.'}</div>`)+
-    (feats||'<div class="small">Scores of 16+ or 5 or less earn a distinguishing feature.</div>')+
-    `<div class="small" style="margin-top:3px">SAN = POW×5. Hit Breaking Point and something in you cracks for good.</div>`;
-  return{rows,pane,foot:buy?'◀▶: ADJUST · L/R: STEP':'A: SWAP · L/R: STEP'};
-};
-V.skills=()=>{
-  const a=S.a,p=profOf(a),left=8-picksUsed(a);
-  const keys=Object.keys(SKILLS).sort((x,y)=>(p.skills[y]?1:0)-(p.skills[x]?1:0)||skillVal(a,y)-skillVal(a,x)||x.localeCompare(y));
-  const rows=keys.map(k=>{
-    const v=skillVal(a,k),n=a.picks[k]||0;
-    const add=()=>{if(picksUsed(a)>=8)return toast('NO BONUS PICKS LEFT');if(v+20>80)return toast('BONUS CAPS AT 80%');a.picks[k]=n+1};
-    const rem=()=>{if(!n)return;a.picks[k]=n-1;if(!a.picks[k])delete a.picks[k]};
-    return R(`${p.skills[k]?'<span class="hi">*</span>':''}${esc(k)}`,{cls:v===SKILLS[k]&&!p.skills[k]?'dim':'',val:`<span class="pip">${'+'.repeat(n)}</span>${String(v).padStart(2,' ')}%`,left:rem,right:add,a:add});
-  });
-  rows.push(nextRow());
-  const pane=`<div>Bonus picks: <span class="${left?'hi':'grn'}">${left}</span>/8 <span class="small">· each adds +20%</span></div><div class="small">* trained by your profession. ◀ removes a pick.</div>`;
-  return{rows,pane,foot:'◀▶: PICK · L/R: STEP'};
-};
-V.bonds=()=>{
-  const a=S.a,cha=a.stats.CHA;
-  const rows=a.bonds.map((b,i)=>{const cyc=d=>()=>{b.rel=RELS[(RELS.indexOf(b.rel)+d+RELS.length)%RELS.length]};
-    return R('',{input:{bind:'bond'+i,value:b.name,ph:'Name'},val:`<span class="small hi">${esc(b.rel)}</span>`,left:cyc(-1),right:cyc(1)})});
-  rows.push(R('Randomize names',{a:()=>{a.bonds.forEach(b=>b.name=pick(FIRST))}}));
-  rows.push(nextRow());
-  const pane=`<div>Each bond starts at <span class="hi">${cha}</span> <span class="small">(your CHA)</span></div><div class="small">The people who keep you human. Lean on them to recover SAN between missions, and the bond wears thin.</div>`;
-  return{rows,pane,foot:'A: TYPE NAME · ◀▶: RELATION'};
-};
-V.look=()=>{
-  const a=S.a,L=a.look;
-  const cyc=(key,n,lo=0)=>[()=>{L[key]=(L[key]-lo-1+n)%n+lo},()=>{L[key]=(L[key]-lo+1)%n+lo}];
-  const r=(lab,key,n,names,lo=0)=>{const [l,rr]=cyc(key,n,lo);return R(lab,{val:esc(names(L[key])),left:l,right:rr,a:rr})};
-  const sanAdj=d=>()=>{const before=S.san;S.san=Math.max(0,Math.min(99,S.san+d));};
-  return{side:true,rows:[
-    r('Skin','skin',6,v=>'Tone '+(v+1)),
-    r('Hair','hair',7,v=>HAIRS[v]),
-    r('Hair color','hairC',7,v=>HAIRCN[v]),
-    r('Eyes','eyes',3,v=>EYES[v]),
-    r('Extra','acc',7,v=>ACC[v]),
-    r('Outfit','outfitC',8,v=>v<0?'Issue':OUTCN[v],-1),
-    R('SAN preview',{val:`<span class="${S.san<30?'red':'hi'}">${S.san}</span>`,left:sanAdj(-10),right:sanAdj(10),a:sanAdj(-10)}),
-    R('Randomize look',{a:()=>{a.look=randomLook()}}),
-    nextRow()],
-    pane:`<canvas class="pix" id="pbig"></canvas><div class="small" style="text-align:center">${esc(profOf(a).name)}</div><div class="small" style="text-align:center;font-size:15px">The world's colors shift as SAN drops.</div>`,
-    foot:'◀▶: CHANGE · L/R: STEP'};
-};
-V.identity=()=>{
-  const a=S.a;
-  const ageAdj=d=>()=>{a.age=Math.max(21,Math.min(75,a.age+d))};
-  const rows=[
-    R('',{input:{bind:'name',value:a.name,ph:'Full name'},val:''}),
-    R('',{input:{bind:'code',value:a.code,ph:'Codename'},val:'<b data-act="right">↻</b>',right:()=>{a.code=genCode()}}),
-    R('Age',{val:a.age,left:ageAdj(-1),right:ageAdj(1),a:ageAdj(1)}),
-    ST(`<h3>MOTIVATIONS · ${a.motives.length}/5</h3>`),
-    R('',{input:{bind:'newMot',value:S.newMot||'',ph:'Write your own...',max:40},val:'<b data-act="right">+</b>',right:addMotive})];
-  a.motives.filter(m=>!MOTIVES.includes(m)).forEach(m=>rows.push(R(esc(m),{cls:'go wrap',val:'<span class="grn">[x]</span>',a:()=>{a.motives=a.motives.filter(x=>x!==m)}})));
-  rows.push(ST('<div class="small">Or pick from these:</div>'));
-  MOTIVES.forEach(m=>{const on=a.motives.includes(m);rows.push(R(esc(m),{val:on?'<span class="grn">[x]</span>':'<span class="small">[ ]</span>',a:()=>{if(on)a.motives=a.motives.filter(x=>x!==m);else if(a.motives.length>=5)return toast('FIVE IS ENOUGH TO LOSE');else a.motives.push(m)}}))});
-  rows.push(nextRow('Review dossier ▶'));
-  return{rows,foot:'A: TYPE / TOGGLE · +: ADD YOUR OWN'};
-};
-function addMotive(){const a=S.a,v=(S.newMot||'').trim();
-  if(!v)return toast('TYPE A MOTIVATION FIRST');if(a.motives.length>=5)return toast('FIVE IS ENOUGH TO LOSE');if(a.motives.includes(v))return;
-  a.motives.push(v);S.newMot=''}
-function dossierCard(a){
-  const p=profOf(a),d=derived(a);
-  const top=Object.keys(SKILLS).map(k=>[k,skillVal(a,k)]).sort((x,y)=>y[1]-x[1]).slice(0,6);
-  const feats=STATS.map(k=>feature(k,a.stats[k])).filter(Boolean);
-  return`<div class="card"><div class="top"><img class="pix" src="${portraitURL(a,4)}" width="96" height="96" alt="Agent portrait"><div class="who"><div class="n">${esc(a.name||'Unnamed Agent')}</div><div class="hi">AGENT ${esc(a.code||((a.name||'').split(' ').pop()||'?').toUpperCase())}</div><div>${esc(p.name)}, ${a.age}</div><div class="small">${esc(p.role)}${specOf(a)?' · '+esc(specOf(a).name):''}</div>${a.cur?`<div class="red">SAN now ${a.cur.san}/${d.SAN}${a.cur.dis?' · '+esc(a.cur.dis):''}</div>`:''}${p.odd?'<span class="stamp">ODDBALL</span>':'<span class="stamp">CLEARED</span>'}</div></div>
-  <div class="sgrid">${STATS.map(k=>`<span><span class="small">${k}</span> ${a.stats[k]}</span>`).join('')}</div>
-  <div class="sgrid"><span><span class="small">HP</span> ${d.HP}</span><span><span class="small">WP</span> ${d.WP}</span><span><span class="small">SAN</span> ${d.SAN}/<span class="small">BP</span>${d.BP}</span></div>
-  <h3 style="font:8px var(--px);color:var(--scr-hi);margin:7px 0 2px">ABILITIES</h3>${p.abil.map(x=>`<div><span class="grn">${esc(x[0])}</span> <span class="small">${esc(x[1])}</span></div>`).join('')}
-  ${specOf(a)?`<h3 style="font:8px var(--px);color:var(--scr-hi);margin:7px 0 2px">KIT</h3><div class="small" style="color:var(--scr-fg)">${esc(kitText(specOf(a)))}${specOf(a).weapon?' · '+esc(WEAP[specOf(a).weapon].name):''}</div>`:''}
-  <h3 style="font:8px var(--px);color:var(--scr-hi);margin:7px 0 2px">BEST SKILLS</h3><div class="small" style="color:var(--scr-fg)">${top.map(([k,v])=>`${esc(k)} ${v}%`).join(' · ')}</div>
-  <h3 style="font:8px var(--px);color:var(--scr-hi);margin:7px 0 2px">BONDS · ${a.stats.CHA} each</h3><div class="small" style="color:var(--scr-fg)">${a.bonds.map(b=>`${esc(b.name||'?')} (${esc(b.rel.toLowerCase())})`).join(' · ')}</div>
-  ${a.motives.length?`<h3 style="font:8px var(--px);color:var(--scr-hi);margin:7px 0 2px">MOTIVATIONS</h3><div class="small" style="color:var(--scr-fg)">${a.motives.map(esc).join(' · ')}</div>`:''}
-  ${feats.length?`<h3 style="font:8px var(--px);color:var(--scr-hi);margin:7px 0 2px">NOTED</h3><div class="small" style="color:var(--scr-fg)">${feats.map(esc).join(' · ')}</div>`:''}</div>`;
-}
-V.dossier=()=>{
-  const a=S.a;
-  const rows=[ST(dossierCard(a)),
-    R('Begin ▶',{cls:'go',val:'Setup stub',a:()=>{const sq=S.squad||[randomAgent(),randomAgent(),randomAgent()];S.squad=null;window.RLG&&RLG.start(S.a,sq)}}),
-    R(S.saved?'Saved ✓':'Save to roster',{cls:'go',a:()=>{const i=S.roster.findIndex(x=>x.id===a.id);a.id=a.id||Date.now();const copy=JSON.parse(JSON.stringify(a));if(i>=0)S.roster[i]=copy;else S.roster.unshift(copy);store.set(K('roster'),S.roster);S.saved=true;toast('FILED UNDER '+(a.code||'?'))}}),
-    R('Roll a squad',{val:'3 agents',a:()=>{S.squad=[randomAgent(),randomAgent(),randomAgent()]}}),
-    R('Copy agent code',{a:()=>copyCode(a)}),
-    R('Edit agent',{a:()=>{goto('profession');S.sel.profession=PROFS.indexOf(profOf(a))+1+(profOf(a).odd?1:0)}}),
-    R('New agent',{a:()=>{S.a=newAgent();S.saved=false;goto('profession')}})];
-  if(S.squad){rows.push(ST(`<h3>YOUR SQUAD THIS MISSION</h3><div class="small">Randomized every mission. Oddballs turn up about 1 in 4.</div>`));
-    rows.push(ST(`<div class="squad">${S.squad.map(m=>`<div class="m"><img class="pix" src="${portraitURL(m,2)}" width="48" height="48" alt=""><div>${esc(m.name.split(' ')[0])}</div><div class="p">${esc(profOf(m).name)}</div>${profOf(m).odd?'<div class="red" style="font-size:14px">ODDBALL</div>':''}</div>`).join('')}</div>`));
-    rows.push(R('Reroll squad',{a:()=>{S.squad=[randomAgent(),randomAgent(),randomAgent()]}}));}
-  return{rows,foot:'A: SELECT · L: BACK TO IDENTITY'};
-};
-function copyCode(a){
-  const code='BL1:'+btoa(unescape(encodeURIComponent(JSON.stringify(a))));
-  const done=()=>{toast('AGENT CODE COPIED')};
-  try{navigator.clipboard.writeText(code).then(done,()=>fallback(code))}catch(e){fallback(code)}
-  function fallback(c){const t=document.createElement('textarea');t.value=c;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}t.remove();ok?done():toast('COPY BLOCKED HERE')}
-}
+const runSaved=()=>{const r=store.get(K('run'),null);return r&&!r.ended?r:null};
+const ledgerHas=()=>{const l=store.get(K('ledger'),null);return !!(l&&l.companies&&l.companies.length)};
+function goto(step){S.step=step;S.pop=null;saveDraft()}
+function ask(q,yes,no,labels){S.confirm={q,yes,no,labels:labels||['Yes','No'],back:S.step};S.step='confirm'}
 
-// ---------- RENDER ----------
+V.title=()=>({rows:[
+ ST(`<canvas class="lantern pix" id="lantern" width="96" height="96" style="border:0;background:transparent"></canvas><div class="logo">RUSHLIGHT<small>THE WITHY MARCH</small></div>`),
+ R_('New run',{a:newRun}),
+ ...(runSaved()?[R_('Continue',{cls:'go',val:esc(runSaved().seed),a:()=>window.RLG&&RLG.resume()})]:[]),
+ ...(ledgerHas()&&window.RLG&&RLG.ledger?[R_('Ledger',{a:()=>RLG.ledger()})]:[]),
+ R_('Import',{a:()=>{S.importIn='';S.importBad=false;goto('import')}}),
+ ...(window.Studio&&Studio.fromShelf?[R_('Game shelf',{val:'◀',a:()=>Studio.toShelf()})]:[]),
+ ST(`<div class="small" style="text-align:center;margin-top:6px">Keyboard: arrows · Z = A · X = B · Q/W = L/R · Enter = Start</div>`)],foot:'A: SELECT'});
+function newRun(){
+ const d=store.get(K('draft'),null);
+ const fresh=()=>{if(runSaved())ask('This ends the run you have. The ledger stays.',()=>{abandonRun();toSeed()},()=>goto('title'),['End it','Keep it']);else toSeed()};
+ if(d&&d.seed&&d.seats)ask('Pick up the company you were making?',()=>{S.draft=d;S.ed=d.ed||null;S.review=d.review|0;goto(d.step&&V[d.step]&&d.step!=='confirm'?d.step:'company')},()=>{store.set(K('draft'),null);S.draft=null;fresh()});
+ else fresh();
+}
+function toSeed(){S.seedIn=randomSeed();S.seedBad=false;S.typed='';goto('seed')}
+// A run ended by a new one is abandoned: its mercs go into the ledger as having left the company (spec 003, 1)
+function abandonRun(){const r=runSaved();if(!r)return;const L=store.get(K('ledger'),null)||newLedger();L.companies=L.companies||[];
+ L.companies.unshift({name:r.company&&r.company.name||'The company',seed:r.seed,end:'abandoned',contracts:r.done|0,great:0,days:r.day|0,
+  mercs:(r.joined||r.party||[]).map(m=>({name:m.name,nick:m.nick||[],end:'LG-END-LEFT'}))});
+ store.set(K('ledger'),L);store.set(K('run'),null)}
+V.seed=()=>({rows:[
+ ST('<h3>THE RUN SEED</h3><div>The same seed gives the same first company and the same March.</div>'),
+ R_('Random seed',{val:esc(S.seedIn),a:()=>startPick(S.seedIn)}),
+ R_('Type a seed',{input:{bind:'seed',value:S.typed||'',ph:'4471-K',max:6}}),
+ R_('Start with this seed ▶',{cls:'go',a:()=>{if(seedNum(S.typed||'')==null){S.seedBad=true;return}startPick(seedText(seedNum(S.typed)))}}),
+ ...(S.seedBad?[ST('<span class="red">Four numbers and a letter, like 4471-K</span>')]:[])],foot:'A: PICK · B: BACK'});
+function startPick(seed){S.draft=freshDraft(seed);S.ed=null;S.review=0;pickTemplate(0);goto('company')}
+
+// ---- Pick a company (Mockup 6, rushlight-mockups-company-v1) ----
+const topSkills=c=>{const s=skillsOf(c);return Object.keys(s).sort((a,b)=>s[b]-s[a]||(a<b?-1:1)).slice(0,3).map(k=>`${k} ${s[k]}`).join(' · ')};
+const face=(c,px)=>`<canvas class="face" data-sp="${c.sp}" data-look="${c.look.shade}${c.look.mark}${c.look.neck}" width="${px}" height="${px}"></canvas>`;
+function seatCard(i){const d=S.draft,c=d.seats[i],tr=c&&tradeOf(c.trade),on=S.sel.company===seatRow(i),pop=S.pop&&S.pop.seat===i;
+ if(!c)return `<div class="seat empty">EMPTY SEAT ${i+1}<span>A: make a merc</span></div>`;
+ const acts=['KEEP','REROLL','TWEAK','REBUILD'];
+ return `<div class="seat ${on?'on':''} ${d.kept[i]?'kept':''}">${face(c,40)}<div class="si"><div><b>${esc((c.name||'?').toUpperCase())}</b> <span>${esc(SPECIES[c.sp].name.toLowerCase())} · ${esc(tr.name.toLowerCase())}</span>${d.kept[i]?' <i>✓</i>':''}</div>
+  <div>${esc(topSkills(c))}</div><div class="dim">Main: ${esc(c.mot[c.main])} · kin: ${esc(c.kin.name)}, ${esc(c.kin.type.toLowerCase())}</div><div class="bk">${esc(backText(c))}</div>
+  ${pop?`<div class="acts">${acts.map((a,k)=>`<em class="${S.pop.sel===k?'on':''}" data-act="pop${k}">${a}</em>`).join('')}</div>`:''}</div></div>`}
+const seatRow=i=>8+i;
+V.company=()=>{const d=S.draft,tp=TEMPLATES.find(t=>t.id===d.tpl)||TEMPLATES[0],ready=d.seats.every(Boolean);
+ const rows=TEMPLATES.map((t,i)=>R_(`<b class="${t.id===d.tpl?'hi':''}">${esc(t.name)}</b>`,{cls:'tpl',val:`<span class="small">${t.trades.length?t.trades.map(x=>tradeOf(x).short).join(' · '):'full creator, any trades'}</span>`,a:()=>{if(t.id!==d.tpl||t.id!=='blank')pickTemplate(i)}}));
+ rows.push(ST(`<div class="small">${esc(T(tp.line))}</div>`));
+ [0,1,2].forEach(i=>rows.push(R_(seatCard(i),{cls:'seatrow',a:()=>seatA(i),left:S.pop&&S.pop.seat===i?()=>{S.pop.sel=(S.pop.sel+3)%4}:null,right:S.pop&&S.pop.seat===i?()=>{S.pop.sel=(S.pop.sel+1)%4}:null,pop:k=>{S.pop={seat:i,sel:k};seatA(i)}})));
+ rows.push(R_(`START ▸ sign them on`,{cls:ready?'go':'dim',val:'30 gr · 9 rations',a:()=>{if(ready){S.review=0;goto('review')}}}));
+ return {rows,foot:'A: PICK · B: BACK',seed:d.seed,back:()=>{if(S.pop){S.pop=null;return}goto('title')}}};
+function seatA(i){const d=S.draft,c=d.seats[i];
+ if(!c){openCreator(i,null);return}
+ if(!S.pop||S.pop.seat!==i){S.pop={seat:i,sel:0};return}
+ const k=S.pop.sel;S.pop=null;
+ if(k===0)d.kept[i]=true;
+ else if(k===1)reroll(i);
+ else if(k===2){S.ed={seat:i,c:JSON.parse(JSON.stringify(c)),tweak:true};goto('tweak')}
+ else openCreator(i,c);
+}
+// ---- Tweak: name, species, face, backstory, kin name, motivations ----
+V.tweak=()=>{const c=S.ed.c,tr=tradeOf(c.trade);return {rows:[
+ R_('Name',{input:{bind:'name',value:c.name,ph:'Name',max:14}}),
+ R_('Species',{val:esc(SPECIES[c.sp].name),left:()=>cycleSp(c,-1),right:()=>cycleSp(c,1),a:()=>cycleSp(c,1)}),
+ ...faceRows(c),
+ R_('Backstory',{val:'<span class="small">roll</span>',a:()=>{c.backT=null;c.back=c.back===`BK-${tr.bk}-1`?`BK-${tr.bk}-2`:`BK-${tr.bk}-1`}}),
+ ST(`<div class="small">${esc(backText(c))}</div>`),
+ R_('Kin name',{input:{bind:'kin',value:c.kin.name,ph:'Kin name',max:14}}),
+ R_('Motivations',{val:esc(c.mot.join(', ')),a:()=>{S.ed.from='tweak';goto('motives')}}),
+ R_('Done ▶',{cls:'go',a:()=>{const d=S.draft;freeNames(d.seats[S.ed.seat],d.used);d.used.push(c.name,c.kin.name);d.seats[S.ed.seat]=c;d.kept[S.ed.seat]=false;S.ed=null;goto('company')}})],
+ pane:`<div class="mpane">${face(c,64)}<div class="small">${esc(SPECIES[c.sp].size)} · ${esc(SPECIES[c.sp].trait)}</div><div class="small">${esc(speciesLine(c.sp))}</div></div>`,side:true,foot:'◀ ▶ CHANGE · B: CANCEL',back:()=>{S.ed=null;goto('company')}}};
+const speciesLine=k=>{const S2=SPECIES[k];return `${S2.up} +2, ${S2.down} −2. ${S2.tdesc}`};
+function cycleSp(c,d){c.sp=ORDER[(ORDER.indexOf(c.sp)+d+ORDER.length)%ORDER.length]}
+function faceRows(c){const L=c.look,cy=(k,n,d)=>{L[k]=(L[k]+d+n)%n};
+ return [R_('Coat',{val:['lighter','middle','darker'][L.shade],left:()=>cy('shade',3,-1),right:()=>cy('shade',3,1),a:()=>cy('shade',3,1)}),
+  R_('Mark',{val:['none','scar','torn ear','grey muzzle'][L.mark],left:()=>cy('mark',4,-1),right:()=>cy('mark',4,1),a:()=>cy('mark',4,1)}),
+  R_('Neckwear',{val:['none','kerchief','hood'][L.neck],left:()=>cy('neck',3,-1),right:()=>cy('neck',3,1),a:()=>cy('neck',3,1)})]}
+
+// ---- The full creator: 7 steps, L/R between them ----
+const CSTEPS=['trade','stats','skills','identity','kin','motives','muster'];
+function openCreator(seat,c){const d=S.draft;
+ const nc=c?JSON.parse(JSON.stringify(c)):{id:'m'+Math.floor(Math.random()*1e9).toString(36),trade:null,method:'roll',base:null,rerolls:1,picks:{},name:'',sp:'hare',look:{shade:1,mark:0,neck:0},back:null,backT:null,kin:{type:'Sibling',name:''},mot:[],main:0};
+ S.ed={seat,c:nc,lock:!!c};goto(c?'stats':'trade')}
+const picksLeft=c=>8-Object.values(c.picks).reduce((a,b)=>a+b,0);
+const buyLeft=c=>72-STATS.reduce((t,k)=>t+(c.base[k]|0),0);
+function cStep(d){const i=CSTEPS.indexOf(S.step),j=i+d;if(j<0){if(S.ed.lock||!S.ed.c.trade){S.ed=null;goto('company')}else goto('trade');return}
+ if(j>=CSTEPS.length)return;const why=stepWhy(S.step);if(d>0&&why){toast(why);return}if(S.ed.lock&&CSTEPS[j]==='trade')return;goto(CSTEPS[j])}
+function stepWhy(st){const c=S.ed.c;if(st==='trade'&&!c.trade)return'PICK A TRADE';if(st==='stats'&&(!c.base||c.method==='buy'&&buyLeft(c)!==0))return c.base?'SPEND EXACTLY 72 POINTS':'ROLL OR BUY STATS';
+ if(st==='identity'&&!c.name.trim())return'NAME THEM';if(st==='kin'&&!c.kin.name.trim())return'NAME THE KIN';if(st==='motives'&&c.mot.length!==2)return'PICK 2 MOTIVATIONS';return''}
+const stepFoot='L/R: STEP · A: PICK · B: BACK';
+V.trade=()=>({rows:TRADES.map(t=>R_(`${S.ed.c.trade===t.id?'<b class="hi">':''}${esc(t.name)}${S.ed.c.trade===t.id?'</b>':''}`,{val:`<span class="small">${t.strong.join(', ')} · ${t.backup.join(', ')} · ${t.key.join('/')}</span>`,cls:'wrap',
+ a:()=>{const c=S.ed.c;if(c.trade!==t.id){c.trade=t.id;c.picks={};c.back=`BK-${t.bk}-1`;c.backT=null}goto('stats')}})),foot:stepFoot,step:1});
+V.stats=()=>{const c=S.ed.c,sp=SPECIES[c.sp],rows=[
+ R_('Method',{val:c.method==='roll'?'Roll 4d6':'Point buy (72)',left:()=>flipMethod(c),right:()=>flipMethod(c),a:()=>flipMethod(c)})];
+ if(c.method==='roll'){rows.push(R_(c.base?`Reroll all (${c.rerolls} left)`:'Roll',{cls:c.base&&!c.rerolls?'dim':'',a:()=>{if(!c.base||c.rerolls>0){if(c.base)c.rerolls--;c.base=withMuster(R=>Object.fromEntries(STATS.map(k=>[k,roll4d6(R)])))}}}));
+  if(c.base)rows.push(ST(`<div class="kv">${STATS.map(k=>`<span>${k}</span><span>${c.base[k]}</span>`).join('')}</div>`))}
+ else{if(!c.base||c.base._buy!==1)c.base=Object.assign(Object.fromEntries(STATS.map(k=>[k,12])),{_buy:1});
+  STATS.forEach(k=>rows.push(R_(STATNAME[k],{val:String(c.base[k]),left:()=>{if(c.base[k]>3)c.base[k]--},right:()=>{if(c.base[k]<18&&buyLeft(c)>0)c.base[k]++}})));
+  rows.push(ST(`Points left: <b class="${buyLeft(c)?'red':'grn'}">${buyLeft(c)}</b>`))}
+ rows.push(ST(`<div class="small">Species changes (${esc(sp.name)}): ${sp.up} +2, ${sp.down} −2, kept between 3 and 18. Set the species on step 4.</div>`));
+ rows.push(R_('Next ▶',{cls:'go',a:()=>cStep(1)}));return {rows,foot:stepFoot,step:2}};
+function flipMethod(c){c.method=c.method==='roll'?'buy':'roll';c.base=null;c.rerolls=1}
+V.skills=()=>{const c=S.ed.c;const rows=[ST(`Picks left: <b class="hi">${picksLeft(c)}</b> of 8 · +20% each, cap 80%`)];
+ Object.keys(SKILLS).forEach(k=>{const v=rawSkill(c,k),n=c.picks[k]|0;rows.push(R_(esc(k)+(n?` <span class="pip">${'+'.repeat(n)}</span>`:''),{val:`${skillsOf(c)[k]}%`,left:()=>{if(n){c.picks[k]--;if(!c.picks[k])delete c.picks[k]}},right:()=>{if(picksLeft(c)>0&&v+20<=80)c.picks[k]=n+1},a:()=>{if(picksLeft(c)>0&&v+20<=80)c.picks[k]=n+1;else if(n){c.picks[k]--;if(!c.picks[k])delete c.picks[k]}}}))});
+ rows.push(R_('Next ▶',{cls:'go',a:()=>cStep(1)}));return {rows,foot:'◀ UNPICK · ▶ PICK · L/R: STEP',step:3}};
+V.identity=()=>{const c=S.ed.c,tr=tradeOf(c.trade);return {rows:[
+ R_('Name',{input:{bind:'name',value:c.name,ph:'Name',max:14}}),
+ R_('Roll a name',{a:()=>{const d=S.draft;freeNames({name:c.name},d.used);c.name=withMuster(R=>pickName(R,d.used))}}),
+ R_('Species',{val:esc(SPECIES[c.sp].name),left:()=>cycleSp(c,-1),right:()=>cycleSp(c,1),a:()=>cycleSp(c,1)}),
+ ...faceRows(c),
+ R_('Backstory',{val:'<span class="small">roll</span>',a:()=>{c.backT=null;c.back=c.back===`BK-${tr.bk}-1`?`BK-${tr.bk}-2`:`BK-${tr.bk}-1`}}),
+ R_('Or type one',{input:{bind:'back',value:c.backT||'',ph:'One line',max:60}}),
+ ST(`<div class="small">${esc(backText(c))}</div>`),
+ R_('Next ▶',{cls:'go',a:()=>cStep(1)})],
+ pane:`<div class="mpane">${face(c,64)}<div class="small"><b>${esc(SPECIES[c.sp].name)}</b> · ${esc(SPECIES[c.sp].size)}</div><div class="small">${esc(speciesLine(c.sp))}</div></div>`,side:true,foot:stepFoot,step:4}};
+V.kin=()=>{const c=S.ed.c,cha=c.base?finalStats(c).CHA:'?';return {rows:[
+ R_('Kin',{val:esc(c.kin.type),left:()=>{c.kin.type=KIN[(KIN.indexOf(c.kin.type)+3)%4]},right:()=>{c.kin.type=KIN[(KIN.indexOf(c.kin.type)+1)%4]},a:()=>{c.kin.type=KIN[(KIN.indexOf(c.kin.type)+1)%4]}}),
+ R_('Name',{input:{bind:'kin',value:c.kin.name,ph:'Kin name',max:14}}),
+ R_('Roll a name',{a:()=>{const d=S.draft;freeNames({kin:{name:c.kin.name}},d.used);const i=d.used.indexOf(c.kin.name);if(i>=0)d.used.splice(i,1);c.kin.name=withMuster(R=>pickName(R,d.used))}}),
+ ST(`Kin Bond starts at CHA: <b class="hi">${cha}</b>. Comrade Bonds start at 1.`),
+ R_('Next ▶',{cls:'go',a:()=>cStep(1)})],foot:stepFoot,step:5}};
+V.motives=()=>{const c=S.ed.c;const rows=[ST('Pick 2, then mark one Main.')];
+ MOTIVES.forEach(m=>{const i=c.mot.indexOf(m);rows.push(R_(esc(m)+(i>=0?` <span class="tag mine">${c.main===i?'MAIN':'✓'}</span>`:''),{a:()=>{if(i>=0){c.mot.splice(i,1);c.main=0}else if(c.mot.length<2)c.mot.push(m)}}))});
+ rows.push(R_('Main',{val:esc(c.mot[c.main]||'—'),left:()=>{c.main=c.mot.length>1?1-c.main:0},right:()=>{c.main=c.mot.length>1?1-c.main:0},a:()=>{c.main=c.mot.length>1?1-c.main:0}}));
+ if(S.ed.from==='tweak')rows.push(R_('Done ▶',{cls:'go',a:()=>{if(c.mot.length===2){S.ed.from=null;goto('tweak')}}}));
+ else rows.push(R_('Next ▶',{cls:'go',a:()=>cStep(1)}));
+ return {rows,foot:stepFoot,step:S.ed.from?0:6,back:S.ed.from==='tweak'?()=>{if(c.mot.length===2){S.ed.from=null;goto('tweak')}}:null}};
+// The Muster roll: the whole merc on one page (spec 003, 7)
+function musterHTML(m,seed){const g=m.gear,it=x=>x?ITEMS[x.id].name:'—';
+ const above=Object.keys(SKILLS).filter(k=>m.sk[k]>SKILLS[k]).map(k=>`${k} ${m.sk[k]}`).join(' · ');
+ return `<div class="muster"><div class="mh">${face(m,48)}<div><b class="hi">${esc(m.name.toUpperCase())}</b><div>${esc(SPECIES[m.sp].name)} · ${esc(m.trade)}</div><div class="small">${esc(m.size)} · ${esc(m.trait)}</div></div><span class="seedtag">${esc(seed)}</span></div>
+ <div class="kv6">${STATS.map(k=>`<span>${k}<b>${m.stats[k]}</b></span>`).join('')}</div>
+ <div>HP <b>${m.mhp}</b> · WP <b>${m.mwp}</b> · SAN <b>${m.msan}</b> · Breaking Point <b>${m.bp}</b> · Luck 50%</div>
+ <div class="small">${esc(above)}</div>
+ <div>Kin: ${esc(m.kin.name)}, ${esc(m.kin.type.toLowerCase())} · Bond ${m.kin.bond}</div>
+ <div>Motivations: ${m.mot.map((x,i)=>i===m.main?`<b class="hi">${esc(x)} (Main)</b>`:esc(x)).join(', ')}</div>
+ <div class="small">WPN 1 ${esc(it(g.w1))} · WPN 2 ${esc(it(g.w2))} · BODY ${esc(it(g.body))} · HEAD ${esc(it(g.head))} · KIT ${esc(m.slots.map(s=>ITEMS[s.id].name+(s.n>1?' ×'+s.n:'')).join(', '))}</div>
+ <div class="bk">${esc(m.back)}</div></div>`}
+V.muster=()=>{const c=S.ed.c,why=['trade','stats','identity','kin','motives'].map(stepWhy).find(Boolean);
+ return {rows:[why?ST(`<span class="red">${why}</span>`):ST(musterHTML(build(c),S.draft.seed)),
+  R_('Sign on ▶',{cls:why?'dim':'go',a:()=>{if(why)return;const d=S.draft,old=d.seats[S.ed.seat];if(old&&old.name!==c.name)freeNames(old,d.used);
+   [c.name,c.kin.name].forEach(n=>{if(!d.used.includes(n))d.used.push(n)});c.done=true;d.seats[S.ed.seat]=c;d.kept[S.ed.seat]=true;S.ed=null;goto('company')}})],foot:stepFoot,step:7}};
+// START: the Muster roll for the whole company, one page each, L/R to flip; Sign them on starts the run
+V.review=()=>{const d=S.draft,i=S.review,m=build(d.seats[i]);
+ return {rows:[ST(`<div class="small">Page ${i+1} of 3 · L/R to flip</div>`+musterHTML(m,d.seed)),
+  ...(d.tpl==='blank'?[R_('Company name',{input:{bind:'cname',value:d.name||'',ph:'Name your company',max:22}})]:[]),
+  R_('Sign them on ▶',{cls:'go',a:signOn})],foot:'L/R: FLIP · A: SIGN · B: BACK',back:()=>goto('company')}};
+// Sign them on: the run begins (spec 003, 7 and 10)
+function signOn(){const d=S.draft,n=seedNum(d.seed),st=streams(n),tp=TEMPLATES.find(t=>t.id===d.tpl);
+ st.muster=d.mpos;
+ const party=d.seats.map(c=>build(c));party.forEach(m=>party.forEach(o=>{if(o!==m)m.bonds[o.id]=1}));
+ const run={seed:d.seed,seedN:n,streams:st,company:{tpl:d.tpl,name:d.tpl==='blank'?(d.name||'').trim()||'The company':tp.name},
+  party,joined:party.map(m=>({id:m.id,name:m.name,nick:[]})),lead:0,purse:30,rations:9,pack:[],used:d.used.slice(),day:1,done:0,place:null};
+ store.set(K('run'),run);store.set(K('draft'),null);S.draft=null;S.ed=null;S.step='title';
+ if(window.RLG)RLG.begin(run);
+}
+V.confirm=()=>{const c=S.confirm;return {rows:[ST(`<div style="padding:8px 0">${esc(c.q)}</div>`),R_(c.labels[0],{cls:'go',a:()=>{S.confirm=null;c.yes()}}),R_(c.labels[1],{a:()=>{S.confirm=null;c.no()}})],foot:'A: PICK',back:()=>{S.confirm=null;c.no()}}};
+V.import=()=>({rows:[ST('Paste a save code.'),R_('Code',{input:{bind:'import',value:S.importIn,ph:'RL1:…',max:200000}}),
+ R_('Read it ▶',{cls:'go',a:()=>{const o=readCode(S.importIn);if(!o){S.importBad=true;return}ask('Replace your run and ledger with this one?',()=>{applyCode(o);toast('LOADED');goto('title')},()=>goto('title'))}}),
+ ...(S.importBad?[ST('<span class="red">That code doesn\'t read</span>')]:[])],foot:'A: PICK · B: BACK'});
+
+// ================= RENDER =================
 const list=$('#list'),pane=$('#pane'),body=$('#body'),screen=$('#screen');
 function $(s){return document.querySelector(s)}
 let cur=null;
 function selectable(rows){return rows.map((r,i)=>r.static?null:i).filter(i=>i!==null)}
 function fixSel(rows){const ok=selectable(rows);let s=S.sel[S.step]??ok[0];if(!ok.includes(s)){s=ok.find(i=>i>=s)??ok[ok.length-1]}S.sel[S.step]=s;return s}
 function render(scroll=true){
-  if(S.step!=='dossier')S.saved=false;
-  cur=V[S.step]();
-  const s=fixSel(cur.rows);
-  $('#hTitle').textContent=STEPNAME[S.step];
-  const si=STEPS.indexOf(S.step);$('#hStep').textContent=si>=0?`${si+1}/${STEPS.length}`:'';
-  list.innerHTML=cur.rows.map((r,i)=>r.static?`<div class="static">${r.static}</div>`:
-    `<div class="row ${i===s?'on':''} ${r.cls||''}" data-i="${i}"><span class="cur">▶</span>${r.input?`<input data-bind="${r.input.bind}" value="${esc(r.input.value)}" placeholder="${esc(r.input.ph)}" maxlength="${r.input.max||28}" autocomplete="off" spellcheck="false">`:`<span class="lab">${r.label}</span>`}<span class="val">${r.left?'<b data-act="left">◀</b>':''}${r.val??''}${r.right&&!String(r.val??'').includes('data-act')?'<b data-act="right">▶</b>':''}</span></div>`).join('');
-  body.classList.toggle('side',!!cur.side);
-  pane.innerHTML=cur.pane||'';
-  if(S.step==='look')drawBig(false);
-  if(S.step==='title')drawLantern();
-  // sanity palette
-  const f=1-S.san/99;
-  screen.style.filter=f>0?`hue-rotate(${(-f*70).toFixed(0)}deg) saturate(${(1+f*1.4).toFixed(2)}) contrast(${(1+f*.25).toFixed(2)})`:'';
-  $('#vig').style.opacity=(f*.9).toFixed(2);
-  screen.classList.toggle('glitch',S.san<30);
-  const ft=$('#ftr');
-  if(S.san<25&&Math.random()<.3){ft.textContent=pick(CREEP);ft.classList.add('creep')}else{ft.textContent=cur.foot||'';ft.classList.remove('creep')}
-  if(scroll){const el=list.querySelector('.row.on');if(el)el.scrollIntoView({block:'nearest'});if(s===selectable(cur.rows)[0])list.scrollTop=0}
-  store.set(K('draft'),S.a);
+ if(!V[S.step])S.step='title';
+ cur=V[S.step]();
+ const s=fixSel(cur.rows);
+ $('#hTitle').textContent=STEPNAME[S.step]||'';
+ $('#hStep').textContent=cur.seed?'SEED '+cur.seed:cur.step?`${cur.step}/7`:S.draft&&S.step!=='title'&&S.step!=='seed'?'SEED '+S.draft.seed:'';
+ list.innerHTML=cur.rows.map((r,i)=>r.static?`<div class="static">${r.static}</div>`:
+  `<div class="row ${i===s?'on':''} ${r.cls||''}" data-i="${i}"><span class="cur">▶</span>${r.input?`<input data-bind="${r.input.bind}" value="${esc(r.input.value)}" placeholder="${esc(r.input.ph)}" maxlength="${r.input.max||28}" autocomplete="off" spellcheck="false">`:`<span class="lab">${r.label}</span>`}<span class="val">${r.left?'<b data-act="left">◀</b>':''}${r.val??''}${r.right?'<b data-act="right">▶</b>':''}</span></div>`).join('');
+ body.classList.toggle('side',!!cur.side);
+ pane.innerHTML=cur.pane||'';
+ document.querySelectorAll('#screen canvas.face').forEach(c=>{const L=c.dataset.look,x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(RLSP.portrait(c.dataset.sp,{shade:+L[0],mark:+L[1],neck:+L[2]}),0,0,64,64,0,0,c.width,c.height)});
+ if(S.step==='title')drawLantern();
+ $('#ftr').textContent=cur.foot||'';
+ if(scroll){const el=list.querySelector('.row.on');if(el)el.scrollIntoView({block:'nearest'});if(s===selectable(cur.rows)[0])list.scrollTop=0}
+ saveDraft();
 }
-function drawBig(blink){const c=$('#pbig');if(c){drawPortrait(c,S.a,5,blink);c.style.width='120px';c.style.height='120px'}}
 function drawLantern(){const c=$('#lantern');if(!c)return;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.setTransform(6,0,0,6,0,0);x.clearRect(0,0,16,16);const p=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h)};
-  const fl=Math.random()<.5;p(7,0,2,2,'#5d5888');p(5,2,6,1,'#2a2440');p(4,3,8,1,'#3a3460');p(4,4,1,9,'#2a2440');p(11,4,1,9,'#2a2440');p(5,4,6,9,fl?'#ffd166':'#ffbf3f');p(6,6,4,5,fl?'#fff1c2':'#ffe08a');p(7,7,2,3,'#fffaf0');p(4,13,8,1,'#3a3460');p(5,14,6,1,'#2a2440');p(7,4,2,9,'rgba(20,12,30,.18)')}
+ // a lit rushlight in its holder: the pith stem, its flame, and the iron nip that holds it
+ const fl=Math.random()<.5;p(7,1,2,3,fl?'#ffe08a':'#d9b45a');p(7,2,2,1,'#fff1c4');p(8,0,1,1,'#d9b45a');p(7,4,2,8,'#c8a552');p(6,6,1,1,'#2c2621');p(9,6,1,1,'#2c2621');p(5,11,6,1,'#2c2621');p(7,12,2,3,'#3b4757');p(4,15,8,1,'#2c2621')}
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1500)}
 
-// ---------- INPUT ----------
+// ================= INPUT =================
 function rowAt(i){return cur.rows[i]}
 function act(kind){
-  const r=rowAt(S.sel[S.step]);
-  if(kind==='up'||kind==='down'){const ok=selectable(cur.rows),k=ok.indexOf(S.sel[S.step]);const nk=kind==='up'?Math.max(0,k-1):Math.min(ok.length-1,k+1);if(nk!==k){S.sel[S.step]=ok[nk]}render();return}
-  if(kind==='left'||kind==='right'){if(r&&r[kind])r[kind]();render();return}
-  if(kind==='a'){if(r&&r.input){focusInput(S.sel[S.step]);return}if(r&&r.a)r.a();render();return}
-  if(kind==='b'){if(S.swap){S.swap=null}else prevStep();render();return}
-  if(kind==='l'){prevStep();render();return}
-  if(kind==='r'){nextStep();render();return}
-  if(kind==='start'){if(S.a.prof&&S.step!=='dossier'){goto('dossier')}else if(S.step==='dossier'){goto('title')}else{toast('PICK A PROFESSION FIRST')}render();return}
+ const r=rowAt(S.sel[S.step]);
+ if(kind==='up'||kind==='down'){S.pop=null;const ok=selectable(cur.rows),k=ok.indexOf(S.sel[S.step]);const nk=kind==='up'?Math.max(0,k-1):Math.min(ok.length-1,k+1);if(nk!==k)S.sel[S.step]=ok[nk];render();return}
+ if(kind==='left'||kind==='right'){if(r&&r[kind])r[kind]();render();return}
+ if(kind==='a'){if(r&&r.input){focusInput(S.sel[S.step]);return}if(r&&r.a)r.a();render();return}
+ if(kind==='b'){if(cur.back)cur.back();else if(CSTEPS.includes(S.step))cStep(-1);else if(S.step!=='title')goto('title');render();return}
+ if(kind==='l'||kind==='r'){const d=kind==='l'?-1:1;if(CSTEPS.includes(S.step)&&!(S.step==='motives'&&S.ed.from))cStep(d);else if(S.step==='review')S.review=(S.review+d+3)%3;render();return}
 }
 function focusInput(i){const el=list.querySelector(`.row[data-i="${i}"] input`);if(el){el.focus();const n=el.value.length;try{el.setSelectionRange(n,n)}catch(e){}}}
-// Buttons and keyboard are shared (engine/input.js). While the game screen is up every press goes to the engine; otherwise to the creator.
+// Buttons and keyboard are shared (engine/input.js). While the game screen is up every press goes to the engine; otherwise here.
 StudioInput.start({press:k=>window.RLG&&RLG.active?RLG.input(k):act(k),walking:()=>!!(window.RLG&&RLG.active),hold:(d,on)=>{if(window.RLG)RLG.hold(d,on)}});
-// taps on rows
 list.addEventListener('click',e=>{
-  const row=e.target.closest('.row');if(!row)return;const i=+row.dataset.i;const r=rowAt(i);
-  const actEl=e.target.closest('[data-act]');
-  if(e.target.tagName==='INPUT'){if(S.sel[S.step]!==i){S.sel[S.step]=i;list.querySelectorAll('.row.on').forEach(x=>x.classList.remove('on'));row.classList.add('on')}return}
-  S.sel[S.step]=i;
-  if(actEl){r[actEl.dataset.act]&&r[actEl.dataset.act]();render(false);return}
-  if(r.input){render(false);focusInput(i);return}
-  if(r.a)r.a();
-  render(false);
+ const row=e.target.closest('.row');if(!row)return;const i=+row.dataset.i;const r=rowAt(i);
+ const actEl=e.target.closest('[data-act]');
+ if(e.target.tagName==='INPUT'){if(S.sel[S.step]!==i){S.sel[S.step]=i;list.querySelectorAll('.row.on').forEach(x=>x.classList.remove('on'));row.classList.add('on')}return}
+ if(S.sel[S.step]!==i&&S.pop&&!actEl)S.pop=null;
+ S.sel[S.step]=i;
+ if(actEl){const k=actEl.dataset.act;if(k.startsWith('pop'))r.pop(+k.slice(3));else if(r[k])r[k]();render(false);return}
+ if(r.input){render(false);focusInput(i);return}
+ if(r.a)r.a();
+ render(false);
 });
-list.addEventListener('input',e=>{const t=e.target,b=t.dataset.bind;if(!b)return;
-  if(b==='name')S.a.name=t.value;else if(b==='code')S.a.code=t.value.toUpperCase();else if(b==='newMot'){S.newMot=t.value;return}else if(b.startsWith('bond'))S.a.bonds[+b.slice(4)].name=t.value;store.set(K('draft'),S.a)});
+list.addEventListener('input',e=>{const t=e.target,b=t.dataset.bind;if(!b)return;const c=S.ed&&S.ed.c;
+ if(b==='seed'){S.typed=t.value.toUpperCase();S.seedBad=false}else if(b==='import'){S.importIn=t.value;S.importBad=false}
+ else if(b==='name'&&c)c.name=t.value;else if(b==='kin'&&c)c.kin.name=t.value;else if(b==='back'&&c)c.backT=t.value||null;else if(b==='cname'&&S.draft)S.draft.name=t.value;saveDraft()});
 list.addEventListener('focusout',e=>{if(e.target.tagName==='INPUT')setTimeout(()=>{if(!list.contains(document.activeElement)||document.activeElement.tagName!=='INPUT')render(false)},0)});
-list.addEventListener('keydown',e=>{if(e.target.dataset&&e.target.dataset.bind==='newMot'&&e.key==='Enter'){e.preventDefault();addMotive();render(false);const el=list.querySelector('input[data-bind="newMot"]');if(el)el.focus();return}});  // any other Enter or Escape in a text field just closes the keyboard (engine/input.js)
+setInterval(()=>{if(S.step==='title'&&!(window.RLG&&RLG.active))drawLantern()},180);
 
-// ambient: blink + lantern flicker
-setInterval(()=>{if(S.step==='look'){drawBig(true);setTimeout(()=>drawBig(false),140)}},3200);
-setInterval(()=>{if(S.step==='title')drawLantern()},180);
-
-window.RL={key:K,S,PROFS,ITEMDEF,WEAP,specOf,profOf,derived,skillVal,randomAgent,drawPortrait,store,render,goto,toast,esc,pick,rnd,SKILLS,HAIRC,SKIN,OUTC};
+openSaves();
+window.RL={key:K,S,store,render,goto,toast,esc,build,rollDraft,skillsOf,finalStats,tradeOf,seedNum,seedText,streams,exportCode,readCode,applyCode,openSaves,upgradeSave,VERSION,newLedger,abandonRun,
+ // checks (spec 003): the company a seed offers, and its next rerolls
+ _t:{draftFor:seed=>{S.draft=freshDraft(seed);pickTemplate(0);return S.draft},pickTemplate,reroll,signOn,S}};
 render();
 })();
