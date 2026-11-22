@@ -340,6 +340,9 @@ const HOBBY={'Firearms':'shoots skeet on Sundays','Melee':'boxes on weekends','D
 const BOARD={
  season:'SEASON',title:'CASE BOARD',closed:'CLOSED',briefing:'BRIEFING',back:'BACK',stamp:'CLOSED',file:'FILE',
  sticky:['NOBODY','TOUCH MY','CRULLERS.','—BH'],  // Big Hat's sticky note on the cork (mockup)
+ stickyMore:['MORE ON','THE WAY.','—BH'],  // a season with no data file yet (spec 009, step 5)
+ lantern:'LANTERN',finale:'FINALE',agencyPlace:'AGENCY CASE',finalePlace:'SEASON FINALE',files:'{n} files',file1:'1 file',closedFiles:'CLOSED FILES',
+ endTitle:'SEASON {n} CLOSED',endRegular:'Cases closed',endAgency:'Agency cases',endLost:'Agents lost',endStep:'Overstepping',endKeys:'A: next season',
  // New game with a closed case (Skills and menus, Quality of life: Confirm what sticks)
  sure:'Can\'t be undone. Sure?',resetLine:'This starts Season 1 over. Your roster stays.',yes:'Yes, start over',no:'No, back to the title'
 };
@@ -361,7 +364,7 @@ const DEBRIEF={
  held:'The story holds.',heldDrop:'The story holds. Overstepping drops to {s}.',
  broke:'Nobody buys it. Overstepping climbs to {s}.',brokeTop:'Nobody buys it. It can\'t get any worse than {s}.',
  gains:'CASE GAINS',gainsHint:'Failed it, learned it',noGains:'Nothing failed, nothing learned.',newUnlock:'★ NEW: {u}',
- patched:'Patched up: HP, WP and statuses reset.',next:'A: continue',
+ patched:'Patched up: HP, WP and statuses reset.',next:'Next: home scenes. A: continue',
  recruit:'Big Hat sets a folder on the desk. "Lost one in the corn. Replacement\'s outside. Pick."',
  // Big Hat's send-off, one line per lost agent: a death (in a fight or at 0 SAN) or a retirement
  sendDeath:['Agent {c}. {k} cases closed. I\'ll write the family myself. Records spells everything wrong.',
@@ -379,6 +382,48 @@ const DEBRIEF={
  how:{'bled out':'Bled out','0 SAN':'Lost to the dark','retired':'Retired'},
  // the memorial plaque on the case board (Keegan picked a plaque, Nov 22)
  memorial:'MEMORIAL',plaque:'IN MEMORY',memCases:'{k} cases',memSeason:'Season {s}',memKeys:'Up/Down: scroll · B: back',memA:'OPEN'
+};
+// ---------- THE HOME PHASE (spec 008; approved home phase mockup) ----------
+// Screen words only. The scenes and arc beats are in home.js's own text block.
+const HOMEW={
+ title:'HOME',hint:'One choice each',waiting:'Waiting',choosing:'Choosing…',away:'Away',
+ rows:[
+  {k:'fr',name:'Fulfill Responsibilities',tag:'+BOND',line:'See one of your people. Pass SAN and that Bond grows.',roll:'Pass: +1d6 to that Bond, up to CHA. Crit: also +1 SAN. Fumble: −1d4 to that Bond, −1 SAN.'},
+  {k:'nature',name:'Back to Nature',tag:'+SAN',line:'Get out of town. One Bond pays 1 for the time away.',roll:'Pass: +1d4 SAN. Crit: +4. Fumble: −1d4 SAN.'},
+  {k:'mot',name:'Personal Motivation',tag:'+SAN',line:'Chase a reason to get up, or replace or swap one.',roll:'Pursue, pass: +1d2 SAN. Crit: +2. No Bond cost.'},
+  {k:'therapy',name:'Therapy',tag:'+SAN',line:'Talk to someone. SAN, or work on one disorder.',roll:'SAN, pass: +1d4. Crit: +4. Fumble: no requisition next briefing. Disorder: no roll; the third session cures it.'},
+  {k:'skill',name:'Improve Skill',tag:'+1D6%',line:'Practice one skill.',roll:'+1d6% to the skill you pick, up to 99%.'},
+  {k:'train',name:'Special Training',tag:'BOND',line:'Pick up an untrained skill: it goes from 10% to 30%.',roll:'No roll. One Bond pays 1.'},
+  {k:'sab',name:'Sabbatical',tag:'1–3 CASES',line:'Sit out 1–3 cases in psych care while a recruit covers.',roll:'Each case away: +1d6 SAN and a 40% chance to cure one disorder.'},
+  {k:'use',name:'Use',tag:'NO WD',line:'Spend the break using. No Withdrawal next case.',roll:'One Bond loses 1d4, and the agent loses 1 SAN.'},
+  {k:'bond',name:'New Bond',tag:'+BOND',line:'Someone new fills the empty slot. Starts at half CHA.',roll:'No roll.'}],
+ noSlot:'NO SLOT',noBond:'NO BOND ABOVE 1',noBondAny:'NO BOND',noUntrained:'NOTHING UNTRAINED',keys:'A: pick · B: back',keysFirst:'A: pick',
+ see:'WHO TO SEE?',pays:'WHO PAYS?',bondLine:'Bond {s} / {c}',cha:'CHA {c} · SAN {s}',
+ moods:{close:'CLOSE',strained:'STRAINED',fraying:'FRAYING',broken:'BROKEN'},
+ moodLine:{close:'{b} is glad to see {n}. Things are good.',strained:'{b} hasn\'t seen {n} in a while. It shows.',fraying:'{b} is running out of patience with {n}.'},
+ bondKeys:'A: go see them · B: back',payKeys:'A: they pay · B: back',
+ sanRoll:'SAN roll vs {p}',empRoll:'{t}\'s Empathy vs {p}',moodUp:'Next visit plays warmer.',moodDown:'Next visit plays colder.',broken:'BROKEN · The slot is empty until New Bond.',
+ pass:'PASS',fail:'FAIL',crit:'CRIT',fumble:'FUMBLE',
+ motT:'PERSONAL MOTIVATION',pursue:'Pursue: {m}',replace:'Replace a lost motivation',swap:'Swap a motivation',whichSwap:'SWAP WHICH?',newMot:'NEW MOTIVATION',mainQ:'WHICH IS MAIN?',
+ swapSure:'Swapping your Main motivation ends {n}\'s story so far. Can\'t be undone. Sure?',yes:'Yes',no:'No',
+ therT:'THERAPY',therSan:'Talk it out (SAN)',therDis:'Work on {d} ({k} of 3)',
+ skillT:'IMPROVE WHICH?',trainT:'LEARN WHICH?',typeT:'NEW BOND: WHO?',nameT:'THEIR NAME',typeName:'Type a name…',namePrompt:'Name for the new Bond:',
+ sabT:'HOW LONG AWAY?',sabN:['1 case','2 cases','3 cases'],sabSure:'{n} sits out {k}. A recruit covers. Can\'t be undone. Sure?',sabTag:'Sabbatical · {k} left',
+ sabRecruit:'Big Hat slides three folders across the desk. "Somebody\'s got to hold the seat. Pick."',
+ cured:'{d} cured.',sanUp:'SAN {a} → {b}',bondUp:'{b} {x} → {y}',skillUp:'{k} {x} → {y}',
+ back:'BACK FROM SABBATICAL',backQ:'Who keeps the seat?',backSure:'{n} keeps the seat. {o} goes to the roster. Can\'t be undone. Sure?',backKeys:'←/→: pick · A: keep this one',
+ recruitCases:'{k} cases closed',backRoster:'{n} is back from Sabbatical and waiting on the roster.',awayT:'SABBATICAL · {n}',cureQ:'CURE WHICH?',
+ perk:'Perk: {p}',perks:{protect:['Not on my watch','Once per fight, takes the hit for an ally about to go down, at half damage.'],
+  truth:['Loose thread','Once per case, a wrong deduction costs nothing, and you can answer again.'],
+  family:['Call home','Once per case, from Skills on the map: clears Shaken, +1d4 WP, and that Bond +1.'],
+  faith:['Steady faith','Horrors on sight cost 1 less SAN.'],
+  revenge:['Cold head','Human enemies can\'t shake them; +20% to hit whatever Downed an ally this fight.'],
+  duty:['Badge','Once per case, one roll against police, officials or agency staff succeeds.'],
+  curious:['Seen it before','The first fight against each kind of enemy shows its weakness.'],
+  money:['Expense account','Once per case, from Skills on the map: one common item.'],
+  redeem:['Second chance','Once per case, reroll a failed SAN roll.']},
+ perkUsed:'{p}: {n}.',callHome:'{n} calls {b} from a gas station payphone. Nobody says anything important. It helps.',expense:'{n} expenses a {i}. Big Hat will never read the receipt.',
+ noReq:'Your shrink\'s got a real nice office. Real nice filing cabinet.',noReq2:'No requisition. Sit.'
 };
 // Skill unlock names at 40, 75 and 90% (Skills and menus, Skill unlocks), flashed when a case gain crosses one
 const UNLOCKS={Firearms:['Shoot it open','Lights out','Dead eye'],Melee:['Force it','Jump them','Grapple'],Dodge:['Duck','Slip free','Riposte'],
@@ -461,5 +506,5 @@ const INJURIES=[null,
  {name:'Done with field work',tier:'career',pen:{},line:'Leaves the party'}];
 const STEPNAME={profession:'JOB',stats:'STATS',skills:'SKILLS',identity:'IDENTITY',bonds:'BONDS',motives:'MOTIVATIONS',dossier:'DOSSIER',title:'BLACK LANTERN',roster:'ROSTER',team:'YOUR TEAM',pick:'PICK A TEAM',confirm:'NEW GAME'};
 const STEPSHORT={profession:'JOB',stats:'STATS',skills:'SKILL',identity:'ID',bonds:'BOND',motives:'WHY',dossier:'FILE'};
-return {ROAMW,SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,diceOf,ITEMS,KIT,KITUSES,ITEMUI,DISORDERS,SANW,TIERS,KINDS,SKILLOPT,AUTOPERK,SKILLW,MAPMENU,OVERSTEP,RECRUITS,RECRUITW,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD,MAPHUD,BATTLEW,MOVES,INJURIES,DEBRIEF,UNLOCKS};
+return {ROAMW,SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,diceOf,ITEMS,KIT,KITUSES,ITEMUI,DISORDERS,SANW,TIERS,KINDS,SKILLOPT,AUTOPERK,SKILLW,MAPMENU,OVERSTEP,RECRUITS,RECRUITW,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD,MAPHUD,BATTLEW,MOVES,INJURIES,DEBRIEF,UNLOCKS,HOMEW};
 })();

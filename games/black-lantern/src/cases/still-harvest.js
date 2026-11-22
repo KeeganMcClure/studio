@@ -412,10 +412,10 @@ async function talkMayor(){
  if(stepAt('Local chief')&&!F.key){await said(TEXT.pellChief);return}
  if(!F.may1){F.may1=1;await play(TEXT.pell1)}
  const h={name:'MAYOR PELL',look:async()=>{await play(TEXT.pellLook);await play(TEXT.pellMiss)},opts:[
-  {use:'read',show:()=>!has('walk'),ok:async()=>{await play(TEXT.pellRead);clue('walk',TEXT.cWalk)}},
-  {use:'talk',show:()=>!has('walk'),ok:async()=>{await play(TEXT.pellTalk);clue('walk',TEXT.cWalk)}},
+  {use:'read',official:1,show:()=>!has('walk'),ok:async()=>{await play(TEXT.pellRead);clue('walk',TEXT.cWalk)}},
+  {use:'talk',official:1,show:()=>!has('walk'),ok:async()=>{await play(TEXT.pellTalk);clue('walk',TEXT.cWalk)}},
   {item:'recorder',label:'Play him Pip\'s words',show:()=>!has('walk')&&has('count'),run:async()=>{await play(TEXT.pellTape);clue('walk',TEXT.cWalk)}},
-  {use:'lean',show:()=>!F.binder,ok:async()=>{await play(TEXT.pellLean);await getBinder()}}
+  {use:'lean',official:1,show:()=>!F.binder,ok:async()=>{await play(TEXT.pellLean);await getBinder()}}
  ]};
  await hotspot(h,'pell');
 }
@@ -470,8 +470,8 @@ async function talkRoss(){
  if(stepAt('Local chief')&&!F.rossOk){
   await said(TEXT.rossChief);let ok=false;
   await hotspot({name:'DEPUTY ROSS',opts:[
-   {use:'talk',ok:async()=>{ok=true;await play(TEXT.rossTalkOk)},fail:()=>said(TEXT.rossTalkNo)},
-   {use:'creds',ok:async()=>{ok=true;await play(TEXT.rossCredOk);await stepBack1()},fail:()=>said(TEXT.rossTalkNo)},
+   {use:'talk',official:1,ok:async()=>{ok=true;await play(TEXT.rossTalkOk)},fail:()=>said(TEXT.rossTalkNo)},
+   {use:'creds',official:1,ok:async()=>{ok=true;await play(TEXT.rossCredOk);await stepBack1()},fail:()=>said(TEXT.rossTalkNo)},
    {item:'cash',label:'Slip him the cash',run:async()=>{ok=true;await said('Ross looks at the roll of twenties for a long time. Then he puts it in his hat.')}}]},'ross');
   if(!ok){F.rossNo=1;await said(TEXT.rossNo);checkpoint();return}
   F.rossOk=1;
@@ -488,7 +488,10 @@ async function deduce(){
  if(skillVal(L.a,'Forensics')>=75&&has('scare')&&has('drive')&&!G.fs.used.recon){G.fs.used.recon=1;
   const p=chanceOf(L,'Forensics'),o=SR.pct(p);await say('',resultLine('RECONSTRUCT · FORENSICS',o),{auto:1100});if(o.ok)await said(TEXT.reconOk);else tried(L,'Forensics')}
  else await hunch(TEXT.hunch);
- const r=await ask('DEPUTY ROSS',TEXT.rossAsk,TEXT.rossOpts);
+ let r=await ask('DEPUTY ROSS',TEXT.rossAsk,TEXT.rossOpts);
+ // Loose thread (an arc perk, spec 008): once per case, a wrong answer costs nothing and you can answer again
+ const lt=!(r===1&&(has('drive')||has('list')))&&live().find(m=>perkOn(m,'truth'));
+ if(lt){await say('',fillT(BLS.HOMEW.perkUsed,{p:BLS.HOMEW.perks.truth[0],n:lt.name}));r=await ask('DEPUTY ROSS',TEXT.rossAsk,TEXT.rossOpts)}
  if(r===1&&(has('drive')||has('list'))){F.deduce='right';F.pellHeld=1;await play(TEXT.rossRight)}
  else if(r===1){F.deduce='noproof';await play(TEXT.rossNoProof)}
  else{F.deduce='wrong';await play(TEXT.rossWrong)}

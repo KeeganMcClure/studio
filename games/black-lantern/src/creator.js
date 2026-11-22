@@ -51,7 +51,7 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
 // in order, bringing old saves forward before anything reads them. Before upgrading, the old
 // saves are copied to bl.backup. Rules: never change an old step; a new save shape gets a new
 // step and SAVE_V goes up by one. Saves from before numbering count as version 0.
-const SAVE_V=8;
+const SAVE_V=10;
 const fillAgent=a=>{if(!a||typeof a!=='object'||Array.isArray(a))return null;const d=newAgent();
   const o=Object.assign(d,a);o.look=Object.assign(newAgent().look,a.look||{});o.stats=Object.assign(newAgent().stats,a.stats||{});
   if(!o.picks||typeof o.picks!=='object')o.picks={};if(!Array.isArray(o.bonds))o.bonds=[];if(!Array.isArray(o.motives))o.motives=[];return o};
@@ -176,6 +176,29 @@ const UPGRADES={
     const mem=store.get(K('memorial'),null);
     if(Array.isArray(mem))store.set(K('memorial'),mem.map(x=>{if(!x||typeof x!=='object')return x;if(x.a)fixA(x.a);
       if(!x.done&&x.case!==paused){x.done=true;if(!Number.isInteger(x.season))x.season=(s&&s.season)|0||1;if(!Number.isInteger(x.cases))x.cases=x.a&&Number.isInteger(x.a.cases)?x.a.cases:0}return x}));
+  },
+  // 8 → 9 (Nov 22, spec 008 the home phase): every agent counts the cases they survived this season (a.sc), for
+  // personal arc beats: the cases closed this season that they were in, where the save knows it, otherwise 0. Nobody is
+  // owed a past beat. Arc progress, perks, Therapy counts, Sabbatical, the requisition and Withdrawal flags and Bond
+  // faces are new agent fields that start empty. bl.party gains the party's seats once a case closes.
+  9(){
+    const s=store.get(K('season'),null),shut=!!(s&&s.cases&&Object.values(s.cases).some(c=>c&&c.state==='closed'));
+    const fixA=a=>{if(a&&typeof a==='object'&&!Number.isInteger(a.sc))a.sc=shut&&a.cur&&a.cur.ch1?1:0;return a};
+    const r=store.get(K('roster'),[]);if(Array.isArray(r))store.set(K('roster'),r.map(fixA));
+    const g=store.get(K('game'),null);
+    if(g!==null){try{const o=JSON.parse(g);if(!o||!Array.isArray(o.party)||!o.party.length)throw 0;
+        o.party.forEach(m=>{if(m&&m.a)fixA(m.a)});store.set(K('game'),JSON.stringify(o))}
+      catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
+  },
+  // 9 → 10 (Nov 22, spec 009 the season): bl.season gains agency (agency cases unlocked, and whether each unlock scene
+  // played), ended, past (one line per finished season), carried (open cases carried from the last season) and slots
+  // (which case sits in each of the board's six spots). Every case it already has keeps its state; the spots fill from
+  // the season's queue the next time the board opens.
+  10(){
+    const s=store.get(K('season'),null);if(!s||typeof s!=='object'||Array.isArray(s))return;
+    if(!Array.isArray(s.agency))s.agency=[];if(typeof s.ended!=='boolean')s.ended=false;if(!Array.isArray(s.past))s.past=[];if(!Array.isArray(s.carried))s.carried=[];
+    if(!Array.isArray(s.slots))s.slots=[null,null,null,null,null,null];
+    store.set(K('season'),s);
   }
 };
 function upgradeSaves(){
@@ -304,6 +327,9 @@ V.title=()=>{
   return{rows:[
     ST(`<canvas class="lantern pix" id="lantern" width="96" height="96" style="border:0;background:transparent"></canvas><div class="logo">BLACK LANTERN<small>PERSONNEL INTAKE · FORM 7-B</small></div><div class="static small" style="text-align:center;padding-top:0">Build a team. Lose them later.</div>`),
     ...(store.get(K('game'),null)?[R('Continue Chapter One',{cls:'go',a:()=>{if(window.BLG)BLG.resume()}})]:[]),
+    // Dev build only: the test season stands in for Season 1 (spec 009, Done when); switching it starts Season 1 over
+    ...(window.Studio&&Studio.channel==='dev'?[R('Dev: test season',{val:(store.get(K('settings'),{})||{}).testSeason?'ON':'OFF',a:()=>{const st=store.get(K('settings'),{})||{};st.testSeason=!st.testSeason;store.set(K('settings'),st);if(window.BLG)BLG.newSeason();render()}})]:[]),
+    ...(!S.team&&!store.get(K('game'),null)&&partySeats()?[R('Case board',{val:'your party',a:()=>{if(window.BLG)BLG.board({from:'title'})}})]:[]),
     ...(S.team?[R('Continue team',{val:esc(S.team.name||''),a:()=>{goto(S.edit!==null?(S.tweak?'identity':'profession'):'team')}})]:[]),
     R('New game',{a:newGame}),
     R('Roster',{val:n+' on file',a:()=>{S.seatPick=null;goto('roster')}}),
@@ -313,7 +339,8 @@ V.title=()=>{
   ],foot:'A: SELECT',bare:true};
 };
 // New game starts a fresh season and keeps the roster (spec 004, step 1). With a closed case on the board it asks first.
-function newGame(){if(window.BLG&&BLG.seasonClosed()>0){S.sel.confirm=2;goto('confirm')}else goto('pick')}
+// it also asks past Season 1, since New game starts the seasons over (spec 009)
+function newGame(){if(window.BLG&&(BLG.seasonClosed()>0||BLG.seasonNo()>1)){S.sel.confirm=2;goto('confirm')}else goto('pick')}
 V.confirm=()=>{
   const W=window.BLS.BOARD;
   return{rows:[ST(`<div class="hi" style="text-align:center">${esc(W.sure)}</div><div style="text-align:center">${esc(W.resetLine)}</div>`),
@@ -361,8 +388,11 @@ function startGame(){
   if(window.BLG)BLG.board({from:'team'});
 }
 // A on an open card (case-board.js): the case starts with the team from Your team, seat 1 leading, as START did before.
+function partySeats(){const p=store.get(K('party'),null),ids=p&&Array.isArray(p.seats)?p.seats:[];
+  const ags=ids.map(id=>S.roster.find(a=>a.id===id)).filter(a=>a&&!(a.sab&&a.sab.left>0));return ags.length?{ags,lead:Math.min(p.lead|0,ags.length-1)}:null}
 function beginCase(id){
-  if(!filled())return false;
+  if(!filled()){const P=partySeats();if(!P)return false;  // the party from the last case (spec 008)
+    const ags=P.ags.map(clone),L=ags.splice(P.lead,1)[0];S.a=newAgent();saveDraft();BLG.start(L,ags,id);return true}
   const seats=S.team.seats.map(clone);
   S.team=null;S.edit=null;S.tweak=false;S.a=newAgent();saveDraft();
   BLG.start(seats[0],seats.slice(1),id);return true;

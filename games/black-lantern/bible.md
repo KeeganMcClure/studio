@@ -119,7 +119,9 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
     Done Nov 22: spec 009 (`specs/009-season-flow.md`). The full save export was already built in the launcher. Its build is the Season flow item below the Season readiness list.
   - [ ] Season 5 of 6: case pipeline: update Story, Adding a new case for the studio repo (who pitches, a public-safe case spec template in the shape of spec 006, where the secret case file lives, enemy cards and the boss tuning check), then pitch the season's cases for Keegan to pick
   - [ ] Season 6 of 6: art kits: from the picked pitches, list the generic kits the season needs beyond today's 21 autumn small-town pieces (for example interiors, apartments, a city, other seasons), and propose each to the Shared Shelf with Keegan's OK. Enemy battle art follows the pattern Demo 5 part B sets
-- [ ] Home phase part A (spec 008): arc beats, the home screen and all nine choices, Sabbatical with its recruit, the result card and the save. After Demo 6
+- [x] Home phase part A (spec 008): arc beats, the home screen and all nine choices, Sabbatical with its recruit, the result card and the save. After Demo 6
+
+  Done Nov 22 (spec 008): after the debrief, Sabbatical cards and returns, Bonds that broke, and arc beats play, then each agent picks one of the nine home scenes; scenes play with the Bond's face over one stand-in backdrop, and a result card shows the roll and what changed. The per-Bond backdrops and older faces are Part B.
 - [ ] Home phase part B (spec 008): the home backdrops for each Bond type and place, and older faces for parents and mentors
 - [ ] Season flow (spec 009): the season data file, the board for a full season, agency case unlocks, the finale, the season's end and the next season. After the home phase
 - [ ] Good Manners part A (spec 010): its maps and art, townsfolk and the two men, walkable with stand-in scripts. After the season flow

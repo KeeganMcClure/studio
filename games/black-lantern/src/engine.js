@@ -46,7 +46,9 @@ function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1
 let box=null,boxKey='';
 const PORTRAITS={'BIG HAT':(c,f,sh)=>drawBigHatPortrait(c,sh,f)}; // speaker name -> (ctx, frame, shouting) 64 x 64
 // a case's own speakers (its townsfolk) come from its registerCase({portraits: name -> (ctx, frame)}); signs and narration have none
-function portraitOf(name){if(!name)return null;if(PORTRAITS[name])return PORTRAITS[name];const c=caseById(G.case);return c&&c.portraits&&c.portraits(name)||null}
+// XPOR: faces set while a scene plays (home.js: the agent and their Bonds, spec 008)
+const XPOR={};
+function portraitOf(name){if(!name)return null;if(PORTRAITS[name])return PORTRAITS[name];if(XPOR[name])return XPOR[name];const c=caseById(G.case);return c&&c.portraits&&c.portraits(name)||null}
 function say(name,text,o={}){
  return new Promise(res=>{
   if(dlg)clearTimeout(dlg.to);
@@ -99,7 +101,7 @@ function closeMenu(v){const m=menu;menu=null;menuEl.hidden=true;if(m.inBox&&box)
 async function ask(name,text,opts){await say(name,text,{keep:true,instant:false});const r=await choose(opts,{cancel:true,inBox:true});hideTB();return r<0?opts.length-1:r}
 function banner(t,ms=2200){ban.textContent=t;ban.hidden=false;clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,ms)}
 function fade(on){fadeEl.style.opacity=on?1:0;return sleep(340)}
-async function run(fn){G.busy=(G.busy||0)+1;try{await fn()}catch(e){console.error(e)}finally{G.busy--}}
+async function run(fn){G.busy=(G.busy||0)+1;try{await fn()}catch(e){console.error(e)}finally{G.busy=Math.max(0,(G.busy||0)-1)}}  // never below 0: a case's ending opens the board, which resets it
 function clue(id,text){if(G.clues.some(c=>c.id===id))return;G.clues.push({id,text});banner('NOTEBOOK UPDATED')}
 
 // ================= SANITY =================
@@ -325,7 +327,7 @@ function drawBigHatPortrait(c,shout,frame){
 }
 async function shout(text){G.shout=performance.now()+750;G.shoutPor=true;try{return await say('BIG HAT',text)}finally{G.shoutPor=false}}
 async function bigHatScene(fn){await fade(1);G.mode='scene';G.scene='bighat';await fade(0);await sleep(400);await fn();await fade(1);G.scene=null}
-function drawScene(){if(G.scene==='bighat'){drawOffice();if(G.db)dbCard();return}if(G.scene==='funeral')return drawFuneral();cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+rnd(20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
+function drawScene(){if(G.scene==='bighat'){drawOffice();if(G.db)dbCard();return}if(G.scene==='funeral')return drawFuneral();if(G.scene==='home')return drawHome();cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+rnd(20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
 // Logic runs at 60 ticks a second on any screen (engine/clock.js); frames with no tick due are skipped.
 const clock=StudioClock.make();
 function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(CB)drawBoard();else if(G.mode==='battle'&&Bt)drawBattle();else if(SCR)drawScr();else if(PM)drawParty();else if(G.mode==='world')drawWorld();else drawScene();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
@@ -356,15 +358,20 @@ function quit(){checkpoint();leave();B.goto('title');B.render()}
 // the CLOSED stamp landing on its card. A case passes its ending label (spec 006 C6: clean, costly, worst...) and the
 // facts the debrief used; both save with the case in bl.season. The debrief (debrief.js) calls this as its last step.
 function finish(ending,facts){
- store.set(B.key('game'),null);const a=lead().a;const id=G.case;closeCase(id,ending,facts);G.db=null;B.S.stampCase=id;
+ store.set(B.key('game'),null);const a=lead().a;const id=G.case;closeCase(id,ending,facts);const counted=!!(G.db&&G.db.counted);G.db=null;B.S.stampCase=id;
  // every agent in the field carries SAN, disorders, Breaking Point, Adapted marks, skill gains and gear back to the
  // roster, and counts one more case closed; statuses cleared at the debrief's heal-up; the backpack goes to bl.party
  // Minor injuries last through the next case and clear at that case's end-of-case heal-up (Lasting injuries)
- live().forEach(m=>{const a=m.a;if(Array.isArray(a.inj))a.inj=a.inj.filter(x=>!(x.tier==='minor'&&--x.left<=0));a.cases=(a.cases|0)+1});
+ if(!counted)caseCounts();
+ live().forEach(m=>{const a=m.a;if(Array.isArray(a.inj))a.inj=a.inj.filter(x=>!(x.tier==='minor'&&--x.left<=0))});
  const R=B.S.roster;live().forEach(m=>{const x=carry(m);x.id=x.id||Date.now()+rnd(1000);const i=R.findIndex(y=>y.id===x.id);const copy=JSON.parse(JSON.stringify(x));if(i>=0)R[i]=copy;else if(x===a)R.unshift(copy)});store.set(B.key('roster'),R);
- store.set(B.key('party'),{pack:G.fs?G.fs.pack:[]});
+ // the party carries to the next case (spec 008): its seats by agent id and who leads, with the backpack
+ store.set(B.key('party'),{pack:G.fs?G.fs.pack:[],seats:live().map(m=>m.a.id),lead:Math.min(G.lead|0,Math.max(0,live().length-1))});
  leave();B.goto('title');board({from:'finish',stamp:id});B.toast('FILED. CASE CLOSED.');
 }
+// Counts the case for everyone who finished it in the party (cases closed, and this season's count for arc beats, spec 008).
+// Recruits who joined at the debrief weren't in the case. Agents away on Sabbatical count it down (home.js).
+function caseCounts(){if(G.db)G.db.counted=1;live().forEach(m=>{if(m.late)return;m.a.cases=(m.a.cases|0)+1;m.a.sc=(m.a.sc|0)+1});if(typeof sabTick==='function')sabTick()}
 // Starts a case (A on its card): its briefing (the case's opening) plays first. Seat 1 leads.
 async function start(agent,squad,id){
  const c=caseById(id)||CASES[0];
@@ -398,7 +405,7 @@ function resume(){const s=store.get(B.key('game'),null);if(!s)return false;
 // ================= INPUT =================
 function input(k){
  if(!G.active)return;
- if(CB){boardPress(k);return}
+ if(CB&&!dlg&&!menu){boardPress(k);return}  // the board's own scenes (an agency unlock, the season end) use the dialog box
  if(dlg){if(k==='a'||k==='b'){if(!dlg.done)finishType();else closeDlg()}return}
  if(menu){const n=menu.items.length;
   if(k==='up'){menu.sel=(menu.sel-1+n)%n;renderMenu()}
@@ -421,6 +428,6 @@ menuEl.addEventListener('click',e=>{const el=e.target.closest('.gi');if(!el||!me
 // With no checkpoint (only agents on the roster) the title screen opens as usual.
 window.addEventListener('load',()=>{if(window.Studio&&Studio.continued&&!G.active)resume()});
 window.BLG={start,resume,input,hold,recruitBuilt:a=>recruitBuilt(a),get active(){return G.active},
- board:o=>board(Object.assign({stamp:o&&o.from==='finish'?B.S.stampCase:null},o)),seasonClosed:()=>seasonClosed(),newSeason:()=>newSeason(),_t:{hp:(i,n)=>{party[i].hp=n},status:(i,k)=>{const m=party[i];m.st=m.st||[];if(!m.st.includes(k))m.st.push(k)},
+ board:o=>board(Object.assign({stamp:o&&o.from==='finish'?B.S.stampCase:null},o)),seasonClosed:()=>seasonClosed(),seasonNo:()=>loadSeason().season,newSeason:()=>newSeason(),_t:{hp:(i,n)=>{party[i].hp=n},status:(i,k)=>{const m=party[i];m.st=m.st||[];if(!m.st.includes(k))m.st.push(k)},
  box:()=>box&&box.text||"",skipBox:()=>{if(dlg){if(!dlg.done)finishType();if(dlg)closeDlg()}},hot:h=>run(()=>hotspot(h,'test')),run:fn=>run(()=>fn({party,G,lead,horror,trigger,addStatus,pickup,loseAgent,say})),scr:()=>SCR&&SCR.kind,lead:()=>G.lead|0,fight:t=>run(async()=>{const r=await battle(t);if(r==='lose')await gameOver()}),go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,boss:()=>run(bossIntro),finish:()=>finish(),board:()=>CB,
  bt:()=>Bt?{ui:Bt.ui?Bt.ui.kind:null,sel:Bt.ui?Bt.ui.sel:null,rows:Bt.ui&&Bt.ui.rows?Bt.ui.rows.map(r=>r.label+(r.dis?'*':'')):null,round:Bt.round,msg:Bt.msg,en:Bt.en.map(e=>[e.name,e.hp,e.dead||e.gone]),party:party.map(m=>[m.name,m.hp,m.wp,m.san,!!m.ko,!!m.dead])}:null}};
