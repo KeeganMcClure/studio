@@ -395,6 +395,23 @@ Code in Rushlight's Asset Library as rushlight-mockups-site-v1, rushlight-mockup
 
 ![Pick a company in the GBA shell: Free Company picked, Wendel's seat open on Reroll](mockups/16-company.png)
 
+**The slice's other contract sites, rough (Nov 22; drafts for your review).** Your pick on spec 006's site art card: rough mockups of all four sites with no art yet, before D2 is built. Same layout as the approved charcoal camp (site strip, NEXT line, Tallow hotspot diamonds, Ash once used, the lit one by the lead, the A prompt), reusing its Wendel sprite and diamonds; everything else is drawn new and rough, to settle each site's layout and mood rather than its final art.
+
+- **Hollin at noon:** stubble and stooks in hard light, the bell tower with the sexton, the reapers' cottages with the surviving reaper at a door, the hedge at the field edge, crows, the shimmer out in the field, and the dead reaper face down by a sickle. Wendel would roll Examine at 20%, so SELECT offers Tomas at 60%.
+- **Sallow End at dusk:** fenced yards, hens, the parents at their cottage with a child's smock on the line, and the church with its open loft door, the ladder and fallen feathers under it (the Athletics climb).
+- **The osier causeway at night:** a plank causeway on piles across black water, the osier beds on the left, upturned boats on the mud with salt sacks under one, the heron skull on a pole, claw marks on the planks by the rushlight, and the Withy Hag half in the withies with a plate marked LV?. The strip shows the posting's kind (hunt), not false alarm, since the posting reads like a creature job.
+- **Crookback, overcast:** shut cottages with chalk crosses, the bakehouse and its oven, the apothecary's fallen timbers, a shrouded body in the street, the bone rows by the plague ditch, and the churchyard with every grave open.
+
+Claude's calls, for your review: the time of day for each site, where the Hag stands before she walks out, and the NEXT and A prompt lines (stand-ins until the Text Library rows are approved).
+
+![Rough site: Hollin at noon, Wendel by the dead reaper](mockups/30-site-hollin-rough.png)
+
+![Rough site: Sallow End at dusk, Wendel at the loft ladder](mockups/31-site-sallow-end-rough.png)
+
+![Rough site: the osier causeway at night, the Withy Hag in the withies](mockups/32-site-causeway-rough.png)
+
+![Rough site: Crookback, Wendel at the open graves](mockups/33-site-crookback-rough.png)
+
 **Species sheet (Ready 3 of 5, Nov 22; approved at v3).** The vertical slice's six species (Mercenaries and items, First to ship) at the three sizes they're built in: a 64 × 64 portrait head, a map sprite in the 14 × 26 frame at the species' height (Art, Scale: mouse and rat 18 px, hare and hedgehog 22 px, badger and fox 26 px), and a waist-up battle back view, plus all six on one street row at the phone's 2× scale. Premade check: the town, battle and Pick a company mockups in the Asset Library already show a hare, rat, badger, hedgehog and fox at map scale, and a badger, hare and rat from behind. This sheet follows their look (dark outlines, flat two-tone shading, coats in the palette) and adds the mouse, the missing back views and every portrait head. Faces follow Art, Faces: small dark eyes with no glints, real muzzles, and species read by silhouette first (ears, snout, stripes, spines). The drawing code is in `mockups/27-species-sheet-rough-v1.html`. Approved at v3 and filed in the Asset Library as rushlight-sprites-species-v1 (Sprites shelf).
 
 ![Species sheet rough v1: mouse, rat, hare, hedgehog, badger and fox as portrait, map sprite and battle back view](mockups/27-species-sheet-rough-v1.png)

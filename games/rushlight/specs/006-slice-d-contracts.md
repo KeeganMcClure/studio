@@ -13,7 +13,7 @@ It's the biggest part of the slice, so it's built in two halves. **D1** is the r
 
 When it's done, every job can be taken, played and paid, and the bestiary fills in. The only thing left of the slice is the Hollow Monk and the end of a run (Part E).
 
-**Waiting on Keegan's pick on the site art card.** This spec is written for the recommended answer: one rough mockup of Crookback before D2, with the other three sites built from the existing kits and reviewed in play.
+**Site art (your pick on the site art card, Nov 22):** rough mockups of all four sites with no art yet (Hollin, Sallow End, the osier causeway, Crookback), drawn before D2 in the charcoal camp's layout. They're in the bible's Art section as drafts (mockups 30–33). Once approved, each site is built to its mockup and the D2 job uses it.
 
 ## Bible sections this spec relies on
 
@@ -198,7 +198,7 @@ All as People jobs says. In Part B's terms:
 
 ### The Counter (hunt; Crookback)
 
-Needs the rough mockup (the site art card) before it's built.
+Built to its rough mockup (bible, Art, mockup 33) once that's approved.
 
 - **Chunks:** the plague ditch and pit, the empty street, the church and churchyard, the bakehouse, the apothecary's ruin.
 - **Hotspots:**
@@ -238,6 +238,7 @@ None. Claude's calls inside the bible's rules, for Keegan to change in review:
 - **Every job's site chunks, hotspots, moments and where its tales get sorted.** The bible sets each card's fight, prep and tales, but not the site around it.
 - **The Noonwife's 12-round noon bell**, and a missed noon is a failed attempt, not a failed job.
 - **The Counter comes to the loudest place** on the site.
+- **The four rough site mockups:** each site's time of day (Hollin at noon, Sallow End at dusk, the causeway at night, Crookback overcast), where the Hag stands before she walks out, and the site strip showing the Hag's posting as a hunt, not a false alarm.
 - **The Withy Hag's reeve's bounty** is 10 gr, and the smugglers' cut is 15 gr.
 - **Leaving a started job** counts as a failed job.
 - **Each Monk sign comes once**; a repeated source gives the next unfound sign.
