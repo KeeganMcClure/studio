@@ -399,6 +399,10 @@ Code in Rushlight's Asset Library as rushlight-mockups-site-v1, rushlight-mockup
 
 ![Species sheet rough v2: necks on every portrait, new badger and fox faces, new hedgehog back view](mockups/28-species-sheet-rough-v2.png)
 
+**Your review (Nov 22): v3.** The faces were better, but the necks were too long and looked unnerving. In v3 the heads sit low on the shoulders, so only a short, wider neck shows above the collar. Drawing code: `mockups/29-species-sheet-rough-v3.html`.
+
+![Species sheet rough v3: heads set low on the shoulders with short necks](mockups/29-species-sheet-rough-v3.png)
+
 **Mockups to come:** none. The battle screen, town street and region map are all redrawn inside the GBA shell (set Nov 20, see Tech and To do). Every new screen still gets a still mockup before it's built.
 
 **Drawing the unnatural (set Nov 20, from the creature art study).** Each unnatural thing uses 2–4 of these rules, and no two creatures use the same pair, so no two are wrong in the same way. They replace the first draft.
