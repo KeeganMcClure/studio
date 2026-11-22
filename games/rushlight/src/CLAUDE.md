@@ -7,13 +7,15 @@ Rushlight is Keegan's phone-first dark fantasy roguelike: a seeded region of tow
 | What | Where |
 | --- | --- |
 | Game code | This repo. Code work happens here. |
-| Design rules, To do, Changelog | The **Rushlight Build Bible** doc: https://claude.ai/artifact/57EcpKt21AqX87XfiwV8qw. It is the single source of truth and wins any conflict, including with this file. Open only the tab a task needs (Start here lists them). Carried Black Lantern rules are written out in Systems → Carried rules, so a build never needs Black Lantern's Bible. |
+| Design rules, To do, Bugs | `games/rushlight/bible.md`. It is the single source of truth and wins any conflict, including with this file. Read only the section a task needs. Carried Black Lantern rules are written out in Systems → Carried rules, so a build never needs Black Lantern's bible. The old Rushlight Build Bible doc on claude.ai is frozen; don't use it. |
+| Changelog | `games/rushlight/changelog.md`, newest first. |
+| Specs and mockups | `games/rushlight/specs/` and `games/rushlight/mockups/`. Build only from a merged spec. |
 | In-game text | The **Rushlight Text Library** Sheet: https://claude.ai/artifact/QNKtwsJvEkAtTDnn4LDSNA. Content data reads lines from it by ID. Only Approved rows ship; Draft rows are placeholders. |
 | Art reference and drawing code | The **Rushlight Asset Library**: https://claude.ai/artifact/WYgm7Gn8afLE51Pce94ynt. Art first drawn during a build is filed there under the Art across games naming before the build uses it. |
 | Generic art, the shell and the dialog box | The **Shared Shelf**: https://claude.ai/artifact/Jmv2FBeGHXczqy7juZW8dL, at the versions the Bible names. Never write to it without asking Keegan first. |
-| Where Keegan plays | The **Rushlight** artifact. Not published yet: the first publish creates it, then put its link here and in the Bible's Tech tab, and publish to that same artifact every time so the link and saves stay. |
+| Where Keegan plays | The launcher's **Dev** shelf. Every push to `main` puts the bundled build there (Bible, Tech, Builds; `studio-bible/launcher.md`). Rushlight moves to Release only when Keegan says so. |
 
-Design, mockups, Bible reviews, the Text Library and the Asset Library stay in the claude.ai Project. This repo is for building.
+The Text Library and the Asset Library stay on claude.ai. The bible, specs and changelog live in this repo; the Designer changes the bible only in pull requests Keegan merges.
 
 ## Black Lantern
 
@@ -42,17 +44,16 @@ Loaded in this order by `index.html`: the shared `engine/shell.js` (builds the s
 
 ## Rules for every change
 
-1. Read the Bible tab the task needs. One task per chat, named up front.
+1. Read the bible section the task needs. One task per chat, named up front.
 2. Ask decisions as multiple choice, with your pick marked. Ask before big or hard-to-undo changes. Every system needs a gameplay stake.
 3. Edit the existing files; never rewrite a part from scratch.
 4. Keep saves backward compatible (keys are in Bible, Tech, Saving). Flag anything that would break an old save before doing it.
-5. Run `npm run check` (builds `dist/index.html`, then checks it at 320 × 480, 375 × 550 and 375 × 667: loads, no errors, every button on screen and working, 600 random presses, a reload with saves; and new runs on 3 seeds once `RLG.newRun(seed)` exists). Then playtest the changed part yourself, start to finish.
+5. Run `npm run check` (builds `dist/index.html`, then checks it at 320 × 480, 375 × 550 and 375 × 667: loads, no errors, every button on screen and working, 600 random presses, a reload with saves; and new runs on 3 seeds once `RLG.newRun(seed)` exists). Then run the bible's Process playtest checklist, and playtest the changed part yourself, start to finish.
 6. File any newly drawn art in the Asset Library first (Bible, Tech, Asset Library).
-7. Commit with a plain-language message and push.
-8. Publish: `npm run build`, then publish `dist/index.html` to the Rushlight artifact as its page, with the label `Build YYYY-MM-DD` (plus a short note if more than one build that day).
-9. Back up: a dated copy of the build to the Rushlight backups folder in Google Drive as `rushlight-build-YYYY-MM-DD.html` (keep the last 5 plus milestones). Before a task edits a Bible tab, that tab's export goes there as `rushlight-bible-YYYY-MM-DD-tab.md`. Never to Project files.
-10. Update the Bible: tick the To do item, record decisions where they belong, update Ported rules if a Black Lantern rule changed, file Bugs, add a Changelog line under Process (newest first; only 10 rows stay, the oldest moves to Changelog archive).
-11. Tell Keegan what to test on the phone, and when to start a fresh chat.
+7. Commit with a plain-language message and push. Once merged to `main`, the build is on the launcher's Dev shelf; there is no artifact to publish.
+8. Backups: none to make. Git history keeps every version of the game and the bible, so the old Drive copies (dated builds, bible tab exports) have stopped (Bible, Process, Backups).
+9. In the same pull request: add a dated entry at the top of `changelog.md` (what was built, what's left, any deviations from the spec), tick the matching To do item in `bible.md` with one indented `Done <date>:` line, and tick any Bugs line the fix closes. Change nothing else in the bible: decisions, Ported rules and new Bugs go to Keegan for the Designer.
+10. Tell Keegan what to test on the phone, and when to start a fresh chat.
 
 ## Screen and controls
 
