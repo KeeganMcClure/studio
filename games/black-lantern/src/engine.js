@@ -112,12 +112,13 @@ function applySan(){}
 // The battle is battle.js (spec 006 part B); the studio's battle frame is engine/battle.js.
 
 // ================= WORLD =================
-function passable(x,y){const M=G.M;if(x<0||y<0||x>=M.w||y>=M.h)return false;if(BLOCK.has(M.g[y][x]))return false;if(M.npcs.some(n=>(!n.on||n.on())&&n.x===x&&n.y===y))return false;return true}
+function passable(x,y){const M=G.M;if(x<0||y<0||x>=M.w||y>=M.h)return false;if(BLOCK.has(M.g[y][x]))return false;if(M.npcs.some(n=>(!n.on||n.on())&&n.x===x&&n.y===y))return false;if(roamAt(x,y))return false;return true}
 function goMap(name,x,y,dir,o={}){hud.hidden=true;gEl.classList.remove('battle');if(G.fs&&G.map&&G.map!==name&&!o.restore)G.fs.area=1;G.map=name;G.M=MAPS[name]();StudioMove.place(G,x,y,dir);
  banner(G.M.name);}
 function update(){
  if(G.mode!=='world')return;
  if(!G.busy&&!dlg&&!menu&&!PM&&!SCR&&!G.mv&&fieldDue()){held=[];run(fieldTick);return}  // area-change ticks (field.js)
+ if(!G.busy&&!dlg&&!menu&&!PM&&!SCR)roamTick();  // the danger zone's roamers walk (field.js, spec 006 C4)
  StudioMove.update(G,StudioMove.last(held),{passable,busy:()=>G.busy||dlg||menu||PM||SCR,arrive:()=>run(onStep)});
 }
 async function onStep(){const M=G.M,k=G.x+','+G.y;if(M.warps&&M.warps[k]){held=[];return M.warps[k]()}if(M.onStep)await M.onStep()}
@@ -125,6 +126,7 @@ async function interact(){
  const [tx,ty]=StudioMove.ahead(G),M=G.M,k=tx+','+ty;
  const n=M.npcs.find(n=>(!n.on||n.on())&&n.x===tx&&n.y===ty);
  if(n){n.dir={up:'down',down:'up',left:'right',right:'left'}[G.dir];held=[];await n.talk(n);G.fs.talked[n.id]=G.clues.length;return}
+ const r=roamAt(tx,ty);if(r){held=[];await roamMenu(r);return}  // a roamer: fight, sneak or the rest (field.js)
  // a hotspot is a script (a function) or data that opens the lead's options (field.js, spec 006 A2)
  if(M.O[k]){held=[];const h=M.O[k];if(typeof h==='function')await h();else await hotspot(h,k);return}
  const ch=M.g[ty]&&M.g[ty][tx];if(ch&&TILEDESC[ch]){held=[];await say('',TILEDESC[ch])}
@@ -144,7 +146,10 @@ function drawWorld(){
  if(!M.props)M.props=art.props(M);
  const st=art.paint(M);
  cx.fillStyle='#0a0710';cx.fillRect(0,0,VW,VH);cx.drawImage(st.c,-camx,-camy);
- const spr=[],moving=!!G.mv,fr=StudioMove.walkFrame(G),midX=camx+VW/2,midY=camy+VH/2;
+ // trail dots on the ground: On guard's roamer beats, Pathfinder's safe route, Track's drag marks (field.js)
+ const post=[];  // drawn over the light, so they read in the dark: trail dots, threat skulls, the "!"
+ const tr=G.fs&&G.fs.trail&&G.fs.trail[G.map];if(tr)post.push(()=>Object.entries(tr).forEach(([kind,pts])=>(pts||[]).forEach(([x,y],i)=>{cx.fillStyle=kind==='beat'?'rgba(255,79,163,.7)':'rgba(214,164,58,.75)';if((i+Math.floor(now/300))%3)cx.fillRect(x*16+7-camx,y*16+7-camy,2,2)})));
+ const spr=[],roamLit=[],moving=!!G.mv,fr=StudioMove.walkFrame(G),midX=camx+VW/2,midY=camy+VH/2;
  // a piece with a canopy (a tree) turns see-through while the lead stands behind it
  const me=[G.px+1,G.py-15,14,28];
  M.props.forEach(p=>{if(Math.abs(p.x-midX)<VW/2+60&&p.y>camy-8&&p.top<camy+VH+8)spr.push({y:p.y,f:()=>{const see=p.canopy&&G.py+13<p.y&&overlaps(me,p.canopy);
@@ -155,6 +160,13 @@ function drawWorld(){
  // Only the lead walks the map (Bible, Art, Maps). Agent sprites from agent-sprite.js; lantern at night only; a blink every few seconds.
  const blink=!moving&&(now%3400)<150?1:0;
  spr.push({y:G.py+13,f:()=>BLA.draw(cx,L.a,G.px+8-camx,G.py+13-camy,G.dir,fr,blink,night)});
+ // roamers (spec 006 C4): their battle sprite, small, with threat skulls over it and a "!" when they've seen the lead
+ if(M.roamers){const c=caseById(G.case);M.roamers.forEach(r=>{const s=roamSt(r);if(!roamLive(r,s))return;const img=c&&c.sprite&&c.sprite(r.sprite||r.types[0],Math.floor(now/500)%2);if(!img)return;
+  const k=Math.min(1,22/img.height,24/img.width),w=Math.round(img.width*k),h=Math.round(img.height*k),fx=s.w.x*16+8-camx,fy=s.w.y*16+15-camy;
+  spr.push({y:s.w.y*16+14,f:()=>{if(s.held||s.passed)cx.globalAlpha=.55;cx.fillStyle='rgba(0,0,0,.3)';cx.fillRect(Math.round(fx-6),Math.round(fy-1),12,2);cx.drawImage(img,Math.round(fx-w/2),Math.round(fy-h),w,h);cx.globalAlpha=1}});
+  roamLit.push([fx,fy-h/2,20]);
+  post.push(()=>{const n=r.skulls||1;for(let i=0;i<n;i++)icoSkull(Math.round(fx-n*4+i*8),Math.round(fy-h-9),PC.cream);
+   if(s.st==='alert'||s.st==='chase')pT('!',Math.round(fx+w/2-1),Math.round(fy-h-12),PC.pink,13)})})}
  if(M.boss){const c=caseById(G.case),img=c&&c.sprite&&c.sprite('gleaner',Math.floor(now/400)%2);if(img)spr.push({y:11*16+14,f:()=>cx.drawImage(img,13*16+8-camx-img.width/2,11*16+40-camy-img.height)})}
  spr.sort((a,b)=>a.y-b.y).forEach(s=>s.f());
  // light
@@ -164,11 +176,12 @@ function drawWorld(){
  if(M.light==='dusk')SHELF.dusk(cx,glows.concat(pools),now);
  else if(night){
   const lamp=StudioLight.mix(LOOK.lamp[0],LOOK.lamp[1],k),ring=[[G.px+8-camx,G.py+6-camy,StudioLight.mix(LOOK.lantern[0],LOOK.lantern[1],k)*(G.fs&&G.fs.flareMap===G.map?1.6:1)]];
-  pools.forEach(([x,y])=>ring.push([x,y,lamp]));
+  pools.forEach(([x,y])=>ring.push([x,y,lamp]));roamLit.forEach(p=>ring.push(p));  // roamers walk in plain sight
   if(M.boss)ring.push([13*16+8-camx,11*16-38-camy,LOOK.boss+Math.random()*4]);
   StudioLight.night(cx,{dark:LOOK.dark,alpha:LOOK.alpha,warm:LOOK.warm,pools:ring,glows:glows.map(([x,y,r,a])=>[x,y,r*.7,a*.6])});
  }
  if(k>0)StudioLight.sour(cx,k,{pink:LOOK.pink,cyan:LOOK.cyan});
+ post.forEach(f=>f());
  drawMapHud(camx,camy,night);
 }
 // ---- the lead card, the NIGHT tag and the A bubble (the approved On Map mockup) ----
@@ -337,9 +350,10 @@ function enter(){G.active=true;scr.classList.add('gaming');fit();cancelAnimation
 function leave(){G.active=false;PM=null;CB=null;SCR=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
 function quit(){checkpoint();leave();B.goto('title');B.render()}
 // The end of a case (spec 004, step 5): the case is stamped closed in bl.season, then the lead's dossier opens as
-// before, and leaving the dossier opens the case board. The demo's one ending saves as "closed".
-function finish(ending){
- store.set(B.key('game'),null);const a=lead().a;const id=G.case;closeCase(id,ending);B.S.afterCase=true;B.S.stampCase=id;
+// before, and leaving the dossier opens the case board. A case passes its ending label (spec 006 C6: clean, costly,
+// worst...) and the facts Demo 6's debrief needs; both save with the case in bl.season.
+function finish(ending,facts){
+ store.set(B.key('game'),null);const a=lead().a;const id=G.case;closeCase(id,ending,facts);B.S.afterCase=true;B.S.stampCase=id;
  // every agent in the field carries SAN, disorders, Breaking Point, Adapted marks and gear back to the roster;
  // statuses clear at the end-of-case heal-up; the backpack goes to bl.party (spec 006, Saves)
  // Minor injuries last through the next case and clear at that case's end-of-case heal-up (Lasting injuries)
@@ -357,7 +371,15 @@ async function start(agent,squad,id){
  MAZE=null;enter();applySan();
  run(c.opening);
 }
-function resume(){const s=store.get(B.key('game'),null);if(!s)return false;G=Object.assign(G,{active:true,busy:0,mode:'world'});MAZE=null;enter();
+// A checkpoint from before a case was rewritten (save step 7, spec 006 Saves) can't land in the new story's middle:
+// the same team starts the case again from its briefing, keeping their SAN, disorders, injuries, gear and backpack.
+function restartCase(o){
+ const ag=o.party.filter(m=>m&&m.a&&!m.gone).map(m=>{fillMember(m);return carry(m)});if(!ag.length)return false;
+ const p=store.get(B.key('party'),null),pack=(p&&Array.isArray(p.pack)?p.pack:[]).concat(o.fs&&Array.isArray(o.fs.pack)?o.fs.pack:[]);store.set(B.key('party'),{pack});
+ G.rewrote=1;start(ag[0],ag.slice(1),o.case);if(Number.isInteger(o.lead)&&o.lead>=0&&o.lead<ag.length)G.lead=o.lead;return true}
+function resume(){const s=store.get(B.key('game'),null);if(!s)return false;
+ try{const o=JSON.parse(s);if(o&&o.rewrite){G=Object.assign(G,{busy:0});if(restartCase(o))return true}}catch(e){}
+ G=Object.assign(G,{active:true,busy:0,mode:'world'});MAZE=null;enter();
  // a checkpoint that won't open goes back to the title with a message instead of freezing; the save is kept
  try{restore(s)}catch(e){console.warn('Checkpoint would not open:',e);leave();B.goto('title');B.render();B.toast('CHECKPOINT WON\'T OPEN');return false}
  G.cp=s;

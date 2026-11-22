@@ -50,7 +50,7 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
 // in order, bringing old saves forward before anything reads them. Before upgrading, the old
 // saves are copied to bl.backup. Rules: never change an old step; a new save shape gets a new
 // step and SAVE_V goes up by one. Saves from before numbering count as version 0.
-const SAVE_V=6;
+const SAVE_V=7;
 const fillAgent=a=>{if(!a||typeof a!=='object'||Array.isArray(a))return null;const d=newAgent();
   const o=Object.assign(d,a);o.look=Object.assign(newAgent().look,a.look||{});o.stats=Object.assign(newAgent().stats,a.stats||{});
   if(!o.picks||typeof o.picks!=='object')o.picks={};if(!Array.isArray(o.bonds))o.bonds=[];if(!Array.isArray(o.motives))o.motives=[];return o};
@@ -146,6 +146,17 @@ const UPGRADES={
     const g=store.get(K('game'),null);
     if(g!==null){try{const o=JSON.parse(g);if(!o||!Array.isArray(o.party)||!o.party.length)throw 0;
         o.party.forEach(m=>{if(m&&m.a)fixA(m.a)});store.set(K('game'),JSON.stringify(o))}
+      catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
+  },
+  // 6 → 7 (Nov 22, spec 006 Demo 5 part C, the story): Still Harvest is rewritten, so a game paused in the old story
+  // can't land in the new story's middle. Its checkpoint is marked to restart the case from the briefing with the same
+  // team (SAN, disorders, injuries, gear and the backpack kept), with one line saying the case was rewritten.
+  // The roster, the season and everything else stay as they are. Case flags, choices and the ending label are new
+  // checkpoint and season fields that older saves simply don't have yet.
+  7(){
+    const g=store.get(K('game'),null);
+    if(g!==null){try{const o=JSON.parse(g);if(!o||!Array.isArray(o.party)||!o.party.length)throw 0;
+        if((o.case||'still-harvest')==='still-harvest'){o.case='still-harvest';o.rewrite=true}store.set(K('game'),JSON.stringify(o))}
       catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
   }
 };
