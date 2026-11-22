@@ -2,6 +2,8 @@
 
 Written 2026-11-22 by the Game Designer (Story → Adding a new case, step 2). Three options for the next board spot. Keegan picks one; the other two stay here and can come back in a later round.
 
+**Picked: B · Lost Hour** (Keegan, Nov 22). Larkspur and Tracking stay available for later rounds.
+
 Season 1 so far: Still Harvest (autumn, Oregon), Good Manners (summer, Kansas, open case), Lot 83 (summer, Austin, quiet case). Round 2's two unpicked pitches, Larkspur and Tracking, come back here unchanged, beside one new pitch, Lost Hour.
 
 Public-safe: no twist, no culprit, no solution, no arc touches. Every name is original.
