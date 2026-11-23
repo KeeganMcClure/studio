@@ -51,7 +51,7 @@ The card's words live in `cases/lost-hour.js`'s text block (`caseCard`), as for 
 
 | Piece | Plan |
 | --- | --- |
-| Briefing | Big Hat's back room as usual, two questions from four topics, each an INTEL note and a small edge (spec 013). The case file writes the four topics, spoiler-free |
+| Briefing | Big Hat's backdrop for this case: a 24-hour laundromat off I-81 at 4 AM, dryers turning, one flickering tube light (Cast → Big Hat, Backdrop: a new place each case; set Nov 23, 2026). Part A draws it as the case's briefing backdrop, in the back room's layout (spec 013: Big Hat's bust centered, the place behind him). Two questions from four topics, each an INTEL note and a small edge (spec 013); the case file writes the four topics, spoiler-free |
 | Length | 1–2 hours, one case |
 | Open or quiet | **Quiet.** The agents come in as sleep-study researchers, so Overstepping's first step is **Noticed**, then Local chief. The couple trust the cover; their daughter, the diner and the town's one deputy are less sure. Pushing the couple too hard (a scene in public, treatment they didn't agree to) is what cracks it |
 | Day and night | **Two days.** Day 1 (afternoon) in town: the Pruetts' house, the diner, the clinic. A story beat at dusk sends the team up the ridge road, which turns it to **night 1, the drive**: the overlook, the road and the woods off it. Day 2 is the clinic: the hypnosis session and the exam. Night 2 is the climax, where the case file sets it. **A soft clock:** the couple are close to calling the paper. Time spent (a second drive, resting, a long stakeout) costs a better ending, never progress |

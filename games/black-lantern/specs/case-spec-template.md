@@ -42,7 +42,7 @@ Picked pitch: `pitches/<round file>.md`, option <letter>, picked <date>.
 
 | Piece | Plan |
 | --- | --- |
-| Briefing | Big Hat's backdrop for this case; his four question topics (pick two), each with its INTEL note and small edge, kept spoiler-free (spec 013) |
+| Briefing | Big Hat's backdrop for this case, a new place each case, drawn in part A (Cast → Big Hat, Backdrop); his four question topics (pick two), each with its INTEL note and small edge, kept spoiler-free (spec 013) |
 | Length | 1–2 hours, or Part 1 and Part 2 if Keegan split it |
 | Open or quiet | Open (badges) or quiet (undercover); Overstepping's first step follows |
 | Day and night | Which beats turn it to night; any clock |
