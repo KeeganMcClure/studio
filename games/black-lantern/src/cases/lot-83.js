@@ -242,17 +242,17 @@ function buildLaundry(){const M=room('laundry','LAUNDRY ROOM',13,8,'v',{alpha:.7
  put(M,'tube',4,0,5,1,{walk:1});
  door(M,6,7,'court',31,13,'down');return M}
 
-// ---- HWY 71 SELF STORAGE: day only (30 x 14), reached by van ----
+// ---- HWY 71 SELF STORAGE: day only (30 x 20, the highway along the bottom), reached by van ----
 function buildStorage(){
- const M=blank('storage','HWY 71 SELF STORAGE',30,14,'g','day');
+ const M=blank('storage','HWY 71 SELF STORAGE',30,20,'g','day');
  block(M,0,0,30,4);put(M,'units',0,0,30,4,{walk:1,first:78});
  for(let i=0;i<10;i++){const x=2+3*i,n=78+i;open(M,x,3);if(n===83)door(M,x,3,'bay',4,5,'up');else M.O[x+',3']=look(TEXT.look.rolldoor)}
  put(M,'booth',24,6,3,2);M.O['24,7']=M.O['26,7']=look(TEXT.look.booth);put(M,'pole',13,6);M.O['13,6']=look(TEXT.look.lamp);
  put(M,'van',5,9,4,1,{face:'side'});[5,6,7,8].forEach(x=>M.O[x+',9']={id:'van',name:'VAN',look:TEXT.van,opts:()=>vanOpts()});
  put(M,'linkfence',0,11,30,1,{gap:[13,16]});block(M,0,11,13,1);block(M,16,11,14,1);
- lay(M,0,12,30,1,'.');lay(M,0,13,30,1,'=');lay(M,13,11,3,1,'g');
+ lay(M,0,12,30,1,'.');lay(M,0,13,30,3,'=');lay(M,0,16,30,4,'.');block(M,0,14,30,6);M.lines.push({x:0,y:14*16+7,w:30*16,h:2,dashed:true,col:'#e8c84a'});lay(M,13,11,3,1,'g');
  bounceDir(M,Array.from({length:30},(_,x)=>x+',13'),'The highway. Trucks, and heat. Not yet.','up');
- [[1,12],[9,12],[20,12],[28,12],[28,6]].forEach(([x,y])=>put(M,'shrub',x,y));
+ [[1,12],[9,12],[20,12],[28,12],[28,6],[4,17],[15,18],[24,17]].forEach(([x,y])=>put(M,'shrub',x,y));[[9,19],[19,19],[28,19]].forEach(([x,y])=>put(M,'tree',x,y));
  M.npcs=folkOf([{id:'dale',x:25,y:8,dir:'down'}]);
  return M}
 function buildBay(){const M=blank('bay','STORAGE UNIT 83',9,7,'o','day');block(M,0,0,9,3);block(M,0,0,1,7);block(M,8,0,1,7);block(M,0,6,9,1);
