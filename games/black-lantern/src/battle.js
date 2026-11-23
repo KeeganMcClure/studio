@@ -456,7 +456,7 @@ const faceC=new Map();
 function foeFace(e){const k=e.t;let f=faceC.get(k);if(f)return f;const c=caseById(G.case),img=c&&c.sprite?c.sprite(e.t,0):null;f=document.createElement('canvas');f.width=f.height=16;
  if(img){const x=f.getContext('2d'),fc=e.face||[0,0,Math.min(img.width,img.height)];x.imageSmoothingEnabled=false;x.drawImage(img,fc[0],fc[1],fc[2],fc[2],0,0,16,16)}faceC.set(k,f);return f}
 // the layout for this fight: the baseline drops for a tall enemy so its head stays on screen
-function bLayout(){if(Bt.tall==null)Bt.tall=Math.max(0,...Bt.en.map(spriteH));return SB.layout(VW,VH,{tallest:Bt.tall})}
+function bLayout(){if(Bt.tall==null)Bt.tall=Math.max(0,...Bt.en.map(spriteH));return SB.layout(VW,VH,{tallest:Bt.tall,detailLines:2})}  // a move's whole line shows (Nov 23 playtest)
 function drawBattle(){
  const L=bLayout(),t=Bt.t++,u=Bt.ui;Bt.hits=[];
  // background: the map spot, darkened so the sprites read

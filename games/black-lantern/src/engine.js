@@ -55,7 +55,7 @@ function say(name,text,o={}){
   text=fmt(text);logLine(name,text);
   if(o.auto&&Bt&&fastOn())o.auto=Math.round(o.auto*.5);
   dlg={res,text,done:false,keep:o.keep,auto:o.auto};
-  box={name:name||'',text,typed:0,more:false};
+  box={name:name||'',text,typed:0,more:false,as:!name&&o.as||''};
   if(o.instant||o.keep&&o.instant!==false&&Bt){finishType();return}
   typeNext(dlg);
  });
@@ -76,15 +76,18 @@ function drawBox(){
  const T=BLD.TIMING,now=performance.now(),n=Math.floor(now/T.flapMs);
  // Spec 013 (ui.md, Dialog box): a speaker drawn large in the scene gets the name tab only. Inside his back room,
  // BIG HAT's lines show no portrait; the scene's bust takes his mouth frame and shout face from here (G.hatF).
- const typing=box.typed<box.text.length,face=portraitOf(box.name),inScene=box.name==='BIG HAT'&&hatOnScreen(),por=inScene?null:face,sh=!!(G.shoutPor&&face);
+ // A home scene's narration (o.as, Nov 23 playtest) is told from one agent's side: it keeps the lavender narration
+ // text but shows that agent's name on the tab and their portrait, mouth shut, so you know whose scene it is.
+ const who=box.name||box.as,typing=box.typed<box.text.length,face=portraitOf(who),inScene=box.name==='BIG HAT'&&hatOnScreen(),por=inScene?null:face,sh=!!(G.shoutPor&&face&&!box.as);
  // mouth: bursts of open/shut while the line types, then shut; shout face: its counter runs while typing, then holds
- if(typing)box.n=n;const p=n%(T.burst+T.rest),f=sh?(box.n||0):(typing&&p<T.burst&&p%2===0?1:0);
+ if(typing)box.n=n;const p=n%(T.burst+T.rest),f=box.as?0:sh?(box.n||0):(typing&&p<T.burst&&p%2===0?1:0);
  G.hatF=inScene?{f,sh}:null;
  const arrow=box.more&&Math.floor(now/T.moreBlinkMs)%2===0;
- const key=[box.name,box.typed,box.text,box.choices?box.choices.join('|')+'#'+box.sel+'#'+(box.dis||[]).join(''):'',arrow,por?f+':'+sh:'',gEl.clientWidth,inScene].join('~');
+ const key=[box.name,box.as,box.typed,box.text,box.choices?box.choices.join('|')+'#'+box.sel+'#'+(box.dis||[]).join(''):'',arrow,por?f+':'+sh:'',gEl.clientWidth,inScene].join('~');
  if(key===boxKey)return;boxKey=key;
- const b=BLD.render(dhost,{name:box.name,narrate:!box.name,text:box.text,typed:box.choices?null:box.typed,more:arrow,choices:box.choices,sel:box.sel,
+ const b=BLD.render(dhost,{name:who,narrate:!who,text:box.text,typed:box.choices?null:box.typed,more:arrow,choices:box.choices,sel:box.sel,
   portrait:por&&(c=>por(c,f,sh)),scale:2});
+ if(box.as){b.classList.add('narr');b.setAttribute('aria-label','Narration')}
  // long choice lists scroll inside the box so the box never pushes the portrait off the screen
  const ul=b.querySelector('.bld-c');
  if(ul){const bust=b.querySelector('.bld-bust'),top=bust?bust.offsetHeight:b.querySelector('.bld-tab')?18:0;let room=gEl.clientHeight-top-(b.offsetHeight-ul.offsetHeight)-10;

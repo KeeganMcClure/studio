@@ -252,7 +252,14 @@ async function hPlay(seq,m,o={}){
  const fo=Object.assign({A:m.name,B:o.B||'',B2:o.B2||'',T:o.T||'',X:o.X||'',M:o.M||'',D:o.D||'',SKILL:o.SKILL||''},o);
  for(const l of [].concat(seq||[])){
   if(Array.isArray(l)){const who=l[0]==='A'?m.name:l[0]==='B'?fo.B:l[0]==='T'?fo.T:l[0]==='X'?fo.X:l[0];await say(String(who).toUpperCase(),fillT(l[1],fo))}
-  else await say('',fillT(l,fo))}}
+  else await say('',fillT(l,fo),{as:m.name.toUpperCase()})}}
+// picks one of a scene's n variants that hasn't played yet in this home phase (for any agent), so two agents never
+// see the same one while another is left (Nov 23 playtest); among those, it skips any in avoid (an agent's own history)
+// when it can. The phase's list lives in the home checkpoint (G.db.home.seen; missing in older saves means none yet).
+function freshVariant(kind,n,avoid=[]){
+ const H=G.db&&G.db.home,seen=H?((H.seen=H.seen||{})[kind]=H.seen[kind]||[]):[],all=[...Array(n).keys()];
+ const tries=[all.filter(i=>!seen.includes(i)&&!avoid.includes(i)),all.filter(i=>!seen.includes(i)),all.filter(i=>!avoid.includes(i)),all];
+ const v=pick(tries.find(t=>t.length));if(!seen.includes(v))seen.push(v);return v}
 // SAN changes at home: gains never above the agent's starting SAN; losses can set off a Breaking Point
 function sanUp(m,n){const b=m.san;m.san=Math.min(m.msan,m.san+n);return[b,m.san]}
 async function sanDown(m,n){const b=m.san;m.san=Math.max(0,m.san-n);
@@ -369,18 +376,18 @@ async function arcEnd(m,arc,A,cast){
  if(good){await hPlay(A.good,m,cast);arc.end='good';arc.perk=A.perk;
   const P=HW.perks[A.perk];HS.card={title:arc.m.toUpperCase(),sub:'',rows:[{l:fillT(HW.perk,{p:P[0]}),chip:'★'},{l:P[1]}]};
   if(arc.ch.includes('slip')&&cast.bond){const b=cast.bond,n=Math.min(roll(1,4),Math.max(0,(b.score|0)-1));b.score-=n;HS.card.rows.push({l:fillT(HT.arcCost,{B:b.name,n})})}
-  await say('',fillT(HT.arcGood,{p:P[0]}));HS.card=null}
+  await say('',fillT(HT.arcGood,{p:P[0]}),{as:m.name.toUpperCase()});HS.card=null}
  else{await hPlay(A.bad,m,cast);arc.end='bad';await arcBad(m,A,cast)}
 }
 async function arcBad(m,A,cast){
  const bond=A.parent?cast.par:cast.bond;
  if(A.badBond&&bond){bond.score=0;await brokenBonds(m);return}
  const has=k=>(m.dis||[]).some(d=>d.k===k),k=[A.dis||'depression','sleep','depression','paranoia','ptsd'].find(x=>!has(x));if(!k)return;
- m.dis=m.dis||[];m.dis.push({k});await say('',fillT(BLS.DISORDERS[k].gain,{n:m.name,s:''}))}
+ m.dis=m.dis||[];m.dis.push({k});await say('',fillT(BLS.DISORDERS[k].gain,{n:m.name,s:''}),{as:m.name.toUpperCase()})}
 // Shield link (field.js calls it): giving up the Main at a Breaking Point plays the short bad finale; the arc is over
 async function arcShield(m,mot){
  const a=m.a;if(!a.arc||a.arc.m!==mot||a.arc.beat>=3)return;const A=HT.arcs[mot];if(!A)return;
- const cast=arcCast(m,A);await hPlay(A.shield,m,cast);a.arc.beat=3;a.arc.end='bad';a.arc.over=1;await arcBad(m,A,cast);await say('',fillT(HT.arcEnds,{A:m.name}))}
+ const cast=arcCast(m,A);await hPlay(A.shield,m,cast);a.arc.beat=3;a.arc.end='bad';a.arc.over=1;await arcBad(m,A,cast);await say('',fillT(HT.arcEnds,{A:m.name}),{as:m.name.toUpperCase()})}
 
 // ================= ONE AGENT'S PICK =================
 // returns true when the agent has picked and their scene has played; false to show the list again
@@ -431,7 +438,7 @@ async function actFR(m,r){
 async function actNature(m,r){
  const x0=await pickBond(m,true,r);if(!x0)return false;const b=x0.b,cha=chaOf(m.a),before=b.score|0;
  castFor(m);setBg('nature');const a=m.a;a.nat=Array.isArray(a.nat)&&a.nat.length<HT.nature.length?a.nat:[];
- const left=HT.nature.map((v,i)=>i).filter(i=>!a.nat.includes(i)),vi=pick(left);a.nat.push(vi);
+ const vi=freshVariant('nature',HT.nature.length,a.nat);if(a.nat.includes(vi))a.nat=[];a.nat.push(vi);
  b.score=before-1;await hPlay(HT.nature[vi],m);await hPlay(HT.natureCost,m,{B:b.name});
  const p=clamp(m.san,1,99),x=SR.pct(p),rows=[{l:fillT(HW.bondUp,{b:b.name,x:before,y:b.score}),chip:'−1'},sanRow(x,p)];
  if(x.ok){const g=x.crit?4:roll(1,4),[s0,s1]=sanUp(m,g);rows.push({l:fillT(HW.sanUp,{a:s0,b:s1}),chip:x.crit?'+4':StudioChip.die(4,g)})}
@@ -457,7 +464,7 @@ async function actMot(m,r){
  if(wasMain||(a.arc&&a.arc.m!==mots[a.main])){if(a.arc&&a.arc.beat<3&&a.arc.m!==mots[a.main])await hPlay(HT.newMain,m);a.arc={m:mots[a.main],beat:0,ch:[],base:a.sc|0}}
  await result(m,r.name,[{l:`${HW.newMot}: ${free[n]}`,chip:'✓'}],`[${free[n]}]`);return true}
 async function actUse(m,r){
- castFor(m);setBg('use',true);const a=m.a;await hPlay(pick(HT.use),m);
+ castFor(m);setBg('use',true);const a=m.a;await hPlay(HT.use[freshVariant('use',HT.use.length)],m);
  const bs=bondsOf(a).filter(x=>x.s>0),x=bs.length?pick(bs):null,rows=[];
  if(x){const before=x.b.score|0,g=roll(1,4);x.b.score=Math.max(0,before-g);await hPlay(HT.useCost,m,{B:x.b.name});rows.push({l:fillT(HW.bondUp,{b:x.b.name,x:before,y:x.b.score}),chip:StudioChip.die(4,g)})}
  const [s0,s1]=await sanDown(m,1);rows.push({l:fillT(HW.sanUp,{a:s0,b:s1}),chip:'−1'});a.noWD=1;
@@ -503,7 +510,7 @@ async function actSab(m,r){
  const a=carry(m);a.sab={left:n+1,seat:i,cover:rec.a.id,sat:0};const R=B.S.roster||(B.S.roster=[]);const j=R.findIndex(y=>y.id===a.id);const cp=JSON.parse(JSON.stringify(a));if(j>=0)R[j]=cp;else R.unshift(cp);store.set(B.key('roster'),R);
  party[i]=rec;rec.picked=1;if((G.lead|0)===i)G.lead=i;
  HS.card={title:`${HW.title} · ${m.name.toUpperCase()}`,sub:r.name,rows:[{l:fillT(HW.sabTag,{k:HW.sabN[n]}),chip:'✓'},{l:`${rec.name} · ${(profOf(rec.a)||{}).name||''}`}]};
- await say('',HT.sabIn[1]);HS.card=null;return true}
+ await say('',HT.sabIn[1],{as:m.name.toUpperCase()});HS.card=null;return true}
 
 // ================= DRAWING =================
 // the backdrop for the scene (home-art.js): a Bond type's room or a place, night or not, with its dressing.
@@ -533,16 +540,22 @@ function drawHomeList(){
   const nm=pFit(p.name.toUpperCase(),cw-4,12);pT(nm,x+(cw-pW(nm,12))/2,sy+20,on?PC.gold:PC.cream,12);
   const st=k<s.i?(H.picks[k]||'—'):k===s.i?HW.choosing:HW.waiting,stt=pFit(st,cw-4,11);pT(stt,x+(cw-pW(stt,11))/2,sy+29,k<s.i?'#3ff0e8':on?PC.gold:PC.lav,11);
   if(k<s.i)pT('✓',x+cw-9,sy,'#3ff0e8',11)});
- // the rows
- const detH=Math.min(56,Math.max(40,VH-sy-sh-4-rows.length*16-6)),top=sy+sh+4,RH=Math.max(13,Math.min(16,Math.floor((VH-top-detH-6)/rows.length)));
- rows.forEach((r,k)=>{const y=top+k*RH,on=k===s.sel;pBox(4,y,232,RH-2,on?PC.cardOn:PC.card,on?PC.gold:PC.dim);if(on)pT('▶',6,y-2,PC.gold,14);
-  pT(pFit(r.name,r.odds&&!r.dis?128:160,14),16,y-2,r.dis?PC.dim:on?PC.gold:PC.cream,14);
-  const tag=r.dis||r.tag,tw=pW(tag,5,PXf)+6,tc=r.dis?PC.dim:/BOND|NO WD/.test(tag)&&r.k!=='fr'&&r.k!=='bond'?PC.mus:'#3ff0e8';pBox(229-tw,y+1,tw,RH-5,PC.deep,tc);pT(tag,232-tw,y+(RH-8)/2-1,tc,5,PXf);
-  if(r.odds&&!r.dis){const o=pFit(r.odds,70,11);pT(o,226-tw-pW(o,11),y,PC.lav,11)}
+ // the rows share the height the description box doesn't need (Nov 23 playtest: rows were squeezed at the top over a
+ // half-empty box). The box is sized to the longest description among the rows, so it doesn't jump as the cursor
+ // moves; if the rows still can't get RMIN, it takes what's left and drops lines from its foot.
+ const LP=11,RMIN=16,RMAX=24,top=sy+sh+4,room=VH-3-top-2,nr=rows.length;
+ const detOf=(r,keys)=>{const out=[];[[r.line,PC.cream],[r.roll,PC.lav]].concat(keys?[[HW.keysFirst,PC.dim]]:[]).forEach(([t,c])=>pWrap(t,220,13,3).forEach(l=>out.push([l,c])));return out};
+ const needOf=keys=>Math.max(...rows.map(r=>detOf(r,keys).length))*LP+7;
+ // a short screen (320 × 480, 375 × 550) leaves out the "A: pick" hint, so the rows get 2 px more each
+ const keys=Math.floor((room-needOf(true))/nr)>=18,need=needOf(keys);
+ const RH=clamp(Math.floor((room-need)/nr),RMIN,RMAX),detH=Math.min(need,room-nr*RH);
+ rows.forEach((r,k)=>{const y=top+k*RH,on=k===s.sel,mid=y+(RH-2)/2;pBox(4,y,232,RH-2,on?PC.cardOn:PC.card,on?PC.gold:PC.dim);if(on)pT('▶',6,mid-9,PC.gold,14);
+  pT(pFit(r.name,r.odds&&!r.dis?128:160,14),16,mid-9,r.dis?PC.dim:on?PC.gold:PC.cream,14);
+  const tag=r.dis||r.tag,tw=pW(tag,5,PXf)+6,th=Math.min(RH-5,13),tc=r.dis?PC.dim:/BOND|NO WD/.test(tag)&&r.k!=='fr'&&r.k!=='bond'?PC.mus:'#3ff0e8';const ty=Math.round(mid-th/2);pBox(229-tw,ty,tw,th,PC.deep,tc);pT(tag,232-tw,ty+2+Math.round((th-11)/2),tc,5,PXf);
+  if(r.odds&&!r.dis){const o=pFit(r.odds,70,11);pT(o,226-tw-pW(o,11),mid-7,PC.lav,11)}
   s.hits.push({x:4,y,w:232,h:RH-2,fn:()=>{if(s.sel===k)homePress('a');else s.sel=k}})});
- const dy=top+rows.length*RH+2,r=rows[s.sel];pBox(4,dy,232,VH-dy-3,PC.deep,PC.cream,2);
- if(r){const L=[[r.line,PC.cream],[r.roll,PC.lav],[HW.keysFirst,PC.dim]];const out=[];L.forEach(([t,c])=>pWrap(t,220,13,3).forEach(l=>out.push([l,c])));
-  out.slice(0,Math.floor((VH-dy-7)/11)).forEach(([t,c],k)=>pT(t,10,dy+2+k*11,c,13))}
+ const dy=top+nr*RH+2,r=rows[s.sel];pBox(4,dy,232,detH,PC.deep,PC.cream,2);
+ if(r)detOf(r,keys).slice(0,Math.floor((detH-7)/LP)).forEach(([t,c],k)=>pT(t,10,dy+2+k*LP,c,13));
 }
 // ---- the Bond picker (mockup screen 2) ----
 function drawBondPick(){

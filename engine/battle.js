@@ -3,12 +3,13 @@
 // It knows nothing about any game's rules: the game says who is in the fight, what the rows say, its colors and words.
 //
 //   StudioBattle.layout(w, h, o)       rects for a w × h canvas: scene, strip (party cards), cmd (command box),
-//                                      col (turn-order column), and the baselines agentY and enemyY (o.tallest: tallest enemy)
+//                                      col (turn-order column), and the baselines agentY and enemyY (o.tallest: tallest enemy;
+//                                      o.detailLines: lines the command box's detail may wrap to, default 1)
 //   StudioBattle.turnColumn(c, T, x, y, faces, maxH)   small faces down the left edge, the one acting first and bigger;
 //                                      faces: [{img, foe}] (img: a canvas or null); returns the column's height
 //   StudioBattle.hpBar(c, T, x, y, w, frac, h)          an HP bar with no numbers
 //   StudioBattle.commands(c, T, r, labels, sel, detail, o)  the one-row command box (Fight · Skills · Items · Guard),
-//                                      a detail line under it; o.msg shows a message there instead of the row;
+//                                      the detail under it, wrapped to as many lines as the box is tall for; o.msg shows a message there instead of the row;
 //                                      returns tap areas [{x, y, w, h, i}]
 //   StudioBattle.list(c, T, r, rows, sel, top)  a list box over the scene (rows: {label, right, dis}); returns
 //                                      {top, hits} with the scroll position that keeps sel on screen
@@ -22,12 +23,21 @@
   function text(c, T, s, x, y, col, size) { c.font = T.font(size); c.fillStyle = col; c.textBaseline = 'top'; c.fillText(s, Math.round(x), Math.round(y)); }
   function width(c, T, s, size) { c.font = T.font(size); return c.measureText(s).width; }
   function fit(c, T, s, w, size) { s = String(s); if (width(c, T, s, size) <= w) return s; while (s.length > 1 && width(c, T, s + '…', size) > w) s = s.slice(0, -1); return s + '…'; }
+  // word-wraps s to lines no wider than w; past max lines, the last one ends in …
+  function wrap(c, T, s, w, size, max) {
+    const out = []; let line = '';
+    String(s).split(/\s+/).filter(Boolean).forEach(word => { const t = line ? line + ' ' + word : word; if (!line || width(c, T, t, size) <= w) line = t; else { out.push(line); line = word; } });
+    if (line) out.push(line);
+    if (out.length > max) { const keep = out.slice(0, max); keep[max - 1] = fit(c, T, out.slice(max - 1).join(' '), w, size); return keep; }
+    return out.map(l => fit(c, T, l, w, size));
+  }
 
   // The mockup's proportions on a 240 px wide canvas: the command box (a row and a detail line) along the bottom,
   // the party cards just above it, the scene above those with enemies in its top half and agents at its foot.
   // o.tallest: the tallest enemy sprite, so its head stays on screen (the baseline drops for it, never into the agents)
+  const DL = 10;  // a detail line's height
   function layout(w, h, o) {
-    const cmdH = 40, stripH = 27, cmd = { x: 2, y: h - cmdH - 2, w: w - 4, h: cmdH };
+    const cmdH = 40 + DL * (((o && o.detailLines) || 1) - 1), stripH = 27, cmd = { x: 2, y: h - cmdH - 2, w: w - 4, h: cmdH };
     const strip = { x: 0, y: cmd.y - stripH - 1, w, h: stripH };
     const scene = { x: 0, y: 0, w, h: strip.y }, tall = (o && o.tallest) || 0;
     const enemyY = Math.round(Math.min(scene.h - 66, Math.max(scene.h * 0.5, tall + 6)));
@@ -68,7 +78,7 @@
       hits.push({ x, y: r.y, w: cw, h: 22, i });
     });
     R(c, r.x + 4, r.y + 22, r.w - 8, 1, T.rule || T.dim);
-    if (detail) text(c, T, fit(c, T, detail, r.w - 12, 13), r.x + 6, r.y + 24, T.lav || T.dim, 13);
+    if (detail) { const max = Math.max(1, Math.floor((r.h - 26) / DL)); wrap(c, T, detail, r.w - 12, 13, max).forEach((l, k) => text(c, T, l, r.x + 6, r.y + 24 + k * DL, T.lav || T.dim, 13)); }
     return hits;
   }
 
@@ -106,5 +116,5 @@
     return null;
   }
 
-  window.StudioBattle = { layout, turnColumn, hpBar, commands, list, result, nav, box, text, width, fit };
+  window.StudioBattle = { layout, turnColumn, hpBar, commands, list, result, nav, box, text, width, fit, wrap };
 })();
