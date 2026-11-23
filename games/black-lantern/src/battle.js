@@ -153,10 +153,11 @@ function cmdDetail(m){const W=m.w;return fillT(BTW.detail,{n:m.name.toUpperCase(
 const cap=s=>String(s).charAt(0).toUpperCase()+String(s).slice(1);
 const diceTxt=W=>W.dmg&&W.dmg[0]?`${W.dmg[0]}d${W.dmg[1]}${W.bonus>0?'+'+W.bonus:W.bonus<0?W.bonus:''}`:'—';
 const isGun=W=>W&&W.sk!=='Melee'&&!W.thrown&&W.key!=='fists'&&W.sk!=='Athletics';
-// to-hit for a plain Fight, with every modifier (Fight floor 30%; thrown weapons skip the floor)
+// to-hit for a plain Fight, with every modifier (Fight floor 30%; thrown weapons skip the floor); e.evade: a case's
+// enemy that's hard to hit (Tracking's boss while she dances)
 function attackChance(m,e,W,mod=0,floor=false){
  let p=skillVal(m.a,W.sk)+(W.hit||0)+rollMod(m,W.sk)+mod;
- if(e&&isFoe(e)){if(chip(e,'exposed'))p+=20;if(e.grapBy&&e.grapBy!==m)p+=20;if(e.downedAlly&&m.a.arc&&m.a.arc.perk==='revenge')p+=20}  // Cold head (spec 008)
+ if(e&&isFoe(e)){if(chip(e,'exposed'))p+=20;if(e.grapBy&&e.grapBy!==m)p+=20;if(e.downedAlly&&m.a.arc&&m.a.arc.perk==='revenge')p+=20;if(e.evade)p-=e.evade}  // Cold head (spec 008)
  if(floor&&!W.thrown)p=Math.max(30,p);return clamp(p,1,99)}
 const fightChance=(m,e)=>attackChance(m,e,m.w,0,true);
 async function doFight(m){

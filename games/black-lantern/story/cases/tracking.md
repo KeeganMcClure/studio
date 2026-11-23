@@ -240,16 +240,16 @@ With `royce`, on day 1, night 1 or day 2: Lean on them or Talk your way in (he g
 
 - `cut` (Money): at Manny's, day 1, when someone holds Money and the team carries a copy: sell him the copies. Each holder +1d4 SAN; Manny pays in trade (cigarettes); every carried copy goes `sold`.
 - `wes` (Redemption): at Wes's on night 1, the Redemption holder can stay the night (the turn to day 2; +1d4 SAN). Anyone can call his sister (Talk your way in) or talk him down (Calm), once each, until night 2. Saved: Wes hands over his copy if it's still there, and tears the foil down at the dawn.
-- `darlene`: knowing her name (`cherry`, or the master watched), Say her name before the fight: −6 HP and no second-phase speed.
-- `lights`: the DJ booth on night 2 (Crack it, +10 from the club intel, or Fix it): the club lights up, the trapdoor shows, and the boss loses her −10. Local chief cuts the breaker first: then only Fix it.
-- `read`: the notebook in the dub room: read the chant backward (no roll with `F.chant`; else Translate or Identify): the working breaks 8 HP early.
+- `darlene`: knowing her name (`cherry`, or the master watched), Say her name before the fight: −4 HP and no second-phase speed.
+- `lights`: the DJ booth on night 2 (Crack it, +10 from the club intel, or Fix it): the club lights up, the trapdoor shows, and the boss loses her −5. Local chief cuts the breaker first: then only Fix it.
+- `read`: the notebook in the dub room: read the chant backward (no roll with `F.chant`; else Translate or Identify): the working breaks 6 HP early.
 
 ### Fights and the boss, as built
 
 - Gideon's nephew Dale and his buddy Kyle Q. (2 × human, 11 HP, 45%, 1d4+1): Lean on them stops it.
 - The Regular, in the club's lobby on the first walk in on night 2 (unnatural, 22 HP, 50%, 1d4+1, WE KNOW at everyone 0/1). Light-shy and tape-born (the bulk eraser Stuns it).
 - Watchers: three roamers on night 2 (12, 12 and 16 HP), guarding the bar copy, the DJ booth and the coat check's Lantern Box.
-- Vesper: numbers in the case code and `tools/boss-sim.js`. Phase 1 dancing: −10 to hit her unless the lights are on. Phase 2 at half: the Audience comes through (+5 to hit, more rolling bar, more spins), DEX 18 unless her name was said. Weakness: steady light (a road flare Shakens her).
+- Vesper: numbers in the case code and `tools/boss-sim.js`. Phase 1 dancing: −5 to hit her unless the lights are on. Phase 2 at half: the Audience comes through (+5 to hit, more rolling bar, more spins), DEX 18 unless her name was said. Weakness: steady light (a road flare Shakens her).
 - Bulk eraser: Big Hat's drop after the right deduction. On the map it erases every copy carried (not used up); in a fight, tape-born enemies are Stunned (2 uses).
 
 ### Overstepping, as built
