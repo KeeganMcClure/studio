@@ -196,8 +196,8 @@ const SPEC={
 };
 const PROPK=new Set(['oakbig','oaksmall','cypress','lamp','car','truck','pump','polesign','pot','picnic','mailbox','porchradio','tallcane','anchor','barrel','pole','pumpshed','scarepole','palmetto','boat','traps','flowers','radioglow',
  'counter','desk','board','radioshelf','cell','coffee','plant','chairs','kitchentable','photos','sofa','lampstand','rug','knick','fridge','recliner','tv','toys','stage','serving','longtable',
- 'sacks','sackpile','seedrack','safe','baitcooler','console','carts','onair','txwindow','turntable','records','recrack','cabinet','boxes','bulb','shed']);
-const NOSHADOW=new Set(['board','radioshelf','photos','rug','knick','toys','stage','sacks','onair','txwindow','records','bulb','flowers','radioglow','lamp','polesign','pole','tallcane','shed','oakbig','oaksmall','cypress','txshed']);
+ 'sacks','sackpile','seedrack','safe','baitcooler','console','carts','onair','txwindow','turntable','records','recrack','cabinet','boxes','bulb','shed','wallphone']);
+const NOSHADOW=new Set(['wallphone','board','radioshelf','photos','rug','knick','toys','stage','sacks','onair','txwindow','records','bulb','flowers','radioglow','lamp','polesign','pole','tallcane','shed','oakbig','oaksmall','cypress','txshed']);
 function props(M){
  const out=[],N=isNight(M);
  const add=(a,fx,fy,p,o={})=>{const X=Math.round(fx-a.ax),Y=Math.round(fy-a.ay);
@@ -269,6 +269,9 @@ function props(M){
    F(c,x+10,y+18,8,14,'#2a2a30');F(c,x+p.w*T-18,y+18,8,14,'#2a2a30');F(c,x+12,y+20,4,4,'#5a5a64');F(c,x+p.w*T-16,y+20,4,4,'#5a5a64')});break;
   case'sacks':dyn(p,cx,0,0,(c,ox,oy)=>{const x=p.x*T+ox,y=oy;for(let j=0;j<4;j++)for(let i=0;i<6;i++){const sx=x+2+i*13+(j%2)*5,sy=y+4+j*10;F(c,sx,sy,12,9,j%2?'#d8c8a0':'#c8b890');F(c,sx+2,sy+3,8,2,['#a8323e','#2a6aa8','#3a8a4a'][(i+j)%3])}});break;
   case'onair':dyn(p,cx,0,0,(c,ox,oy)=>{const x=p.x*T+4+ox,y=.6*T+oy,lit=M.ph===3&&Math.floor(performance.now()/1200)%3===0;F(c,x,y,24,10,'#2a2030');F(c,x+1,y+1,22,8,lit?'#ff4a3d':'#4a1a1a');K.signText(c,'ON AIR',x+1,y+2,lit?'#fff0e0':'#6a2a2a')},{lights:M.ph===3?[[cx,.6*T+5,1.4*T,.35,false]]:[]});break;
+  // part B: the church hall's kitchen phone on the wall by the hatch (Big Hat calls it), beige, its cord in a long loop
+  case'wallphone':dyn(p,cx,0,0,(c,ox,oy)=>{const x=p.x*T+4+ox,y=1.1*T+oy;F(c,x,y,9,14,'#2a2030');F(c,x+1,y+1,7,12,'#d8ccb0');F(c,x+1,y+1,7,3,'#e8e0c8');F(c,x+2,y+6,5,1,'#8a8070');F(c,x+2,y+8,5,1,'#8a8070');
+   for(let i=0;i<10;i++)F(c,x+4+Math.round(Math.sin(i*.9)*2),y+14+i*2,1,2,'#3a3440')});break;
   case'txwindow':dyn(p,cx,0,0,(c,ox,oy)=>{const x=p.x*T+2+ox,y=.4*T+oy;F(c,x,y,44,24,'#2a2030');F(c,x+2,y+2,40,20,'#1a2a2a');for(let i=0;i<5;i++){F(c,x+5+i*8,y+6,4,14,'#5a6a6a');F(c,x+6+i*8,y+7,2,4,'#8a9a9a')}F(c,x+2,y+2,40,2,'rgba(200,220,220,.25)')});break;
   case'records':dyn(p,cx,0,0,(c,ox,oy)=>{const x=p.x*T+ox,y=oy;for(let j=0;j<3;j++){F(c,x,y+14+j*14,p.w*T,2,'#5a4632');for(let i=0;i<p.w*T;i+=2)F(c,x+i,y+3+j*14,2,11,['#2a2030','#5a2a2a','#e8e2d0','#2a3a5a','#8a6a2a','#3a4a2a'][(hsh(i,j,509)*6)|0])}});break;
   }}

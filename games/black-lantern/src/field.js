@@ -90,7 +90,9 @@ function rollMod(m,skill){let x=0;
  if(hasSt(m,'sick')&&PHYS.includes(skill))x-=20;if(hasSt(m,'drunk')&&DRUNKSK.includes(skill))x-=20;
  if(hasSt(m,'high'))x+=m.high==='coke'&&(skill==='Persuade'||skill==='Melee')?20:-20;
  if(flaring(m,'ptsd')&&!Bt)x-=20;if(flaring(m,'paranoia')&&(skill==='Persuade'||skill==='Empathy'))x-=20;
- if(flaring(m,'phobia')&&Bt)x-=20;if(flaring(m,'addiction')&&!m.calmW)x-=10;return x}
+ if(flaring(m,'phobia')&&Bt)x-=20;if(flaring(m,'addiction')&&!m.calmW)x-=10;
+ const cs=caseById(G.case);if(cs&&cs.rollMod)x+=cs.rollMod(m,skill)|0;  // a case's own mark on an agent (Dead Air: Named)
+ return x}
 const chanceOf=(m,skill,mod=0)=>clamp(skillVal(m.a,skill)+mod+rollMod(m,skill),1,99);
 function tried(m,skill){m.tried=m.tried||[];if(skill&&!m.tried.includes(skill))m.tried.push(skill)}
 const resultLine=(word,o)=>SR.line(word,o,SKW.result);
