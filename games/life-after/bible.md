@@ -30,7 +30,11 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 - [x] Weather and events: the first list, how often each comes, and how sure the warnings are (Nov 23). See `weather.md`.
 - [x] Difficulty presets: what Gentle, Standard and Harsh change, in numbers (Nov 23). See The run, Difficulty presets.
 - [ ] Cover: 120 × 80 cover art (`studio-bible/launcher.md`). The Developer adds `game.json` when the game is ready for the shelf.
-- [ ] Spec 001: the first playable slice, cited against this bible. Set Nov 21: survive a week alone. A small generated town (the houses and highway strip sections), the survivor builder with all 12 jobs, scavenging, hunger and sleep, map combat with the noise ring, day and night, one hideout and the death screen. No companions yet.
+- [x] Spec 001: the first playable slice, cited against this bible. Set Nov 21: survive a week alone. A small generated town (the houses and highway strip sections), the survivor builder with all 12 jobs, scavenging, hunger and sleep, map combat with the noise ring, day and night, one hideout and the death screen. No companions yet. Written Nov 23 in four parts, `specs/001` to `004`.
+- [ ] Build slice part A, a new world: the game folder, title, world setup, the survivor builder, saves and the save code (`specs/001-slice-a-new-world.md`).
+- [ ] Build slice part B, the town: the two sections, the clock, day and night, searching, locks, the bag, items, crafting, the notebook and the map screen (`specs/002-slice-b-the-town.md`).
+- [ ] Build slice part C, survival and fights: needs, SAN, wounds, infection, zombies, fights, noise, sight and sneaking (`specs/003-slice-c-survival-and-fights.md`).
+- [ ] Build slice part D, the hideout and the end: claiming, builds, sleep, night attacks, the death screen and best runs (`specs/004-slice-d-hideout-and-death.md`).
 
 ### Bugs
 
@@ -296,7 +300,7 @@ Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
 | Key | Holds |
 | --- | --- |
 | `la.run` | The current world: seed, dice position, clock, survivor, companions, shelter, map state. Death clears it. |
-| `la.record` | Best days survived. Survives a death. |
+| `la.record` | The 5 best runs for each preset. Survives a death. |
 | `la.version` | Save version number. |
 
 ## Conflicts with the studio bible
