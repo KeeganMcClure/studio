@@ -53,6 +53,7 @@ Picked pitch: `pitches/<round file>.md`, option <letter>, picked <date>.
 | Boss | Threat 3; the kind of weakening choice (by type, not what it is); target 8–12 rounds when the choices were skipped, 5–8 when all were made |
 | Clue style | Threshold plus bonus, or clues as keys; how many clues and how many to move on |
 | Skills it calls on | The 8–10 skills, so a template team can always find a way through |
+| Hidden hotspot | At least one hidden unnatural hotspot that shows only while the lead is High on Mushrooms (Item list, Mushrooms); what it is goes in the secret case file |
 | Motivation moments | 1–2, and which motivation types they aim at. Check the season's spread so all nine types get a moment (Systems → Motivations, Every motivation, every season) |
 | Horrors | Rough count per tier, inside the case budget (SAN loss table) |
 | Ending labels | For example `clean`, `costly`, `worst` |

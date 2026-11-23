@@ -708,7 +708,7 @@ Every Shared item in one place. Kit-only items are in the Starting kit table.
 | Uppers | Drug | High; clears Exhausted, +1d4 WP; Exhausted again when it wears off | Set by the case |
 | Strong painkillers | Drug | High; heal 1d6 HP; Bleeding does no damage while High | Set by the case |
 | Coke | Drug | High; +20% to Persuade and Melee; −1d4 WP when it wears off | Set by the case |
-| Mushrooms | Drug | High; hidden unnatural hotspots show and the screen shimmers (only while the lead is High, set Nov 23, 2026); SAN rolls get harder | Set by the case |
+| Mushrooms | Drug | High; hidden unnatural hotspots show and the screen shimmers (only while the lead is High, set Nov 23, 2026); every case from Good Manners on has at least one hidden hotspot (set Nov 23, 2026); SAN rolls get harder | Set by the case |
 | Frag grenade | Throwable | 1 use, thrown with Athletics: damage to every enemy; Loud | LB · Req +0% |
 | Flashbang | Throwable | 1 use, thrown with Athletics: every human enemy is Stunned; Loud | LB · Req +0% |
 | Molotov | Throwable | 1 use, thrown with Athletics: damage to one enemy; things that burn take double | LB · Req +0% |

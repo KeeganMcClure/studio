@@ -66,6 +66,7 @@ The card's words live in `cases/dead-air.js`'s text block (`caseCard`), as for S
 | Clue style | **Threshold plus bonus.** About 6–7 clues; 3 open the way to night 2. Extras weaken the boss, add intel, or open better cover stories and a better ending |
 | Deduction | One deduction before the finale. A wrong answer costs time or a better ending, never progress (Gameplay loop) |
 | Skills it calls on | Persuade, Empathy, Computers, Craft, History, Bureaucracy, Search, Survival, Occult, Forensics. Every team template must be able to reach the finale |
+| Hidden hotspot | At least one hidden unnatural hotspot that shows only while the lead is High on Mushrooms (Agents and items → Item list, Mushrooms; set Nov 23, 2026). What it is and what it gives go in the secret case file. The first case built with one also builds the reveal |
 | Motivation moments | 2: one for **Protect the innocent**, one for **Faith** |
 | Horrors | About 3–4 Unsettling or Disturbing, 1–2 Severe, 0–1 Shattering, and the Boss, inside the case budget (6–10 net SAN). Kinds: mostly unnatural, plus helplessness. A **phobia subject** fits the voice; the case file names it |
 | Overstepping | Many choices overstep, and most are seen: the town talks and the sheriff watches. Each says how public it is. Pulling every radio in town, or a scene at the fish fry, marks it fast. In the cane fields at night, most choices are unseen. The **extreme case flag** for Local chief arriving as a fight with deputies is **off** |

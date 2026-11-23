@@ -62,6 +62,7 @@ The card's words live in `cases/good-manners.js`'s text block (`caseCard`), as f
 | Clue style | **Threshold plus bonus.** About 6 clues; 3 open the way to night 2. Extras weaken the boss, add intel, or open better cover stories and a better ending |
 | Deduction | One deduction before night 2. A wrong answer costs time or a better ending, never progress (Gameplay loop) |
 | Skills it calls on | Persuade, Empathy, Bureaucracy, Forensics, Search, Computers, History, Occult, Stealth, Firearms. Every team template must be able to reach night 2 |
+| Hidden hotspot | At least one hidden unnatural hotspot that shows only while the lead is High on Mushrooms (Agents and items → Item list, Mushrooms; set Nov 23, 2026). What it is and what it gives go in the secret case file. The first case built with one also builds the reveal |
 | Motivation moments | 2: one for **Protect the innocent**, one for **Find the truth** |
 | Horrors | About 3 Unsettling or Disturbing, 1–2 Severe, 1 Shattering, and the Boss, inside the case budget (6–10 net SAN). Kinds: mostly unnatural and helplessness. **Liar tags** for Paranoia are common here, since half the town is hiding something small |
 | Overstepping | Many choices overstep, and most are seen (the town talks, the sheriff watches). Each says how public it is. The **extreme case flag** for Local chief arriving as a fight with deputies is **off** |
