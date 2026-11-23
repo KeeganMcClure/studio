@@ -51,6 +51,7 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
 - [x] Home phase part C (spec 008): enough home scenes for a season, with the played list kept in the season save. Before the season flow
   Done Nov 23: every home scene choice now draws from a pool big enough for a season, and the same scene doesn't come back until the rest have played; the game remembers what played across the whole season, even after a reload.
 - [ ] Season flow (spec 009): the season data file, the board for a full season, agency case unlocks, the finale, the season's end and the next season. After the home phase
+- [ ] Home phase part D (spec 008, Part C table): 4 more Fulfill Responsibilities scenes at Close for each of the 8 Bond types (7 each, 32 new scenes), so a season never repeats one. After the season flow
 - [ ] Good Manners part A (spec 010): its maps and art, townsfolk and the two men, walkable with stand-in scripts. After the season flow
 - [ ] Good Manners part B (spec 010): the secret case file first, then its story, fights, boss and endings
 - [ ] Lot 83 part A (spec 011): its maps and art, the tented night, townsfolk and Walt, walkable with stand-in scripts. After Good Manners
@@ -1011,7 +1012,7 @@ Fights are rare, so each one hits hard and lasts long enough to use statuses and
 ### Bosses (set Nov 18)
 
 - **Phases:** set per boss in its case file. A boss has up to 2 phases (one phase change, which the battle supports; the Gleaner has two) (accepted Nov 23, 2026 from the Developer's logged calls). A case that needs a third says so in its spec, and the battle grows then.
-- **Every boss needs:** at least one case choice that weakens it (the Gleaner loses strength for each rescued victim), a weakness Identify can find, and 8–12 rounds against a careful party.
+- **Every boss needs:** at least one case choice that weakens it (the Gleaner loses strength for each rescued victim), a weakness Identify can find, and 8–12 rounds against a careful party that skipped the weakening choices, or 5–8 rounds when it made them all (set Nov 23, 2026: the shorter fight is the reward for doing the case well).
 - **Tuning check:** the Gleaner is tuned first (Nov 23, 2026), and its tuned numbers and the simulator result go in Combat numbers as the bar every later boss is checked against. Before a case ships, Claude runs the boss against a mid-level team template. Target: a careful party wins with at most one agent Downed; a party that skipped the case's choices can lose. The demo's Gleaner sets the bar.
 
 ### Lasting injuries (set Nov 20)

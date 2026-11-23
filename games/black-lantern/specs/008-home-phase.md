@@ -139,7 +139,7 @@ Today each choice has one scene per Bond type and mood (Back to Nature has six v
 
 | Pool | Size | Memory |
 | --- | --- | --- |
-| Fulfill Responsibilities | At least **3 scenes** for each Bond type and mood (8 types × Close, Strained, Fraying), plus each Bond's one last scene at Broken | Per Bond, for the season |
+| Fulfill Responsibilities | At least **7 scenes** for each Bond type at Close and **3** at Strained and Fraying (8 types), plus each Bond's one last scene at Broken. Close went from 3 to 7 on Nov 23, 2026, so an agent who visits the same Close Bond every break of a 7-break season never sees a repeat | Per Bond, for the season |
 | Back to Nature | At least **9** vignettes | Whole party, for the season |
 | Personal Motivation (Pursue) | At least **2** per motivation | Per agent, for the season |
 | Therapy | At least **3** for SAN and **3** for a disorder | Per agent, for the season |

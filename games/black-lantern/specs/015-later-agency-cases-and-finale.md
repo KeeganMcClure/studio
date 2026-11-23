@@ -43,7 +43,7 @@ The finale is the agency case the season data marks (spec 009, step 4). It follo
 | Card | The finale card from spec 009: the agency card with a gold edge, `FINALE` under the LANTERN number, place line `SEASON FINALE · <place>` |
 | Length | 1.5–2 hours, one case. It may break the case pattern on purpose (Gameplay loop allows it) but never runs past 2 hours |
 | Fights | 2–3 story fights plus the finale boss, no random encounters |
-| Boss | Threat 3, at the Season finale boss row in Combat → Combat numbers, not the case boss row. At least two case choices that weaken it, since a finale should reward the whole case, and a weakness Identify can find. 8–12 rounds. The tuning check runs against a mid-level template: a careful party wins with at most one agent Downed; a party that skipped the case's choices can lose |
+| Boss | Threat 3, at the Season finale boss row in Combat → Combat numbers, not the case boss row. At least two case choices that weaken it, since a finale should reward the whole case, and a weakness Identify can find. 8–12 rounds when the choices were skipped, 5–8 when all were made. The tuning check runs against a mid-level template: a careful party wins with at most one agent Downed; a party that skipped the case's choices can lose |
 | Lasting injuries | +2 on the roll in every fight of the finale, not just the boss (Combat → Lasting injuries) |
 | Motivation moments | 1–2, as usual, aimed at the motivation types the season's personal arcs lean on |
 | Endings | `clean`, `costly`, `worst`, as for any case. The debrief and home phase play, then the season end screen (spec 009, step 5) instead of the board |
