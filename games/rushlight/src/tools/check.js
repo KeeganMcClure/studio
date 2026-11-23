@@ -386,7 +386,7 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
         party[0].sk.Letters = 80; r.hue = 2; g.paid = 0; g.auto.menu = (items, o) => { const L = items.map(x => x.label || x); return o && /REEVE/.test(o.title || '') ? (g.paid ? L.indexOf('Leave') : (g.paid = 1, 1)) : 0; }; StudioRoll.use(fixed(5)); await PLACES.reeve('harrow'); StudioRoll.use(null); if (r.hue !== 1) out.push('a Writ did not settle a step');
         r.hue = 2; g.paid = 0; party[0].writUsed = 0; g.auto.menu = (items, o) => { const L = items.map(x => x.label || x); return o && /REEVE/.test(o.title || '') ? (g.paid ? L.indexOf('Leave') : (g.paid = 1, 2)) : 0; }; StudioRoll.use(fixed(97)); await PLACES.reeve('harrow'); StudioRoll.use(null); if (r.hue !== 3) out.push('a failed talk with the reeve did not climb');
         if (r.fac.lord.step !== 0) out.push('Outlawed did not drop the Lord to Hated');
-        g.dev.event = 'storm'; StudioRoll.use(fixed(1)); const res = await roadEvent({ road: 'hs', to: 'cause', day: 1, extra: 0 }); StudioRoll.use(null); if (!G.lastStats || G.lastStats.rounds === fought && !res) out.push('no bounty hunters at Outlawed'); }
+        g.dev.event = 'storm'; G.lastStats = null; StudioRoll.use(fixed(1)); await roadEvent({ road: 'hs', to: 'cause', day: 1, extra: 0 }); StudioRoll.use(null); if (!G.lastStats || !G.lastStats.rounds) out.push('no bounty hunters at Outlawed'); }
       RLG._t.G().auto = null; return out;
     });
     bad.push(...res, ...errors);
