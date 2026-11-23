@@ -101,6 +101,7 @@ One new upgrade step, version + 1. Add test saves: one with an agency case unloc
 | `ended` | `true` once the finale has closed and the end screen has been seen |
 | `past` | One short line per finished season: its number, regular cases closed, agency cases closed, agents lost |
 | `carried` | Case ids carried over from the last season, open |
+| `slots` | Which case sits in each of the board's six spots (built in the same step, 10; listed here Nov 23, 2026) |
 
 - **Old saves:** a save without these fields gets `agency: []`, `ended: false`, `past: []`, `carried: []`. Every case it already has keeps its state. Never change older steps.
 - **Still not in the save:** the season's case count and unlock numbers. They live in the season data file, read fresh on every load, so the save never pins them.

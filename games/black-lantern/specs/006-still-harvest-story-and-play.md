@@ -162,7 +162,7 @@ The battle rebuilt under the Combat tab. Today's case enemies get stand-in cards
 - **0 SAN in a fight:** the agent snaps (25% each: hurt themselves, a random ally, a random enemy, nothing) and can be targeted by the others; whoever Downs them makes a Severe violence roll. They leave when the fight ends.
 - **Disorder flares** in battle on their triggers (PTSD on the first Loud attack, Phobia on its subject).
 - Quality of life: battle cursor memory, odds when targeting (to-hit with every modifier and the weapon's dice), auto-target when one enemy is left, status info on tap.
-- **Game over** if the whole team falls, as today: build a new team, the case reopens, the season keeps its progress. Briefings and cutscenes already seen can be skipped with B.
+- **Game over** if the whole team falls: Retry goes back to the last checkpoint (Keegan's call, Nov 23, 2026), and the season keeps its progress. Briefings and cutscenes already seen can be skipped with B, one part at a time.
 
 **B3. Art** (Art → Direction, Townsfolk and monsters, Faces and sprites)
 
