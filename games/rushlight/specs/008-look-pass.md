@@ -9,7 +9,7 @@ Keegan playtested the slice and found Rushlight's look far below Black Lantern's
 Four builds, in this order, each its own Developer session:
 
 1. **Sprites** (8A): the six species redrawn from the reference code, the folk enemies and the five flat creatures redrawn, the animation rig and the contact sheet.
-2. **Streets and HUD** (8B): lit, dressed town streets and sites, and two framed HUD cards in place of the one-line strip.
+2. **Streets, sites, the map and HUD** (8B): lit, dressed town streets, sites and the den, an inked region map, and two framed HUD cards in place of the one-line strips.
 3. **Menus** (8C): the parchment look, and Pick a company in two steps.
 4. **Check** (8D): one pass over every screen against `studio-bible/ui.md` (Screen craft) and `art-style.md` (Quality bar, Animation).
 
@@ -43,6 +43,8 @@ All rough, drawn in code, in `games/rushlight/mockups/` with the code that drew 
 | `39-battle-look-rough-v4` | The battle screen: dusk road backdrop, shadows, staggered plates, faces in the strip, party 2× and foes 1.5× | "Good otherwise" (Nov 23); drop the turn arrow |
 | `40-site-look-rough-v1` | A contract site (Hollin at noon) and the den (Lowmoor Pit at night), now and new: 3/4 buildings, rye, stooks, the pump house and whim, night light, the HUD cards | Approved with 41 (Nov 23) |
 | `41-environment-readability-v1` | The readability pass, before and after: Hollin, Lowmoor Pit and the road battle backdrop | "Love all the changes" (Nov 23). The reference for sites, the den and battle backdrops |
+| `42-menus-look-rough-v1` | The creator (Tweak), the pause menu, Party, the Merc card, Items, the Bestiary and the Ledger, now and new, on the approved parchment | "Great!" (Nov 23). Wax seal kept; Keegan may revisit it on playtest |
+| `43-map-look-rough-v1` | The region map, now and new: inked chart, place pictures, name ribbons, edge tags, the HUD cards | "Looks good" (Nov 23) |
 
 ## 8A. Sprites
 
@@ -100,6 +102,16 @@ Built to `34-look-town-rough-v2`. For both towns, every site and the den.
   - Every person stands on a firm contact shadow.
   - Battle backdrops: far things paler and hazier, so the foes' dark outlines stand out; no grass speckle behind the party.
 
+- **The region map** (look check, Nov 23, to `43-map-look-rough-v1`). Same chart data (`content/march.js`); only the drawing changes:
+  - The chart is aged parchment: a lit middle, stained edges, a few foxing spots, fibres at low contrast. The shell's scanlines fade over it.
+  - The river has inked banks, a blue-grey wash and ripple strokes. Woods are clumps of little inked trees, lit from the upper left. Fields are hatched strips with an ochre wash. Reed beds are ink tufts. Hills are hachured round Lowmoor and on the edges. A compass rose sits in a corner.
+  - Main roads are a double ink line with a pale bed; side roads are dashed; den roads are Blood. Each day of road is a short cross stroke. The route being picked is Tallow dots with an ink edge.
+  - Each place is a little picture: a walled town with towers (Saint Ebbe's with a spire), thatched cottages for a hamlet, its own pictogram for each wild site, the pit head on a Blood ground for the den. Every name sits on a pale ribbon, slides in from the edge rather than being cut, and never sits on texture.
+  - The cursor is four Tallow corner brackets with a Peat edge, framing the picture and not the name. The coin token keeps its shadow.
+  - Edge tags are parchment with an ink edge and never overlap: places below or above the view line up along that edge, places to the sides stack.
+  - **HUD:** a party card (the three faces on their backings, the lead's in Tallow, the lead's name) and a place card (the place, the purse, the day, food and the days it covers), then Hue and the four factions on one line, each written out (a dash for neutral). The road card at the bottom is the same card, tall enough that nothing is cut.
+  - The inset is the chart itself in small, in an ink frame.
+
 ## 8C. Menus
 
 Built to `35-look-company-rough-v3`.
@@ -119,7 +131,19 @@ Built to `35-look-company-rough-v3`.
 
 - **Pick a company, step 2** (the company's name in the header): three seat cards, each with the portrait at 2× on its backing, the name, trade · species, and the three highest skills (wrapping, never cut), with Keep, Reroll, Tweak and Rebuild as buttons along the bottom. Up and Down move between seats, Left and Right between buttons, A presses. A Tallow tick marks a kept seat. A short hint line says kin, motivations and backstory are on Tweak and the Merc card. START ▸ SIGN THEM ON sits at the bottom. B goes back to step 1.
 - This changes spec 003 part 3 (one screen with the list and the seats). Everything else in it holds: rolling, rerolls, Blank company, the Muster roll.
-- **The creator:** its seven steps keep their contents; rows and panes become parchment cards, and the merc's portrait shows on its backing beside the pane.
+- **The creator:** its seven steps keep their contents; rows and panes become parchment cards, and the merc's portrait shows on its backing beside the pane. Tweak (look check, Nov 23, to `42-menus-look-rough-v1`): the merc's card on top (2× face, name, trade · species, the species' size and gift), then one row per choice with its label written in full (Name, Species, Coat, Mark, Neckwear, Kin, Motivations), the backstory in its own card with a Roll button, and DONE at the bottom.
+- **The other menus** (look check, Nov 23, to `42-menus-look-rough-v1`):
+  - Labels are written out in full, never "S…" or "Neckw…". A value too long for its row wraps; it is never cut.
+  - Numbers sit right-aligned in their own column beside their bar, so they line up down a card.
+  - Every merc screen shows the merc's face at 2× on its lit backing.
+  - The frame (header and footer) stays dark Soot, with the title in Tallow and the hints in Bone, so parchment always sits in a frame.
+  - **Pause menu:** a small parchment card over the map, bottom right, the map still showing round it.
+  - **Party:** one card per merc: face, name, the LEAD tag, trade · species, the HP bar with HP beside it, WP, SAN and statuses on one line.
+  - **Merc card:** the merc on top; the six stats in a row of small cards; HP, WP and SAN bars with their numbers; Breaking point and Luck; then skills, kin, motivations and the backstory.
+  - **Items:** a tab per merc; the worn gear with its slot written out (Weapon 1, Weapon 2, Body, Head) and its wear pips; carried things with a count and what the picked one does; the pack with rations and days. The purse in the header.
+  - **Bestiary:** the list of entries with what's known (sighted, identified, killed); the picked entry's card with its drawing beside the name, kind and nature, then signs and tales. What isn't known yet says how to learn it.
+  - **Ledger:** one card per company (name, seed, how it ended, hunts and kills); the roll with every merc who served, face, name, trade and how they ended; a dead merc's nicknames and what they were owed in italic ink.
+  - The wax-seal cursor stays (Keegan, Nov 23: fine for now, may revisit on playtest).
 
 ## 8D. The check
 
@@ -133,4 +157,3 @@ No save changes. Nothing new is stored. `rl.version` stays as it is.
 
 - New screens, rules or text beyond the tags above.
 - Black Lantern. Its own art check against the new bar is a separate item.
-- The region map, which already has its parchment chart look.
