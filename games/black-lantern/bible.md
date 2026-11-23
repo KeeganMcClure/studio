@@ -22,7 +22,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
   - [ ] Demo 5 part C: the story. Its text block, branching paths, fewer but harder fights, and the Gleaner at the bible's numbers
     Left (Nov 23): only the Gleaner's boss tuning check. Do it next, before any new case's part B, because every later boss is tuned against the Gleaner (Combat → Bosses, Tuning check). Keegan's read from the demo playtest: it played OK, maybe a touch harder would be good, with a strong team mix. So tune it a touch harder for a careful Field Team, inside the Boss tier (55–65 HP, Combat numbers): still a win with at most one agent Downed, and a team that skipped the victims can lose.
 - [ ] Leftovers from the demo build (found in the pre-season review, Nov 23): two things the bible asks for that were never built
-  - [ ] B skips a briefing or cutscene you've already seen (Skills and menus → Quality of life, Skip replays; spec 006)
+  - [x] B skips a briefing or cutscene you've already seen (Skills and menus → Quality of life, Skip replays; spec 006)
+    Done Nov 23: once you've seen a briefing or cutscene, a B SKIP tab shows on the box and B skips the rest of it, even after a reload or a game over. Questions and choices still play.
   - [ ] Mushrooms' screen shimmer while High on them (Agents and items → Item list)
 - [ ] Demo playtest fixes (Keegan's notes, Nov 23): build the rule changes from the playtest. Tick this when all eight are done
   - [x] Hide skill options nobody in the party can use, at hotspots, on the map menu's Skills row and in battle (Skills and menus → Using skills; Combat → Basics, Command menu)
