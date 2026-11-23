@@ -8,7 +8,7 @@ The title screen, Pick a team, Your team, the 7-step creator and the roster were
 
 This spec does two things. Part 1 writes down what these screens are today, so later changes have something to change. Part 2 is the pronouns, body build and code names build, screen by screen. It adds no new rule: the rules stay in the bible and are linked, not copied (`studio-bible/studio.md`, Specs).
 
-Mockups: the approved Agent creator stills, 5 screens (bible, Art → Reference mockups). No new mockup: Part 2 adds rows to existing screens, and the Developer compares each changed screen with the closest mockup at 375 × 667 (`studio-bible/studio.md`, Playtests).
+Mockups: the approved Agent creator stills, 5 screens (bible, Art → Reference mockups), plus [`022-identity-codename-mockup.png`](022-identity-codename-mockup.png) for the Identity step and Big Hat's code-name box (approved by Keegan Nov 23, 2026; Part 3). Part 2 added rows to existing screens, and the Developer compares each changed screen with the closest mockup at 375 × 667 (`studio-bible/studio.md`, Playtests).
 
 ## Bible sections this spec relies on
 
@@ -67,6 +67,17 @@ These keep working as built. Anything in Part 2 that changes them is listed ther
 ### Saves
 
 - One new upgrade step, version + 1: old agents and Bonds open as "they", agents get the build closest to their look and keep their names (bible, steps 4 and 5, Code names). New test saves from today's build join `npm run check`.
+
+## Part 3 · Identity and code-name look (To do: Creator look fixes; approved Nov 23, 2026)
+
+Mockup: [`022-identity-codename-mockup.png`](022-identity-codename-mockup.png) (screens 2 and 4 are the approved look; 1 and 3 show the build before). It was made by changing the live build, so sizes and fonts are the real ones.
+
+1. **Identity, backstory:** the backstory row stays one line in the list. The whole backstory shows in a detail box across the bottom of the step, above the hint line, labelled BACKSTORY, in up to 4 lines (it holds the full 120 characters). The list scrolls above it.
+2. **Identity, body preview:** under the face, the agent's map sprite and battle back are drawn side by side, labelled MAP and BATTLE, and they change as Build, Skin, Hair and Outfit change, so Slim and Broad can be seen.
+3. **Dossier, code name:** until a code name is taken, the card reads `AGENT ???` (not the surname).
+4. **Dossier, Big Hat's box:** the Dossier behind the box dims more (about 80% dark, not 45%) and the box is solid, so no Dossier text shows through it.
+
+Checks: side by side with the mockup at 375 × 667 and at 320 × 480, nothing cut off (on short screens the list scrolls; the backstory box and the sprites stay). No save change.
 
 ## Must stay true
 
