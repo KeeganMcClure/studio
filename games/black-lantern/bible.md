@@ -387,7 +387,7 @@ Marrow Creek, Oregon, during the Harvest Lantern Walk.
 2. **Town investigation:** 5 clues, 3 needed to proceed.
 3. **Committee Volunteer** fight.
 4. **Dark corn maze** with roamers in a danger zone, loot and a lore note (no random encounters, per Gameplay loop).
-5. **Victims:** 3 people tied to scarecrow poles who can be cut down.
+5. **Victims:** 3 people tied to scarecrow poles who can be cut down. The maze has a route to all three that never passes the Gleaner's clearing, so you can free them and explore the rest before you choose to face it (Keegan's demo playtest, Nov 23, 2026).
 6. **Boss: The Gleaner**, a figure of harvest straw with a lantern for a head. It gets weaker for each victim rescued.
 7. **Debrief** with Big Hat, a cover-story choice, then a home scene choosing a Bond. The agent's new SAN and disorders save to the roster.
 
@@ -514,6 +514,7 @@ HP and SAN are two health bars: HP heals, SAN mostly doesn't. Combat is purely t
 - **Danger zones:** 0–2 per case, set by the story, day or night. Roamers walk them in plain sight.
 - **Roamers:** each guards something (a clue, a victim, a shortcut, a stash). Fight it, sneak past with a roll, or take another route. Loot drops 20% of the time, always when the drop is story-related.
 - **Fleeing:** roll to flee roamers. Story fights and bosses are committed.
+- **The boss waits for you (set Nov 23, 2026):** a boss fight starts only when you choose to go to it. Every victim, clue, stash and danger zone in the boss's area can be reached without walking through the boss's spot, and the last step in shows a "go in / not yet" choice. In the demo playtest the maze's paths ran through the Gleaner's clearing, which started the fight before you could do everything.
 - **Clues:** the story picks the style. Default is threshold plus bonus (need some to move on; extras weaken the boss, add intel or open debrief options) or clues as keys (specific clues open specific places or dialog), whichever fits the theme.
 - **Deduction:** never a dead end. A wrong answer costs SAN, time or a better ending, never progress. Claude checks every deduction maps to clue IDs before building.
 - **Time:** story beats turn day to night by default; some cases add a clock on purpose.
