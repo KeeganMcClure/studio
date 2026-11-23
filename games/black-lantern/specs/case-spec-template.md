@@ -46,6 +46,7 @@ Picked pitch: `pitches/<round file>.md`, option <letter>, picked <date>.
 | Length | 1–2 hours, or Part 1 and Part 2 if Keegan split it |
 | Open or quiet | Open (badges) or quiet (undercover); Overstepping's first step follows |
 | Day and night | Which beats turn it to night; any clock |
+| Points of no return | Each beat that turns the day, and what it closes for good (maps, people, items), so each gets its Go on / Not yet line (`studio-bible/play.md`; Systems → Gameplay loop, Turning the day). The boss waits for you |
 | Maps | Each area by name, with its size and whether it's a danger zone |
 | Story fights | 2–3, each with its threat skulls; human or unnatural |
 | Danger zones | 0–2, with how many roamers and what each guards |
