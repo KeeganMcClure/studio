@@ -518,7 +518,7 @@ V.bonds=()=>{
   });
   rows.push(nextRow());
   const hb=a.bonds[rows[S.sel.bonds||0]?.bi??0]||a.bonds[0];
-  const pane=`<div><span class="hi">${esc(hb.rel.toUpperCase())}</span> · ${esc(RELTXT[hb.rel])} Their type sets which home scenes you get together.</div>`+
+  const pane=`<div><span class="hi">${esc(hb.rel.toUpperCase())}</span> · ${esc(RELTXT[hb.rel])}</div>`+
     `<div class="small">${S.tweak?'Template agents arrive with both Bonds filled in; Tweak renames them.':'Each Bond starts at CHA and wears thin when you lean on it.'}</div>`;
   return{rows,pane,info:info(whoLine(a),`Bonds start at CHA ${cha}`),foot:'◀▶: TYPE · A: NAME · L/R: STEP'};
 };
