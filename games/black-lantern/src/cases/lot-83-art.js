@@ -83,8 +83,10 @@ const STILL={
  pool(g,p){const{x0,x1,y0,fb}=box(p);K.pool(g,x0,y0,x1,fb,T,{empty:true,ladder:x1-22,steps:true})},
  fence(g,p){const x0=p.x*T,x1=(p.x+p.w)*T,top=p.y*T+3,bot=(p.y+p.h-1)*T+3;
   K.chainLinkSide(g,x0+7,top+14,bot+2,T);K.chainLinkSide(g,x1-9,top+14,bot+2,T);
-  K.chainLink(g,x0,x1,top,T,{post:2});K.chainLink(g,x0,x1,bot,T,{post:2,gate:[p.gate*T,(p.gate+1)*T],open:true});
-  F(g,(p.gate)*T-12,bot-2,10,7,'#e8e4d8');F(g,(p.gate)*T-12,bot-2,10,2,'#a8323e');K.signText(g,'NO',(p.gate)*T-10,bot+1,'#2a2030')},
+  // the gate: in the top run (the courtyard side) when p.top is set, else the bottom run; the NO DIVING sign beside it
+  const gt={post:2,gate:[p.gate*T,(p.gate+1)*T],open:true},gy=p.top?top:bot;
+  K.chainLink(g,x0,x1,top,T,p.top?gt:{post:2});K.chainLink(g,x0,x1,bot,T,p.top?{post:2}:gt);
+  F(g,(p.gate)*T-12,gy-2,10,7,'#e8e4d8');F(g,(p.gate)*T-12,gy-2,10,2,'#a8323e');K.signText(g,'NO',(p.gate)*T-10,gy+1,'#2a2030')},
  hatch(g,p,M){const x=p.x*T+1,y=p.y*T+2,N=isNight(M);F(g,x-1,y-1,16,13,'#2a2a30');
   if(N){F(g,x,y,14,11,'#0a080c');for(let k=0;k<4;k++)F(g,x+4,y+1+k*3,6,1,'#5a5a64');F(g,x,y-7,14,6,'#7a7a84');F(g,x,y-7,14,1,'#9a9aa4');F(g,x+5,y-5,4,1,'#3a3a44')}
   else{F(g,x,y,14,11,'#7a7a84');F(g,x,y,14,1,'#a8a8b0');for(let k=2;k<13;k+=3)F(g,x+k,y+2,1,7,'#6a6a74');F(g,x+5,y+8,4,3,'#c8a040');F(g,x+6,y+7,2,1,'#c8a040')}},
@@ -179,8 +181,15 @@ const SPEC={
  pole:()=>({size:[24,96,0,0],anchor:[12,94],lights:[[18,6,3.2,.5]],draw({R}){R(10,4,4,90,'#5a5a64',{sh:1});R(6,90,12,4,'#3a3a44');R(12,2,12,4,'#4a4a54');R(16,6,8,3,'#fff6c8')}}),
  gracebox:()=>({size:[36,30,0,0],anchor:[18,28],lights:[],draw({R}){R(2,8,32,20,'#d8c0a0',{sh:8});R(0,4,36,6,'#e8d0b0');R(8,14,20,6,'#f4efe6');R(4,24,28,4,'#a89070')}}),
  filter:()=>({size:[64,62,0,0],anchor:[32,60],lights:[],draw({R,E}){R(8,14,48,44,'#5a7a7a',{sh:14});E(32,14,24,8,'#6a8a8a');E(28,12,12,4,'#8aaaaa');R(26,0,12,8,'#8a8070');R(4,40,8,4,'#8a8070');R(52,30,12,4,'#8a8070');R(30,24,4,4,'#c8a040');R(8,56,48,4,'#2a3030')}}),
- // the stand-in for the finale's nest: pale, soft folds woven into the warm pipes (part B draws the real thing)
- nest:()=>({size:[64,48,0,0],anchor:[32,46],lights:[[32,24,1.4,.3]],draw({E,R}){for(let i=0;i<9;i++)E(8+i*6,30+Math.sin(i)*6,9,12,i%2?'#c8b8a0':'#d8c8b0');E(32,22,20,14,'#e0d4bc');E(28,18,10,6,'#f0e8d8');for(let i=0;i<6;i++)R(6+i*10,6,2,26,'#8a8070')}})
+ // the finale's nest (part B): pale, soft folds woven layer on layer into the warm pipes, like a quilt somebody kept
+ // adding to; the pipes run in and out of it, and high in the folds one huge milky eye
+ nest:()=>({size:[64,48,0,0],anchor:[32,46],lights:[[32,22,1.4,.32]],draw({E,R}){
+  for(let i=0;i<5;i++){R(4+i*13,0,3,34,'#54585e');R(5+i*13,0,1,34,'#7a7e84')}R(0,8,64,3,'#54585e');R(0,9,64,1,'#7a7e84');
+  for(let i=0;i<9;i++)E(6+i*6.5,32+Math.sin(i*1.7)*5,8,11,i%2?'#c8b8a0':'#d8c8b0');
+  [[14,24,10,9],[32,20,14,11],[50,24,10,9],[24,34,10,7],[42,35,10,7]].forEach(([x,y,rx,ry],i)=>{E(x+1,y+1,rx,ry,'#b0a088');E(x,y,rx-1,ry-1,i%2?'#e0d4bc':'#d8ccb4');E(x-rx*.35,y-ry*.4,rx*.4,ry*.3,'#f0e8d8')});
+  R(12,22,4,2,'#7a7e84');R(46,30,5,2,'#7a7e84');
+  E(32,19,8,6,'#b0a088');E(32,19,7,5,'#eef0ea');E(32,20,4,3,'#c8d0d0');E(32,20,2,2,'#a8b0b2');R(30,18,1,1,'#ffffff');
+  R(25,15,14,1,'#c8b8a0')}})
 };
 // the lot on Walt's table: jars with something pale in cloudy brine, unreadable books, numbered ledgers
 const LOTTABLE={size:[96,44,0,0],anchor:[48,42],lights:[],draw({R,E}){R(2,14,92,10,'#8a6a4a',{sh:12});R(2,14,92,2,'#a88a6a');R(2,24,92,3,'#5a3e2a');R(6,27,4,15,'#4a3424');R(86,27,4,15,'#4a3424');
