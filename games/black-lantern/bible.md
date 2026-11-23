@@ -667,7 +667,8 @@ Picking a home scene plays a quick cutscene that changes with who the Bond is an
   4. **Identity:** name, Storybook face built from parts, a one-line backstory.
   5. **Bonds:** 2 people, each picked from a preset list of types (Partner, Kid, Parent, Sibling, Friend, Ex, Coworker, Mentor) and then named; each starts at CHA. The type decides which home scenes they get (set Nov 19).
   6. **Motivations:** pick 2 from the preset list and mark one as Main, which drives the agent's personal arc (see Motivations below).
-  7. **Dossier:** review everything, then save to the roster.
+  7. **Dossier:** review everything, then save to the roster. Big Hat gives the agent their code name here, at the end, once he knows who they are (see Code names below).
+- **Code names (set Nov 23, 2026, after the demo playtest; replaces the two-random-words names like IRON HERON):** one name, like the agents in Keegan's Agency stories (RAINE, MICKEY, JERRY, AHAB). Each is a pop-culture reference, usually tied to the agent's home life: a Bond, their Main motivation, a hobby from their bonus picks, or their backstory. Big Hat hands it over on the Dossier step in one line that hints at the why without spelling it out ("Kid named Marco, hockey on weekends. You're GRETZKY."). The player can take it, ask for another (the next best match), or type their own. Names come from a list kept in the game's strings, each tagged with what it fits (Bond types, motivations, skills, professions); the build writes the list, about 60 names, from TV, film, books, comics, music and sports, never a brand or logo (studio-bible/studio.md, No real brands). Template agents get hand-picked names. Old saved agents keep their names, and Tweak can ask Big Hat for a new one.
 - **Worked out from stats (Delta Green):** HP = (STR + CON) ÷ 2, rounded up; WP = POW; SAN = POW × 5; Breaking Point = SAN − POW. DEX sets turn order. Stat jobs (set Nov 19), so every stat has a stake: STR 13+ adds +1 Melee damage; CON lets an agent roll CON × 5 to shrug off Poisoned or Sickened as it lands; INT gives a Hunch once per case: stuck on a deduction, roll INT × 5 for a hint.
 - **Luck (set Nov 19):** a flat 50% for every agent, tied to no stat, used only for pure-chance moments like overstepping's first step. Retch is a CON × 5 roll instead, since it's the body's job.
 - **Recruits (set Nov 19):** when an agent dies, hits 0 SAN or goes on Sabbatical, you pick 1 of Big Hat's 3 ready-made recruits or build your own in the creator (confirmed Nov 20). Who's offered, when they arrive and what they bring are under Losing an agent in Systems. Recruits start fresh, with no case gains.
@@ -679,7 +680,7 @@ Picking a home scene plays a quick cutscene that changes with who the Bond is an
 - Tweak keeps each Bond's type; only Rebuild changes it. Tweak never touches profession, stats or skills.
 - Done checks every step and jumps to the first unfinished one: all 8 picks spent, a name, both Bonds named, 2 motivations with a Main.
 - Start files all 3 agents to the roster and begins the case with seat 1 as the lead.
-- Each agent keeps a codename (Identity step, editable), since case dialog uses it.
+- Each agent keeps a codename, since case dialog uses it. Given at the Dossier step since Nov 23 (Code names, above); it was on the Identity step before.
 - Until Demo 5: each profession borrows 2 of the old battle abilities, and play still uses the old shared item pack; the creator already shows the Bible's kit and weapon. Weapons use the Combat numbers dice.
 - Old agents converted to the nearest new profession (Federal Agent to Investigator, Priest to Therapist, Ice Cream Truck Driver to Talker, and so on); picks in cut skills are dropped, so a converted agent can have fewer than 8.
 
