@@ -281,7 +281,13 @@ function fx(ctx,o){const M=o.M,now=o.now;
   const st=paint(M),reach=lr*2.6;st.reflect.forEach(([x,y,wh])=>{const sx=x-o.camx,sy=y-o.camy,d=Math.hypot(sx-lx,sy-ly);if(d>reach)return;const a=Math.max(0,1-d/reach);
    const rc=wh?'240,236,220':'255,200,90';ctx.fillStyle=`rgba(${rc},${(a*.95).toFixed(2)})`;ctx.fillRect(Math.round(sx)-1,Math.round(sy)-1,3,wh?3:2);ctx.fillStyle=`rgba(${rc},${(a*.25).toFixed(2)})`;ctx.fillRect(Math.round(sx)-3,Math.round(sy)-2,7,4)})}
  ctx.globalCompositeOperation='lighter';gr=ctx.createRadialGradient(lx,ly,0,lx,ly,lr*.5);gr.addColorStop(0,'rgba(214,164,58,.14)');gr.addColorStop(1,'rgba(214,164,58,0)');ctx.fillStyle=gr;ctx.fillRect(lx-lr,ly-lr,lr*2,lr*2);
- ctx.globalCompositeOperation='source-over'}
+ ctx.globalCompositeOperation='source-over';
+ // part B: on night 2, the cold light waits in the fog over the high pasture's burned ring until the boss is met
+ if(M.id==='field'&&M.lamp){const cx_=15*T+8-o.camx,cy_=8*T-o.camy,fl=.8+.2*Math.sin(now/300)*Math.sin(now/170);
+  ctx.globalCompositeOperation='lighter';let g2=ctx.createRadialGradient(cx_,cy_-40,2,cx_,cy_-40,70);g2.addColorStop(0,`rgba(238,244,255,${(.55*fl).toFixed(3)})`);g2.addColorStop(.4,`rgba(200,184,255,${(.18*fl).toFixed(3)})`);g2.addColorStop(1,'rgba(200,184,255,0)');
+  ctx.fillStyle=g2;ctx.fillRect(cx_-80,cy_-120,160,160);
+  ctx.save();ctx.translate(cx_,cy_-20);ctx.scale(.35,1);g2=ctx.createRadialGradient(0,0,2,0,0,70);g2.addColorStop(0,`rgba(238,244,255,${(.22*fl).toFixed(3)})`);g2.addColorStop(1,'rgba(238,244,255,0)');ctx.fillStyle=g2;ctx.fillRect(-70,-70,140,140);ctx.restore();
+  ctx.globalCompositeOperation='source-over'}}
 // the hidden hotspot, while the lead is High on Mushrooms: a straight seam in the fog over the wall, faintly cold, and
 // neat scratches on the stone
 function seamGlint(c,x,y,now){const a=.35+.2*Math.sin(now/500);c.fillStyle=`rgba(238,244,255,${a.toFixed(2)})`;c.fillRect(x,y-60,1,58);c.fillStyle=`rgba(200,184,255,${(a*.5).toFixed(2)})`;c.fillRect(x-1,y-60,3,58);
