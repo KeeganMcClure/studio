@@ -7,7 +7,7 @@
 (()=>{
 // ---------- DATA (text lists come from strings.js) ----------
 const {SKILLS,SKILLJOB,PROFS,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,STEPNAME,STEPSHORT,STATJOB,HOBBY,
-  pron,proOf,PRONOUNS,BUILDS,PROW_UI}=window.BLS;
+  pron,proOf,PRONOUNS,BUILDS,PROW_UI,CODENAMES,MOTKEY,CODEW}=window.BLS;
 const SKIN=['#f6d7b8','#e9b98f','#c98e62','#a26a43','#7a4a2c','#4e2f1f'];
 const HAIRC=['#1b1414','#4a2c1a','#8a5a2b','#d8b25a','#b94a2c','#9aa0a6','#ece8de'];
 const OUTC=['#2d3a5c','#3e5c3a','#7a2e3e','#4b3b6e','#8a7a52','#232326','#4f87a3'];
@@ -24,9 +24,10 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const clone=o=>JSON.parse(JSON.stringify(o));
 const roll4d6=()=>{const r=[1,2,3,4].map(()=>1+rnd(6)).sort((a,b)=>a-b);return r[1]+r[2]+r[3]};
 const rollStats=()=>Object.fromEntries(STATS.map(k=>[k,roll4d6()]));
-const genCode=()=>pick(ADJ)+' '+pick(NOUN);
-// pro: she, he or they; look.build: slim or broad (Agent creator, Pronouns and body; Nov 23)
-function newAgent(){return {prof:null,method:'buy',stats:Object.fromEntries(STATS.map(k=>[k,12])),roll:null,picks:{},bonds:[{rel:'Partner',name:'',pro:'they'},{rel:'Friend',name:'',pro:'they'}],look:{skin:1,hair:0,hairC:1,eyes:0,eyeC:0,acc:0,outfitC:-1,build:'broad'},name:'',pro:'they',code:genCode(),backstory:'',age:34,motives:[],main:0}}
+const genCode=()=>pick(ADJ)+' '+pick(NOUN);  // the old two-word names: only save step 2 still uses it
+// pro: she, he or they; look.build: slim or broad (Agent creator, Pronouns and body; Nov 23). No code name until
+// Big Hat gives one on the Dossier step (Code names; spec 022).
+function newAgent(){return {prof:null,method:'buy',stats:Object.fromEntries(STATS.map(k=>[k,12])),roll:null,picks:{},bonds:[{rel:'Partner',name:'',pro:'they'},{rel:'Friend',name:'',pro:'they'}],look:{skin:1,hair:0,hairC:1,eyes:0,eyeC:0,acc:0,outfitC:-1,build:'broad'},name:'',pro:'they',code:'',backstory:'',age:34,motives:[],main:0}}
 let idN=0;const newId=()=>Date.now()*10+(idN++%10);
 function fromTemplate(t){const a=Object.assign(newAgent(),clone(t));a.id=newId();a.method='set';a.roll=null;a.bonds.forEach(b=>b.score=a.stats.CHA);return a}
 function setProf(a,p){if(a.prof!==p.id)a.picks={};a.prof=p.id}
@@ -370,7 +371,7 @@ function portraitURL(a,scale){const k=JSON.stringify([a.prof,a.look,scale]);if(!
 // ---------- VIEWS ----------
 const R=(label,o={})=>Object.assign({label},o);
 const ST=html=>({static:html});
-const goto=step=>{S.step=step;S.swap=null;S.clearArm=false;S.leaveArm=false};
+const goto=step=>{S.step=step;S.swap=null;S.hat=null;S.clearArm=false;S.leaveArm=false};
 const steps=()=>S.tweak?STEPS.filter(s=>TWEAKABLE.includes(s)):STEPS;
 // L/R only stops you moving on without a profession, or with point buy not spent; Done checks everything.
 function gate(a,step){if(step==='profession'&&!a.prof)return'PICK A PROFESSION FIRST';if(step==='stats'&&a.method==='buy'&&buyLeft(a)!==0)return'SPEND EXACTLY 72 POINTS';return null}
@@ -449,7 +450,7 @@ V.team=()=>{
 };
 function seatAction(i,j){
   const T=S.team,a=T.seats[i];
-  if(!(a&&j===0)&&!(!a&&j===1))STEPS.forEach(s=>delete S.sel[s]);  // a new build or tweak starts every step at the top
+  if(!(a&&j===0)&&!(!a&&j===1)){STEPS.forEach(s=>delete S.sel[s]);S.codeI=0}  // a new build or tweak starts every step at the top
   if(!a){if(j===0){S.a=newAgent();S.edit=i;S.tweak=false;goto('profession')}else{S.seatPick=i;goto('roster')}return}
   if(j===0){if(!T.state[i]||T.state[i]==='kept')T.state[i]='kept';toast('KEEPING '+surname(a))}
   else if(j===1){S.a=clone(a);S.edit=i;S.tweak=true;goto('identity')}
@@ -527,7 +528,6 @@ V.identity=()=>{
   const r=(lab,key,n,names,lo=0)=>{const [l,rr]=cyc(key,n,lo);return R(lab,{val:esc(names(L[key]??lo)),left:l,right:rr,a:rr})};
   return{side:true,rows:[
     R('',{input:{bind:'name',value:a.name,ph:'Full name'},val:''}),
-    R('',{input:{bind:'code',value:a.code,ph:'Codename'},val:'<b data-act="right">↻</b>',right:()=>{a.code=genCode()}}),
     R('',{input:{bind:'back',value:pron(a.backstory,{a}),ph:'One-line backstory',max:120},val:''}),
     // pronouns and body build (Agent creator, step 4, Pronouns and body; spec 022): left/right pickers like the face parts
     R(esc(PROW_UI.pro),{val:esc(proOf(a)),left:()=>{a.pro=cyc3(a,-1)},right:()=>{a.pro=cyc3(a,1)},a:()=>{a.pro=cyc3(a,1)}}),
@@ -588,7 +588,7 @@ function dossierCard(a){
   ${feats.length?`${h('NOTED')}<div class="small" style="color:var(--scr-fg)">${feats.map(esc).join(' · ')}</div>`:''}</div>`;
 }
 function done(){
-  const a=S.a;for(const st of steps()){const pr=problem(a,st);if(pr){goto(st);return toast(pr)}}
+  const a=S.a;if(!S.view&&!String(a.code||'').trim()){hatOffer(a,false);return toast(CODEW.none)}for(const st of steps()){const pr=problem(a,st);if(pr){goto(st);return toast(pr)}}
   a.bonds.forEach(b=>{if(b.score==null)b.score=a.stats.CHA});a.name=a.name.trim();
   // a recruit built mid-case goes straight back into the case (spec 006 A6)
   if(S.recruit){a.id=newId();const c=clone(a);S.recruit=false;S.a=newAgent();goto('title');if(window.BLG)BLG.recruitBuilt(c);return}
@@ -596,8 +596,47 @@ function done(){
   T.seats[i]=clone(a);T.state[i]=S.tweak?'tweaked':was?'rebuilt':'built';T.opt[i]=0;
   S.a=newAgent();S.edit=null;S.tweak=false;S.sel.team=i;goto('team');toast('SEAT '+(i+1)+' FILLED');
 }
+// ---------- CODE NAMES (Agent creator, Code names; set Nov 23, 2026; spec 022, Dossier step) ----------
+// Big Hat gives the code name on the Dossier, last, in one line in the Lantern Bust box with his portrait. The offer is
+// the best match from BLS.CODENAMES for this agent's Bonds, motivations (Main counts most), bonus-pick hobbies,
+// profession and backstory; names already on the team or the roster aren't offered. Take it, Another (the next best
+// match) or Type my own (the phone's text prompt, as New Bond uses). S.hat: the open box {sel, m}; S.codeI: which match.
+const fillW=(t,o)=>String(t).replace(/\{(\w)\}/g,(x,k)=>o[k]??x);
+const capW=t=>t?t[0].toUpperCase()+t.slice(1):t;
+function codeRank(a){
+  const p=profOf(a),main=MOTKEY[mainOf(a)],mots=(a.motives||[]).map(m=>MOTKEY[m]),back=pron(a.backstory||'',{a}).toLowerCase();
+  const used=new Set([...(S.team?S.team.seats:[]),...S.roster].filter(x=>x&&x.id!==a.id).map(x=>String(x.code||'').toUpperCase()));
+  used.add(String(a.code||'').toUpperCase());
+  const rels={};(a.bonds||[]).forEach(b=>{if(b&&b.rel&&!rels[b.rel])rels[b.rel]=b});
+  const hash=t=>{let h=7;for(const c of t)h=(h*31+c.charCodeAt(0))|0;return h};
+  // w: how well a name fits; q: which facts Big Hat mentions first (a Bond, the Main, a hobby)
+  return CODENAMES.filter(c=>!used.has(c.n)).map(c=>{const hits=[];
+    c.tags.forEach(t=>{
+      if(rels[t])hits.push({w:2,q:5,h:fillW(CODEW.bond,{r:t,b:(rels[t].name||'').trim()||t})});
+      else if(t===main)hits.push({w:3,q:4,h:CODEW.mot[t]});
+      else if(mots.includes(t))hits.push({w:2,q:2,h:CODEW.mot[t]});
+      else if(t[0]==='@'){if(p&&t.slice(1)===p.id)hits.push({w:2,q:2,h:fillW(CODEW.prof,{p:p.name})})}
+      else if(t[0]==='#'){if(new RegExp('\\b'+t.slice(1)+'\\b').test(back))hits.push({w:3,q:0,h:CODEW.file})}
+      else{const k=t==='FirstAid'?'First Aid':t,n=(a.picks||{})[k]||0,hob=!!(p&&!p.skills[k]);if(n&&k in SKILLS)hits.push({w:hob?3:1,q:hob?4:1,h:capW(pron(HOBBY[k],{a}))+'.'})}});
+    hits.sort((x,y)=>y.q-x.q);const hs=[];hits.forEach(x=>{if(!hs.includes(x.h)&&hs.length<2)hs.push(x.h)});
+    return{n:c.n,score:hits.reduce((t,x)=>t+x.w,0),hint:hs.join(' '),tie:hash((a.name||'')+c.n)}}).sort((x,y)=>y.score-x.score||x.tie-y.tie)}
+function hatOffer(a,next){const L=codeRank(a);if(!L.length)return;S.codeI=next&&S.hat?((S.codeI|0)+1)%L.length:0;S.hat={sel:S.hat?S.hat.sel:0,m:L[S.codeI]}}
+const hatLine=()=>{const m=S.hat.m;return fillW(m.hint?(S.codeI?CODEW.again:CODEW.give):CODEW.plain,{h:m.hint,c:m.n})};
+function hatPick(i){const a=S.a,m=S.hat&&S.hat.m;if(!m)return;
+  if(i===0){a.code=m.n;S.hat=null;saveDraft()}
+  else if(i===1)hatOffer(a,true);
+  else{let v=null;try{v=window.prompt(CODEW.typeAsk,m.n)}catch(e){}v=String(v||'').toUpperCase().replace(/[^A-Z0-9'-]/g,'').slice(0,CODEW.max);if(v){a.code=v;S.hat=null;saveDraft()}}}
+// the box sits over the Dossier like the game's dialog box (engine/dialog.js); the portrait is smaller on short screens
+function hatDraw(){
+  let h=$('#cdlg');if(!h){h=document.createElement('div');h.id='cdlg';screen.appendChild(h)}
+  const open=!!(S.step==='dossier'&&!S.view&&S.hat&&typeof BLD!=='undefined');h.hidden=!open;if(!open){h.innerHTML='';return}
+  h.style.setProperty('--pu',(screen.clientHeight<420?96:128)+'px');
+  const b=BLD.render(h,{name:'BIG HAT',portrait:typeof drawBigHatPortrait==='function'?(c,f)=>drawBigHatPortrait(c,false,f):null,text:hatLine(),choices:[CODEW.take,CODEW.another,CODEW.own],sel:S.hat.sel,scale:2});
+  b.querySelectorAll('.bld-c li').forEach((li,i)=>li.addEventListener('click',e=>{e.stopPropagation();if(!S.hat)return;S.hat.sel=i;hatPick(i);render(false)}))}
 V.dossier=()=>{
   const a=S.a;if(!profOf(a)){goto(S.view?'roster':'profession');return V[S.step]()}
+  // a new agent gets Big Hat's offer as the Dossier opens; a template or an older agent keeps theirs until asked
+  if(!S.view&&!S.hat&&!String(a.code||'').trim())hatOffer(a,false);
   const rows=[ST(dossierCard(a))];
   if(S.view){
     rows.push(R('Copy agent code',{a:()=>copyCode(a)}));
@@ -605,10 +644,11 @@ V.dossier=()=>{
     rows.push(R(S.afterCase?'Back to the case board':'Back to roster',{a:leaveView}));
   }else{
     rows.push(R('Done ▶',{cls:'go',val:S.recruit?'recruit':`seat ${S.edit+1}`,a:done}));
-    rows.push(R(S.saved?'Filed ✓':'File to roster too',{a:()=>{const pr=steps().map(st=>problem(a,st)).find(Boolean);if(pr)return toast(pr);a.id=a.id||newId();fileToRoster(a);S.saved=true;toast('FILED UNDER '+(a.code||'?'))}}));
+    rows.push(R(esc(CODEW.ask),{a:()=>hatOffer(a,false)}));  // Tweak can ask for a new name too (spec 022)
+    rows.push(R(S.saved?'Filed ✓':'File to roster too',{a:()=>{const pr=steps().map(st=>problem(a,st)).find(Boolean);if(pr)return toast(pr);if(!String(a.code||'').trim()){hatOffer(a,false);return toast(CODEW.none)}a.id=a.id||newId();fileToRoster(a);S.saved=true;toast('FILED UNDER '+(a.code||'?'))}}));
     rows.push(R('Copy agent code',{a:()=>copyCode(a)}));
   }
-  return{rows,info:info(whoLine(a),S.view?'ROSTER FILE':'REVIEW'),foot:S.view?(S.afterCase?'A: SELECT · B: CASE BOARD':'A: SELECT · B: ROSTER'):'A: SELECT · START: DONE · L: BACK',bare:true};
+  return{rows,info:info(whoLine(a),S.view?'ROSTER FILE':'REVIEW'),foot:S.view?(S.afterCase?'A: SELECT · B: CASE BOARD':'A: SELECT · B: ROSTER'):S.hat?'A: CHOOSE · B: BACK':'A: SELECT · START: DONE · L: BACK',bare:true};
 };
 V.roster=()=>{
   const picking=S.seatPick!==null,onTeam=id=>S.team&&S.team.seats.some(x=>x&&x.id===id);
@@ -652,6 +692,7 @@ function render(scroll=true){
   pane.innerHTML=cur.pane||'';pane.hidden=!cur.pane;
   if(S.step==='identity')drawBig(false);
   if(S.step==='title')drawLantern();
+  hatDraw();
   // sanity palette
   const f=1-S.san/99;
   screen.style.filter=f>0?`hue-rotate(${(-f*70).toFixed(0)}deg) saturate(${(1+f*1.4).toFixed(2)}) contrast(${(1+f*.25).toFixed(2)})`:'';
@@ -671,6 +712,14 @@ let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add
 function rowAt(i){return cur.rows[i]}
 const inCreator=()=>STEPS.includes(S.step)&&!S.view;
 function act(kind){
+  // Big Hat's code-name box takes the presses while it's open: Up/Down choose, A picks, Start takes it, B closes it
+  // (and steps back, as B does on the Dossier, when there's still no code name)
+  if(S.hat&&S.step==='dossier'&&!S.view){
+    if(kind==='up'||kind==='down')S.hat.sel=(S.hat.sel+(kind==='up'?2:1))%3;
+    else if(kind==='a')hatPick(S.hat.sel);
+    else if(kind==='start')hatPick(0);
+    else if(kind==='b'||kind==='l'){S.hat=null;if(kind==='l'||!String(S.a.code||'').trim())prevStep()}
+    render();return}
   const r=rowAt(S.sel[S.step]);
   if(kind!=='b')S.leaveArm=false;
   if(kind==='up'||kind==='down'){const ok=selectable(cur.rows),k=ok.indexOf(S.sel[S.step]);const nk=kind==='up'?Math.max(0,k-1):Math.min(ok.length-1,k+1);if(nk!==k){S.sel[S.step]=ok[nk]}render();return}
@@ -701,7 +750,7 @@ list.addEventListener('click',e=>{
   if(!(window.BLG&&BLG.active))render(false);
 });
 list.addEventListener('input',e=>{const t=e.target,b=t.dataset.bind;if(!b)return;
-  if(b==='name')S.a.name=t.value;else if(b==='code')S.a.code=t.value.toUpperCase();else if(b==='back')S.a.backstory=t.value;else if(b.startsWith('bond'))S.a.bonds[+b.slice(4)].name=t.value;saveDraft()});
+  if(b==='name')S.a.name=t.value;else if(b==='back')S.a.backstory=t.value;else if(b.startsWith('bond'))S.a.bonds[+b.slice(4)].name=t.value;saveDraft()});
 list.addEventListener('focusout',e=>{if(e.target.tagName==='INPUT')setTimeout(()=>{if(!list.contains(document.activeElement)||document.activeElement.tagName!=='INPUT')render(false)},0)});
 
 // ambient: blink + lantern flicker
