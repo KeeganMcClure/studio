@@ -33,7 +33,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
 - [ ] Demo playtest fixes (Keegan's notes, Nov 23): build the rule changes from the playtest. Tick this when all eight are done
   - [x] Hide skill options nobody in the party can use, at hotspots, on the map menu's Skills row and in battle (Skills and menus → Using skills; Combat → Basics, Command menu)
     Done Nov 23: skill options nobody in the party is high enough for are hidden at hotspots and on the map menu's Skills list; ones a teammate has still show greyed. Battle already showed only the acting agent's moves.
-  - [ ] Creator: a bonus pick that would pass 80% stops at 80% (Agents and items → Agent creator, step 3)
+  - [x] Creator: a bonus pick that would pass 80% stops at 80% (Agents and items → Agent creator, step 3)
+    Done Nov 23: a bonus pick that would pass 80% now stops at 80%, so a 10, 30, 50 or 70% skill can still reach 80.
   - [x] Turn-order column: current round only, each fighter once (Combat → Basics, Turn order)
     Done Nov 23: the turn column shows only this round, the acting fighter on top, faces dropping off as they act, and a Downed agent greyed.
   - [x] Pokémon-style battle backdrops for Still Harvest's town and maze, replacing the darkened map still (Combat → Basics, Backgrounds)
