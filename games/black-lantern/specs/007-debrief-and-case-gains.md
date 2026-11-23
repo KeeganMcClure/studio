@@ -22,7 +22,7 @@ Two things in the mockup are not to copy:
 The repo is public (`studio-bible/studio.md`, One repo). This spec gives only the flow and the rules. It names no ending, culprit or line of Still Harvest's.
 
 - **Still Harvest's endings, its debrief lines, its cover stories and which items are unnatural** come from `claude/cases/still-harvest.md` in the Black Lantern Claude Project files, written in Demo 5 part C. The lines ship in the case's text block (`cases/still-harvest.js`), as all in-game text does (Tech → Where text lives).
-- **The funeral, the retirement goodbye and Big Hat's send-off lines** are written in `claude/home-scenes.md` (Project files), per Systems → Losing an agent. The Developer reads it at build time and copies only the lines into the game files.
+- **The funeral, the retirement goodbye and Big Hat's send-off lines** are written in `claude/home-scenes.md` (private `KeeganMcClure/black-lantern` repo), per Systems → Losing an agent. The Developer reads it at build time and copies only the lines into the game files.
 - **What hiding evidence costs the agency** is not in the bible. If the secret arc file (`claude/SPOILERS-agency-arc.md`) sets it, the Developer builds that quietly; it never appears in this spec, the changelog or a commit. If it doesn't, hiding only keeps the item and records it (step 3).
 - Changelog entries and commit messages describe what was built in mechanical terms only.
 
