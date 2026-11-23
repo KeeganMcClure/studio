@@ -19,14 +19,16 @@ function registerCase(c){if(c&&c.id&&!CASES.some(x=>x.id===c.id))CASES.push(c)}
 const caseById=id=>CASES.find(c=>c.id===id);
 const seasonKey=()=>B.key('season');
 // A fresh season: nothing closed, overstepping at Clean (spec 004, step 6; spec 009, The save). Which cases it holds
-// comes from the season data file (season.js); the six card spots fill from its queue.
-function freshSeason(n=1){return{season:n,cases:{},closed:0,overstep:0,hidden:[],agency:[],ended:false,past:[],carried:[],slots:[null,null,null,null,null,null]}}
+// comes from the season data file (season.js); the six card spots fill from its queue. played and playedNow: the home
+// scenes played this season and this break (spec 008 part C, home.js poolPick), so a new season starts them empty.
+function freshSeason(n=1){return{season:n,cases:{},closed:0,overstep:0,hidden:[],agency:[],ended:false,past:[],carried:[],slots:[null,null,null,null,null,null],played:{},playedNow:{}}}
 // Reads bl.season. A case the season lists that the save doesn't know yet is added as open (no new save version needed).
 function loadSeason(){
  let s=store.get(seasonKey(),null),changed=false;
  if(!s||typeof s!=='object'||Array.isArray(s)||!s.cases||typeof s.cases!=='object'){s=freshSeason();changed=true}
  if(!Number.isInteger(s.season))s.season=1;if(!Number.isInteger(s.closed))s.closed=0;if(!Number.isInteger(s.overstep))s.overstep=0;if(!Array.isArray(s.hidden))s.hidden=[];
  for(const k of ['agency','past','carried'])if(!Array.isArray(s[k]))s[k]=[];if(typeof s.ended!=='boolean')s.ended=false;
+ for(const k of ['played','playedNow'])if(!s[k]||typeof s[k]!=='object'||Array.isArray(s[k]))s[k]={};
  for(const id of seasonCaseIds(s)){const c=caseById(id);if(c&&!s.cases[id]){s.cases[id]={file:c.card.file,state:'open',ending:null};changed=true}}
  if(fillSlots(s))changed=true;
  if(changed)store.set(seasonKey(),s);

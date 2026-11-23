@@ -237,7 +237,7 @@ function dbDrawGains(){
 // ---------- 6. Funeral or goodbye, the memorial, then the board ----------
 async function dbFarewell(){
  const D=G.db,late=live().filter(m=>m.late),r=late.length?late[0].name:null;
- for(const x of D.lost){const o={n:firstOf(x.name),r:r||''};
+ for(const x of D.lost){const o={n:firstOf(x.name),r:r||'','r@':late.length?late[0].a:null};
   if(x.how==='retired'){await dbPlay(DBW.goodbye,o);if(r)await dbPlay(DBW.goodbyeNew,o);await dbPlay(DBW.goodbyeEnd,o)}
   else{await fade(1);G.scene='funeral';await fade(0);await dbPlay(DBW.funeral,o);if(r)await dbPlay(DBW.funeralNew,o);await dbPlay(DBW.funeralEnd,o);await fade(1);G.scene='bighat';await fade(0)}}
  // each lost agent's memorial entry is finished: cases closed, how, the case and the season

@@ -3,6 +3,8 @@
 // looks like themselves. Drawn the Asset Library's battle way: 1 px pixels, light from the upper left, a light rim on
 // lit edges and a dark outline on every edge (the same finish as the Demo 5 enemy drafts). Exposes window.BLB.
 // BLB.back(agent, o) -> canvas 34 × 44. o: {lantern: the lead holds the lantern, downed: slumped and grey}.
+// Build (Agent creator, Pronouns and body; Nov 23): broad is the body as first drawn; slim (look.build) brings the
+// shoulders, arms and waist in 3 px a side (n below). The head and hair stay the same.
 const BLB=(()=>{
 const {SKIN,HAIRC,OUTC,profOf,PROFS}=window.BL;
 const OL='#120c1c';
@@ -30,13 +32,13 @@ const cache=new Map();
 function back(a,o={}){
  const L0=a.look||{},k=JSON.stringify([a.prof,L0,!!o.lantern,!!o.downed]);let c=cache.get(k);if(c)return c;
  const p=profOf(a)||PROFS[0],sk=SKIN[L0.skin|0]||SKIN[1],hc=HAIRC[L0.hairC|0]||HAIRC[0],oc=outfitColor(a),T=(TOP[p.outfit]||TOP.scrubs)(oc);
- const L=Ly(34,44),top=T.top,td=sh(top,-34),hair=L0.hair|0;
+ const L=Ly(34,44),top=T.top,td=sh(top,-34),hair=L0.hair|0,n=L0.build==='slim'?3:0;
  // arms and torso, the right side in shade (light from the upper left)
- L.r(1,22,5,22,sh(top,-12));L.r(28,22,5,22,td);
- L.e(17,30,13,10,top);L.r(4,30,26,14,top);L.r(23,24,7,20,td);
+ L.r(1+n,22,5,22,sh(top,-12));L.r(28-n,22,5,22,td);
+ L.e(17,30,13-n,10,top);L.r(4+n,30,26-2*n,14,top);L.r(23-n,24,7,20,td);
  if(T.under)L.r(10,20,14,6,T.under);
- if(T.straps){L.r(9,21,3,23,T.straps);L.r(22,21,3,23,T.straps)}
- if(T.belt)L.r(4,40,26,2,T.belt);
+ if(T.straps){L.r(9+(n?1:0),21,3,23,T.straps);L.r(22-(n?1:0),21,3,23,T.straps)}
+ if(T.belt)L.r(4+n,40,26-2*n,2,T.belt);
  // neck, ears, head (seen from behind, so mostly hair)
  L.r(14,15,6,7,sh(sk,-28));L.r(14,15,3,7,sh(sk,-14));
  L.e(8,10,2,3,sh(sk,-10));L.e(26,10,2,3,sh(sk,-30));
@@ -63,12 +65,12 @@ function back(a,o={}){
  if(T.hood){L.e(17,21,10,3.5,sh(top,-22));L.r(12,21,10,2,sh(top,-40))}
  if(T.hat){L.e(17,4,11,3,T.hat);L.e(17,1,6,3,sh(T.hat,12))}
  // the lead holds the lantern up and out to the left (the approved combat mockup)
- if(o.lantern){L.r(0,20,4,6,sh(top,-12));L.r(-1,14,1,1,'#3a2a1a');L.r(-2,15,4,1,'#3a2a1a')}
+ if(o.lantern){L.r(n,20,4,6,sh(top,-12));L.r(n-1,14,1,1,'#3a2a1a');L.r(n-2,15,4,1,'#3a2a1a')}
  const out=finish(L);c=document.createElement('canvas');c.width=34+8;c.height=44+8;const x=c.getContext('2d');
  const dx=8,dy=8;  // room for the lantern and the bun above the head
  for(let i=0;i<out.length;i++)if(out[i]){x.fillStyle=o.downed?grey(out[i]):out[i];x.fillRect(dx+i%34,dy-T0+(i/34|0),1,1)}
- if(o.lantern&&!o.downed){x.fillStyle='rgba(244,201,106,.18)';x.fillRect(0,14,14,16);x.fillStyle='#3a2a1a';x.fillRect(2,18,6,1);x.fillRect(2,19,1,7);x.fillRect(7,19,1,7);x.fillRect(2,26,6,1);
-  x.fillStyle='#f4c96a';x.fillRect(3,19,4,7);x.fillStyle='#fff1c4';x.fillRect(4,21,2,3)}
+ if(o.lantern&&!o.downed){x.translate(n,0);x.fillStyle='rgba(244,201,106,.18)';x.fillRect(0,14,14,16);x.fillStyle='#3a2a1a';x.fillRect(2,18,6,1);x.fillRect(2,19,1,7);x.fillRect(7,19,1,7);x.fillRect(2,26,6,1);
+  x.fillStyle='#f4c96a';x.fillRect(3,19,4,7);x.fillStyle='#fff1c4';x.fillRect(4,21,2,3);x.setTransform(1,0,0,1,0,0)}
  cache.set(k,c);return c}
 return{back,W:42,H:52,AX:25,AY:52};  // AX: the body's centre in the canvas; AY: its foot (the waist)
 })();

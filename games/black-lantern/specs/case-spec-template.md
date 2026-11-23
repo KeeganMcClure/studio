@@ -50,7 +50,7 @@ Picked pitch: `pitches/<round file>.md`, option <letter>, picked <date>.
 | Maps | Each area by name, with its size and whether it's a danger zone |
 | Story fights | 2–3, each with its threat skulls; human or unnatural |
 | Danger zones | 0–2, with how many roamers and what each guards |
-| Boss | Threat 3; the kind of weakening choice (by type, not what it is); target 8–12 rounds |
+| Boss | Threat 3; the kind of weakening choice (by type, not what it is); target 8–12 rounds when the choices were skipped, 5–8 when all were made |
 | Clue style | Threshold plus bonus, or clues as keys; how many clues and how many to move on |
 | Skills it calls on | The 8–10 skills, so a template team can always find a way through |
 | Motivation moments | 1–2, and which motivation types they aim at. Check the season's spread so all nine types get a moment (Systems → Motivations, Every motivation, every season) |

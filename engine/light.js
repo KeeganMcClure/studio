@@ -1,4 +1,4 @@
-// Studio light: night darkness with pools of light, and the low-sanity "sour" look, for any game with lamps and sanity.
+// Studio light: night darkness with pools of light, the low-sanity "sour" look and a drugged shimmer, for any game with lamps and sanity.
 // Knows nothing about any game: each game passes its own colors and its own lights, in canvas pixels.
 // Black Lantern spec 005 (night and low-SAN mockup, Nov 21). Draw the scene first, then:
 //
@@ -9,6 +9,9 @@
 //     o.warm   '#d6a43a'             the color of the light on the ground and of the glows
 //   StudioLight.sour(ctx, k, o)      sours the picture by k (0 = normal, 1 = full): shadows toward o.cyan,
 //                                    warm light toward o.pink, the rest kept readable. Reads every pixel, so only call it when k > 0.
+//   StudioLight.shimmer(ctx, k, now, o)  a drugged heat-haze by k (0 to 1): bands of the picture sway sideways a pixel or
+//                                    two and a faint wash of o.tint colors drifts over it. Whole-pixel moves, so pixels stay
+//                                    crisp. o.h limits it to the top o.h rows (a battle's scene). Draw text and HUDs after it.
 //   StudioLight.fade(f, on, now)     eases f.k toward 1 (on) or 0 over half a second; returns f.k. f = {} to start.
 //   StudioLight.mix(a, b, k)         a number between a (k = 0) and b (k = 1), for radii that shrink as k grows
 (function () {
@@ -86,6 +89,33 @@
     ctx.putImageData(img, 0, 0);
   }
 
+  // Black Lantern's Mushrooms (bible, Item list). Rows sway in 3-row bands on two slow sine waves, at most 2 px,
+  // then two soft tint blobs drift across at low alpha, so the picture stays readable underneath.
+  var sbuf = null, sbx = null;
+  function shimmer(ctx, k, now, o) {
+    if (!(k > 0)) return;
+    o = o || {};
+    var w = ctx.canvas.width, h = Math.min(ctx.canvas.height, o.h || ctx.canvas.height), t = now / 1000;
+    if (!sbuf) { sbuf = document.createElement('canvas'); sbx = sbuf.getContext('2d'); }
+    if (sbuf.width !== w || sbuf.height !== h) { sbuf.width = w; sbuf.height = h; }
+    sbx.clearRect(0, 0, w, h); sbx.drawImage(ctx.canvas, 0, 0, w, h, 0, 0, w, h);
+    var amp = (o.amp || 2) * k, smooth = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false;
+    for (var y = 0; y < h; y += 3) {
+      var dx = Math.round(amp * (0.65 * Math.sin(y * 0.09 + t * 2.1) + 0.35 * Math.sin(y * 0.23 - t * 3.4)));
+      if (dx) ctx.drawImage(sbuf, 0, y, w, 3, dx, y, w, 3);
+    }
+    ctx.imageSmoothingEnabled = smooth;
+    var tint = o.tint || ['#9b7bff', '#5fe0b0'], a = (o.alpha == null ? 0.14 : o.alpha) * k;
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, h); ctx.clip();
+    for (var i = 0; i < tint.length; i++) {
+      var ph = t * (0.35 + i * 0.13) + i * 2.4, x = w * (0.5 + 0.45 * Math.sin(ph)), yy = h * (0.5 + 0.4 * Math.cos(ph * 1.3)), r = Math.max(w, h) * 0.6;
+      var g = ctx.createRadialGradient(x, yy, 0, x, yy, r);
+      g.addColorStop(0, rgba(tint[i], a)); g.addColorStop(1, rgba(tint[i], 0));
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    }
+    ctx.restore();
+  }
+
   function fade(f, on, now) {
     var want = on ? 1 : 0;
     if (f.k == null) { f.k = want; f.t = now; return f.k; }
@@ -95,5 +125,5 @@
   }
   function mix(a, b, k) { return a + (b - a) * k; }
 
-  window.StudioLight = { FADE_MS: FADE_MS, night: night, sour: sour, fade: fade, mix: mix };
+  window.StudioLight = { FADE_MS: FADE_MS, night: night, sour: sour, shimmer: shimmer, fade: fade, mix: mix };
 })();

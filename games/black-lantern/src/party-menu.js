@@ -137,7 +137,7 @@ function dossierInfo(m,a,lead,y){
  // the backstory gets every line the screen has left after the boxes below (148 px); it takes the key hints'
  // room first and is cut short only on screens too small for the whole thing (bug fix: it was cut at 2 lines)
  const fitLines=Math.max(1,Math.floor((VH-4-y-162-4)/12));
- const back=a.backstory?pWrap(a.backstory,228,15,fitLines):[PW.noBack];
+ const back=a.backstory?pWrap(BLS.pron(a.backstory,{a}),228,15,fitLines):[PW.noBack];
  back.forEach((l,k)=>pT(l,8,y+k*12,a.backstory?PC.lav:PC.dim,15));y+=back.length*12+4;
  // HP, WP, SAN with the Breaking Point
  pBox(4,y,232,46,PC.card,PC.dim);

@@ -23,7 +23,9 @@ const DIRS=StudioMove.DIRS;  // walking, the camera and the canvas fit are share
 const BLOCK=new Set('TCB#DLlPHFSVKkYyNpGWIOX'.split(''));
 
 // ================= HELPERS =================
-const fmt=t=>t.replace(/\{code\}/g,lead().a.code||((lead().a.name||'').split(' ').pop()||'?').toUpperCase()).replace(/\{first\}/g,lead().name);
+// {code} and {first} are the lead's, and so are {first.they}, {code.their}...; any pronoun token still left over
+// (a person nobody named) reads as they (Agent creator, Pronouns and body)
+const fmt=t=>BLS.pron(BLS.pron(t,k=>k==='first'||k==='code'?lead().a:undefined),()=>'they').replace(/\{code\}/g,lead().a.code||((lead().a.name||'').split(' ').pop()||'?').toUpperCase()).replace(/\{first\}/g,lead().name);
 // Weapon from the profession (Bible: Starting kit; dice from Combat numbers); STR bonus for melee (field.js strBonus).
 function weaponFor(a){const p=profOf(a),W=B.WEAP[(p&&p.weapon)||'handgun']||B.WEAP.handgun;
  return{name:W.name,skill:clamp(skillVal(a,W.skill)+(W.hit||0),5,99),dmg:W.dmg,bonus:(W.plus||0)+(W.melee||W.thrown?strBonus(a.stats.STR):0),verb:W.verb}}
@@ -50,6 +52,9 @@ const PORTRAITS={'BIG HAT':(c,f,sh)=>drawBigHatPortrait(c,sh,f)}; // speaker nam
 const XPOR={};
 function portraitOf(name){if(!name)return null;if(PORTRAITS[name])return PORTRAITS[name];if(XPOR[name])return XPOR[name];const c=caseById(G.case);return c&&c.portraits&&c.portraits(name)||null}
 function say(name,text,o={}){
+ // Skip replays: once B is pressed in a cutscene already seen, its remaining lines go straight to the Log unshown.
+ // A question's line (keep) always shows, and ends the skip.
+ if(G.cut&&G.cut.skip){if(!o.keep){text=fmt(text);logLine(name,text);return Promise.resolve()}G.cut.skip=false}
  return new Promise(res=>{
   if(dlg)clearTimeout(dlg.to);
   text=fmt(text);logLine(name,text);
@@ -82,12 +87,16 @@ function drawBox(){
  // mouth: bursts of open/shut while the line types, then shut; shout face: its counter runs while typing, then holds
  if(typing)box.n=n;const p=n%(T.burst+T.rest),f=box.as?0:sh?(box.n||0):(typing&&p<T.burst&&p%2===0?1:0);
  G.hatF=inScene?{f,sh}:null;
- const arrow=box.more&&Math.floor(now/T.moreBlinkMs)%2===0;
- const key=[box.name,box.as,box.typed,box.text,box.choices?box.choices.join('|')+'#'+box.sel+'#'+(box.dis||[]).join(''):'',arrow,por?f+':'+sh:'',gEl.clientWidth,inScene].join('~');
+ const arrow=box.more&&Math.floor(now/T.moreBlinkMs)%2===0,skipTab=!!(G.cut&&G.cut.seen&&!G.cut.skip&&!box.choices);
+ const key=[skipTab,box.name,box.as,box.typed,box.text,box.choices?box.choices.join('|')+'#'+box.sel+'#'+(box.dis||[]).join(''):'',arrow,por?f+':'+sh:'',gEl.clientWidth,inScene].join('~');
  if(key===boxKey)return;boxKey=key;
  const b=BLD.render(dhost,{name:who,narrate:!who,text:box.text,typed:box.choices?null:box.typed,more:arrow,choices:box.choices,sel:box.sel,
   portrait:por&&(c=>por(c,f,sh)),scale:2});
  if(box.as){b.classList.add('narr');b.setAttribute('aria-label','Narration')}
+ // a cutscene already seen: a small B SKIP tab on the box's top right edge (Quality of life, Skip replays)
+ // (a long name tab that would reach it: the B tab stands just above the name tab instead, so the name shows in full)
+ if(skipTab){const t=document.createElement('span');t.className='bskip';t.textContent=BLS.BRIEF.skip;b.appendChild(t);
+  const nt=b.querySelector('.bld-tab');if(nt&&nt.getBoundingClientRect().right+4>t.getBoundingClientRect().left)t.classList.add('up')}
  // long choice lists scroll inside the box so the box never pushes the portrait off the screen
  const ul=b.querySelector('.bld-c');
  if(ul){const bust=b.querySelector('.bld-bust'),top=bust?bust.offsetHeight:b.querySelector('.bld-tab')?18:0;let room=gEl.clientHeight-top-(b.offsetHeight-ul.offsetHeight)-10;
@@ -109,7 +118,7 @@ function renderMenu(){const m=menu;if(!m)return;
  if(m.onSel)m.onSel(m.sel);posMenu();const on=menuEl.querySelector('.gi.on');if(on)on.scrollIntoView({block:'nearest'})}
 function posMenu(){if(menuEl.hidden)return;let b=6;const bx=dhost.querySelector('.bld'),tab=bx&&bx.querySelector('.bld-tab');
  if(G.mode==='battle'&&!hud.hidden)b=hud.offsetHeight+8;else if(bx)b=bx.offsetHeight+(tab?tab.offsetHeight:0)+10;menuEl.style.bottom=b+'px'}
-function choose(items,o={}){const first=Math.max(0,items.findIndex(it=>!(it&&it.dis)));return new Promise(res=>{menu={items,sel:o.sel??first,res,cancel:o.cancel,title:o.title,desc:o.desc,onSel:o.onSel,inBox:o.inBox};renderMenu()})}
+function choose(items,o={}){if(G.cut)G.cut.skip=false;const first=Math.max(0,items.findIndex(it=>!(it&&it.dis)));return new Promise(res=>{menu={items,sel:o.sel??first,res,cancel:o.cancel,title:o.title,desc:o.desc,onSel:o.onSel,inBox:o.inBox};renderMenu()})}
 function closeMenu(v){const m=menu;menu=null;menuEl.hidden=true;StudioMenu.unlock(menuEl);if(m.inBox&&box){box.choices=null;box.dis=null}if(Bt)Bt.hover=-1;m.res(v)}
 async function ask(name,text,opts){await say(name,text,{keep:true,instant:false});const r=await choose(opts,{cancel:true,inBox:true});hideTB();return r<0?opts.length-1:r}
 function banner(t,ms=2200){ban.textContent=t;ban.hidden=false;clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,ms)}
@@ -154,8 +163,14 @@ function cam(){return StudioMove.camera(G,G.M.w,G.M.h,VW,VH)}
 // Below 40 SAN on the lead, the picture sours toward SAN pink and cyan, fading over half a second, and at night the lantern's
 // circle is a third smaller and the lamps' a little smaller (the approved night and low-SAN mockup). The light pass is the
 // studio's engine/light.js. The lead card, the NIGHT tag and the A bubble go on top and never sour.
-const LOOK={dark:'#0a0812',alpha:.9,warm:'#d6a43a',pink:'#ff4fa3',cyan:'#3ff0e8',lowSan:40,lantern:[62,40],lamp:[34,26],boss:46};
+const LOOK={dark:'#0a0812',alpha:.9,warm:'#d6a43a',pink:'#ff4fa3',cyan:'#3ff0e8',lowSan:40,lantern:[62,40],lamp:[34,26],boss:46,shim:['#9b7bff','#5fe0b0']};
 const sourFade={};
+// Mushrooms (Item list): while the lead is High on them the picture shimmers (engine/light.js), easing in and out like
+// the sour look. It goes on before the trail dots, the lead card and the A bubble, so those hold still; in battle it sways
+// only the backdrop (battle.js). The dialog box and menus sit over the canvas and are never touched.
+const shimFade={};
+const tripping=m=>!!m&&hasSt(m,'high')&&m.high==='shrooms';
+function shimmer(now,h){const k=StudioLight.fade(shimFade,tripping(lead()),now);if(k>0)StudioLight.shimmer(cx,k,now,{h,tint:LOOK.shim})}
 function drawWorld(){
  const M=G.M,[camx,camy]=cam(),now=performance.now(),art=M.art,L=lead(),night=M.light==='night';
  if(!M.props)M.props=art.props(M);
@@ -196,6 +211,7 @@ function drawWorld(){
   StudioLight.night(cx,{dark:LOOK.dark,alpha:LOOK.alpha,warm:LOOK.warm,pools:ring,glows:glows.map(([x,y,r,a])=>[x,y,r*.7,a*.6])});
  }
  if(k>0)StudioLight.sour(cx,k,{pink:LOOK.pink,cyan:LOOK.cyan});
+ shimmer(now);
  post.forEach(f=>f());
  drawMapHud(camx,camy,night);
 }
@@ -371,6 +387,18 @@ async function twoQuestions(topics){
  }
  await say('BIG HAT',W.two);return got;
 }
+// ---- SKIP REPLAYS (Quality of life; spec 006, Game over) ----
+// cut(id, fn) plays one cutscene: fn is a run of the case's lines (a briefing's talk, a scene before a fight). When it
+// has played once, its id saves on the case's state in bl.season (seen: [ids]), so it stays seen through a reload, a
+// game over and a new team, until the season ends. Seen again, a B tab shows on the box and B skips the rest of its
+// lines. Questions, choices, rolls and requisition are never inside a cut, so they always play.
+// A save without seen counts as nothing seen; no save step is needed.
+function seenOf(id=G.case){const s=loadSeason(),e=s.cases[id];return(e&&Array.isArray(e.seen)?e.seen.filter(k=>typeof k==='string'):[]).concat(G.seenMem||[])}
+function markSeen(k){const s=loadSeason(),e=s.cases[G.case];
+ if(!e){G.seenMem=(G.seenMem||[]).concat(k);return}  // a case the season doesn't hold (a Dev test): remembered until reload
+ if(!Array.isArray(e.seen))e.seen=[];if(!e.seen.includes(k)){e.seen.push(k);store.set(seasonKey(),s)}}
+async function cut(id,fn){const up=G.cut;G.cut={id,seen:seenOf().includes(id),skip:false};
+ try{await fn();markSeen(id)}finally{G.cut=up}}
 async function shout(text){G.shout=performance.now()+750;G.shoutPor=true;try{return await say('BIG HAT',text)}finally{G.shoutPor=false}}
 async function bigHatScene(fn){await fade(1);G.mode='scene';G.scene='bighat';await fade(0);await sleep(400);await fn();await fade(1);G.scene=null}
 function drawScene(){if(G.scene==='bighat'){drawOffice();if(G.db)dbCard();return}if(G.scene==='funeral')return drawFuneral();if(G.scene==='home')return drawHome();cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+rnd(20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
@@ -402,7 +430,7 @@ function restore(s){const o=JSON.parse(s);G.case=o.case||(CASES[0]&&CASES[0].id)
  const M=G.M;if(BLOCK.has(M.g[G.y]&&M.g[G.y][G.x])){const t=StudioMove.nearestOpen(G.x,G.y,M.w,M.h,(x,y)=>!BLOCK.has(M.g[y][x]));if(t)StudioMove.place(G,t[0],t[1],G.dir)}
  applySan()}
 function enter(){G.active=true;scr.classList.add('gaming');fit();cancelAnimationFrame(raf);clock.reset();raf=requestAnimationFrame(loop)}
-function leave(){G.active=false;PM=null;CB=null;SCR=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
+function leave(){G.active=false;PM=null;CB=null;SCR=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[];G.cut=null}
 function quit(){checkpoint();leave();B.goto('title');B.render()}
 // The end of a case (spec 004, step 5; spec 007): the case is stamped closed in bl.season and the case board opens with
 // the CLOSED stamp landing on its card. A case passes its ending label (spec 006 C6: clean, costly, worst...) and the
@@ -456,6 +484,8 @@ function resume(){const s=store.get(B.key('game'),null);if(!s)return false;
 function input(k){
  if(!G.active)return;
  if(CB&&!dlg&&!menu){boardPress(k);return}  // the board's own scenes (an agency unlock, the season end) use the dialog box
+ // B in a cutscene already seen skips the rest of its lines (Skip replays, cut above)
+ if(k==='b'&&G.cut&&G.cut.seen&&!menu){G.cut.skip=true;if(dlg)closeDlg();return}
  if(dlg){if(k==='a'||k==='b'){if(!dlg.done)finishType();else closeDlg()}return}
  if(menu){const n=menu.items.length;
   if(k==='up'){menu.sel=(menu.sel-1+n)%n;renderMenu()}

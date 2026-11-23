@@ -253,11 +253,12 @@ const EN={
  // only if overstepping reaches Federal agents: a very hard human story fight (killing a person costs SAN as usual)
  fed:{name:'Clean-up agent',tier:'ordinary',hp:11,dex:12,hit:55,dmg:'1d4+1',skulls:3,tags:['human','living'],resist:[],weak:'human',weakLine:'Human. A flashbang or a badge will stop him for a second.',
   moves:[['hit',1]],verb:'fires at',die:'goes down and stays down',face:[10,2,20]},
- // the boss: 60 HP, −8 per rescued victim (36 with all three); its moves and second phase are set per run in bossFight()
- gleaner:{name:'The Gleaner',tier:'boss',boss:true,hp:60,dex:11,hit:55,dmg:'1d4+2',allDmg:'1d3',skulls:3,tags:['unnatural','burns'],resist:['stun2','poison','bleed'],weak:'fire',
+ // the boss (tuned Nov 23 with tools/boss-sim.js): 65 HP, −8 per rescued victim (41 with all three); its moves and second
+ // phase are set per run in bossIntro()
+ gleaner:{name:'The Gleaner',tier:'boss',boss:true,hp:65,cut:8,dex:11,hit:60,dmg:'1d4+2',allDmg:'1d3',skulls:3,tags:['unnatural','burns'],resist:['stun2','poison','bleed'],weak:'fire',
   weakLine:'Every harvest this town gave it. Dry as kindling. It can\'t be stunned two turns running.',glow:true,face:[34,2,32],
   records:()=>G.clues.some(c=>c.id==='lore'),
-  moves:[['hit',4],['all',2],['san',2]],verb:'reaps',allText:'The Gleaner sweeps its sickles through the corn!',sanText:TEXT.bossNames,sanHit:['1','1d4'],die:'goes out',
+  moves:[['hit',5],['all',2],['san',1]],verb:'reaps',allText:'The Gleaner sweeps its sickles through the corn!',sanText:TEXT.bossNames,sanHit:['1','1d4'],die:'goes out',
   phase2:{at:.5,hit:5,moves:{all:1},line:TEXT.bossPhase},
   horror:{tier:'boss',kind:'unnatural',subj:'the Gleaner',known:true}}
 };
@@ -295,19 +296,21 @@ const stepName=()=>stepsOf()[loadSeason().overstep|0]||'Clean';
 const stepAt=n=>stepsOf().indexOf(n)<=(loadSeason().overstep|0)&&stepsOf().indexOf(n)>=0;
 
 // ================= OPENING (Big Hat's briefing) =================
+// Each cut is a cutscene B skips once seen (engine.js, Skip replays); the questions and requisition always play.
 async function caseOpening(){
  if(G.rewrote){G.rewrote=0;await said(TEXT.rewritten)}
- await said(TEXT.open1);await said(TEXT.open2);
+ await cut('open',async()=>{await said(TEXT.open1);await said(TEXT.open2)});
  await bigHatScene(async()=>{
-  await play(TEXT.brief);await shout(TEXT.briefShout);await play(TEXT.brief2);
+  await cut('brief',async()=>{await play(TEXT.brief);await shout(TEXT.briefShout);await play(TEXT.brief2)});
   await twoQuestions(TEXT.intel);  // two of four topics, each an INTEL note and an edge (spec 013, engine.js)
-  await play(TEXT.brief3);
+  await cut('brief3',()=>play(TEXT.brief3));
   await requisition();  // each agent may roll Bureaucracy once for one catalog item (field.js)
-  await play(TEXT.brief4);
+  await cut('brief4',()=>play(TEXT.brief4));
  });
  G.mode='world';goMap('town',14,16,'up');checkpoint();await fade(0);
- for(const m of squad())await say(m.name.toUpperCase()+' · '+profOf(m.a).name.toUpperCase(),TEXT.role[profOf(m.a).role]||TEXT.roleAny);
- await said(TEXT.arrive);
+ await cut('arrive',async()=>{
+  for(const m of squad())await say(m.name.toUpperCase()+' · '+profOf(m.a).name.toUpperCase(),TEXT.role[profOf(m.a).role]||TEXT.roleAny);
+  await said(TEXT.arrive)});
 }
 
 // ================= MAPS =================
@@ -531,7 +534,7 @@ function gateOpts(){const F=G.flags;if(F.gateOpen||!F.volDone)return[];
   {use:'shoot',ok:async()=>{await said(TEXT.gateForce);await enterMaze()},fail:()=>said(TEXT.gateNoForce)},
   {item:'bolt',label:'Cut the chain',run:async()=>{await said(TEXT.gateCut);await enterMaze()}}]}
 async function enterMaze(){
- G.flags.gateOpen=1;await fade(1);goMap('maze',1,11,'right');checkpoint();await fade(0);await play(TEXT.enter);
+ G.flags.gateOpen=1;await fade(1);goMap('maze',1,11,'right');checkpoint();await fade(0);await cut('enter',()=>play(TEXT.enter));
  // the corn maze intel (spec 013): the roamers' beats show on the first way in, as On guard's do, with no roll
  if(intelOn('maze')&&!G.fs.used.mazeIntel){G.fs.used.mazeIntel=1;G.fs.used.onguard=1;setTrail(G.M.roamers.flatMap(r=>r.path),'beat');await said(TEXT.onguardOk)}
  // Search's On guard (75): entering a danger zone, roll to spot the roamers' beats
@@ -568,7 +571,7 @@ async function takePage(){const F=G.flags;if(F.page)return;F.page=1;await play(T
 // and it's Unsettling). The farthest one is guarded by the Long Man, a story fight, the first time you get close.
 async function victimLook(i){
  const V=VICTIMS[i],F=G.flags;
- if(i===0&&!F.longDone){await said(TEXT.longIntro);const r=await battle(['long','husk'],{story:true,intro:TEXT.longStory});if(r==='lose')return gameOver();F.longDone=1;await said(TEXT.longDone);checkpoint()}
+ if(i===0&&!F.longDone){await cut('long',()=>said(TEXT.longIntro));const r=await battle(['long','husk'],{story:true,intro:TEXT.longStory});if(r==='lose')return gameOver();F.longDone=1;await said(TEXT.longDone);checkpoint()}
  await said(V.see);await said(V.cue);
  if(!F['seen_'+V.id]){const known=VICTIMS.some(v=>v!==V&&F['seen_'+v.id]);F['seen_'+V.id]=1;
   await horror({id:'victim:'+V.id,tier:known?'unsettling':'disturbing',kind:'helplessness',known,label:`Recognizing ${V.name}`})}
@@ -578,23 +581,24 @@ async function cutDown(i){
  const V=VICTIMS[i],F=G.flags;if(!F['seen_'+V.id])await victimLook(i);if(!party.length)return;
  F['saved_'+V.id]=1;G.rescued=(G.rescued||0)+1;await said(V.free);await say(V.name.toUpperCase(),V.line);await said(TEXT.limp,{n:V.name.split(' ')[0]});G.M=buildMaze();checkpoint()
 }
-// the boss (Bosses; Combat numbers): 60 HP −8 per victim cut down. Phase 1, the Reaping: sickles, sweeps, and the names
-// if the fourth likeness was finished (1/1d4, or 1/1d6 after the cider). Phase 2 at half HP, the Gleaning: +5% to hit,
-// one more sweep for each victim still on a pole, one more names if they're live.
+// the boss (Bosses; Combat numbers; tuned Nov 23 with tools/boss-sim.js): 65 HP −8 per victim cut down. Phase 1, the
+// Reaping: 60% to hit; sickles (weight 5), sweeps (2), and the names (1) if the fourth likeness was finished (1/1d4, or
+// 1/1d6 after the cider). Phase 2 at half HP, the Gleaning: +5% to hit (65%), two more sickle strikes and one more sweep
+// for each victim still on a pole, one more names if they're live.
 async function bossIntro(){
  const F=G.flags;F.bossSeen=1;
  const names=F.deduce!=='right';
- if(names&&!F.fourthSeen){F.fourthSeen=1;await play(TEXT.fourth);clue('fourth',fmt(TEXT.cFourth));await horror(HORRORS.fourth)}
+ if(names&&!F.fourthSeen){F.fourthSeen=1;await cut('fourth',()=>play(TEXT.fourth));clue('fourth',fmt(TEXT.cFourth));await horror(HORRORS.fourth)}
  if(!party.length)return;
- await said(TEXT.boss1);await said(TEXT.boss2);await said(TEXT.bossSay);await said(TEXT.bossSay2);
  const left=3-(G.rescued||0);
- await said(left?TEXT.bossLeft:TEXT.bossNone,{n:left,m:left+1});if(!names)await said(TEXT.bossNoFourth);
+ await cut('boss',async()=>{await said(TEXT.boss1);await said(TEXT.boss2);await said(TEXT.bossSay);await said(TEXT.bossSay2);
+  await said(left?TEXT.bossLeft:TEXT.bossNone,{n:left,m:left+1});if(!names)await said(TEXT.bossNoFourth)});
  checkpoint();
  const E=EN.gleaner;
- E.moves=[['hit',4],['all',2]].concat(names?[['san',2]]:[]);
+ E.moves=[['hit',5],['all',2]].concat(names?[['san',1]]:[]);
  E.sanHit=F.cider?['1','1d6']:['1','1d4'];
- E.phase2={at:.5,hit:5,moves:{all:left,san:names?1:0},line:left?TEXT.bossPhaseGlean:TEXT.bossPhase};
- const hp=60-8*(G.rescued||0);
+ E.phase2={at:.5,hit:5,moves:{hit:2*left,all:left,san:names?1:0},line:left?TEXT.bossPhaseGlean:TEXT.bossPhase};
+ const hp=E.hp-E.cut*(G.rescued||0);
  const r=await battle(['gleaner'],{boss:true,hp,intro:TEXT.bossIntro,onStart:async()=>{if(G.rescued)await say('',fill(TEXT.bossThin,{v:G.rescued===1?'one victim':G.rescued+' victims'}),{auto:1500})}});
  if(r==='lose')return gameOver();
  F.boss=1;await ending();
@@ -616,7 +620,7 @@ async function stepScene(){
 // shuts down on its worst ending
 async function onArea(){
  const F=G.flags;if(!F.fedsDue||F.fedsDone)return;F.fedsDone=1;
- await play(TEXT.feds);const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
+ await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
  await play(TEXT.fedsWin);F.shutDown=1;await ending({worst:true});
 }
 

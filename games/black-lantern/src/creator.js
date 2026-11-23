@@ -6,7 +6,8 @@
 // Job, Stats, Skills, Identity, Bonds, Motivations, Dossier. Tweak runs only Identity, Bonds, Motivations, Dossier.
 (()=>{
 // ---------- DATA (text lists come from strings.js) ----------
-const {SKILLS,SKILLJOB,PROFS,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,STEPNAME,STEPSHORT,STATJOB,HOBBY}=window.BLS;
+const {SKILLS,SKILLJOB,PROFS,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,STEPNAME,STEPSHORT,STATJOB,HOBBY,
+  pron,proOf,PRONOUNS,BUILDS,PROW_UI,CODENAMES,MOTKEY,CODEW}=window.BLS;
 const SKIN=['#f6d7b8','#e9b98f','#c98e62','#a26a43','#7a4a2c','#4e2f1f'];
 const HAIRC=['#1b1414','#4a2c1a','#8a5a2b','#d8b25a','#b94a2c','#9aa0a6','#ece8de'];
 const OUTC=['#2d3a5c','#3e5c3a','#7a2e3e','#4b3b6e','#8a7a52','#232326','#4f87a3'];
@@ -23,8 +24,10 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const clone=o=>JSON.parse(JSON.stringify(o));
 const roll4d6=()=>{const r=[1,2,3,4].map(()=>1+rnd(6)).sort((a,b)=>a-b);return r[1]+r[2]+r[3]};
 const rollStats=()=>Object.fromEntries(STATS.map(k=>[k,roll4d6()]));
-const genCode=()=>pick(ADJ)+' '+pick(NOUN);
-function newAgent(){return {prof:null,method:'buy',stats:Object.fromEntries(STATS.map(k=>[k,12])),roll:null,picks:{},bonds:[{rel:'Partner',name:''},{rel:'Friend',name:''}],look:{skin:1,hair:0,hairC:1,eyes:0,eyeC:0,acc:0,outfitC:-1},name:'',code:genCode(),backstory:'',age:34,motives:[],main:0}}
+const genCode=()=>pick(ADJ)+' '+pick(NOUN);  // the old two-word names: only save step 2 still uses it
+// pro: she, he or they; look.build: slim or broad (Agent creator, Pronouns and body; Nov 23). No code name until
+// Big Hat gives one on the Dossier step (Code names; spec 022).
+function newAgent(){return {prof:null,method:'buy',stats:Object.fromEntries(STATS.map(k=>[k,12])),roll:null,picks:{},bonds:[{rel:'Partner',name:'',pro:'they'},{rel:'Friend',name:'',pro:'they'}],look:{skin:1,hair:0,hairC:1,eyes:0,eyeC:0,acc:0,outfitC:-1,build:'broad'},name:'',pro:'they',code:'',backstory:'',age:34,motives:[],main:0}}
 let idN=0;const newId=()=>Date.now()*10+(idN++%10);
 function fromTemplate(t){const a=Object.assign(newAgent(),clone(t));a.id=newId();a.method='set';a.roll=null;a.bonds.forEach(b=>b.score=a.stats.CHA);return a}
 function setProf(a,p){if(a.prof!==p.id)a.picks={};a.prof=p.id}
@@ -33,13 +36,18 @@ function setProf(a,p){if(a.prof!==p.id)a.picks={};a.prof=p.id}
 const injOf=a=>(Array.isArray(a.inj)?a.inj:[]).map(x=>window.BLS.INJURIES[x&&x.k]).filter(Boolean);
 const derived=a=>{const s=a.stats,hp=injOf(a).reduce((t,I)=>t+(I.hp||0),0);return{HP:Math.max(1,Math.ceil((s.STR+s.CON)/2)+hp),WP:s.POW,SAN:s.POW*5,BP:s.POW*4}};
 // case gains (spec 007, end-of-case improvement) add a.grow[skill]; nothing goes above 99%
-function skillVal(a,k){if(!(k in SKILLS))return 0;const p=profOf(a);const v=Math.min(99,Math.max(SKILLS[k],(p&&p.skills[k])||0)+20*((a.picks||{})[k]||0)+(+((a.grow||{})[k])||0));
+// bonus picks add +20% each, but a pick that would pass 80% stops at 80% (set Nov 23, after the demo playtest)
+const baseVal=(a,k)=>{const p=profOf(a);return Math.max(SKILLS[k],(p&&p.skills[k])||0)};
+const pickedVal=(a,k)=>{const b=baseVal(a,k),n=(a.picks||{})[k]||0;return n?Math.max(b,Math.min(80,b+20*n)):b};
+function skillVal(a,k){if(!(k in SKILLS))return 0;const p=profOf(a);const v=Math.min(99,pickedVal(a,k)+(+((a.grow||{})[k])||0));
  const pen=injOf(a).reduce((t,I)=>t+((I.pen||{})[k]||0),0);return pen?Math.max(SKILLS[k],v+pen):v}
 const picksUsed=a=>Object.values(a.picks).reduce((x,y)=>x+y,0);
 const buyLeft=a=>72-STATS.reduce((t,k)=>t+a.stats[k],0);
 const feature=(k,v)=>v<=5?FEAT[k][0]:v>=16?FEAT[k][1]:'';
 const surname=a=>((a.name||'').trim().split(/\s+/).pop()||'Agent').toUpperCase();
 const mainOf=a=>a.motives[a.main]||a.motives[0]||'';
+const buildOf=a=>(a&&a.look&&a.look.build)==='slim'?'slim':'broad';
+const cyc3=(x,d)=>PRONOUNS[(PRONOUNS.indexOf(proOf(x))+d+3)%3];
 
 // Save keys start with bl. on Release and dev.bl. on Dev (engine/studio.js), so testing never touches the
 // stable saves. Outside the site (the Intake page, the checks) there is no Dev build, so it stays bl.
@@ -51,7 +59,7 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
 // in order, bringing old saves forward before anything reads them. Before upgrading, the old
 // saves are copied to bl.backup. Rules: never change an old step; a new save shape gets a new
 // step and SAVE_V goes up by one. Saves from before numbering count as version 0.
-const SAVE_V=11;
+const SAVE_V=13;
 const fillAgent=a=>{if(!a||typeof a!=='object'||Array.isArray(a))return null;const d=newAgent();
   const o=Object.assign(d,a);o.look=Object.assign(newAgent().look,a.look||{});o.stats=Object.assign(newAgent().stats,a.stats||{});
   if(!o.picks||typeof o.picks!=='object')o.picks={};if(!Array.isArray(o.bonds))o.bonds=[];if(!Array.isArray(o.motives))o.motives=[];return o};
@@ -206,6 +214,40 @@ const UPGRADES={
     const s=store.get(K('season'),null);if(!s||typeof s!=='object'||Array.isArray(s)||!s.cases||typeof s.cases!=='object')return;
     Object.values(s.cases).forEach(e=>{if(e&&typeof e==='object'&&!Array.isArray(e.intel))e.intel=[]});
     store.set(K('season'),s);
+  },
+  // 11 → 12 (Nov 23, demo playtest: Pronouns and body): every agent gets pronouns (a.pro) and a body build
+  // (a.look.build), and every Bond gets pronouns (b.pro). Old agents and Bonds open as "they"; old agents take the broad
+  // build, which is the body every agent was drawn with before, so nobody changes shape. Names and code names stay.
+  // On the roster, the team in progress (bl.draft), a paused case (bl.game) and the memorial.
+  12(){
+    const fixA=a=>{if(!a||typeof a!=='object'||Array.isArray(a))return a;if(!PRONOUNS.includes(a.pro))a.pro='they';
+      if(a.look&&typeof a.look==='object'&&!BUILDS.includes(a.look.build))a.look.build='broad';
+      (Array.isArray(a.bonds)?a.bonds:[]).forEach(b=>{if(b&&typeof b==='object'&&!PRONOUNS.includes(b.pro))b.pro='they'});return a};
+    const r=store.get(K('roster'),[]);if(Array.isArray(r))store.set(K('roster'),r.map(fixA));
+    const mem=store.get(K('memorial'),null);if(Array.isArray(mem))store.set(K('memorial'),mem.map(x=>{if(x&&x.a)fixA(x.a);return x}));
+    const d=store.get(K('draft'),null);
+    if(d&&typeof d==='object'&&!Array.isArray(d)){fixA(d.a);if(d.team&&Array.isArray(d.team.seats))d.team.seats.forEach(fixA);store.set(K('draft'),d)}
+    const g=store.get(K('game'),null);
+    if(g!==null){try{const o=JSON.parse(g);if(!o||!Array.isArray(o.party)||!o.party.length)throw 0;
+        o.party.forEach(m=>{if(m&&m.a)fixA(m.a)});store.set(K('game'),JSON.stringify(o))}
+      catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
+  },
+  // 12 → 13 (Nov 23, spec 008 part C, enough home scenes for a season): the home scenes already played move from the
+  // home checkpoint (bl.game's db.home.seen, kept for one home phase) to bl.season.played, kept for the season. Back to
+  // Nature's list (and each party agent's own a.nat) becomes the party's; Use's becomes each party agent's own. Scene
+  // numbers stay valid: the new scenes were added after the old ones. A save with no season keeps none.
+  13(){
+    const s=store.get(K('season'),null),g=store.get(K('game'),null);let seen=null,party=[];
+    if(g!==null){try{const o=JSON.parse(g);if(o&&typeof o==='object'){party=Array.isArray(o.party)?o.party:[];
+        const H=o.db&&o.db.home;if(H&&typeof H==='object'&&H.seen){seen=H.seen;delete H.seen;store.set(K('game'),JSON.stringify(o))}}}
+      catch(e){}}  // an unreadable checkpoint is set aside by the game itself, as before
+    if(!s||typeof s!=='object'||Array.isArray(s))return;
+    const P=s.played&&typeof s.played==='object'&&!Array.isArray(s.played)?s.played:{};
+    const nums=x=>(Array.isArray(x)?x:[]).filter(i=>Number.isInteger(i)&&i>=0);
+    const nat=[...new Set([...nums(P.nature),...nums(seen&&seen.nature),...party.flatMap(m=>nums(m&&m.a&&m.a.nat))])];if(nat.length)P.nature=nat;
+    const use=nums(seen&&seen.use);if(use.length)party.forEach(m=>{const a=m&&m.a;if(a)P['use|'+String(a.id||a.name||'?')]=use.slice()});
+    s.played=P;if(!s.playedNow||typeof s.playedNow!=='object'||Array.isArray(s.playedNow))s.playedNow={};
+    store.set(K('season'),s);
   }
 };
 function upgradeSaves(){
@@ -304,7 +346,16 @@ function drawPortrait(cv,a,scale,blink){
   else if(A===7){const fr=shade(sk,-42);for(const [x,y] of[[9,17],[11,18],[13,17],[18,17],[20,18],[22,17],[14,19],[17,19]])px(x,y,1,1,fr)}
   else if(A===8){px(6,18,1,2,'#d6a43a')}
   else if(A===9){const g='#d6a43a';for(const x of[9,17]){px(x,ey+1,6,1,g);px(x,ey+eh+1,6,1,g);px(x,ey+1,1,eh+1,g);px(x+5,ey+1,1,eh+1,g)}px(15,ey+2,2,1,g);px(7,ey+1,2,1,g);px(23,ey+1,2,1,g)}
+  if(L.build==='slim')slim32(cv,scale);
 }
+// the slim build (Agent creator, Pronouns and body; Nov 23): the shoulders under the face come in 3 px on each side.
+// Broad is the body as first drawn. The middle of the chest (collars, ties, straps) stays as drawn; the outer
+// shoulder strips move in over the columns they cover.
+function slim32(cv,scale){
+  const ctx=cv.getContext('2d'),t=document.createElement('canvas');t.width=cv.width;t.height=cv.height;t.getContext('2d').drawImage(cv,0,0);
+  ctx.setTransform(1,0,0,1,0,0);const S=scale,y=26*S,h=6*S;
+  ctx.drawImage(t,0,y,5*S,h,3*S,y,5*S,h);ctx.drawImage(t,27*S,y,5*S,h,24*S,y,5*S,h);
+  ctx.fillStyle='#2a2030';ctx.fillRect(0,y,3*S,h);ctx.fillRect(29*S,y,3*S,h);ctx.setTransform(S,0,0,S,0,0)}
 // the kid face (spec 008 part B): a smaller, rounder head set lower, big eyes, narrow shoulders, a plain tee.
 // Takes the same look parts as an adult: skin, hair style and color, eye color, outfit color; glasses and freckles show.
 function drawKid32(px,L,p,blink){
@@ -337,7 +388,7 @@ function portraitURL(a,scale){const k=JSON.stringify([a.prof,a.look,scale]);if(!
 // ---------- VIEWS ----------
 const R=(label,o={})=>Object.assign({label},o);
 const ST=html=>({static:html});
-const goto=step=>{S.step=step;S.swap=null;S.clearArm=false;S.leaveArm=false};
+const goto=step=>{S.step=step;S.swap=null;S.hat=null;S.clearArm=false;S.leaveArm=false};
 const steps=()=>S.tweak?STEPS.filter(s=>TWEAKABLE.includes(s)):STEPS;
 // L/R only stops you moving on without a profession, or with point buy not spent; Done checks everything.
 function gate(a,step){if(step==='profession'&&!a.prof)return'PICK A PROFESSION FIRST';if(step==='stats'&&a.method==='buy'&&buyLeft(a)!==0)return'SPEND EXACTLY 72 POINTS';return null}
@@ -416,7 +467,7 @@ V.team=()=>{
 };
 function seatAction(i,j){
   const T=S.team,a=T.seats[i];
-  if(!(a&&j===0)&&!(!a&&j===1))STEPS.forEach(s=>delete S.sel[s]);  // a new build or tweak starts every step at the top
+  if(!(a&&j===0)&&!(!a&&j===1)){STEPS.forEach(s=>delete S.sel[s]);S.codeI=0}  // a new build or tweak starts every step at the top
   if(!a){if(j===0){S.a=newAgent();S.edit=i;S.tweak=false;goto('profession')}else{S.seatPick=i;goto('roster')}return}
   if(j===0){if(!T.state[i]||T.state[i]==='kept')T.state[i]='kept';toast('KEEPING '+surname(a))}
   else if(j===1){S.a=clone(a);S.edit=i;S.tweak=true;goto('identity')}
@@ -463,7 +514,7 @@ V.stats=()=>{
   if(a.method==='roll')rows.push(a.roll&&a.roll.left>0?R('Reroll all',{val:'once',a:()=>{a.roll.vals=rollStats();a.roll.left=0;a.stats=clone(a.roll.vals);S.swap=null;toast('THAT\'S YOUR ONE REROLL')}}):ST('<div class="small">Reroll used. These are the numbers.</div>'));
   rows.push(nextRow());
   const hk=rows[S.sel.stats||0]?.k;
-  const feats=STATS.map(k=>feature(k,a.stats[k])&&`<div class="small">${k}: ${esc(feature(k,a.stats[k]))}</div>`).filter(Boolean).join('');
+  const feats=STATS.map(k=>feature(k,a.stats[k])&&`<div class="small">${k}: ${esc(pron(feature(k,a.stats[k]),{a}))}</div>`).filter(Boolean).join('');
   const pane=`<div class="kv" style="grid-template-columns:repeat(4,auto 1fr)"><span>HP</span><span class="hi">${d.HP}</span><span>WP</span><span class="hi">${d.WP}</span><span>SAN</span><span class="hi">${d.SAN}</span><span>BP</span><span class="hi">${d.BP}</span></div>`+
     (hk?`<div class="small"><span class="hi">${hk}</span> · ${esc(STATJOB[hk])}</div>`:'')+
     (buy?`<div>Points left: <span class="${buyLeft(a)===0?'grn':'red'}">${buyLeft(a)}</span> <span class="small">(72 total, 3–18 each)</span></div>`:a.method==='roll'?`<div class="small">${S.swap?'Now pick a stat to swap with '+S.swap+'.':'4d6, drop the lowest. A on two stats to swap them.'}</div>`:'<div class="small">Template stats come set. Switch method to build your own.</div>')+feats;
@@ -476,15 +527,16 @@ V.skills=()=>{
   const keys=Object.keys(SKILLS).sort((x,y)=>rank(x)-rank(y)||SKILLS[y]-SKILLS[x]||x.localeCompare(y));
   const rows=keys.map(k=>{
     const v=skillVal(a,k),n=a.picks[k]||0,job=!!p.skills[k];
-    const add=()=>{if(picksUsed(a)>=8)return toast('NO BONUS PICKS LEFT');if(v+20>80)return toast('BONUS PICKS CAP AT 80%');a.picks[k]=n+1};
+    const add=()=>{if(picksUsed(a)>=8)return toast('NO BONUS PICKS LEFT');if(pickedVal(a,k)>=80)return toast('BONUS PICKS STOP AT 80%');a.picks[k]=n+1};
+    const gain=pickedVal(a,k)-baseVal(a,k);
     const rem=()=>{if(!n)return;a.picks[k]=n-1;if(!a.picks[k])delete a.picks[k]};
-    return R(`<span class="sk">${esc(k)}</span><span class="bar"><i style="width:${v}%;background:${n?'var(--gold)':job?'#9aa3d6':'#5a5070'}"></i></span>`,{k,cls:'skill',val:`<span class="num">${v}</span><span class="tg">${n?'+'+20*n:job?'<span class="small">job</span>':''}</span>`,left:rem,right:add,a:add});
+    return R(`<span class="sk">${esc(k)}</span><span class="bar"><i style="width:${v}%;background:${n?'var(--gold)':job?'#9aa3d6':'#5a5070'}"></i></span>`,{k,cls:'skill',val:`<span class="num">${v}</span><span class="tg">${n?'+'+gain:job?'<span class="small">job</span>':''}</span>`,left:rem,right:add,a:add});
   });
   rows.push(nextRow());
   const hk=rows[S.sel.skills||0]?.k;let pane='';
   if(hk){const n=a.picks[hk]||0,base=Math.max(SKILLS[hk],p.skills[hk]||0),from=p.strong.includes(hk)?'strong':p.backup.includes(hk)?'backup':'base';
-    pane=`<div><span class="hi">${esc(hk.toUpperCase())} ${skillVal(a,hk)}%</span> · ${from} ${base}${n?`, ${['','one pick','two picks','three picks'][n]||n+' picks'}`:''}.${n&&!p.skills[hk]?` A ${esc(p.name)} who ${esc(HOBBY[hk])}.`:''}</div><div class="small">${esc(SKILLJOB[hk])}</div>`}
-  pane+=`<div class="small">◀ ▶: −/+20 · bonus picks cap at 80%</div>`;
+    pane=`<div><span class="hi">${esc(hk.toUpperCase())} ${skillVal(a,hk)}%</span> · ${from} ${base}${n?`, ${['','one pick','two picks','three picks'][n]||n+' picks'}`:''}.${n&&!p.skills[hk]?` A ${esc(p.name)} who ${esc(pron(HOBBY[hk],{a}))}.`:''}</div><div class="small">${esc(SKILLJOB[hk])}</div>`}
+  pane+=`<div class="small">◀ ▶: −/+20 · a pick stops at 80%</div>`;
   return{rows,pane,info:info(whoLine(a),`PICKS <span class="${left?'hi':'grn'}">${8-left}</span>/8 · cap 80%`),foot:'◀▶: PICK · L/R: STEP'};
 };
 V.identity=()=>{
@@ -493,8 +545,10 @@ V.identity=()=>{
   const r=(lab,key,n,names,lo=0)=>{const [l,rr]=cyc(key,n,lo);return R(lab,{val:esc(names(L[key]??lo)),left:l,right:rr,a:rr})};
   return{side:true,rows:[
     R('',{input:{bind:'name',value:a.name,ph:'Full name'},val:''}),
-    R('',{input:{bind:'code',value:a.code,ph:'Codename'},val:'<b data-act="right">↻</b>',right:()=>{a.code=genCode()}}),
-    R('',{input:{bind:'back',value:a.backstory,ph:'One-line backstory',max:120},val:''}),
+    R('',{input:{bind:'back',value:pron(a.backstory,{a}),ph:'One-line backstory',max:120},val:''}),
+    // pronouns and body build (Agent creator, step 4, Pronouns and body; spec 022): left/right pickers like the face parts
+    R(esc(PROW_UI.pro),{val:esc(proOf(a)),left:()=>{a.pro=cyc3(a,-1)},right:()=>{a.pro=cyc3(a,1)},a:()=>{a.pro=cyc3(a,1)}}),
+    R(esc(PROW_UI.build),{val:esc(PROW_UI[buildOf(a)]),left:()=>{L.build=buildOf(a)==='slim'?'broad':'slim'},right:()=>{L.build=buildOf(a)==='slim'?'broad':'slim'},a:()=>{L.build=buildOf(a)==='slim'?'broad':'slim'}}),
     r('Skin','skin',6,v=>'Tone '+(v+1)),
     r('Hair','hair',7,v=>HAIRS[v]),
     r('Color','hairC',7,v=>HAIRCN[v]),
@@ -514,13 +568,14 @@ V.bonds=()=>{
     const o={cls:'chiprow',bi:i,val:'',left:cyc(-1),right:cyc(1),a:cyc(1)};
     RELS.forEach((x,j)=>o['t'+j]=setT(j));
     rows.push(R(`<span class="bn">${i+1}</span><span class="chips">${RELS.map((x,j)=>`<span class="chip${b.rel===x?' on':''}${S.tweak?' lock':''}" data-act="t${j}">${esc(x)}</span>`).join('')}</span>`,o));
-    rows.push(R('',{bi:i,input:{bind:'bond'+i,value:b.name,ph:`${b.rel}'s name`},val:`<span class="small">BOND</span> <span class="hi">${b.score??cha}</span>`}));
+    // each Bond's pronouns, a picker beside the name (Agent creator, step 5; spec 022): ◀ ▶ on the name row
+    rows.push(R('',{bi:i,input:{bind:'bond'+i,value:b.name,ph:`${b.rel}'s name`},left:()=>{b.pro=cyc3(b,-1)},right:()=>{b.pro=cyc3(b,1)},val:`<span class="hi">${proOf(b)}</span> <span class="small">BOND</span> <span class="hi">${b.score??cha}</span>`}));
   });
   rows.push(nextRow());
   const hb=a.bonds[rows[S.sel.bonds||0]?.bi??0]||a.bonds[0];
   const pane=`<div><span class="hi">${esc(hb.rel.toUpperCase())}</span> · ${esc(RELTXT[hb.rel])}</div>`+
     `<div class="small">${S.tweak?'Template agents arrive with both Bonds filled in; Tweak renames them.':'Each Bond starts at CHA and wears thin when you lean on it.'}</div>`;
-  return{rows,pane,info:info(whoLine(a),`Bonds start at CHA ${cha}`),foot:'◀▶: TYPE · A: NAME · L/R: STEP'};
+  return{rows,pane,info:info(whoLine(a),`Bonds start at CHA ${cha}`),foot:rows[S.sel.bonds||0]&&rows[S.sel.bonds||0].input?'◀▶: SHE/HE/THEY · A: NAME':'◀▶: TYPE · A: NAME · L/R: STEP'};
 };
 function toggleMot(a,m){const i=a.motives.indexOf(m);if(i>=0){a.motives.splice(i,1);if(a.main>=a.motives.length||a.main===i)a.main=0;else if(a.main>i)a.main--;return}
   if(a.motives.length>=2)return toast('TWO AT MOST. A ON ONE TO DROP IT');a.motives.push(m)}
@@ -537,10 +592,10 @@ V.motives=()=>{
 function dossierCard(a){
   const p=profOf(a),d=derived(a),W=WEAP[p.weapon];
   const top=Object.keys(SKILLS).map(k=>[k,skillVal(a,k)]).sort((x,y)=>y[1]-x[1]).slice(0,6);
-  const feats=STATS.map(k=>feature(k,a.stats[k])).filter(Boolean);
+  const feats=STATS.map(k=>pron(feature(k,a.stats[k]),{a})).filter(Boolean);
   const h=t=>`<h3 style="font:8px var(--px);color:var(--scr-hi);margin:7px 0 2px">${t}</h3>`;
   return`<div class="card"><div class="top"><img class="pix face" src="${portraitURL(a,3)}" width="96" height="96" alt="Agent portrait"><div class="who"><div class="n">${esc(a.name||'Unnamed Agent')}</div><div class="hi">AGENT ${esc(a.code||surname(a))}</div><div>${esc(p.name)}</div><div class="small">${esc(p.team)}</div>${a.cur?`<div class="red">SAN now ${a.cur.san}/${d.SAN}${(Array.isArray(a.cur.dis)?a.cur.dis:[]).length?' · '+esc(a.cur.dis.map(x=>(BLS.DISORDERS[x.k]||{}).name).join(', ')):''}</div>`:''}<span class="stamp">CLEARED</span></div></div>
-  ${a.backstory?`<div class="small" style="margin-top:5px;color:var(--scr-fg)">${esc(a.backstory)}</div>`:''}
+  ${a.backstory?`<div class="small" style="margin-top:5px;color:var(--scr-fg)">${esc(pron(a.backstory,{a}))}</div>`:''}
   <div class="sgrid">${STATS.map(k=>`<span><span class="small">${k}</span> ${a.stats[k]}</span>`).join('')}</div>
   <div class="sgrid" style="grid-template-columns:repeat(4,1fr)"><span><span class="small">HP</span> ${d.HP}</span><span><span class="small">WP</span> ${d.WP}</span><span><span class="small">SAN</span> ${d.SAN}</span><span><span class="small">BP</span> ${d.BP}</span></div>
   ${h('BEST SKILLS')}<div class="small" style="color:var(--scr-fg)">${top.map(([k,v])=>`${esc(k)} ${v}%`).join(' · ')}</div>
@@ -550,7 +605,7 @@ function dossierCard(a){
   ${feats.length?`${h('NOTED')}<div class="small" style="color:var(--scr-fg)">${feats.map(esc).join(' · ')}</div>`:''}</div>`;
 }
 function done(){
-  const a=S.a;for(const st of steps()){const pr=problem(a,st);if(pr){goto(st);return toast(pr)}}
+  const a=S.a;if(!S.view&&!String(a.code||'').trim()){hatOffer(a,false);return toast(CODEW.none)}for(const st of steps()){const pr=problem(a,st);if(pr){goto(st);return toast(pr)}}
   a.bonds.forEach(b=>{if(b.score==null)b.score=a.stats.CHA});a.name=a.name.trim();
   // a recruit built mid-case goes straight back into the case (spec 006 A6)
   if(S.recruit){a.id=newId();const c=clone(a);S.recruit=false;S.a=newAgent();goto('title');if(window.BLG)BLG.recruitBuilt(c);return}
@@ -558,8 +613,47 @@ function done(){
   T.seats[i]=clone(a);T.state[i]=S.tweak?'tweaked':was?'rebuilt':'built';T.opt[i]=0;
   S.a=newAgent();S.edit=null;S.tweak=false;S.sel.team=i;goto('team');toast('SEAT '+(i+1)+' FILLED');
 }
+// ---------- CODE NAMES (Agent creator, Code names; set Nov 23, 2026; spec 022, Dossier step) ----------
+// Big Hat gives the code name on the Dossier, last, in one line in the Lantern Bust box with his portrait. The offer is
+// the best match from BLS.CODENAMES for this agent's Bonds, motivations (Main counts most), bonus-pick hobbies,
+// profession and backstory; names already on the team or the roster aren't offered. Take it, Another (the next best
+// match) or Type my own (the phone's text prompt, as New Bond uses). S.hat: the open box {sel, m}; S.codeI: which match.
+const fillW=(t,o)=>String(t).replace(/\{(\w)\}/g,(x,k)=>o[k]??x);
+const capW=t=>t?t[0].toUpperCase()+t.slice(1):t;
+function codeRank(a){
+  const p=profOf(a),main=MOTKEY[mainOf(a)],mots=(a.motives||[]).map(m=>MOTKEY[m]),back=pron(a.backstory||'',{a}).toLowerCase();
+  const used=new Set([...(S.team?S.team.seats:[]),...S.roster].filter(x=>x&&x.id!==a.id).map(x=>String(x.code||'').toUpperCase()));
+  used.add(String(a.code||'').toUpperCase());
+  const rels={};(a.bonds||[]).forEach(b=>{if(b&&b.rel&&!rels[b.rel])rels[b.rel]=b});
+  const hash=t=>{let h=7;for(const c of t)h=(h*31+c.charCodeAt(0))|0;return h};
+  // w: how well a name fits; q: which facts Big Hat mentions first (a Bond, the Main, a hobby)
+  return CODENAMES.filter(c=>!used.has(c.n)).map(c=>{const hits=[];
+    c.tags.forEach(t=>{
+      if(rels[t])hits.push({w:2,q:5,h:fillW(CODEW.bond,{r:t,b:(rels[t].name||'').trim()||t})});
+      else if(t===main)hits.push({w:3,q:4,h:CODEW.mot[t]});
+      else if(mots.includes(t))hits.push({w:2,q:2,h:CODEW.mot[t]});
+      else if(t[0]==='@'){if(p&&t.slice(1)===p.id)hits.push({w:2,q:2,h:fillW(CODEW.prof,{p:p.name})})}
+      else if(t[0]==='#'){if(new RegExp('\\b'+t.slice(1)+'\\b').test(back))hits.push({w:3,q:0,h:CODEW.file})}
+      else{const k=t==='FirstAid'?'First Aid':t,n=(a.picks||{})[k]||0,hob=!!(p&&!p.skills[k]);if(n&&k in SKILLS)hits.push({w:hob?3:1,q:hob?4:1,h:capW(pron(HOBBY[k],{a}))+'.'})}});
+    hits.sort((x,y)=>y.q-x.q);const hs=[];hits.forEach(x=>{if(!hs.includes(x.h)&&hs.length<2)hs.push(x.h)});
+    return{n:c.n,score:hits.reduce((t,x)=>t+x.w,0),hint:hs.join(' '),tie:hash((a.name||'')+c.n)}}).sort((x,y)=>y.score-x.score||x.tie-y.tie)}
+function hatOffer(a,next){const L=codeRank(a);if(!L.length)return;S.codeI=next&&S.hat?((S.codeI|0)+1)%L.length:0;S.hat={sel:S.hat?S.hat.sel:0,m:L[S.codeI]}}
+const hatLine=()=>{const m=S.hat.m;return fillW(m.hint?(S.codeI?CODEW.again:CODEW.give):CODEW.plain,{h:m.hint,c:m.n})};
+function hatPick(i){const a=S.a,m=S.hat&&S.hat.m;if(!m)return;
+  if(i===0){a.code=m.n;S.hat=null;saveDraft()}
+  else if(i===1)hatOffer(a,true);
+  else{let v=null;try{v=window.prompt(CODEW.typeAsk,m.n)}catch(e){}v=String(v||'').toUpperCase().replace(/[^A-Z0-9'-]/g,'').slice(0,CODEW.max);if(v){a.code=v;S.hat=null;saveDraft()}}}
+// the box sits over the Dossier like the game's dialog box (engine/dialog.js); the portrait is smaller on short screens
+function hatDraw(){
+  let h=$('#cdlg');if(!h){h=document.createElement('div');h.id='cdlg';screen.appendChild(h)}
+  const open=!!(S.step==='dossier'&&!S.view&&S.hat&&typeof BLD!=='undefined');h.hidden=!open;if(!open){h.innerHTML='';return}
+  h.style.setProperty('--pu',(screen.clientHeight<420?96:128)+'px');
+  const b=BLD.render(h,{name:'BIG HAT',portrait:typeof drawBigHatPortrait==='function'?(c,f)=>drawBigHatPortrait(c,false,f):null,text:hatLine(),choices:[CODEW.take,CODEW.another,CODEW.own],sel:S.hat.sel,scale:2});
+  b.querySelectorAll('.bld-c li').forEach((li,i)=>li.addEventListener('click',e=>{e.stopPropagation();if(!S.hat)return;S.hat.sel=i;hatPick(i);render(false)}))}
 V.dossier=()=>{
   const a=S.a;if(!profOf(a)){goto(S.view?'roster':'profession');return V[S.step]()}
+  // a new agent gets Big Hat's offer as the Dossier opens; a template or an older agent keeps theirs until asked
+  if(!S.view&&!S.hat&&!String(a.code||'').trim())hatOffer(a,false);
   const rows=[ST(dossierCard(a))];
   if(S.view){
     rows.push(R('Copy agent code',{a:()=>copyCode(a)}));
@@ -567,10 +661,11 @@ V.dossier=()=>{
     rows.push(R(S.afterCase?'Back to the case board':'Back to roster',{a:leaveView}));
   }else{
     rows.push(R('Done ▶',{cls:'go',val:S.recruit?'recruit':`seat ${S.edit+1}`,a:done}));
-    rows.push(R(S.saved?'Filed ✓':'File to roster too',{a:()=>{const pr=steps().map(st=>problem(a,st)).find(Boolean);if(pr)return toast(pr);a.id=a.id||newId();fileToRoster(a);S.saved=true;toast('FILED UNDER '+(a.code||'?'))}}));
+    rows.push(R(esc(CODEW.ask),{a:()=>hatOffer(a,false)}));  // Tweak can ask for a new name too (spec 022)
+    rows.push(R(S.saved?'Filed ✓':'File to roster too',{a:()=>{const pr=steps().map(st=>problem(a,st)).find(Boolean);if(pr)return toast(pr);if(!String(a.code||'').trim()){hatOffer(a,false);return toast(CODEW.none)}a.id=a.id||newId();fileToRoster(a);S.saved=true;toast('FILED UNDER '+(a.code||'?'))}}));
     rows.push(R('Copy agent code',{a:()=>copyCode(a)}));
   }
-  return{rows,info:info(whoLine(a),S.view?'ROSTER FILE':'REVIEW'),foot:S.view?(S.afterCase?'A: SELECT · B: CASE BOARD':'A: SELECT · B: ROSTER'):'A: SELECT · START: DONE · L: BACK',bare:true};
+  return{rows,info:info(whoLine(a),S.view?'ROSTER FILE':'REVIEW'),foot:S.view?(S.afterCase?'A: SELECT · B: CASE BOARD':'A: SELECT · B: ROSTER'):S.hat?'A: CHOOSE · B: BACK':'A: SELECT · START: DONE · L: BACK',bare:true};
 };
 V.roster=()=>{
   const picking=S.seatPick!==null,onTeam=id=>S.team&&S.team.seats.some(x=>x&&x.id===id);
@@ -614,6 +709,7 @@ function render(scroll=true){
   pane.innerHTML=cur.pane||'';pane.hidden=!cur.pane;
   if(S.step==='identity')drawBig(false);
   if(S.step==='title')drawLantern();
+  hatDraw();
   // sanity palette
   const f=1-S.san/99;
   screen.style.filter=f>0?`hue-rotate(${(-f*70).toFixed(0)}deg) saturate(${(1+f*1.4).toFixed(2)}) contrast(${(1+f*.25).toFixed(2)})`:'';
@@ -633,6 +729,14 @@ let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add
 function rowAt(i){return cur.rows[i]}
 const inCreator=()=>STEPS.includes(S.step)&&!S.view;
 function act(kind){
+  // Big Hat's code-name box takes the presses while it's open: Up/Down choose, A picks, Start takes it, B closes it
+  // (and steps back, as B does on the Dossier, when there's still no code name)
+  if(S.hat&&S.step==='dossier'&&!S.view){
+    if(kind==='up'||kind==='down')S.hat.sel=(S.hat.sel+(kind==='up'?2:1))%3;
+    else if(kind==='a')hatPick(S.hat.sel);
+    else if(kind==='start')hatPick(0);
+    else if(kind==='b'||kind==='l'){S.hat=null;if(kind==='l'||!String(S.a.code||'').trim())prevStep()}
+    render();return}
   const r=rowAt(S.sel[S.step]);
   if(kind!=='b')S.leaveArm=false;
   if(kind==='up'||kind==='down'){const ok=selectable(cur.rows),k=ok.indexOf(S.sel[S.step]);const nk=kind==='up'?Math.max(0,k-1):Math.min(ok.length-1,k+1);if(nk!==k){S.sel[S.step]=ok[nk]}render();return}
@@ -663,7 +767,7 @@ list.addEventListener('click',e=>{
   if(!(window.BLG&&BLG.active))render(false);
 });
 list.addEventListener('input',e=>{const t=e.target,b=t.dataset.bind;if(!b)return;
-  if(b==='name')S.a.name=t.value;else if(b==='code')S.a.code=t.value.toUpperCase();else if(b==='back')S.a.backstory=t.value;else if(b.startsWith('bond'))S.a.bonds[+b.slice(4)].name=t.value;saveDraft()});
+  if(b==='name')S.a.name=t.value;else if(b==='back')S.a.backstory=t.value;else if(b.startsWith('bond'))S.a.bonds[+b.slice(4)].name=t.value;saveDraft()});
 list.addEventListener('focusout',e=>{if(e.target.tagName==='INPUT')setTimeout(()=>{if(!list.contains(document.activeElement)||document.activeElement.tagName!=='INPUT')render(false)},0)});
 
 // ambient: blink + lantern flicker

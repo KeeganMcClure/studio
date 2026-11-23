@@ -84,6 +84,19 @@ function extras(A,a,dir,fr){
  if(x===6){if(dir==='down'){R(4,9+b,20,1,DK);R(15,10+b,6,5,DK)}else if(dir==='up')R(4,9+b,20,1,DK);else{R(6,9+b,17,1,DK);R(6,10+b,4,5,DK)}}
 }
 
+// ---------- BUILD (Agent creator, Pronouns and body; Nov 23): broad is the template's body as drawn; slim takes one
+// pixel column out of each side of the torso (front and back from the side), from the shoulders to the hips. Head, arms,
+// hands and legs keep their size; the arms and the lantern move in with the sides. Runs before the outline. ----------
+function slim(A,dir){
+ const g=A.g,W=g.canvas.width,H=g.canvas.height,img=g.getImageData(0,0,W,H),d=img.data;
+ const px=v=>Math.round((v+6)*A.s)+1,py=v=>Math.round((v+18)*A.s)+1;
+ const mv=(y,f,t)=>{for(let c=0;c<4;c++)d[(y*W+t)*4+c]=d[(y*W+f)*4+c]},clr=(y,x)=>{for(let c=0;c<4;c++)d[(y*W+x)*4+c]=0};
+ for(let y=py(23);y<Math.min(H,py(39));y++){
+  if(dir==='side'){const R=px(18);for(let x=R;x<W-1;x++)mv(y,x+1,x);clr(y,W-1)}
+  else{const L=px(7),R=px(20);for(let x=L;x>0;x--)mv(y,x-1,x);clr(y,0);for(let x=R;x<W-1;x++)mv(y,x+1,x);clr(y,W-1)}}
+ g.putImageData(img,0,0);
+}
+
 // ---------- SPRITE: drawn once per pose, then reused ----------
 const cache=new Map();
 function flip(v){const c=K.mk(v.c.width,v.c.height),g=c.getContext('2d');g.translate(c.width,0);g.scale(-1,1);g.drawImage(v.c,0,0);return{c,ax:c.width-v.ax,ay:v.ay}}
@@ -92,7 +105,7 @@ function sprite(a,dir,fr=0,idle=0,lantern=false){
  if(dir==='right'){v=flip(sprite(a,'left',fr,idle,lantern))}
  else{
   const d=dir==='left'?'side':dir,sp=spec(a,dir);if(lantern)sp.lantern=1;
-  const art=K.art(40,76,6,18,K.S,A=>{K.drawChar(A,sp,d,fr,idle);extras(A,a,dir,fr)});
+  const art=K.art(40,76,6,18,K.S,A=>{K.drawChar(A,sp,d,fr,idle);extras(A,a,dir,fr);if(a.look&&a.look.build==='slim')slim(A,d)});
   v={c:art.c,ax:art.sx(14),ay:art.sy(50)};
  }
  if(cache.size>400)cache.clear();cache.set(k,v);return v;
