@@ -7,11 +7,14 @@
 //   LHB.sprite(key, frame, step) -> cached canvas; frame 0/1 is the idle; step 0 unhurt, 1 at half HP, 2 at a quarter.
 //      key: glim, stray, orderly, surveyor, surveyor2 (its second phase). The clean-up agent is Still Harvest's (SHB).
 //   LHB.size(key) -> [w, h]   LHB.portrait(ctx, open) draws THE SURVEYOR's face
-//   LHB.backdrop(place, {w, h, light, low, feet}) -> the backdrop for 'town', 'ridge', 'woods', 'exam' (and the clinic's
-//      rooms) or 'field'
+//   LHB.backdrop(place, {w, h, light, low, feet, rain}) -> the backdrop for 'town' (rain: the day-2 rain), 'ridge',
+//      'woods', 'field', and each room a fight can reach: 'clinic' (the old bank lobby), 'exam', 'lab', 'kitchen',
+//      'bedroom', 'diner'
+//   LHB.card(ctx, x, y, open)       the folded card (open: Jenna's card opened, with what was inside), at 1x
 //   LHB.drive(ctx, W, H, t, o)      the night drive: through the windshield, up the ridge road in fog (t: ms since it began)
-//   LHB.session(ctx, W, H, t, stage) the hypnosis session: the sleep lab bed and the one-way window, where what's
-//      remembered plays (stage 0 nothing yet, 1 the tables, 2 the question, 3 the inside of the light)
+//   LHB.session(ctx, W, H, t, stage, card) the hypnosis session: the sleep lab bed and the one-way window, where what's
+//      remembered plays (stage 0 nothing yet, 1 the tables, 2 the question, 3 the inside of the light); card 1: the
+//      folded card in Donna's hands on the blanket, 2: open in her lap
 window.LHB=(()=>{
 const OL='#100c1a',D='#1c1426',W='#f4efe6',COLD='#eef4ff',FOG='#c8b8ff',FOGD='#8a7ab8';
 const sh=(h,a)=>{const n=parseInt(h.slice(1),16),f=v=>Math.max(0,Math.min(255,Math.round(v+a)));return'#'+[n>>16,n>>8&255,n&255].map(v=>f(v).toString(16).padStart(2,'0')).join('')};
@@ -186,18 +189,20 @@ function kit(g){const R=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(Math.round(x),Mat
 // guardrail, mile marker 31 and the overlook's wall), the woods below the overlook ('woods': rhododendron, trunks, the
 // creek, heavy fog), the clinic's exam room ('exam': the light box with Ray's scan, the exam table, the cabinet) and the
 // high pasture ('field': the fence, the old barn, the burned ring and the cold light coming down). Lit for day or night;
-// low SAN shrinks the lights like on the map, and battle.js lays the sour over it.
+// low SAN shrinks the lights like on the map, and battle.js lays the sour over it. o.rain (the map's weather) puts Main
+// Street under the day-2 rain. The clean-up crew can catch you on any map once they're called, so every room a fight can
+// reach has its own (ROOMS, below): the clinic's lobby, the sleep lab, the Pruetts' kitchen and bedroom and the diner.
 const BDC={};
-function backdrop(place,o){const f=BDRAW[{clinic:'exam',lab:'exam',kitchen:'exam',bedroom:'exam',diner:'exam'}[place]||place];if(!f)return null;
- const key=[place,o.light,o.low?1:0,o.w,o.h,o.feet].join('|');if(BDC[key])return BDC[key];
+function backdrop(place,o){const f=BDRAW[place];if(!f)return null;
+ const key=[place,o.light,o.low?1:0,o.w,o.h,o.feet,o.rain?1:0].join('|');if(BDC[key])return BDC[key];
  const c=document.createElement('canvas');c.width=o.w;c.height=o.h;const g=c.getContext('2d');
  const hz=Math.round(Math.max(30,Math.min(o.feet-12,o.h*.44)));
  f(kit(g),o.w,o.h,hz,o);BDC[key]=c;return c}
 function nightSky(K,W,base,fogged){K.bands(0,base,fogged?['#100e1c','#16142a','#1e1a34','#28223e']:['#06081a','#0a0e24','#10142c','#1a1a34'],W);
  if(!fogged)for(let i=0;i<40;i++){const x=K.hash(i,3)*W|0,y=K.hash(i,4)*(base-6)|0;K.R(x,y,1,1,i%6?'#4a5070':'#c8c8e0')}}
 const BDRAW={
-town(K,W,H,hz,o){const R=K.R,nt=o.light!=='day',low=o.low,base=hz-6;
- if(nt)nightSky(K,W,base,true);else K.bands(0,base,['#9ab4c8','#b0c4d0','#c8d4d8','#dcdcd4'],W);
+town(K,W,H,hz,o){const R=K.R,nt=o.light!=='day',low=o.low,base=hz-6,wet=!!o.rain;
+ if(nt)nightSky(K,W,base,true);else K.bands(0,base,wet?['#7a8294','#8a92a2','#9aa0ac','#a8acb4']:['#9ab4c8','#b0c4d0','#c8d4d8','#dcdcd4'],W);
  // the ridge behind town, dark green, with the church steeple
  for(let x=0;x<W;x++){const y=base-48-Math.round(Math.sin(x/W*Math.PI*1.3+.4)*14+Math.sin(x/17)*3);R(x,y,1,base-y,nt?'#141c20':'#4a6a4a')}
  R(W*.72,base-70,4,24,nt?'#2a2a36':'#e8e4d8');K.poly([[W*.72-3,base-70],[W*.72+7,base-70],[W*.72+2,base-84]],nt?'#2a2a36':'#c8c0b0');
@@ -215,7 +220,15 @@ town(K,W,H,hz,o){const R=K.R,nt=o.light!=='day',low=o.low,base=hz-6;
  R(0,base,W,6,nt?'#3a3646':'#b8b0a4');R(0,hz-1,W,2,nt?'#4a4656':'#c8c0b4');K.bands(hz+1,H,nt?['#1a1c26','#1e2030','#222434']:['#4a5468','#525c70','#5a6478'],W);
  const ly=hz+1+Math.round((H-hz)*.45);for(let x=-6;x<W;x+=28)R(x,ly,14,2,'#d8b24a');
  for(let i=0;i<24;i++){const x=K.hash(i,31)*W|0,y=Math.round(hz+3+K.hash(i,32)*(H-hz-6));R(x,y,6,1,nt?'#3a3c4c':'#7a8498')}
- if(nt){const k=low?.65:1;K.pool(W/2,H+4,118*k,(H-hz)*.7*k,'#ffcf80',.2,5);K.fog(W,base-40,H,.06)}},
+ if(nt){const k=low?.65:1;K.pool(W/2,H+4,118*k,(H-hz)*.7*k,'#ffcf80',.2,5);K.fog(W,base-40,H,.06)}
+ // the day-2 rain: puddles holding the gray sky, cloud down on the ridge, and the Shared Shelf's rain
+ // (shared-effects-rain-v1) over it all, stopped at one moment since the backdrop is a still
+ if(wet){for(let i=0;i<7;i++){const x=K.hash(i,41)*(W-30)|0,y=Math.round(hz+6+K.hash(i,42)*(H-hz-16)),w=14+(K.hash(i,43)*18|0);K.ell(x+w/2,y,w/2,2,'#7a8498');K.ell(x+w/2-2,y,w/4,1,'#9aa2b4')}
+  K.fog(W,0,base-20,.12,0,'200,204,214');
+  if(window.SHELF&&SHELF.rain)SHELF.rain(K.g,4321,{k:.85,shine:[[0,hz+2,W,H-hz-2]]});
+  // at battle scale the Shelf's fine drops barely show, so heavier slanted streaks and splashes on the road go over it
+  for(let i=0;i<140;i++){const x=K.hash(i,51)*(W+20)-10,y=K.hash(i,52)*H,l=3+(K.hash(i,53)*3|0);for(let j=0;j<l;j++)R(x-j*.4,y+j,1,1,i%3?'rgba(200,212,230,.55)':'rgba(230,236,248,.7)')}
+  for(let i=0;i<26;i++){const x=K.hash(i,54)*W|0,y=Math.round(hz+4+K.hash(i,55)*(H-hz-8));R(x-1,y,1,1,'#b8c4d8');R(x+1,y,1,1,'#b8c4d8');R(x,y-1,1,1,'#d8e0ec')}}},
 ridge(K,W,H,hz,o){const R=K.R,low=o.low,base=hz-4;
  nightSky(K,W,base,true);
  // the far ridgeline, barely there in the fog, and one cold light over the trees
@@ -275,6 +288,77 @@ field(K,W,H,hz,o){const R=K.R,low=o.low,base=hz-4;
  const k=low?.6:1;K.pool(lx,hz+(H-hz)*.45,W*.4*k,(H-hz)*.5*k,'#eef4ff',.07,5);
  K.fog(W,base-50,H,.12,0,'150,140,190')}
 };
+// ================= THE ROOMS' BACKDROPS =================
+// One shell for all: the back wall to hz with a baseboard, the floor in front; at night everything dims and the room's
+// own lights pool back after (roomNight). Each room adds its pieces, sized to hz so a short screen keeps them whole.
+function roomShell(K,W,H,hz,wall,line,base,floor){const R=K.R;R(0,0,W,hz,wall);for(let x=6;x<W;x+=14)R(x,0,1,hz-8,line);R(0,hz-8,W,8,base);R(0,hz-8,W,1,sh(base,24));
+ K.bands(hz,H,floor,W);for(let x=0;x<W;x+=24)R(x+((x/24|0)%2)*6,hz,1,H-hz,'rgba(0,0,0,.12)')}
+// pools: [x, y, rx, ry, color, strength]; by day they're faint
+function roomNight(K,W,H,o,pools){const k=o.low?.6:1,nt=o.light!=='day';if(nt)K.R(0,0,W,H,'rgba(10,8,24,.55)');
+ pools.forEach(([x,y,rx,ry,c,a])=>K.pool(x,y,rx*k,ry*k,c,nt?a:a*.35,4))}
+// a window: daylight (green yard under it), or night with one far porch light
+function roomWindow(K,x,y,w,h,o,frame){const R=K.R;R(x-2,y-2,w+4,h+4,frame);
+ if(o.light!=='day'){R(x,y,w,h,'#0e1020');R(x+w*.7,y+h*.6,1,1,'#ffcf80')}else{for(let j=0;j<h;j++)R(x,y+j,w,1,['#a8b8c8','#b4c2ce','#c0ccd4','#ccd4d8'][Math.floor(j/h*4)]);R(x,y+h*.72,w,h*.28,'#5a7a5a')}
+ R(x+w/2-1,y,2,h,frame);R(x,y+h/2-1,w,2,frame)}
+const ROOMS={
+// the clinic's lobby: the old Farmers Bank inside. Marble, two columns, the round vault door open at the back, the
+// teller counter with its brass grille, a wall clock, the waiting chairs, a red runner
+clinic(K,W,H,hz,o){const R=K.R;roomShell(K,W,H,hz,'#d8d4c4','#ccc8b6','#8a8070',['#c8c0ae','#bcb4a2','#b0a896']);
+ for(let i=0;i<10;i++){const x=K.hash(i,71)*W,y=K.hash(i,72)*(hz-20);K.line(x,y,x+8,y+6,'#c4beac')}
+ R(0,0,W,5,'#c8c0ae');for(let x=2;x<W;x+=6)R(x,5,3,3,'#b8b09e');
+ const vr=Math.round(Math.min(26,hz*.3)),vx=Math.round(W*.5),vy=hz-12-vr;K.ell(vx,vy,vr+3,vr+3,'#5a5a64');K.ell(vx,vy,vr,vr,'#1a1a22');
+ for(let k=0;k<5;k++)R(vx-vr*.6+k*vr*.3,vy-vr*.5,vr*.2,vr,'#c8b090');K.ell(vx+vr+10,vy,7,vr+2,'#8a8a94');K.ell(vx+vr+10,vy,4,vr-4,'#6a6a74');
+ for(const x of[W*.3,W*.7]){R(x-5,4,10,hz-12,'#e0d8c6');R(x+3,4,2,hz-12,'#b8b09e');R(x-7,4,14,4,'#ece4d2');R(x-7,hz-12,14,4,'#ece4d2')}
+ const ct=hz-30;R(0,ct,W*.24,22,'#6a4a32');R(0,ct-2,W*.24,4,'#8a6a4a');for(let x=4;x<W*.24;x+=6)R(x,ct-22,1,20,'#c8a040');R(0,ct-23,W*.24,2,'#c8a040');
+ const ky=Math.max(12,hz-54);K.ell(W*.86,ky,8,8,'#3a3a44');K.ell(W*.86,ky,6,6,'#f4efe6');K.line(W*.86,ky,W*.86+3,ky+2,'#1a1a22');K.line(W*.86,ky,W*.86-1,ky-4,'#1a1a22');
+ for(let i=0;i<3;i++){const x=W*.78+i*16;R(x,hz-20,12,6,'#5a6a7a');R(x,hz-30,12,10,'#6a7a8a');R(x+1,hz-14,2,6,'#3a3a44');R(x+9,hz-14,2,6,'#3a3a44')}
+ K.poly([[W*.5-14,hz],[W*.5+14,hz],[W*.5+40,H],[W*.5-40,H]],'#7a2a3a');K.poly([[W*.5-10,hz],[W*.5+10,hz],[W*.5+32,H],[W*.5-32,H]],'#9a3a4a');
+ roomNight(K,W,H,o,[[W*.12,ct-10,40,30,'#ffd9a0',.3],[W*.5,hz-8,70,40,'#e8f0f8',.12]])},
+// the sleep lab: the one-way window (black from this side) on the left, the bed with its wires, the monitor's green line
+lab(K,W,H,hz,o){const R=K.R;roomShell(K,W,H,hz,'#a8b8c0','#9cacb4','#6a7a84',['#4a3e34','#4e4238','#52463c']);
+ const mx=8,my=Math.max(6,hz-62),mw=Math.round(W*.36),mh=Math.min(40,hz-my-14);R(mx-3,my-3,mw+6,mh+6,'#4a4e58');R(mx,my,mw,mh,'#0e1018');K.line(mx+6,my+mh-4,mx+20,my+4,'#1e2230',3);R(mx+4,my+3,10,1,'#2a3040');
+ const bx=Math.round(W*.46),bw=Math.round(W*.32),by=hz-20;R(bx,by-14,4,22,'#9aa4b0');R(bx,by,bw,8,'#d8dce4');R(bx,by+8,bw,3,'#9aa4b0');R(bx+4,by+11,3,8,'#7a8494');R(bx+bw-7,by+11,3,8,'#7a8494');R(bx+5,by-4,16,5,'#f4f4f8');R(bx+20,by-2,bw-22,4,'#7a8ab0');
+ const nx=Math.round(W*.86),ny=hz-46;R(nx,ny,28,20,'#2a2a32');R(nx+2,ny+2,24,14,'#0a120c');for(let x=0;x<22;x++)R(nx+3+x,ny+9+(x%9<2?-3:0),1,1,'#5aff9a');R(nx+12,ny+20,4,24,'#3a3a44');R(nx+4,ny+42,20,2,'#3a3a44');
+ for(let k=0;k<4;k++)K.line(bx+12+k*2,by-4,nx+2,ny+16+k,['#a89040','#9a3a30','#3a5a8a','#a8a49c'][k]);
+ roomNight(K,W,H,o,[[nx+14,ny+9,30,22,'#5aff9a',.18],[W*.5,hz-40,60,40,'#ffd9a0',.12]])},
+// the Pruetts' kitchen: yellow wallpaper, the wedding photos up the wall, the fridge and stove, the window over the sink
+kitchen(K,W,H,hz,o){const R=K.R;roomShell(K,W,H,hz,'#d8c890','#d8c890','#8a6a4a',['#c8b890','#bcac84','#b0a078']);
+ for(let y=6;y<hz-10;y+=10)for(let x=((y/10|0)%2)*6;x<W;x+=12)R(x,y,2,2,'#c4b47c');
+ R(6,hz-60,26,52,'#e8e4d8');R(6,hz-60,26,2,'#f8f4ec');R(6,hz-36,26,1,'#a8a49c');R(28,hz-56,2,14,'#a8a49c');R(28,hz-32,2,14,'#a8a49c');
+ R(36,hz-28,30,20,'#e8e4d8');R(36,hz-30,30,3,'#3a3a44');K.ell(44,hz-29,4,1,'#5a5a64');K.ell(58,hz-29,4,1,'#5a5a64');R(40,hz-22,22,10,'#2a2a30');
+ const wy=Math.max(8,hz-58);roomWindow(K,Math.round(W*.74),wy,40,28,o,'#f4f0e8');R(W*.74-6,wy-5,52,3,'#c8a040');R(W*.68,hz-26,W*.32,18,'#8a6a4a');R(W*.68,hz-28,W*.32,3,'#d8d0c0');R(W*.82,hz-28,14,3,'#9aa4b0');
+ const px=Math.round(W*.32),py=Math.max(6,hz-62);[[0,4,16,13],[19,0,14,17],[36,5,14,11],[8,22,12,10],[24,21,16,11]].forEach(([x,y,w,h],i)=>{R(px+x,py+y,w,h,i%2?'#c8a040':'#e8e4d8');R(px+x+1,py+y+1,w-2,h-2,['#f4f0e8','#d8d0c0','#e8e0f0'][i%3]);
+  R(px+x+w/2-3,py+y+h/2-2,2,5,'#2a2030');R(px+x+w/2+1,py+y+h/2-2,2,5,'#f4f4f8')});
+ roomNight(K,W,H,o,[[W*.5,hz-30,70,44,'#ffcf80',.3]])},
+// their bedroom: blue wallpaper, the bed under its quilt, the lineman's picture, the curtained window, the nightlights
+bedroom(K,W,H,hz,o){const R=K.R;roomShell(K,W,H,hz,'#b8c0d8','#aab2cc','#6a5a6a',['#6a5a6a','#625262','#5a4a5a']);
+ const wy=Math.max(8,hz-60),wx=Math.round(W*.76);roomWindow(K,wx,wy,34,30,o,'#f4f0e8');R(wx-8,wy-4,10,40,'#d8c0e0');R(wx+32,wy-4,10,40,'#d8c0e0');R(wx-10,wy-6,54,3,'#8a6a4a');
+ const ly=Math.max(6,hz-56),lx=Math.round(W*.1);R(lx,ly,22,18,'#6a4a32');R(lx+1,ly+1,20,16,'#7a8aa0');R(lx+10,ly+2,1,14,'#3a2a24');R(lx+4,ly+5,14,1,'#3a2a24');
+ const bx=Math.round(W*.32),bw=Math.round(W*.36);R(bx,hz-34,bw,26,'#6a4a32');R(bx+2,hz-32,bw-4,4,'#8a6a4a');R(bx-2,hz-14,bw+4,12,'#a8506a');for(let x=bx;x<bx+bw;x+=8)R(x,hz-14,4,12,'#c8708a');R(bx+6,hz-20,18,6,'#f4f0e8');R(bx+bw-24,hz-20,18,6,'#f4f0e8');
+ R(10,hz-22,26,14,'#7a5a3a');R(10,hz-24,26,3,'#9a7a5a');[14,22,30].forEach(x=>R(x,hz-27,2,3,'#ffe9a0'));
+ roomNight(K,W,H,o,[[23,hz-26,26,18,'#ffe9a0',.3],[W*.5,hz-20,50,30,'#ffcf80',.1]])},
+// the diner: wood panel under cream, the pass-through to the kitchen, the counter and its stools, the pie case, a booth
+diner(K,W,H,hz,o){const R=K.R,nt=o.light!=='day';roomShell(K,W,H,hz,'#e8e4d8','#dcd8cc','#6a3a2e',['#e8e4dc','#d8d4cc','#c8c4bc']);
+ R(0,hz-30,W,22,'#8a5a4a');for(let x=4;x<W;x+=10)R(x,hz-30,1,22,'#7a4a3a');R(0,hz-31,W,2,'#a87a5a');
+ for(let y=hz+4;y<H;y+=10)for(let x=((y/10|0)%2)*10;x<W;x+=20)R(x,y,10,10,'rgba(30,30,40,.55)');
+ const py=Math.max(6,hz-62);R(W*.22,py,W*.42,26,'#2a2020');R(W*.22,py+20,W*.42,6,'#c8c0b0');for(let i=0;i<4;i++)R(W*.26+i*20,py+4,8,10,'#f4f0e8');R(W*.22,py-3,W*.42,3,'#9a9aa4');
+ const ct=hz-26;R(W*.12,ct,W*.62,18,'#c8402e');for(let x=W*.12;x<W*.74;x+=8)R(x,ct+4,4,2,'#f4efe6');R(W*.1,ct-3,W*.66,4,'#e8e4d8');
+ for(let i=0;i<6;i++){const x=W*.15+i*24;R(x+2,hz-8,2,8,'#9a9aa4');K.ell(x+3,hz-10,6,2,'#c8402e')}
+ R(W*.78,ct-10,30,22,'#a8b8c0');R(W*.78+2,ct-8,26,16,'#e8f4f8');R(W*.78+4,ct-2,8,5,'#c86a3a');R(W*.78+16,ct-2,8,5,'#a83a5a');
+ R(W-14,hz-44,14,36,'#a8323e');R(W-14,hz-44,14,3,'#c8524e');R(6,hz-46,18,38,'#c86a3a');K.ell(15,hz-46,9,7,'#f0c060');for(let i=0;i<4;i++)R(8+i*4,hz-34,2,20,['#f04a6a','#4ac0f0','#f0d040','#6af06a'][i]);
+ if(nt){const ex=Math.round(W*.88);R(ex,6,16,7,'#2a2030');R(ex+1,7,14,5,'#a8201e');R(ex+4,9,7,1,'#ffd0c8');R(ex+9,8,1,3,'#ffd0c8');R(ex+10,9,1,1,'#ffd0c8')}  // the exit sign, an arrow
+ roomNight(K,W,H,o,[[W*.5,hz-20,90,40,nt?'#ff6a6a':'#ffe9b0',nt?.12:.2],[W*.84,ct,26,18,'#e8f4f8',.25],[15,hz-36,16,14,'#f0c060',.3]])}
+};
+Object.assign(BDRAW,ROOMS);
+
+// ================= THE FOLDED CARD (a prop, at 1x) =================
+// Jenna's wedding card, folded into a shape your eye can't follow: a cream square whose folds don't add up, one corner
+// tucked into itself (11 x 10). Open (22 x 12): the card with ducks, the check, and the old sheet ruled in red.
+function card(c,x,y,open){const R=(a,b,w,h,col)=>{c.fillStyle=col;c.fillRect(Math.round(x+a),Math.round(y+b),w,h)};
+ if(!open){R(0,1,11,8,'#2a2030');R(1,0,9,10,'#2a2030');R(1,1,9,8,'#f4efe6');R(1,1,9,1,'#ffffff');R(2,5,7,1,'#c8bca8');R(5,2,1,6,'#c8bca8');R(6,2,3,3,'#e0d6c4');R(7,3,1,1,'#a89880');R(1,8,3,1,'#d8ccb8');R(3,6,1,1,'#f4f8ff');return}
+ R(-1,-1,24,14,'#2a2030');R(0,0,10,12,'#e8f0f8');R(11,0,11,12,'#f4efe6');R(10,0,1,12,'#c8bca8');
+ R(13,3,4,3,'#f0d040');R(16,2,2,2,'#f0d040');R(18,3,1,1,'#e8803a');R(14,8,3,2,'#f0d040');R(16,7,2,2,'#f0d040');R(18,8,1,1,'#e8803a');
+ R(1,1,8,4,'#c8e8c0');R(2,2,4,1,'#3a5a3a');R(2,3,6,1,'#8aa88a');R(1,6,8,5,'#e8dcc8');for(let k=0;k<3;k++)R(1,7+k*1.5|0,8,1,'#c8302e');R(7,6,2,1,'#3a3044')}
 // the Lamp's column of light, top to the ground
 function g2col(K,x,y0,y1,W){const g=K.g,gr=g.createLinearGradient(0,y0,0,y1);gr.addColorStop(0,'rgba(238,244,255,.28)');gr.addColorStop(1,'rgba(238,244,255,.02)');
  g.globalCompositeOperation='lighter';g.fillStyle=gr;g.beginPath();g.moveTo(x-14,y0);g.lineTo(x+14,y0);g.lineTo(x+60,y1);g.lineTo(x-60,y1);g.closePath();g.fill();g.globalCompositeOperation='source-over'}
@@ -321,7 +405,7 @@ function drive(c,W,H,t,o){const K=kit(c),R=K.R,hzY=Math.round(H*.34),dashY=Math.
 // it; the bed with its wires and someone under the blanket; the monitor's green line. In the dark glass, behind the
 // reflection, what's remembered plays: stage 1 two long tables under one light, 2 something tall bending to listen,
 // 3 the inside of the light, too bright to look at.
-function session(c,W,H,t,stage){const K=kit(c),R=K.R,top=6,winH=Math.round(H*.36),floorY=Math.round(H*.6);
+function session(c,W,H,t,stage,cardSt){const K=kit(c),R=K.R,top=6,winH=Math.round(H*.36),floorY=Math.round(H*.6);
  c.fillStyle='#1a1e28';c.fillRect(0,0,W,H);
  // the wall, the window's frame and its dark glass
  R(0,0,W,floorY,'#3a4048');for(let x=0;x<W;x+=16)R(x,0,1,floorY,'#343a42');
@@ -352,7 +436,9 @@ function session(c,W,H,t,stage){const K=kit(c),R=K.R,top=6,winH=Math.round(H*.36
  const mx=bx+bw+22,my=floorY-58;R(mx,my,40,30,'#2a2a32');R(mx+3,my+3,34,22,'#0a120c');R(mx+18,my+30,4,28,'#3a3a44');R(mx+6,my+56,28,3,'#3a3a44');
  for(let x=0;x<32;x++){const ph=(x+t/40)%32,amp=stage>=2&&Math.floor(t/1500)%3===0?0:(ph%11<2?8:1.5);R(mx+4+x,my+14+Math.round(Math.sin(ph*.8)*amp),1,1,'#5aff9a')}
  // the observation desk's lamp on the left, warm
- R(4,floorY-20,30,4,'#5a4a3a');R(18,floorY-36,2,16,'#3a3a44');R(12,floorY-40,14,5,'#e8c070');K.pool(19,floorY-34,30,22,'#ffd9a0',.24,4)}
+ R(4,floorY-20,30,4,'#5a4a3a');R(18,floorY-36,2,16,'#3a3a44');R(12,floorY-40,14,5,'#e8c070');K.pool(19,floorY-34,30,22,'#ffd9a0',.24,4);
+ // the folded card in her hands on the blanket (drawn at 2x so it reads), then open in her lap
+ if(cardSt){const ox=bx+(cardSt>1?30:38),oy=by-(cardSt>1?24:20);c.save();c.translate(ox,oy);c.scale(2,2);card(c,0,0,cardSt>1);c.restore()}}
 
 const SZ=k=>{const A=B[k==='surveyor2'?'surveyor':k];return A?[A.w,A.h]:[16,16]};
 const cache=new Map();
@@ -361,5 +447,5 @@ const cache=new Map();
 function sprite(k,frame,step){step=step|0;const ph2=k==='surveyor2',base=ph2?'surveyor':k,key=k+(frame?1:0)+':'+step;let c=cache.get(key);if(c)return c;const A=B[base];if(!A)return null;
  const L=Ly(A.w,A.h,step?WPAD:0);A.f(L,frame?1:0,ph2);if(step){Wk.cut(L,-WPAD,0,WPAD,A.h);Wk.cut(L,A.w,0,WPAD,A.h);if(WOUND[base])WOUND[base](L,step,frame?1:0,ph2)}
  c=document.createElement('canvas');c.width=L.W;c.height=A.h;blit(c.getContext('2d'),L);cache.set(key,c);return c}
-return{B,sprite,size:SZ,portrait,backdrop,drive,session};
+return{B,sprite,size:SZ,portrait,backdrop,drive,session,card};
 })();

@@ -159,7 +159,9 @@ const STILL={
  pulloff(g,p,M){const x0=p.x*T,y0=(p.y+4)*T;F(g,x0+T,y0,(p.w-2)*T,1,'#1c1820');F(g,x0+T,y0+1,(p.w-2)*T,1,'#8a8478');
   for(let x=x0+2*T;x<x0+(p.w-2)*T;x+=3*T){F(g,x,p.y*T+40,8,1,'rgba(232,228,216,.35)')}},
  stonewall(g,p){const{x0,x1,y0}=box(p);K.stoneWallSide(g,x0,y0-2*T,y0+4,T);K.stoneWallSide(g,x1-.5*T,y0-2*T,y0+4,T);K.stoneWall(g,x0,x1,y0+2,T,{h:.8})},
- trailhead(g,p){const x=p.x*T;F(g,x+6,4,3,14,'#5a4030');F(g,x+1,2,14,8,'#6a5a3a');K.signText(g,'TRAIL',x+2,4,'#e8dcc0');F(g,x+4,T+2,8,T-2,shade(K.pal().earth,-.1))},
+ // the trail's sign at its placed tile (p.x, p.y), by the overlook wall's end; the worn path runs down past it onto the trail tile
+ trailhead(g,p){const x=p.x*T,y=p.y*T;F(g,x+4,y+T+2,8,T-2,shade(K.pal().earth,-.1));F(g,x+6,y,3,T-2,'#3a2a20');F(g,x+6,y,1,T-2,'#5a4030');
+  F(g,x-3,y-7,22,10,'#2a1e18');F(g,x-2,y-6,20,8,'#6a5a3a');F(g,x-2,y-6,20,1,'#8a7a58');K.signText(g,'TRAIL',x-1,y-4,'#e8dcc0')},
  // THE WOODS: the steep slope's dark under the trees, a few fallen logs; the creek's banks
  woodsbase(g,p,M,glows,reflect){const W=M.w*T,H=M.h*T;for(let i=0;i<9;i++){const x=hsh(i,4,541)*W,y=hsh(i,5,541)*(H-60),w=30+hsh(i,6,541)*30;if(at(M,(x/T)|0,(y/T)|0)==='s')continue;
    F(g,x,y,w,5,'#4a3424');F(g,x,y,w,1,'#6a4a32');F(g,x+w-4,y-1,5,7,'#3a281e')}
@@ -454,8 +456,10 @@ const laundromat={
   const on=Math.floor(now/90)%37!==0&&Math.floor(now/70)%53!==3;
   // the wall: pale green tile to shoulder height, cream paint above
   R(0,0,VW,VH,'#b0ac94');for(let x=0;x<VW;x+=12)R(x,0,1,fy-70,'#a09c86');R(0,fy-70,VW,70,'#8ab0a0');for(let y=fy-70;y<fy;y+=8)R(0,y,VW,1,'#7a9a8c');for(let x=(mid%8+8)%8;x<VW;x+=8)R(x,fy-70,1,70,'#7a9a8c');R(0,fy-72,VW,3,'#5a7a6c');
-  // the window on the left: the dark lot and the interstate, a truck's lights going by now and then
-  const wx=mid-118,wy=fy-118;R(wx,wy,52,40,'#3a3a44');R(wx+2,wy+2,48,36,'#141828');R(wx+2,wy+28,48,10,'#0e1018');for(let i=0;i<3;i++)R(wx+4+i*16,wy+33,8,1,'#e8c84a');
+  // the window on the left: the dark lot and the interstate, a truck's lights going by now and then. On a short screen
+  // (fy is higher) the window and the corkboard stop a few pixels under the top edge instead of going off it, the way
+  // the back room's pieces hold to the screen (spec 013), and stay clear of the dryers' second row
+  const wx=mid-118,wy=Math.max(fy-118,9);R(wx,wy,52,40,'#3a3a44');R(wx+2,wy+2,48,36,'#141828');R(wx+2,wy+28,48,10,'#0e1018');for(let i=0;i<3;i++)R(wx+4+i*16,wy+33,8,1,'#e8c84a');
   const tx=((now/12)%160)-60;if(tx>-10&&tx<52){R(wx+2+Math.max(0,tx),wy+24,Math.min(14,50-tx),6,'#6a6a7a');R(wx+2+Math.max(0,tx),wy+26,2,2,'#ffd88a')}
   R(wx+25,wy+2,2,36,'#3a3a44');K.signText(c,'24 HR',wx+6,wy+5,'#ff6a8a');K.signText(c,'OPEN',wx+30,wy+5,'#ff6a8a');
   // two rows of stacked dryers behind him, each drum turning; one has something red going round
@@ -464,9 +468,11 @@ const laundromat={
     const cx=x+dw/2-1,cy=y+25;c.fillStyle='#3a3a44';c.beginPath();c.arc(cx,cy,10,0,6.283);c.fill();c.fillStyle='#1e2430';c.beginPath();c.arc(cx,cy,8,0,6.283);c.fill();
     if((i+j)%3!==2){const a=now/(220+i*23)+i;for(let k=0;k<3;k++){const aa=a+k*2.1;c.fillStyle=(i===6&&j===1&&k===0)?'#c8302e':['#e8dcc0','#7a8ab0','#c8b8a0'][k];c.beginPath();c.arc(cx+Math.cos(aa)*4,cy+Math.sin(aa)*4+2,3,0,6.283);c.fill()}}
     c.fillStyle='rgba(255,255,255,.18)';c.beginPath();c.arc(cx-3,cy-3,3,0,6.283);c.fill()}}
-  // the change machine and a corkboard of flyers on the right
-  const cmx=mid+96;R(cmx,fy-120,24,46,'#5a6a7a');R(cmx+2,fy-118,20,8,'#e8e4d8');K.signText(c,'CHANGE',cmx+0,fy-117,'#2a2030');R(cmx+8,fy-104,8,4,'#2a2a30');R(cmx+6,fy-92,12,10,'#3a3a44');
-  R(cmx-2,fy-150,28,24,'#9a6a3a');[[0,0,'#f4f0e8'],[12,2,'#f0d040'],[4,12,'#a8e0f0'],[16,13,'#f4f0e8']].forEach(([x,y,col])=>{R(cmx+x,fy-148+y,10,9,col);R(cmx+x+4,fy-148+y,2,2,'#c8302e')});
+  // the change machine and a corkboard of flyers on the right, kept 6 px in from the edge; the board sits above the machine
+  // and both hold under the top edge on a short screen (ck: the board's top, cm: the machine's)
+  const cmx=mid+86,ck=Math.max(10,fy-150),cm=Math.max(ck+28,fy-120);
+  R(cmx,cm,28,46,'#5a6a7a');R(cmx,cm,28,1,'#7a8a9a');R(cmx+1,cm+2,26,8,'#e8e4d8');K.signText(c,'CHANGE',cmx+3,cm+3,'#2a2030');R(cmx+10,cm+16,8,4,'#2a2a30');R(cmx+8,cm+28,12,10,'#3a3a44');
+  R(cmx-1,ck,30,24,'#9a6a3a');[[1,2,'#f4f0e8'],[14,4,'#f0d040'],[5,13,'#a8e0f0'],[17,14,'#f4f0e8']].forEach(([x,y,col])=>{R(cmx+x,ck+y,10,9,col);R(cmx+x+4,ck+y,2,2,'#c8302e')});
   // the one tube light, right over his hat, flickering, and its cone of light so his face reads
   R(mid-40,2,80,5,'#e8e4d8');R(mid-38,3,76,3,on?'#f8fff8':'#8a8a90');R(mid-42,0,2,4,'#5a5a64');R(mid+40,0,2,4,'#5a5a64');
   if(on){c.fillStyle='rgba(230,255,240,.12)';c.beginPath();c.moveTo(mid-40,7);c.lineTo(mid+40,7);c.lineTo(mid+90,fy);c.lineTo(mid-90,fy);c.fill()}

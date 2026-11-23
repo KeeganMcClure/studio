@@ -945,11 +945,11 @@ async function moveFailed(){const F=G.flags;await said(TEXT.moveFail);F['noMove_
 
 // ---- the hypnosis session (spec 016, Set pieces), in its own picture: what's remembered plays in the one-way window ----
 const sessionDone=()=>has('memory1')&&has('memory2')&&(!!G.flags.push||!!G.flags.pushNo)&&(G.flags.unfolded||!haveCard());
-let stage=0;
+let stage=0,cardSt=0;  // cardSt: the folded card on show in the session picture (1 in Donna's hands, 2 open)
 async function session(){const F=G.flags;
  if(!F.donnaOk){await said(TEXT.sessionNeed);return}
  const t0=performance.now();stage=0;
- await fade(1);G.mode='scene';G.sceneArt=(c,W,H,now)=>LHB.session(c,W,H,now-t0,stage);await fade(0);
+ await fade(1);G.mode='scene';G.sceneArt=(c,W,H,now)=>LHB.session(c,W,H,now-t0,stage,cardSt);await fade(0);
  try{
   await cut('session',()=>play(TEXT.sessionIn));
   for(;;){const S=TEXT.sOpt;let woke=false,acted=false;
@@ -959,7 +959,7 @@ async function session(){const F=G.flags;
    if(has('memory1')&&!has('memory2')&&!F.m2dT)o.push({use:'read',label:S.m2d,mod:()=>sMod()-20,ok:m2dOk,fail:async()=>{F.m2dT=1;await play(TEXT.m2dFail)}},{use:'calm',label:S.m2d,mod:()=>sMod()-20,ok:m2dOk,fail:async()=>{F.m2dT=1;await play(TEXT.m2dFail)}});
    // never a dead end: a team that can't guide either of them still gets Donna's first memory, with Owen's help
    if(!has('memory1')&&!teamHas('Empathy',40)&&!teamHas('Medicine',40))o.push({label:S.m1,run:m1Ok});
-   if(has('memory1')&&haveCard()&&!F.unfolded)o.push({label:S.card,run:async()=>{stage=1;await unfold(TEXT.cardDo)}});
+   if(has('memory1')&&haveCard()&&!F.unfolded)o.push({label:S.card,run:async()=>{stage=1;cardSt=1;await play(TEXT.cardDo.slice(0,2));cardSt=2;await unfold(TEXT.cardDo.slice(2))}});
    if((has('memory1')||has('memory2'))&&!F.push&&!F.pushNo)o.push({label:S.push,run:pushFurther});
    o.push({label:S.wake,run:async()=>{woke=true}});
    // every option marks that something happened, so B (backing out) ends the session
@@ -969,7 +969,7 @@ async function session(){const F=G.flags;
    if(woke||!acted)break;
   }
   await play(TEXT.sessionEnd);checkpoint();
- }finally{await fade(1);G.sceneArt=null;G.mode='world';stage=0;await fade(0)}}
+ }finally{await fade(1);G.sceneArt=null;G.mode='world';stage=0;cardSt=0;await fade(0)}}
 async function m1Ok(){stage=1;await play(TEXT.m1Do);addClue('memory1',TEXT.cl.memory1)}
 async function m1Fail(){const F=G.flags;F.m1t=(F.m1t|0)+1;await play(TEXT.m1Fail);checkpoint()}
 async function m2rOk(){const F=G.flags;stage=2;F.m2rT=1;F.m2='r';await play(TEXT.m2rDo);await horror(HORRORS.m2);addClue('memory2',TEXT.cl.m2r)}
@@ -1211,7 +1211,7 @@ async function caseOpening(){
 registerCase({id:'lost-hour',card:caseCard,opening:caseOpening,intel:TEXT.intel,maps:MAPS,tiles:{},
  portraits:name=>window.LHA.portraits[name]||(name==='THE SURVEYOR'&&window.LHB?LHB.portrait:null),
  enemies:EN,sprite:(k,f,w)=>k==='fed'&&window.SHB?SHB.sprite('fed',f,w):LHB.sprite(k,f,w),spriteSize:k=>k==='fed'&&window.SHB?SHB.size('fed'):LHB.size(k),
- backdrop:(p,o)=>LHB.backdrop(p,o),
+ backdrop:(p,o)=>LHB.backdrop(p,Object.assign({rain:!!(G.M&&G.M.rain)},o)),  // the map's weather: Main Street's day-2 rain
  get place(){return window.LHA&&LHA.laundromat},  // Big Hat's place for this case: the briefing passes it, and the debrief plays there too (engine.js casePlace)
  items:CASE_ITEMS,next:caseNext,quiet:true,loot:LOOT,onArea,
  debrief:DEBRIEF_DATA,label:endingLabel,facts:endingFacts});
