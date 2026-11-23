@@ -69,6 +69,7 @@ async function mercGone(m,end,o={}){
  if(typeof onMercGone==='function')await onMercGone(m,end,o);
  if((G.lead|0)===party.indexOf(m)){const n=StudioParty.next(party.length,G.lead|0,i=>!party[i].dead&&!party[i].ko);G.lead=n}
  saveRun()}
-const placeName=()=>{const g=G.run&&G.run.region;return G.site?G.site.name:g?P_[g.at].name:'the road'};
+const niceName=n=>n===n.toUpperCase()?n.charAt(0)+n.slice(1).toLowerCase().replace(/ (e|s)/g,(m)=>m.toUpperCase()).replace("saint ebbe's","Saint Ebbe's"):n;
+const placeName=()=>{const g=G.run&&G.run.region,j=G.run&&G.run.job;if(j&&JOBS[j.id]&&P_[JOBS[j.id].site])return niceName(P_[JOBS[j.id].site].name);if(g&&g.trip)return 'the road to '+niceName(P_[g.trip.to].name);return g?niceName(P_[g.at].name):'the road'};
 function useSlot(m,id){const s=m.slots.find(x=>x.id===id);if(!s)return false;if(RLS.ITEMS[id]&&RLS.ITEMS[id].uses===0)return true;s.n=(s.n||1)-1;if(s.n<=0)m.slots.splice(m.slots.indexOf(s),1);
  G.run.restock=G.run.restock||{};G.run.restock[id]=(G.run.restock[id]|0)+1;return true}

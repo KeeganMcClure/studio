@@ -1,0 +1,11 @@
+{
+ "about": "Part E (spec 007), save version 5: no run, and a ledger with three past companies (a wipe, the slice's end, an abandoned run).",
+ "version": 5,
+ "expect": {
+  "companies": 3
+ },
+ "keys": {
+  "rl.version": "5",
+  "rl.ledger": "{\"bestiary\":{},\"dead\":[],\"companies\":[{\"name\":\"Hunting Party\",\"seed\":\"0412-Q\",\"end\":\"wipe\",\"regions\":0,\"contracts\":2,\"great\":0,\"days\":9,\"where\":\"Harrowford\",\"mercs\":[{\"name\":\"Aveline\",\"nick\":[],\"end\":\"LG-END-FIGHT\",\"killer\":\"The Counter\",\"place\":\"Crookback\",\"owed\":\"Left in a ditch. Nobody went back.\"},{\"name\":\"Benet\",\"nick\":[],\"end\":\"LG-END-BLEED\",\"killer\":\"\",\"place\":\"the charcoal camp\",\"owed\":\"\"},{\"name\":\"Leland\",\"nick\":[],\"end\":\"LG-END-SNAP\",\"killer\":\"\",\"place\":\"Hollin\",\"owed\":\"\"}]},{\"name\":\"Free Company\",\"seed\":\"5150-R\",\"end\":\"end\",\"regions\":0,\"contracts\":4,\"great\":1,\"days\":17,\"where\":\"Harrowford\",\"mercs\":[{\"name\":\"Gallian\",\"nick\":[\"Lampsnuff\"],\"end\":\"LG-LIVING\",\"killer\":\"\",\"place\":\"\",\"owed\":\"\"},{\"name\":\"Amice\",\"nick\":[],\"end\":\"LG-LIVING\",\"killer\":\"\",\"place\":\"\",\"owed\":\"\"},{\"name\":\"Albin\",\"nick\":[],\"end\":\"LG-LIVING\",\"killer\":\"\",\"place\":\"\",\"owed\":\"\"}]},{\"name\":\"Thief-takers\",\"seed\":\"0001-A\",\"end\":\"abandoned\",\"regions\":0,\"contracts\":1,\"great\":0,\"days\":4,\"where\":\"Harrowford\",\"mercs\":[{\"name\":\"Blanche\",\"nick\":[],\"end\":\"LG-END-LEFT\",\"killer\":\"\",\"place\":\"\",\"owed\":\"\"},{\"name\":\"Cheermin\",\"nick\":[],\"end\":\"LG-END-LEFT\",\"killer\":\"\",\"place\":\"\",\"owed\":\"\"},{\"name\":\"Frampton\",\"nick\":[],\"end\":\"LG-END-LEFT\",\"killer\":\"\",\"place\":\"\",\"owed\":\"\"}]}]}"
+ }
+}

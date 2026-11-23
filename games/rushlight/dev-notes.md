@@ -160,3 +160,38 @@ buyer and Severa; level 2 for the hunts, with 2 level picks to their strong skil
   240-wide canvas without the strip covering hotspots) didn't come up: chunks are 15 tiles wide and scroll vertically.
 - **New art not yet filed:** the new site tiles (rye, stooks, osiers, causeway planks, boats, graves, ruins, the oven,
   the church front) in `src/site-art.js`.
+
+## Spec 007: Part E, the end
+
+- **Tuning check: the Hollow Monk at level 3, PASSED.** 20 runs per seed, the seed's Free Company at level 3, carefully
+  played (the greeter greets him first; a light is lit after Lamp out).
+  - Careful (pumps: HP 66 and no rising; the greeting; a church-lit lamp): won 20/20 on every seed; Downed per run
+    0.00 / 0.10 / 0.00; nobody died. Fights 5.7–6.0 rounds (the bible's 8–12 for great creatures is longer); SAN lost
+    5.1–8.7 (under the great-creature budget of 10–15).
+  - No prep (HP 78, he rises at 39): won 20, 19, 20 of 20; deaths 1 / 5 / 1; 10.7–11.8 rounds; SAN lost 10.3–12.2. So
+    skipping the prep can lose, as the check asks.
+- **The death line:** the Text Library's only VO-NARR-DEATH row is the winter one ("...at the crossroads. The priest
+  charged extra for the frost."). The slice is autumn, so the build plays its first sentence and drops the frost one.
+  The pool could use autumn rows (for the Designer).
+- **Burial's SAN** (1d4 to each survivor) and **the ditch's** (a Disturbing helplessness roll) follow the spec's calls.
+- **A body is left in a ditch** at the pay screen of the next contract, or at the slice's end.
+- **The best company** on the ledger is the one with the most contracts done plus 3 for each great creature killed
+  (ties to the most days). The spec says "the best" without a score.
+- **Ledger wording:** a killer who isn't a named creature reads "a road bandit", "a rook"; a fight's place is the site
+  or "the road to ..." when the company was marching.
+- **A bug fixed while building this:** battle links between mercs and enemies (who hurt whom, who is held by whom)
+  were going into the save, which made it unwritable without an error. They're now left out of every save.
+- **Not built (outside the slice, as the spec says):** the road out of the March, Quarters, retiring by choice, Hope,
+  and the cast remembering the dead.
+
+## Art still to file in the Asset Library (for the Designer)
+
+All drawn in code; none is filed yet, since filing means republishing the 5.5 MB library page, which I didn't do unasked.
+- Face parts (3 coat shades per species, scar, torn ear, grey muzzle, kerchief, hood) and the six coin tokens:
+  `src/species-art.js`.
+- The region map's chart, glyphs, claws, wax seal and Key: `src/region.js`.
+- Harrowford's and Saint Ebbe's streets (buildings, props, the priory, the gibbet): `src/town-art.js`.
+- Every site tile for the camp, Hollin, Sallow End, the causeway, Crookback and Lowmoor Pit: `src/site-art.js`.
+- **Two catches from the full check:** the Monk's den was briefly in the board's job pool (it opens only from signs,
+  never from a board), and the ledger's company page reused the name of the creator's Pick a company screen. Both
+  fixed before merging; the boards draw exactly as they did after Part D.
