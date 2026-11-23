@@ -64,7 +64,7 @@ The card's words live in `cases/lost-hour.js`'s text block (`caseCard`), as for 
 | Clue style | **Threshold plus bonus, as a timeline.** About 6–7 clues, each filling a piece of the missing hours (10 PM to 3:15 AM) on the Case file's timeline. 3 open the way to night 2. Extras weaken the boss, add intel, or open better cover stories and a better ending |
 | Deduction | One deduction before the finale, from the timeline. A wrong answer costs time or a better ending, never progress (Gameplay loop) |
 | Skills it calls on | Medicine, Empathy, Science, Search, Survival, Occult, Persuade, Computers, Forensics, Stealth. Every team template must be able to reach the finale |
-| Motivation moments | 2: one for **Family**, one for **Duty** |
+| Motivation moments | 2: one for **Revenge** (changed Nov 23, 2026 from Family, which Lot 83 covers: someone did this to the couple, and the agent who holds Revenge can make it cost them), one for **Duty** |
 | Horrors | About 3–4 Unsettling or Disturbing, 1–2 Severe, 0–1 Shattering, and the Boss, inside the case budget (6–10 net SAN). Kinds: mostly unnatural, plus helplessness. A **phobia subject** fits the case's medical side; the case file names it |
 | The hard choice | The pitch's "hard choice about people who did nothing wrong" is a real choice with a stake, and the endings react to it. The case file sets what it is. Every option has a cost; none is a trap |
 | Overstepping | The cover is soft: the couple asked for help. A choice that treats them as evidence instead of patients, or a scene in town, marks someone saw. On the ridge at night, most choices are unseen. The **extreme case flag** for Local chief arriving as a fight with deputies is **off** |

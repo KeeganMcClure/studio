@@ -64,7 +64,7 @@ The card's words live in `cases/tracking.js`'s text block (`caseCard`), as for S
 | Boss | 3 skulls. At least one case choice weakens it (by kind: what you did with the copies you found, as the case file sets), and a weakness Identify can find. Target 8–12 rounds against a careful party |
 | Deduction | One deduction before the finale, from the trail. A wrong answer costs time or a better ending, never progress (Gameplay loop) |
 | Skills it calls on | Computers, History, Occult, Search, Persuade, Bureaucracy, Empathy, Stealth, Forensics, Athletics. Every team template must be able to reach the finale |
-| Motivation moments | 2: one for **Find the truth**, one for **Redemption** |
+| Motivation moments | 2: one for **Money** (changed Nov 23, 2026 from Find the truth, which Good Manners covers: everyone on the trail is selling, and the agent who holds Money can take a cut), one for **Redemption** |
 | Horrors | About 3–4 Unsettling or Disturbing (more if the team watches), 1–2 Severe, 0–1 Shattering, and the Boss, inside the case budget (6–10 net SAN) for a team that watches the tape once or twice. Kinds: mostly unnatural and violence (body horror). A **phobia subject** fits the tape; the case file names it |
 | Addiction | The case's people and the tape both lean on Addiction. Any choice that offers a drug or a drink follows Disorders → Addiction and Statuses as written; the case adds no new rule |
 | Overstepping | The cover is cheap and easy to keep in a city that doesn't look twice, but money is loud: paying too much, or forcing a door, marks someone saw. Inside the club at night, most choices are unseen. The **extreme case flag** for Local chief arriving as a fight with officers is **off** |

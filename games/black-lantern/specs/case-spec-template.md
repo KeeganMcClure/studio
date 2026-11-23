@@ -53,7 +53,7 @@ Picked pitch: `pitches/<round file>.md`, option <letter>, picked <date>.
 | Boss | Threat 3; the kind of weakening choice (by type, not what it is); target 8–12 rounds |
 | Clue style | Threshold plus bonus, or clues as keys; how many clues and how many to move on |
 | Skills it calls on | The 8–10 skills, so a template team can always find a way through |
-| Motivation moments | 1–2, and which motivation types they aim at |
+| Motivation moments | 1–2, and which motivation types they aim at. Check the season's spread so all nine types get a moment (Systems → Motivations, Every motivation, every season) |
 | Horrors | Rough count per tier, inside the case budget (SAN loss table) |
 | Ending labels | For example `clean`, `costly`, `worst` |
 | Lantern Boxes and loot | How many boxes; the loot table's size; any case-only items, ordinary or unnatural |
