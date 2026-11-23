@@ -8,11 +8,15 @@ const url = 'file://' + path.join(__dirname, '..', 'dist', 'index.html');
 const SEEDS = ['0001-A', '4242-C', '9021-M'];
 const want = process.argv[2] || 'all';
 const SCEN = {
+  // the order parts print in: b, c, d1, d2, e
   b: [
     ['felled tree: 3 road bandits', 'tree', "()=>[0,1,2].map(()=>RLG._t.foe('bandit'))", {}],
     ['felled tree, Ambushed', 'treeA', "()=>[0,1,2].map(()=>RLG._t.foe('bandit'))", { battle: { ambush: true } }],
     ['night attack: 2 road bandits', 'night', "()=>[0,1].map(()=>RLG._t.foe('bandit'))", {}],
     ['night attack: the rooks', 'rooks', "()=>[0,1,2,3].map(()=>RLG._t.foe('rook'))", {}],
+  ],
+  d1: [
+    ['Pell: 2 road bandits, then Pell (HP 22, DEX 16, 50%, 1d4+1)', 'pell', "[()=>[RLG._t.foe('bandit'),RLG._t.foe('bandit')],()=>[Object.assign(RLG._t.foe('bandit'),{name:'Pell',lvl:3,hp:22,dex:16,hit:50,dmg:'1d4+1',nerve:'Skittish',target:true})]]", { seq: true, battle: { bounty: true } }],
   ],
   c: [
     ['the reeve\'s men or bounty hunters: 2 men-at-arms', 'maa', "()=>[0,1].map(()=>RLG._t.foe('manatarms'))", {}],
@@ -28,6 +32,12 @@ const SCEN = {
     for (const [label, , mk, o] of SCEN[part]) {
       console.log(`\nPart ${part.toUpperCase()} · ${label}`);
       for (const seed of SEEDS) {
+        if (o.seq) {
+          const rows = await page.evaluate(async ([s, mk, o]) => await RLG._t.simSeq(s, eval(mk), 20, o), [seed, mk, o]);
+          const n = rows.length, ok = rows.filter(r => r.downed <= 1 && !r.dead).length;
+          console.log(`  ${seed}: won ${rows.filter(r => r.won).length}/${n} · runs with at most 1 merc Downed and nobody dead ${ok}/${n} (${Math.round(ok / n * 100)}%) · deaths ${rows.reduce((a, r) => a + r.dead, 0)} · rounds ${(rows.reduce((a, r) => a + r.rounds, 0) / n).toFixed(1)} · SAN lost ${(rows.reduce((a, r) => a + r.san, 0) / n).toFixed(1)}`);
+          continue;
+        }
         const rows = await page.evaluate(async ([s, mk, o]) => await RLG._t.sim(s, eval(mk), 20, o), [seed, mk, o]);
         const n = rows.length, avg = k => (rows.reduce((a, r) => a + r[k], 0) / n).toFixed(1);
         console.log(`  ${seed}: wins ${rows.filter(r => r.res === 'win').length}/${n} · fights with a merc Downed ${rows.filter(r => r.downs).length} · ` +

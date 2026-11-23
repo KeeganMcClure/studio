@@ -52,7 +52,7 @@ const rationsNeed=days=>days*alive().length;
 
 // ================= THE MAP SCREEN =================
 let MAPV={cur:'harrow',key:false,page:null,log:[],cam:null};
-function enterRegion(){G.mode='region';gEl.classList.add('region');const g=RG();MAPV={cur:g.at,key:false,page:null,log:[],cam:null};scout(g.at);applySan();saveRun()}
+function enterRegion(){G.mode='region';gEl.classList.remove('site','town');gEl.classList.add('region');const g=RG();MAPV={cur:g.at,key:false,page:null,log:[],cam:null};scout(g.at);applySan();saveRun()}
 const SH=44;   // top strip height
 function chartRect(){return {x:0,y:SH,w:VW,h:VH-SH-50}}
 function camFor(k){const r=chartRect(),p=P_[k];return [clamp(p.x-r.w/2,0,MARCH.w-r.w),clamp(p.y-r.h/2,0,MARCH.h-r.h)]}
@@ -263,6 +263,7 @@ async function camp(o={}){
  const makeCamp=live.find(m=>(m.sk.Survival||0)>=90&&StudioRoll.pct(m.sk.Survival).ok);
  if(makeCamp){logLine(`${makeCamp.name} makes a proper camp: it counts as an inn night.`);await restInn(false);return}
  cookMeat();
+ G.run.rests=(G.run.rests|0)+1;
  live.forEach(m=>{if(m.ko){m.ko=false;m.hp=Math.max(1,m.hp)}m.hp=Math.min(m.mhp,m.hp+StudioRoll.die(4));if(!(m.hunger>0))m.wp=m.mwp;m.rest=(m.rest|0)+1});
  if(o.road!==false&&(G.dev&&G.dev.night||!(G.dev&&G.dev.noevents)&&d100()<=12.5*(G.dev&&G.dev.eventx||1))){
   const guard=live.filter(m=>(m.sk.Search||0)>=75).sort((a,b)=>b.sk.Search-a.sk.Search)[0];
@@ -278,7 +279,7 @@ async function camp(o={}){
 async function restInn(pay=true){
  const r=G.run,g=RG(),live=alive(),cost=2*live.length;
  if(pay){if(r.purse<cost){await say('',`The inn wants ${cost} gr. You have ${r.purse}.`);return false}r.purse-=cost}
- const got=[];live.forEach(m=>{m.ko=false;m.hp=m.mhp;m.wp=m.mwp;m.hunger=0;m.st=(m.st||[]).filter(s=>s!=='Hungry'&&s!=='Starving');m.rest=(m.rest|0)+1;
+ r.rests=(r.rests|0)+1;const got=[];live.forEach(m=>{m.ko=false;m.hp=m.mhp;m.wp=m.mwp;m.hunger=0;m.st=(m.st||[]).filter(s=>s!=='Hungry'&&s!=='Starving');m.rest=(m.rest|0)+1;
   if(!g.innSan[m.id]){g.innSan[m.id]=1;const s=StudioRoll.die(4);m.san=Math.min(m.msan,m.san+s);got.push(`${m.name} +${s}`)}});
  cookMeat();applySan();
  await say('',`A night at the inn${pay?` for ${cost} gr`:''}. Full HP and WP.${got.length?' SAN: '+got.join(', ')+'.':''}`);

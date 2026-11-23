@@ -122,7 +122,6 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
       await page.keyboard.press('z'); await page.waitForTimeout(100);
       const kind = await page.evaluate(() => { const b = RLG._t.Bt(); return b && b.ui ? b.ui.kind : 'none'; });
       if (kind === 'list') { seen.add(cmd); await page.keyboard.press('x'); await page.waitForTimeout(80); } else if (kind === 'msg' || kind === 'none') seen.add(cmd);
-      if (cmd === 0 && kind === 'list') { await page.keyboard.press('z'); }
     }
     // by tap: tap each command in the box
     const box = await page.locator('#gcv').boundingBox();
@@ -224,7 +223,7 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
       if (T.version === 0 && (r.run || r.roster)) probs.push('old Black Lantern keys kept');
       if (T.keys['rl.run'] && !(await page.evaluate(() => RLG.resume()))) probs.push('the run did not open');
       if (T.keys['rl.run'] && await page.evaluate(() => RLG._t.party().length) !== 3) probs.push('the company did not load');
-      if (T.expect) { const got = await page.evaluate(() => { const r = RLG._t.G().run; return { at: r.region && r.region.at, day: r.day, rations: r.rations, trip: !!(r.region && r.region.trip), hungry: RLG._t.party().some(m => m.hunger > 0), contracts: (r.contracts || []).length, hue: r.hue }; });
+      if (T.expect) { await page.waitForTimeout(600); const got = await page.evaluate(() => { const r = RLG._t.G().run; return { at: r.region && r.region.at, day: r.day, rations: r.rations, trip: !!(r.region && r.region.trip), hungry: RLG._t.party().some(m => m.hunger > 0), contracts: (r.contracts || []).length, hue: r.hue, site: !!(RLG._t.G().map || '').startsWith('site_'), fight: !!RLG._t.Bt() }; });
         for (const k in T.expect) if (got[k] !== T.expect[k]) probs.push(`${k} is ${got[k]}, expected ${T.expect[k]}`); }
       probs.push(...errors);
       console.log(`${probs.length ? 'FAIL' : 'ok  '} test save: ${f}`); probs.forEach(p => console.log('     - ' + p)); failed += probs.length;
@@ -392,6 +391,68 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
     });
     bad.push(...res, ...errors);
     console.log(`${bad.length ? 'FAIL' : 'ok  '} spec 005: streets, the pool of 6, shops and prices, haggling, reading, hiring, rumors, the Hue and cry`);
+    bad.forEach(p => console.log('     - ' + p)); failed += bad.length;
+    await ctx.close();
+  }
+
+  // 10. spec 006 D1: Pell's job start to finish on 3 seeds, and the rules each forced by a Dev setting
+  {
+    const bad = [];
+    const ctx = await browser.newContext({ viewport: { width: 375, height: 667 }, hasTouch: true });
+    const page = await ctx.newPage(); const errors = [];
+    page.on('pageerror', e => errors.push('page error: ' + e.message));
+    await page.goto(url); await page.waitForTimeout(500);
+    const res = await page.evaluate(async () => {
+      const out = [];
+      const auto = g => { g.auto = { cmd: () => 0, list: (t, rows) => Math.max(0, rows.findIndex(x => !x.dis)), smart: true, yield: () => 1, said: [],
+        menu: items => { const L = items.map(x => x.label || x); const i = L.findIndex(x => /^Leave$|Take it|^Set out|^Go on|SEARCH|TRACK|LISTEN|TAKE IT|^Stay/.test(x)); return i >= 0 ? i : 0; }, choice: () => 0 }; };
+      for (const seed of ['0001-A', '4242-C', '9021-M']) {
+        if (RLG.active) RLG._t.quit(); await RLG.newRun(seed); const g = RLG._t.G(), r = g.run; g.dev = { fast: true, noevents: true }; auto(g);
+        r.purse = 50; party[0].slots.push({ id: 'manacles', n: 1 });
+        if (!r.boards.posted.includes('pell')) r.boards.posted.push('pell'); await takeJob('pell'); await march('camp');
+        const job = r.job; if (!job) { out.push(seed + ': the camp did not open its site'); continue; }
+        for (let c = 0; c < job.chunks.length; c++) { if (job.chunk !== c) enterChunk(c, 'left'); drawWorld(); const M = G.M;
+          for (const h of M.hot) await hotspot(h);
+          for (const f of M.fights) { if (f.when && !f.when(job)) continue; if (!job.fights[f.id]) await siteFight(f); }
+          for (const h of M.hot) if (job.used[h.id] !== 'done') await hotspot(h); }
+        if (!job.resolved) out.push(`${seed}: Pell's job didn't resolve (${JSON.stringify(job.fights)})`);
+        const p0 = r.purse; await leaveSite(); await march('harrow');
+        if (r.job) out.push(`${seed}: no pay screen at Harrowford`); else if (r.purse <= p0) out.push(`${seed}: Pell paid nothing`);
+        if (!party.every(m => m.dead || m.xp >= 150)) out.push(`${seed}: XP not paid`);
+        if (!(RL.store.get(RL.key('ledger')).bestiary.pell)) out.push(`${seed}: the bestiary has no Pell`);
+      }
+      // the rules, each forced with the Dev setting's roll queue (RLG.dev({rolls:[...]}))
+      const fresh = async () => { if (RLG.active) RLG._t.quit(); await RLG.newRun('0001-A'); const g = RLG._t.G(); g.dev = { fast: true, rolls: [] }; auto(g); g.run.job = { id: 'test', sanLost: {}, horrors: {} }; return g; };
+      const F = (o) => Object.assign(RLG._t.foe('bandit'), { noQuirk: true }, o || {});
+      { const g = await fresh(); const m = party[0]; m.gear.hand = 'w1'; g.auto.smart = false; party.forEach((x, i) => x.stats.DEX = i ? 1 : 18); const e0 = F({ hp: 1, dex: 2 }); g.dev.rolls = [100]; await battle([e0], {}); if (!(m.gear.w1.wear >= 1)) out.push('a fumble did not wear the weapon'); }
+      { const g = await fresh(); const t = party[0]; t.gear.body = { id: 'jack', wear: 0 }; t.gear.head = null; g.auto.smart = false;
+        const e = F({ dex: 99, hp: 50 }); g.dev.rolls = [1, 11]; await battle([e], {}); if (!(t.gear.body.wear >= 1) && !party.some(x => x.gear.body && x.gear.body.wear)) out.push('a crit taken while armored did not wear the body piece'); }
+      { const g = await fresh(); const m = party[1]; m.hp = 1; m.ko = false; g.auto.smart = false; await (async () => { Bt = null; })();
+        // a Downed merc bleeds out after 3 of their own turns
+        const e = F({ hp: 200, hit: 1, dex: 1 }); party.forEach(x => { x.stats.STR = 3; }); m.hp = 0;
+        const r0 = await battle([e], { setFight: true }); if (!m.dead) out.push('a Downed merc did not bleed out'); }
+      { const g = await fresh(); const m = party[0]; g.dev.rolls = [99]; Bt = null; RLG._t.G().run.job = { id: 'x', sanLost: {}, horrors: {} };
+        // a lasting injury: CON roll fails (99), then 1d12 + mods
+        m.stats.CON = 5; await injuryRoll(m, {}); if (!(m.inj && m.inj.length) && !m.dead) out.push('a failed CON roll gave no lasting injury'); }
+      { const g = await fresh(); const e = F({ hp: 40, nerve: 'Skittish' }); g.dev.rolls = [1, 1, 1, 1, 1, 1, 1]; g.auto.smart = false;
+        // breaking: a big hit past the 75% line with a forced break
+        await battle([e], {}); if (!(G.lastStats.yielded.length || G.lastStats.killed.length)) out.push('nothing broke or died'); }
+      { const g = await fresh(); const s0 = party.map(m => m.san).join();
+        await battle([F({ kind: 'Unnatural', horror: { tier: 'Severe', id: 'test' }, hp: 1, name: 'Thing' })], {}); if (party.map(m => m.san).join() === s0) out.push('horror on sight cost no SAN'); }
+      { const g = await fresh(); const m = party[2]; m.san = 1; g.dev.rolls = [99, 99, 99, 99, 99, 99];
+        await sanRoll('Severe', 'violence', { who: [m] }); if (!m.dead) out.push('0 SAN out of a fight did not take the merc'); }
+      { const g = await fresh(); const m = party[0]; m.san = m.bp + 2; g.dev.rolls = [99, 99]; await sanRoll('Severe', 'unnatural', { who: [m] }); if (!(m.dis && m.dis.length) && m.mot.length === 2) out.push('a Breaking Point took nothing'); }
+      { const g = await fresh(); const r = g.run; r.contracts.push({ id: 'owl', title: 'X', pay: 25 }); party.forEach(m => m.xp = 90); await payScreen('owl', {}); if (!party.every(m => m.lvl >= 2)) out.push('the pay screen did not level up'); }
+      { const g = await fresh(); const r = g.run; addTrophy({ id: 'trophy-test', name: 'Its teeth', trophy: true, unnatural: true }); const p0 = r.purse;
+        g.auto.menu = (items, o) => { const L = items.map(x => x.label || x); return o && /CHURCH|CHAPEL/.test(o.title || '') ? (g.done ? L.indexOf('Leave') : (g.done = 1, L.findIndex(x => /burned/.test(x)))) : 0; };
+        await PLACES.church('harrow', 'The chapel'); if (r.purse !== p0 + 5) out.push('the church paid ' + (r.purse - p0) + ' for an unnatural trophy'); }
+      // the bestiary survives a wipe and a new run
+      { const L = RL.store.get(RL.key('ledger')); if (RLG.active) RLG._t.quit(); localStorage.removeItem(RL.key('run')); await RLG.newRun('0002-B');
+        if (!RL.store.get(RL.key('ledger')).bestiary.pell) out.push('the bestiary did not survive a new run'); }
+      RLG._t.G().auto = null; RLG._t.G().dev = {}; return out;
+    });
+    bad.push(...res, ...errors);
+    console.log(`${bad.length ? 'FAIL' : 'ok  '} spec 006 D1: Pell's job on 3 seeds, and each rule forced (wear, Downed, injuries, breaking, horror, 0 SAN, Breaking Points, pay and levels, trophies, the bestiary)`);
     bad.forEach(p => console.log('     - ' + p)); failed += bad.length;
     await ctx.close();
   }

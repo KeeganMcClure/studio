@@ -33,6 +33,7 @@ function openParty(){return new Promise(res=>{
   count:()=>party.length,lead:()=>G.lead|0,cycle:cycleLead,close:closeParty,pulse:i=>party[i].hp<=3,
   actions:i=>[{label:PW.makeLead,dis:i===(G.lead|0)||!canLead(i),why:i===(G.lead|0)?PW.isLead:PW.cant,run:()=>setLead(i)},
    {label:PW.card,run:()=>{PM.view='card';PM.i=i}},
+   ...(party[i].picks?[{label:`Level picks (${party[i].picks})`,run:()=>levelPicks(party[i],true)}]:[]),
    {label:PW.give,dis:party.length<2||!party[i].slots.length,why:PW.giveWhy,run:()=>giveItem(i)}],
   paint:{header:paintHeader,card:paintCard,detail:paintDetail},
   colors:{box:PAL.soot,border:PAL.bone,shadow:'#0e0c0a',on:PAL.cardOn,text:PAL.bone,dim:PAL.ash,cursor:PAL.tallow},
@@ -51,7 +52,7 @@ function paintCard(c,i,r,st){
  pBox(x,y,w,h,st.blink?PAL.blood:st.on?PAL.cardOn:PAL.card,st.on?PAL.tallow:st.lead?PAL.bone:PAL.line);
  if(st.lead)pR(x+1,y+1,w-2,2,PAL.tallow);
  pBox(x+9,y+8,34,34,PAL.soot,st.lead?PAL.tallow:PAL.line);c.imageSmoothingEnabled=false;c.drawImage(RLSP.portrait(m.sp,m.look),0,0,64,64,x+10,y+9,32,32);
- const tagL=st.lead?leadTag(right,y+5):right,nm=m.name.toUpperCase();
+ const tagL=st.lead?leadTag(right,y+5):right,nm=m.name.toUpperCase()+(m.picks?' ▲':'')+(m.dead?' (gone)':'');
  pT(nm,x+48,y+3,st.lead?PAL.tallow:PAL.bone,18);const px=x+48+pW(nm+' ',18);
  const sub=[m.sp,m.trade].filter(Boolean).join(' · ');if(tagL-4-px>12)pT(pFit(sub,tagL-4-px,15),px,y+5,'#c4b99e',15);
  const hs=m.ko?'DOWN':`${m.hp}/${m.mhp}`,hw=pW(hs,15),lo=m.hp<=3;

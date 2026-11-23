@@ -115,7 +115,8 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 .hb b{font-weight:normal;color:var(--scr-hi)} .hb .red,.gbox .red{color:var(--scr-red)} .hb .sn{color:#b9aee8}
 #gsan{left:6px;top:6px;padding:1px 6px;font:7px/1.8 var(--px);border-width:1px}
 #gsan b{font-weight:normal;color:var(--scr-hi)}
-#game.battle #gsan,#game.menu #gsan,#game.region #gsan{display:none}
+#game.battle #gsan,#game.menu #gsan,#game.region #gsan,#game.site #gsan,#game.town #gsan{display:none}
+#game.site .gban,#game.town .gban{top:40px}
 .gban{position:absolute;top:8px;left:50%;transform:translateX(-50%);font:8px/1.6 var(--px);color:var(--scr-hi);background:rgba(28,24,20,.92);border:1px solid var(--scr-hi);padding:3px 8px;white-space:nowrap}
 #gfade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .32s}
 /* Pick a company seat cards and the Muster roll (spec 003; Mockup 6) */
@@ -169,11 +170,16 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 <script src="engine.js"></script>
 <script src="battle.js"></script>
 <script src="party-menu.js"></script>
+<script src="sanity.js"></script>
 <script src="content/march.js"></script>
 <script src="region.js"></script>
 <script src="content/towns.js"></script>
 <script src="town-art.js"></script>
 <script src="town.js"></script>
+<script src="site-art.js"></script>
+<script src="content/sites.js"></script>
+<script src="content/jobs.js"></script>
+<script src="site.js"></script>
 <script src="../../../engine/nearest.js"></script>
 <script src="content/stub.js"></script>
 
