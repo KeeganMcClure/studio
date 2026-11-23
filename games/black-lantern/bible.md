@@ -555,6 +555,7 @@ HP and SAN are two health bars: HP heals, SAN mostly doesn't. Combat is purely t
 - **Clues:** the story picks the style. Default is threshold plus bonus (need some to move on; extras weaken the boss, add intel or open debrief options) or clues as keys (specific clues open specific places or dialog), whichever fits the theme.
 - **Deduction:** never a dead end. A wrong answer costs SAN, time or a better ending, never progress. Claude checks every deduction maps to clue IDs before building.
 - **Time:** story beats turn day to night by default; some cases add a clock on purpose.
+- **Turning the day is your choice (set Nov 23, 2026, from the pre-season review):** a story beat that moves the case on to the next part of the day (day to night, night to the next day) is a point of no return when it closes places or people you can't reach again (`studio-bible/play.md`). So it waits for you: the beat shows a "Go on / Not yet" choice with the cursor on Not yet, and one line naming what closes ("The morgue closes for the night."). Not yet leaves you where you are. A beat that closes nothing needs no choice. Each case spec lists its turns and what each one closes.
 - **Choices:** how far they branch varies by case. Most branch and rejoin; a few go big on purpose. Choices are remembered for the boss and debrief.
 - **Healing:** meds and First Aid (once per wound) in the field, plus a full rest at a few story safe spots.
 - **Saving:** one save slot. Autosaves at checkpoints and on close, and you can save anytime. No going back; deaths stick.
