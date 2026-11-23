@@ -117,8 +117,8 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
   - [ ] Pokémon-style battle backdrops for Still Harvest's town and maze, replacing the darkened map still (Combat → Basics, Backgrounds)
   - [ ] Wounded enemies: the two damage steps for each Still Harvest enemy, replacing the red dots (Art → Townsfolk and monsters)
   - [ ] Still Harvest maze: a route to all three victims that skips the Gleaner's clearing, and a go in / not yet choice at its entrance (spec 006, Revision after the demo playtest)
-  - [ ] Creator: pronouns (she, he, they) used by all dialog, and a slim or broad body build for map, battle and portrait sprites, plus pronouns for each Bond, with a save step for old agents and Bonds (Agents and items → Agent creator, steps 4 and 5)
-  - [ ] Creator: one-word pop-culture code names that Big Hat gives on the Dossier step, from a tagged list of about 60, with new template names (Agents and items → Agent creator, Code names)
+  - [ ] Creator: pronouns (she, he, they) (spec 022) used by all dialog, and a slim or broad body build for map, battle and portrait sprites, plus pronouns for each Bond, with a save step for old agents and Bonds (Agents and items → Agent creator, steps 4 and 5)
+  - [ ] Creator: one-word pop-culture code names (spec 022) that Big Hat gives on the Dossier step, from a tagged list of about 60, with new template names (Agents and items → Agent creator, Code names)
 - [x] After the Still Harvest playtest: revisit party size (3 vs 4). Weigh tension, skill coverage, fight length on the phone and screen space; switching to 4 means reworking templates, professions, balance and the combat layout
   Done Nov 23: after the demo playtest, Keegan kept the party at 3. Nothing changes.
 - [x] Season readiness (set Nov 22): the design work that lets a full season be built as soon as the demo is approved. In order, since each step unblocks the ones after it; tick this when all six are done
@@ -209,11 +209,11 @@ Every screen you can see, in play order (studio rule: `studio-bible/studio.md`, 
 
 | Screen | What you do there | Spec |
 | --- | --- | --- |
-| Title | New game, Continue, Case board, roster and agent codes | **Built before specs** (Agents and items → Agent creator, Kept from the demo) |
-| Pick a team | Pick one of 6 team templates or a Blank team | **Built before specs** (Demo 1: Agent creator and the approved creator mockup) |
-| Your team | Keep, Tweak or Rebuild each seat | **Built before specs** (Demo 1) |
-| Agent creator | 7 steps: Profession, Stats, Skills, Identity, Bonds, Motives, Dossier | **Built before specs** (Demo 1). The code names line on To do changes the Dossier step |
-| Roster | Put a saved agent in a seat | **Built before specs** (Demo 1) |
+| Title | New game, Continue, Case board, roster and agent codes | 022 (Part 1 writes down how it was built in Demo 1) |
+| Pick a team | Pick one of 6 team templates or a Blank team | 022 |
+| Your team | Keep, Tweak or Rebuild each seat | 022 |
+| Agent creator | 7 steps: Profession, Stats, Skills, Identity, Bonds, Motives, Dossier | 022 (Part 2: pronouns, build, code names) |
+| Roster | Put a saved agent in a seat | 022 |
 | Case board | Pick a case from the season's cork board | 004, 009 |
 | Big Hat's briefing | Big Hat in the scene, two questions, requisition | 013 (each case's spec sets its lines) |
 | Map | Walk, talk, use hotspots; lead card, NIGHT tag, A bubble | 001, 005, and each case's part A |
