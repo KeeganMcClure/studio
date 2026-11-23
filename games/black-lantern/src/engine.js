@@ -23,7 +23,9 @@ const DIRS=StudioMove.DIRS;  // walking, the camera and the canvas fit are share
 const BLOCK=new Set('TCB#DLlPHFSVKkYyNpGWIOX'.split(''));
 
 // ================= HELPERS =================
-const fmt=t=>t.replace(/\{code\}/g,lead().a.code||((lead().a.name||'').split(' ').pop()||'?').toUpperCase()).replace(/\{first\}/g,lead().name);
+// {code} and {first} are the lead's, and so are {first.they}, {code.their}...; any pronoun token still left over
+// (a person nobody named) reads as they (Agent creator, Pronouns and body)
+const fmt=t=>BLS.pron(BLS.pron(t,k=>k==='first'||k==='code'?lead().a:undefined),()=>'they').replace(/\{code\}/g,lead().a.code||((lead().a.name||'').split(' ').pop()||'?').toUpperCase()).replace(/\{first\}/g,lead().name);
 // Weapon from the profession (Bible: Starting kit; dice from Combat numbers); STR bonus for melee (field.js strBonus).
 function weaponFor(a){const p=profOf(a),W=B.WEAP[(p&&p.weapon)||'handgun']||B.WEAP.handgun;
  return{name:W.name,skill:clamp(skillVal(a,W.skill)+(W.hit||0),5,99),dmg:W.dmg,bonus:(W.plus||0)+(W.melee||W.thrown?strBonus(a.stats.STR):0),verb:W.verb}}

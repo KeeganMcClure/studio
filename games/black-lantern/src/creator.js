@@ -6,7 +6,8 @@
 // Job, Stats, Skills, Identity, Bonds, Motivations, Dossier. Tweak runs only Identity, Bonds, Motivations, Dossier.
 (()=>{
 // ---------- DATA (text lists come from strings.js) ----------
-const {SKILLS,SKILLJOB,PROFS,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,STEPNAME,STEPSHORT,STATJOB,HOBBY}=window.BLS;
+const {SKILLS,SKILLJOB,PROFS,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,STEPNAME,STEPSHORT,STATJOB,HOBBY,
+  pron,proOf,PRONOUNS,BUILDS,PROW_UI}=window.BLS;
 const SKIN=['#f6d7b8','#e9b98f','#c98e62','#a26a43','#7a4a2c','#4e2f1f'];
 const HAIRC=['#1b1414','#4a2c1a','#8a5a2b','#d8b25a','#b94a2c','#9aa0a6','#ece8de'];
 const OUTC=['#2d3a5c','#3e5c3a','#7a2e3e','#4b3b6e','#8a7a52','#232326','#4f87a3'];
@@ -24,7 +25,8 @@ const clone=o=>JSON.parse(JSON.stringify(o));
 const roll4d6=()=>{const r=[1,2,3,4].map(()=>1+rnd(6)).sort((a,b)=>a-b);return r[1]+r[2]+r[3]};
 const rollStats=()=>Object.fromEntries(STATS.map(k=>[k,roll4d6()]));
 const genCode=()=>pick(ADJ)+' '+pick(NOUN);
-function newAgent(){return {prof:null,method:'buy',stats:Object.fromEntries(STATS.map(k=>[k,12])),roll:null,picks:{},bonds:[{rel:'Partner',name:''},{rel:'Friend',name:''}],look:{skin:1,hair:0,hairC:1,eyes:0,eyeC:0,acc:0,outfitC:-1},name:'',code:genCode(),backstory:'',age:34,motives:[],main:0}}
+// pro: she, he or they; look.build: slim or broad (Agent creator, Pronouns and body; Nov 23)
+function newAgent(){return {prof:null,method:'buy',stats:Object.fromEntries(STATS.map(k=>[k,12])),roll:null,picks:{},bonds:[{rel:'Partner',name:'',pro:'they'},{rel:'Friend',name:'',pro:'they'}],look:{skin:1,hair:0,hairC:1,eyes:0,eyeC:0,acc:0,outfitC:-1,build:'broad'},name:'',pro:'they',code:genCode(),backstory:'',age:34,motives:[],main:0}}
 let idN=0;const newId=()=>Date.now()*10+(idN++%10);
 function fromTemplate(t){const a=Object.assign(newAgent(),clone(t));a.id=newId();a.method='set';a.roll=null;a.bonds.forEach(b=>b.score=a.stats.CHA);return a}
 function setProf(a,p){if(a.prof!==p.id)a.picks={};a.prof=p.id}
@@ -43,6 +45,8 @@ const buyLeft=a=>72-STATS.reduce((t,k)=>t+a.stats[k],0);
 const feature=(k,v)=>v<=5?FEAT[k][0]:v>=16?FEAT[k][1]:'';
 const surname=a=>((a.name||'').trim().split(/\s+/).pop()||'Agent').toUpperCase();
 const mainOf=a=>a.motives[a.main]||a.motives[0]||'';
+const buildOf=a=>(a&&a.look&&a.look.build)==='slim'?'slim':'broad';
+const cyc3=(x,d)=>PRONOUNS[(PRONOUNS.indexOf(proOf(x))+d+3)%3];
 
 // Save keys start with bl. on Release and dev.bl. on Dev (engine/studio.js), so testing never touches the
 // stable saves. Outside the site (the Intake page, the checks) there is no Dev build, so it stays bl.
@@ -54,7 +58,7 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
 // in order, bringing old saves forward before anything reads them. Before upgrading, the old
 // saves are copied to bl.backup. Rules: never change an old step; a new save shape gets a new
 // step and SAVE_V goes up by one. Saves from before numbering count as version 0.
-const SAVE_V=11;
+const SAVE_V=12;
 const fillAgent=a=>{if(!a||typeof a!=='object'||Array.isArray(a))return null;const d=newAgent();
   const o=Object.assign(d,a);o.look=Object.assign(newAgent().look,a.look||{});o.stats=Object.assign(newAgent().stats,a.stats||{});
   if(!o.picks||typeof o.picks!=='object')o.picks={};if(!Array.isArray(o.bonds))o.bonds=[];if(!Array.isArray(o.motives))o.motives=[];return o};
@@ -209,6 +213,23 @@ const UPGRADES={
     const s=store.get(K('season'),null);if(!s||typeof s!=='object'||Array.isArray(s)||!s.cases||typeof s.cases!=='object')return;
     Object.values(s.cases).forEach(e=>{if(e&&typeof e==='object'&&!Array.isArray(e.intel))e.intel=[]});
     store.set(K('season'),s);
+  },
+  // 11 → 12 (Nov 23, demo playtest: Pronouns and body): every agent gets pronouns (a.pro) and a body build
+  // (a.look.build), and every Bond gets pronouns (b.pro). Old agents and Bonds open as "they"; old agents take the broad
+  // build, which is the body every agent was drawn with before, so nobody changes shape. Names and code names stay.
+  // On the roster, the team in progress (bl.draft), a paused case (bl.game) and the memorial.
+  12(){
+    const fixA=a=>{if(!a||typeof a!=='object'||Array.isArray(a))return a;if(!PRONOUNS.includes(a.pro))a.pro='they';
+      if(a.look&&typeof a.look==='object'&&!BUILDS.includes(a.look.build))a.look.build='broad';
+      (Array.isArray(a.bonds)?a.bonds:[]).forEach(b=>{if(b&&typeof b==='object'&&!PRONOUNS.includes(b.pro))b.pro='they'});return a};
+    const r=store.get(K('roster'),[]);if(Array.isArray(r))store.set(K('roster'),r.map(fixA));
+    const mem=store.get(K('memorial'),null);if(Array.isArray(mem))store.set(K('memorial'),mem.map(x=>{if(x&&x.a)fixA(x.a);return x}));
+    const d=store.get(K('draft'),null);
+    if(d&&typeof d==='object'&&!Array.isArray(d)){fixA(d.a);if(d.team&&Array.isArray(d.team.seats))d.team.seats.forEach(fixA);store.set(K('draft'),d)}
+    const g=store.get(K('game'),null);
+    if(g!==null){try{const o=JSON.parse(g);if(!o||!Array.isArray(o.party)||!o.party.length)throw 0;
+        o.party.forEach(m=>{if(m&&m.a)fixA(m.a)});store.set(K('game'),JSON.stringify(o))}
+      catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
   }
 };
 function upgradeSaves(){
@@ -307,7 +328,16 @@ function drawPortrait(cv,a,scale,blink){
   else if(A===7){const fr=shade(sk,-42);for(const [x,y] of[[9,17],[11,18],[13,17],[18,17],[20,18],[22,17],[14,19],[17,19]])px(x,y,1,1,fr)}
   else if(A===8){px(6,18,1,2,'#d6a43a')}
   else if(A===9){const g='#d6a43a';for(const x of[9,17]){px(x,ey+1,6,1,g);px(x,ey+eh+1,6,1,g);px(x,ey+1,1,eh+1,g);px(x+5,ey+1,1,eh+1,g)}px(15,ey+2,2,1,g);px(7,ey+1,2,1,g);px(23,ey+1,2,1,g)}
+  if(L.build==='slim')slim32(cv,scale);
 }
+// the slim build (Agent creator, Pronouns and body; Nov 23): the shoulders under the face come in 3 px on each side.
+// Broad is the body as first drawn. The middle of the chest (collars, ties, straps) stays as drawn; the outer
+// shoulder strips move in over the columns they cover.
+function slim32(cv,scale){
+  const ctx=cv.getContext('2d'),t=document.createElement('canvas');t.width=cv.width;t.height=cv.height;t.getContext('2d').drawImage(cv,0,0);
+  ctx.setTransform(1,0,0,1,0,0);const S=scale,y=26*S,h=6*S;
+  ctx.drawImage(t,0,y,5*S,h,3*S,y,5*S,h);ctx.drawImage(t,27*S,y,5*S,h,24*S,y,5*S,h);
+  ctx.fillStyle='#2a2030';ctx.fillRect(0,y,3*S,h);ctx.fillRect(29*S,y,3*S,h);ctx.setTransform(S,0,0,S,0,0)}
 // the kid face (spec 008 part B): a smaller, rounder head set lower, big eyes, narrow shoulders, a plain tee.
 // Takes the same look parts as an adult: skin, hair style and color, eye color, outfit color; glasses and freckles show.
 function drawKid32(px,L,p,blink){
@@ -466,7 +496,7 @@ V.stats=()=>{
   if(a.method==='roll')rows.push(a.roll&&a.roll.left>0?R('Reroll all',{val:'once',a:()=>{a.roll.vals=rollStats();a.roll.left=0;a.stats=clone(a.roll.vals);S.swap=null;toast('THAT\'S YOUR ONE REROLL')}}):ST('<div class="small">Reroll used. These are the numbers.</div>'));
   rows.push(nextRow());
   const hk=rows[S.sel.stats||0]?.k;
-  const feats=STATS.map(k=>feature(k,a.stats[k])&&`<div class="small">${k}: ${esc(feature(k,a.stats[k]))}</div>`).filter(Boolean).join('');
+  const feats=STATS.map(k=>feature(k,a.stats[k])&&`<div class="small">${k}: ${esc(pron(feature(k,a.stats[k]),{a}))}</div>`).filter(Boolean).join('');
   const pane=`<div class="kv" style="grid-template-columns:repeat(4,auto 1fr)"><span>HP</span><span class="hi">${d.HP}</span><span>WP</span><span class="hi">${d.WP}</span><span>SAN</span><span class="hi">${d.SAN}</span><span>BP</span><span class="hi">${d.BP}</span></div>`+
     (hk?`<div class="small"><span class="hi">${hk}</span> · ${esc(STATJOB[hk])}</div>`:'')+
     (buy?`<div>Points left: <span class="${buyLeft(a)===0?'grn':'red'}">${buyLeft(a)}</span> <span class="small">(72 total, 3–18 each)</span></div>`:a.method==='roll'?`<div class="small">${S.swap?'Now pick a stat to swap with '+S.swap+'.':'4d6, drop the lowest. A on two stats to swap them.'}</div>`:'<div class="small">Template stats come set. Switch method to build your own.</div>')+feats;
@@ -487,7 +517,7 @@ V.skills=()=>{
   rows.push(nextRow());
   const hk=rows[S.sel.skills||0]?.k;let pane='';
   if(hk){const n=a.picks[hk]||0,base=Math.max(SKILLS[hk],p.skills[hk]||0),from=p.strong.includes(hk)?'strong':p.backup.includes(hk)?'backup':'base';
-    pane=`<div><span class="hi">${esc(hk.toUpperCase())} ${skillVal(a,hk)}%</span> · ${from} ${base}${n?`, ${['','one pick','two picks','three picks'][n]||n+' picks'}`:''}.${n&&!p.skills[hk]?` A ${esc(p.name)} who ${esc(HOBBY[hk])}.`:''}</div><div class="small">${esc(SKILLJOB[hk])}</div>`}
+    pane=`<div><span class="hi">${esc(hk.toUpperCase())} ${skillVal(a,hk)}%</span> · ${from} ${base}${n?`, ${['','one pick','two picks','three picks'][n]||n+' picks'}`:''}.${n&&!p.skills[hk]?` A ${esc(p.name)} who ${esc(pron(HOBBY[hk],{a}))}.`:''}</div><div class="small">${esc(SKILLJOB[hk])}</div>`}
   pane+=`<div class="small">◀ ▶: −/+20 · a pick stops at 80%</div>`;
   return{rows,pane,info:info(whoLine(a),`PICKS <span class="${left?'hi':'grn'}">${8-left}</span>/8 · cap 80%`),foot:'◀▶: PICK · L/R: STEP'};
 };
@@ -498,7 +528,10 @@ V.identity=()=>{
   return{side:true,rows:[
     R('',{input:{bind:'name',value:a.name,ph:'Full name'},val:''}),
     R('',{input:{bind:'code',value:a.code,ph:'Codename'},val:'<b data-act="right">↻</b>',right:()=>{a.code=genCode()}}),
-    R('',{input:{bind:'back',value:a.backstory,ph:'One-line backstory',max:120},val:''}),
+    R('',{input:{bind:'back',value:pron(a.backstory,{a}),ph:'One-line backstory',max:120},val:''}),
+    // pronouns and body build (Agent creator, step 4, Pronouns and body; spec 022): left/right pickers like the face parts
+    R(esc(PROW_UI.pro),{val:esc(proOf(a)),left:()=>{a.pro=cyc3(a,-1)},right:()=>{a.pro=cyc3(a,1)},a:()=>{a.pro=cyc3(a,1)}}),
+    R(esc(PROW_UI.build),{val:esc(PROW_UI[buildOf(a)]),left:()=>{L.build=buildOf(a)==='slim'?'broad':'slim'},right:()=>{L.build=buildOf(a)==='slim'?'broad':'slim'},a:()=>{L.build=buildOf(a)==='slim'?'broad':'slim'}}),
     r('Skin','skin',6,v=>'Tone '+(v+1)),
     r('Hair','hair',7,v=>HAIRS[v]),
     r('Color','hairC',7,v=>HAIRCN[v]),
@@ -518,13 +551,14 @@ V.bonds=()=>{
     const o={cls:'chiprow',bi:i,val:'',left:cyc(-1),right:cyc(1),a:cyc(1)};
     RELS.forEach((x,j)=>o['t'+j]=setT(j));
     rows.push(R(`<span class="bn">${i+1}</span><span class="chips">${RELS.map((x,j)=>`<span class="chip${b.rel===x?' on':''}${S.tweak?' lock':''}" data-act="t${j}">${esc(x)}</span>`).join('')}</span>`,o));
-    rows.push(R('',{bi:i,input:{bind:'bond'+i,value:b.name,ph:`${b.rel}'s name`},val:`<span class="small">BOND</span> <span class="hi">${b.score??cha}</span>`}));
+    // each Bond's pronouns, a picker beside the name (Agent creator, step 5; spec 022): ◀ ▶ on the name row
+    rows.push(R('',{bi:i,input:{bind:'bond'+i,value:b.name,ph:`${b.rel}'s name`},left:()=>{b.pro=cyc3(b,-1)},right:()=>{b.pro=cyc3(b,1)},val:`<span class="hi">${proOf(b)}</span> <span class="small">BOND</span> <span class="hi">${b.score??cha}</span>`}));
   });
   rows.push(nextRow());
   const hb=a.bonds[rows[S.sel.bonds||0]?.bi??0]||a.bonds[0];
   const pane=`<div><span class="hi">${esc(hb.rel.toUpperCase())}</span> · ${esc(RELTXT[hb.rel])}</div>`+
     `<div class="small">${S.tweak?'Template agents arrive with both Bonds filled in; Tweak renames them.':'Each Bond starts at CHA and wears thin when you lean on it.'}</div>`;
-  return{rows,pane,info:info(whoLine(a),`Bonds start at CHA ${cha}`),foot:'◀▶: TYPE · A: NAME · L/R: STEP'};
+  return{rows,pane,info:info(whoLine(a),`Bonds start at CHA ${cha}`),foot:rows[S.sel.bonds||0]&&rows[S.sel.bonds||0].input?'◀▶: SHE/HE/THEY · A: NAME':'◀▶: TYPE · A: NAME · L/R: STEP'};
 };
 function toggleMot(a,m){const i=a.motives.indexOf(m);if(i>=0){a.motives.splice(i,1);if(a.main>=a.motives.length||a.main===i)a.main=0;else if(a.main>i)a.main--;return}
   if(a.motives.length>=2)return toast('TWO AT MOST. A ON ONE TO DROP IT');a.motives.push(m)}
@@ -541,10 +575,10 @@ V.motives=()=>{
 function dossierCard(a){
   const p=profOf(a),d=derived(a),W=WEAP[p.weapon];
   const top=Object.keys(SKILLS).map(k=>[k,skillVal(a,k)]).sort((x,y)=>y[1]-x[1]).slice(0,6);
-  const feats=STATS.map(k=>feature(k,a.stats[k])).filter(Boolean);
+  const feats=STATS.map(k=>pron(feature(k,a.stats[k]),{a})).filter(Boolean);
   const h=t=>`<h3 style="font:8px var(--px);color:var(--scr-hi);margin:7px 0 2px">${t}</h3>`;
   return`<div class="card"><div class="top"><img class="pix face" src="${portraitURL(a,3)}" width="96" height="96" alt="Agent portrait"><div class="who"><div class="n">${esc(a.name||'Unnamed Agent')}</div><div class="hi">AGENT ${esc(a.code||surname(a))}</div><div>${esc(p.name)}</div><div class="small">${esc(p.team)}</div>${a.cur?`<div class="red">SAN now ${a.cur.san}/${d.SAN}${(Array.isArray(a.cur.dis)?a.cur.dis:[]).length?' · '+esc(a.cur.dis.map(x=>(BLS.DISORDERS[x.k]||{}).name).join(', ')):''}</div>`:''}<span class="stamp">CLEARED</span></div></div>
-  ${a.backstory?`<div class="small" style="margin-top:5px;color:var(--scr-fg)">${esc(a.backstory)}</div>`:''}
+  ${a.backstory?`<div class="small" style="margin-top:5px;color:var(--scr-fg)">${esc(pron(a.backstory,{a}))}</div>`:''}
   <div class="sgrid">${STATS.map(k=>`<span><span class="small">${k}</span> ${a.stats[k]}</span>`).join('')}</div>
   <div class="sgrid" style="grid-template-columns:repeat(4,1fr)"><span><span class="small">HP</span> ${d.HP}</span><span><span class="small">WP</span> ${d.WP}</span><span><span class="small">SAN</span> ${d.SAN}</span><span><span class="small">BP</span> ${d.BP}</span></div>
   ${h('BEST SKILLS')}<div class="small" style="color:var(--scr-fg)">${top.map(([k,v])=>`${esc(k)} ${v}%`).join(' · ')}</div>

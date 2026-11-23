@@ -10,6 +10,8 @@
 // A list plays box by box: a string is narration, ['A', line] the agent, ['B', line] the Bond, ['WHO', line] anyone else.
 // {A} the agent's name, {B} the Bond's name, {T} a Therapist's name, {M} a motivation, {D} a disorder, {SKILL} a skill,
 // {B2} the agent's other Bond. Arc beats also use {X}: someone the beat needs who isn't one of the agent's Bonds.
+// Pronouns are tokens for the person in a key, never a fixed he or she: {B.they} {B.them} {B.their} {B.themself}, capitalized
+// at a sentence start ({B.They}), and {B:sing|plural} for a verb ({B:doesn't|don't}). See BLS.pron in strings.js.
 const HT={
  // Fulfill Responsibilities: the scene by Bond type and mood (before the roll), then the outcome box by mood
  fr:{
@@ -68,7 +70,7 @@ const HT={
   ['You wake up on the bathroom floor. The tile\'s cool.','The cat sits on the edge of the tub, watching you like a rerun.']],
  useCost:['{B} calls. You let it ring. On the fourth call you pick up','and lie so well it scares you.'],
  newBond:{partner:['You meet {B} at a laundromat at two in the morning.','You\'re both washing something you won\'t talk about. You don\'t talk about it.','Best date you\'ve had in years.'],
-  kid:['The paperwork took months. {B} took four minutes.','They looked at your car, said "it\'s dirty," and decided you were okay.'],
+  kid:['The paperwork took months. {B} took four minutes.','{B.They} looked at your car, said "it\'s dirty," and decided you were okay.'],
   parent:['The number in the old address book still works.',['B','...Well.'],['B','Well. Look who it is.']],
   sibling:['A DNA kit, a 47% match, and a stranger in Tulsa named {B}.','By the second call, {B} already has a nickname for you. It\'s mean. It\'s perfect.'],
   friend:['{B} lives next door and brings your trash can in every week without being asked.','One day you carry over a six-pack. That\'s the whole ceremony.'],
@@ -120,7 +122,7 @@ const HT={
    b2hold:['Mrs. Ruiz mailed you his yearbook. Somebody signed it "see you at the pond."'],b2slip:['Page four turns up in a county archive box. Two sets of tire tracks.'],
    b2:['Danny wasn\'t alone at the pond. There was a second set of tracks. A borrowed truck.','The person who drove away was {B}.',['B','He said he was fine. He said "go, I\'m fine." I was seventeen.'],
     ['B','I\'ve thought about it every day. You want to know a secret? Every day is not an exaggeration.']],
-   hold2:['Ask {B} to tell her','You say you\'ll go with them. You\'ll sit in the car if that\'s easier.','{B} says nothing for a long time. Then: "Okay."'],
+   hold2:['Ask {B} to tell her','You say you\'ll go with {B.them}. You\'ll sit in the car if that\'s easier.','{B} says nothing for a long time. Then: "Okay."'],
    slip2:['Tell her yourself','You call Mrs. Ruiz that night.','It comes out of you in about a minute. The relief is enormous. It shouldn\'t be.'],
    good:['The pond, early morning.','{B} and Mrs. Ruiz sit on a tailgate, not talking. She hands {B} a thermos.','That\'s not forgiveness. It\'s coffee. It\'s a start.'],
    bad:['{B}\'s number is disconnected.','A postcard comes from two states away. Five words.','"You could have let me."'],
@@ -132,7 +134,7 @@ const HT={
    slip1:['Send money for movers','You send the money. You spend the weekend with {B}.','It feels like a vacation. That\'s the problem with it.'],
    b2hold:['In the attic, under the Christmas boxes, you find a shoebox.',['X','I was going to burn those. I kept not doing it.']],b2slip:['The movers ship the boxes. In one of them, alone in your kitchen, you find a shoebox.'],
    b2:['Letters to a P.O. box. A photo of a toddler in a car seat. Born two years before you.','On the back: "Our Annie. We\'re sorry."'],
-   hold2:['Find Annie','You ask {X} for their blessing. {X} gives it, the way you\'d give up a tooth.','You start looking.'],
+   hold2:['Find Annie','You ask {X} for {X.their} blessing. {X} gives it, the way you\'d give up a tooth.','You start looking.'],
    slip2:['Burn it. Keep the peace.','The box goes in the fire pit.','{X} hugs you and means it.'],
    good:['A diner booth. A woman with your exact nose.','She\'s brought her own kids\' school photos and lays them out like a hand of cards.',['ANNIE','So. You\'re the one they kept.'],'She laughs first. That\'s how you know it\'ll be all right.'],
    bad:['The last box comes out of Pell Street.','In it: the Christmas ornaments, a dead phone charger, and nothing else.','Some families keep secrets. Yours kept you.'],
@@ -141,13 +143,13 @@ const HT={
   'Faith':{
    b1:['{B} has been sick for a year. Pain no doctor can name.','A flyer on the fridge: HEALING REVIVAL. ALL WELCOME. ROUTE 9. NO COLLECTION TAKEN.','That last line is underlined twice.',
     ['B','No collection. When\'s the last time church didn\'t pass a plate?'],'Whatever you believe, or used to, it gets quiet in you when you read that line.'],
-   hold1:['Go with them','You stand in the back of the tent. Folding chairs. A man with a tambourine and no rhythm.','At the far edge of the crowd, a tall man in an old deacon\'s coat. A ledger under his arm.','His eyes are closed. He\'s turned toward you anyway.'],
+   hold1:['Go with {B.them}','You stand in the back of the tent. Folding chairs. A man with a tambourine and no rhythm.','At the far edge of the crowd, a tall man in an old deacon\'s coat. A ledger under his arm.','His eyes are closed. He\'s turned toward you anyway.'],
    slip1:['It\'s a con. Stay home.','{B} goes to bed angry. You sit up with the TV.','You\'re sure. Tonight, you\'re sure.'],
    b2hold:['{B} has been going back to the tent every week.'],b2slip:['{B} went to the tent without you.'],
-   b2:['{B} is better. Not cured. Better.','They had a visit at home. A courteous man. A paper and a pen.',['B','He said I only have to sign when I\'m ready. He said there\'s no hurry. Isn\'t that the kindest thing?'],
+   b2:['{B} is better. Not cured. Better.','{B.They} had a visit at home. A courteous man. A paper and a pen.',['B','He said I only have to sign when I\'m ready. He said there\'s no hurry. Isn\'t that the kindest thing?'],
     'You find the paper on the counter. The line for a signature is already a little worn.','Like a lot of thumbs have rested there.'],
-   hold2:['Tear it up. Sit with them.','You tear it into eighths. You and {B} sit at the kitchen table till sunrise. Some of that is praying. Some of it isn\'t.','The pain is back by morning.'],
-   slip2:['Sign it yourself, so they don\'t have to','You sign. The pen is warm, like somebody just put it down.','{B} sleeps without pain for the first time in a year.'],
+   hold2:['Tear it up. Sit with {B.them}.','You tear it into eighths. You and {B} sit at the kitchen table till sunrise. Some of that is praying. Some of it isn\'t.','The pain is back by morning.'],
+   slip2:['Sign it yourself, so {B.they} {B:doesn\'t|don\'t} have to','You sign. The pen is warm, like somebody just put it down.','{B} sleeps without pain for the first time in a year.'],
    good:['Route 9. Where the tent was, a square of yellow grass.','{B} holds your hand and says the pain\'s bad today, and that\'s fine.','Nobody passed a plate. Nobody had to.'],
    bad:['You wake up with a pen in your hand.','You don\'t own a pen like that.'],
    shield:['You stop going to church. Any church.','On Route 9 the grass is still yellow in a square.','You take the long way around.'],
@@ -198,9 +200,9 @@ const HT={
    b2hold:['The collector writes again. He heard you have access. He offers more.'],b2slip:['The collector writes again. He wants more. He knows your home address.'],
    b2:[['COLLECTOR','Not threatening. Just a fan. Big fan. Of your front door.']],
    hold2:['Tell Big Hat',['BIG HAT','Put a bow on this.'],'By morning the collector has vanished from the internet. All of it. Even his Yelp reviews.'],
-   slip2:['Sell him one more thing','The bill is paid off.','{B} cries with relief in a parking lot. You hold them and you don\'t feel anything at all.'],
+   slip2:['Sell him one more thing','The bill is paid off.','{B} cries with relief in a parking lot. You hold {B.them} and you don\'t feel anything at all.'],
    good:['A kitchen table. A laptop. A spreadsheet called BROKE BUT ALIVE.','You and {B} eat cereal for dinner and laugh.','It isn\'t paid off. It isn\'t close. You\'re not alone with it.'],
-   bad:['{B} finds the collector\'s texts.','They don\'t yell. They put the money on the counter in an envelope, every dollar, and leave.'],
+   bad:['{B} finds the collector\'s texts.','{B.They} {B:doesn\'t|don\'t} yell. {B.They} {B:puts|put} the money on the counter in an envelope, every dollar, and {B:leaves|leave}.'],
    shield:['You stop checking your bank balance.','{B} stops asking.','It\'s quieter. That\'s not the same thing.'],
    perk:'money',badBond:1},
   'Redemption':{
@@ -250,6 +252,9 @@ function castFor(m,extra={}){
 // plays scene lines: 'A' the agent, 'B' the Bond, 'T' a Therapist, 'X' an arc stand-in; anyone else by name
 async function hPlay(seq,m,o={}){
  const fo=Object.assign({A:m.name,B:o.B||'',B2:o.B2||'',T:o.T||'',X:o.X||'',M:o.M||'',D:o.D||'',SKILL:o.SKILL||''},o);
+ // pronouns (Pronouns and body, Nov 23): the agent, and this agent's own Bonds by name (a stand-in nobody named reads as they)
+ const bond=n=>(m.a.bonds||[]).find(b=>b&&b.name===n)||null;
+ fo['A@']=m.a;['B','B2','X'].forEach(k=>{if(!((k+'@') in fo))fo[k+'@']=bond(fo[k])});
  for(const l of [].concat(seq||[])){
   if(Array.isArray(l)){const who=l[0]==='A'?m.name:l[0]==='B'?fo.B:l[0]==='T'?fo.T:l[0]==='X'?fo.X:l[0];await say(String(who).toUpperCase(),fillT(l[1],fo))}
   else await say('',fillT(l,fo),{as:m.name.toUpperCase()})}}
@@ -348,7 +353,7 @@ function arcOf(m){const a=m.a,main=(a.motives||[])[a.main|0];if(!main)return nul
 function arcCast(m,A){const a=m.a,bs=bondsOf(a).filter(x=>x.s>0&&!(A.adult&&x.b.rel==='Kid')).sort((p,q)=>q.s-p.s);
  const b1=bs[0]?bs[0].b.name:(a.arc.stand=a.arc.stand||pick(HT.stand)),b2=bs[1]?bs[1].b.name:'';
  const par=bondsOf(a).find(x=>x.b.rel==='Parent'&&x.s>0);const X=A.parent?(par?par.b.name:(a.arc.standX=a.arc.standX||pick(HT.stand))):'';
- return{B:b1,B2:b2,X,bond:bs[0]?bs[0].b:null,par:par?par.b:null}}
+ return{B:b1,B2:b2,X,bond:bs[0]?bs[0].b:null,par:par?par.b:null,'B@':bs[0]?bs[0].b:null,'B2@':bs[1]?bs[1].b:null,'X@':A.parent&&par?par.b:null}}
 async function arcBeat(m){
  const a=m.a,arc=arcOf(m);if(!arc||arc.over||arc.beat>=3)return;
  const n=(a.sc|0)-(arc.base|0);if(![1,3,5].includes(n)||arc.at===n)return;arc.at=n;
@@ -473,7 +478,8 @@ async function actBond(m,r){
  const t=await choose(BLS.RELS,{cancel:true,title:HW.typeT});if(t<0)return false;
  const names=BLS.FIRST.slice().sort(()=>Math.random()-.5).slice(0,4),n=await choose([...names,HW.typeName],{cancel:true,title:HW.nameT});if(n<0)return false;
  let name=names[n];if(n===names.length){let v=null;try{v=window.prompt(HW.namePrompt,names[0])}catch(e){}name=String(v||names[0]).trim().slice(0,14)||names[0]}
- const a=m.a,b={rel:BLS.RELS[t],name,score:Math.ceil(chaOf(a)/2)};a.bonds=a.bonds||[];a.bonds.push(b);bondLook(b);
+ const pi=await choose(BLS.PRONOUNS,{cancel:true,title:BLS.PROW_UI.bondPro});if(pi<0)return false;
+ const a=m.a,b={rel:BLS.RELS[t],name,pro:BLS.PRONOUNS[pi],score:Math.ceil(chaOf(a)/2)};a.bonds=a.bonds||[];a.bonds.push(b);bondLook(b);
  castFor(m);setBg(HTYPE(b.rel));await hPlay(HT.newBond[HTYPE(b.rel)]||[],m,{B:name});
  await result(m,r.name,[{l:`${name} · ${b.rel}`,chip:`${b.score}/${chaOf(a)}`}],`[New Bond: ${name}]`);return true}
 async function actTherapy(m,r){
@@ -571,7 +577,7 @@ function drawBondPick(){
   pT(fillT(HW.bondLine,{s:x.s,c:x.cha}),60,y+33,PC.lav,12);
   s.hits.push({x:4,y,w:232,h:bh,fn:()=>{if(s.sel===k)homePress('a');else s.sel=k}});y+=bh+3});
  const x=all[s.sel],dh=Math.max(36,VH-y-3);pBox(4,y,232,dh,PC.deep,PC.cream,2);
- if(x){const L=[[fillT(HW.moodLine[x.mood]||'',{b:x.b.name,n:m.name}),PC.cream],[s.r.roll,PC.lav],[s.pay&&x.s<=1?HW.noBond:s.pay?HW.payKeys:HW.bondKeys,PC.dim]];const out=[];L.forEach(([t,c])=>pWrap(t,220,13,3).forEach(l=>out.push([l,c])));
+ if(x){const L=[[fillT(HW.moodLine[x.mood]||'',{b:x.b.name,n:m.name}),PC.cream],[s.r.roll,PC.lav],[s.pay&&x.s<=1?HW.noBond:fillT(s.pay?HW.payKeys:HW.bondKeys,{b:x.b.name,'b@':x.b}),PC.dim]];const out=[];L.forEach(([t,c])=>pWrap(t,220,13,3).forEach(l=>out.push([l,c])));
   out.slice(0,Math.floor((dh-4)/11)).forEach(([t,c],k)=>pT(t,10,y+2+k*11,c,13))}
 }
 // ---- BACK FROM SABBATICAL: the agent and the recruit side by side ----
