@@ -341,7 +341,9 @@ const SKILLOPT={
  backdoor:{skill:'Computers',tier:90,label:'Backdoor'},
  fix:{skill:'Craft',tier:40,label:'Fix it'},
  rig:{skill:'Craft',tier:75,label:'Rig'},
- blow:{skill:'Craft',tier:90,label:'Blow it',loud:1}
+ blow:{skill:'Craft',tier:90,label:'Blow it',loud:1},
+ // a Medicine roll at a hotspot (Treat's tier), for cases that read a scan or guide a patient (Lost Hour, spec 016)
+ treat:{skill:'Medicine',tier:40,label:'Treat'}
 };
 // once per case, one roll of the skill auto-succeeds (90% perks: Keen eye, Silver tongue, Ghost, Backdoor)
 const AUTOPERK={Search:'Keen eye',Persuade:'Silver tongue',Stealth:'Ghost',Computers:'Backdoor'};

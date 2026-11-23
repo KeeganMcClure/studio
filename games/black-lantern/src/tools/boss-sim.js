@@ -69,6 +69,27 @@ const BOSSES = {
     setup: s => { const F = G.flags; F.ph = 1; F.walt = s.walt ? 'down' : null; F.read = s.read ? 1 : 0; F.iced = s.iced ? 1 : 0; F.crawler = s.crawler ? 1 : 0; F.cold = 0; delete F.pulled;
       G.clues = G.clues.filter(c => c.id !== 'ledger'); if (s.ledger) G.clues.push({ id: 'ledger', text: '' }); G.fs.ident = []; goMap('pump', 8, 5, 'up'); },
   },
+  // Lost Hour (spec 016 part B): its weakening choices are the count (memory 1 and 2: −8 HP, a lost first turn on a good
+  // roll, no phase-2 fog shield), the headlights (−6 HP, no Lamp heals; flares only dim them) and the card given back
+  // (−6 HP, a free round). Who carries the tally matters too: Ray (bait) can be taken by two holds, which ends the fight
+  // "won" but is the worst ending, so the table counts those apart; the tally cut out leaves it no Take and −1 damage.
+  // "all" makes every choice.
+  surveyor: {
+    case: 'lost-hour',
+    entry: 'lhBoss',  // lost-hour.js: bossFight without the ending
+    scenarios: [
+      { label: 'none (Ray)', carrier: 'ray' },
+      { label: 'none (cut)', carrier: 'cut' },
+      { label: 'count (Ray)', carrier: 'ray', count: 1 },
+      { label: 'lights (Ray)', carrier: 'ray', light: 'car' },
+      { label: 'flares (Ray)', carrier: 'ray', light: 'flares' },
+      { label: 'card (Ray)', carrier: 'ray', card: 1 },
+      { label: 'all (Ray)', carrier: 'ray', count: 1, light: 'car', card: 1 },
+      { label: 'all (cut)', carrier: 'cut', count: 1, light: 'car', card: 1 },
+    ],
+    setup: s => { const F = G.flags; F.ph = 3; F.carrier = s.carrier; F.light = s.light || null; F.unfolded = s.card ? 1 : 0; delete F.taken; delete F.takenAgent; delete F.folded; delete F.revenge;
+      G.clues = G.clues.filter(c => !['memory1', 'memory2'].includes(c.id)); if (s.count) G.clues.push({ id: 'memory1', text: '' }, { id: 'memory2', text: '' }); G.fs.ident = []; goMap('field', 15, 12, 'up'); },
+  },
 };
 
 const args = process.argv.slice(2);
@@ -111,7 +132,7 @@ function installPage() {
   endBattle = async res => {
     const e = Bt.en[0];
     window.__last = { res, rounds: Bt.round, downed: party.filter(m => m.wasDowned).length, dead: party.filter(m => m.dead).length,
-      snapped: party.filter(m => m.out || m.san <= 0).length, bossHp: e ? e.hp : 0, bossMax: e ? e.mhp : 0, phase2: Bt.phase === 2,
+      snapped: party.filter(m => m.out || m.san <= 0).length, bossHp: e ? e.hp : 0, bossMax: e ? e.mhp : 0, phase2: Bt.phase === 2, taken: !!(G.flags && G.flags.taken),
       wpLeft: party.reduce((t, m) => t + (m.wp | 0), 0), sanLost: party.reduce((t, m) => t + ((m.san0 | 0) - (m.san | 0)), 0) };
     return endB(res);
   };
@@ -229,6 +250,7 @@ function summarize(recs) {
     anyDeath: recs.filter(r => r.dead > 0).length / n, phase2: recs.filter(r => r.phase2).length / n,
     bossLeftOnLoss: avg(recs.filter(r => r.res !== 'win'), 'bossHp'), hp: recs[0] && recs[0].bossMax,
     ends: recs.reduce((t, r) => (t[r.res] = (t[r.res] || 0) + 1, t), {}), snapped: avg(recs, 'snapped'),
+    taken: recs.filter(r => r.taken).length / n, winKept: recs.filter(r => r.res === 'win' && !r.taken).length / n,
   };
 }
 
@@ -263,7 +285,7 @@ function summarize(recs) {
     if (TRACE) { console.log((await page.evaluate(() => window.__log)).join('\n')); console.log(JSON.stringify(recs[0])); break outer; }
     const s = Object.assign({ ai, scenario: scen.label }, summarize(recs), { secs: (Date.now() - t0) / 1000 });
     results.push(s);
-    if (!JSONOUT) console.log(`${ai.padEnd(8)} ${scen.label.padEnd(18)} HP ${String(s.hp).padStart(2)} · win ${pct(s.win).padStart(4)} · rounds ${s.rounds.toFixed(1).padStart(4)} (wins ${s.winRounds.toFixed(1)}) · Downed ${s.downed.toFixed(2)} · wins with ≤1 Downed ${pct(s.winLe1).padStart(4)} · deaths ${s.deaths.toFixed(2)} (a death in ${pct(s.anyDeath)}) · boss HP left on a loss ${s.bossLeftOnLoss.toFixed(1)} · ${s.secs.toFixed(0)}s`);
+    if (!JSONOUT) console.log(`${ai.padEnd(8)} ${scen.label.padEnd(18)} HP ${String(s.hp).padStart(2)} · win ${pct(s.win).padStart(4)} · rounds ${s.rounds.toFixed(1).padStart(4)} (wins ${s.winRounds.toFixed(1)}) · Downed ${s.downed.toFixed(2)} · wins with ≤1 Downed ${pct(s.winLe1).padStart(4)} · deaths ${s.deaths.toFixed(2)} (a death in ${pct(s.anyDeath)}) · boss HP left on a loss ${s.bossLeftOnLoss.toFixed(1)}${s.taken ? ` · carrier taken ${pct(s.taken)} (won and kept ${pct(s.winKept)})` : ''} · ${s.secs.toFixed(0)}s`);
   }
   if (JSONOUT) console.log(JSON.stringify(results, null, 1));
   if (errors.length) { console.error('Page errors:\n' + [...new Set(errors)].join('\n')); process.exitCode = 1; }
