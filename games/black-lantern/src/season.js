@@ -9,9 +9,6 @@
 
 const SEASONS={};
 function registerSeason(d){if(d&&(d.n||d.id))SEASONS[d.id||d.n]=d}
-// The agency half of a season (its agency cases, their unlock counts, the finale and the season-end lines) comes from
-// the private repo at build time (tools/build.js) and merges into the season the public data file registered.
-function registerAgency(d){const s=d&&SEASONS[d.n];if(!s)return;s.agency=d.agency||[];s.text=Object.assign({unlock:{},end:[]},s.text,d.text)}
 // the Dev build's test season stands in for Season 1 while it's switched on (Dev: test season on the title)
 const testSeasonOn=()=>!!(window.Studio&&Studio.channel==='dev'&&SEASONS.test&&settings().testSeason);
 function seasonDef(n){if(n===1&&testSeasonOn())return SEASONS.test;return SEASONS[n]||null}

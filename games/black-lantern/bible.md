@@ -50,7 +50,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
     Done Nov 23: Big Hat gives a one-word pop-culture code name on the Dossier in his dialog box, with Take it, Another or Type my own; template agents have new hand-picked names, and old agents keep theirs until they ask.
 - [x] Home phase part C (spec 008): enough home scenes for a season, with the played list kept in the season save. Before the season flow
   Done Nov 23: every home scene choice now draws from a pool big enough for a season, and the same scene doesn't come back until the rest have played; the game remembers what played across the whole season, even after a reload.
-- [ ] Season flow (spec 009): the season data file, the board for a full season, agency case unlocks, the finale, the season's end and the next season. After the home phase
+- [x] Season flow (spec 009): the season data file, the board for a full season, agency case unlocks, the finale, the season's end and the next season. After the home phase
+  Done Nov 23: the season's agency entries are in the season data file, so a whole season runs from New game to its end once its agency cases are built.
 - [x] Home phase part D (spec 008, Part C table): 4 more Fulfill Responsibilities scenes at Close for each of the 8 Bond types (7 each, 32 new scenes), so a season never repeats one. After the season flow
   Done Nov 23: each Bond type now has 7 Close scenes (32 new), so a season of visits to the same close Bond never repeats one.
 - [ ] Creator look fixes (spec 022, Part 3): the backstory in a detail box, the map and battle sprites under the face on Identity, AGENT ??? before Big Hat names the agent, and a solid box over a darker Dossier
