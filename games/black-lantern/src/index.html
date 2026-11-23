@@ -71,7 +71,35 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 .sbar .done{border-color:#7fbf6a}.sbar .on{border-color:var(--gold);color:var(--scr-hi)}.sbar .lock{opacity:.4}
 .info{display:flex;justify-content:space-between;gap:6px;padding:4px 10px 0;font-size:17px;line-height:1;white-space:nowrap;overflow:hidden}
 .info span:first-child{overflow:hidden;text-overflow:ellipsis;min-width:0}
-.pane[hidden],.info[hidden],.sbar[hidden]{display:none!important}
+.pane[hidden],.info[hidden],.sbar[hidden],.under[hidden],.detail[hidden]{display:none!important}
+/* the right column (pane plus what shows under it) only counts as a box in the side layout */
+.col{display:contents}
+.body.side .col{display:flex;flex-direction:column;flex:none;min-height:0;max-width:44%}
+.screen:not(.gaming) .body.side .col .pane{flex:none;max-height:none;overflow:visible}
+/* Identity (spec 022, Part 3): the map sprite and battle back under the face, and the backstory box across the bottom */
+.under{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;padding:0 4px 6px 0;overflow:hidden}
+.under .bodies{display:flex;align-items:flex-end;justify-content:center;gap:10px}
+.under figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:17px;line-height:1;color:var(--scr-dim)}
+.under canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+.under .small{text-align:center;line-height:1}
+.under.nohint .hint{display:none}
+.screen.idtight .body.side .col .pane .prof{display:none}
+.screen.idtight:not(.gaming) .body.side .col .pane{padding:4px}
+.screen.idtight .under{padding-bottom:3px}
+.screen.idtight2 .under{padding-bottom:0}
+.screen.idtight .under figure{font-size:15px;gap:1px}
+.screen.idtight .detail{padding:3px 8px 4px}
+.screen.idtight .detail p{line-height:15px}
+.screen.idtight2:not(.gaming) .body.side .col .pane{border:0;background:none;padding:2px 0 0}
+/* 320 x 480: BACKSTORY starts the first line, so the text gets one more line of room */
+.screen.idtight2 .detail{font-size:17px;line-height:14px}
+.screen.idtight2 .detail h4{display:inline;margin-right:5px;line-height:14px}
+.screen.idtight2 .detail p{font-size:17px;line-height:14px}
+.screen.idtight2 .detail p{display:inline}
+.detail{flex:none;margin:0 6px 6px;border:2px solid var(--scr-fg);border-radius:3px;background:var(--well);padding:5px 8px 6px;color:var(--scr-fg)}
+.detail h4{font:7px/1.6 var(--px);color:var(--scr-hi);margin:0 0 2px;letter-spacing:.04em}
+/* the whole backstory always shows (120 letters at most): no clipping */
+.detail p{margin:0;font-size:18px;line-height:17px;overflow-wrap:anywhere}
 .screen:not(.gaming) .list{margin:5px 6px;padding:3px 0;border:2px solid var(--scr-line);border-radius:3px;background:var(--card)}
 .screen:not(.gaming) .list.bare{border:0;background:none;padding:0 0 4px}
 .screen:not(.gaming) .pane{margin:0 6px 6px;border:2px solid var(--scr-fg);border-radius:3px;background:var(--well);max-height:36%;padding:5px 8px;line-height:1}
@@ -158,7 +186,9 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 .gbox{position:absolute;background:rgba(13,19,34,.94);border:2px solid #ebe5c8;box-shadow:0 0 0 2px #0d1322;border-radius:3px;color:#ebe5c8;font:19px/1.08 var(--vt);padding:5px 8px;box-sizing:border-box}
 /* Lantern Bust dialog box (dialog.js). Text keeps its 2 px unit; the portrait is drawn at the map's pixel size (--pu = 64 map px, set by the engine). */
 /* Big Hat's code-name box over the Dossier (creator.js, spec 022): the same Lantern Bust box, over a dimmed screen */
-#cdlg{position:absolute;inset:0;z-index:6;background:rgba(5,4,10,.45)}
+/* Part 3 (Nov 23): the Dossier dims about 80% behind the box, and the box is solid so no Dossier text shows through */
+#cdlg{position:absolute;inset:0;z-index:6;background:rgba(5,4,10,.85)}
+#cdlg .bld{background:#0d1322}
 #cdlg[hidden]{display:none}
 #cdlg .bld{cursor:pointer}
 #cdlg .bld-t{white-space:pre-line}
@@ -204,7 +234,8 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 <div class="screen" id="screen" data-brand="BLACK LANTERN" data-brand-sub="DOT MATRIX" data-label-l="L: previous step" data-label-r="R: next step" data-label-start="Start: dossier, done, or begin">
   <div class="hdr"><span id="hTitle"></span><span id="hStep"></span><div class="sbar" id="hBar" hidden></div></div>
   <div class="info" id="info" hidden></div>
-  <div class="body" id="body"><div class="list" id="list"></div><div class="pane" id="pane"></div></div>
+  <div class="body" id="body"><div class="list" id="list"></div><div class="col" id="col"><div class="pane" id="pane"></div><div class="under" id="under" hidden></div></div></div>
+  <div class="detail" id="detail" hidden></div>
   <div class="ftr" id="ftr"></div>
   <div id="game"><canvas id="gcv" width="240" height="160"></canvas><div class="gban" id="gban" hidden></div><div id="gdlg"></div><div class="gbox" id="gmenu" hidden></div><div id="ghud" hidden></div><div id="gfade"></div></div>
   <div class="vig" id="vig"></div>
