@@ -159,7 +159,7 @@ The bible's three keys, plus a version number, all through `RL.key` so the Dev b
 
 ### 10. After Sign them on
 
-Until Parts B and C exist, Sign them on drops the company into a **stand-in town**: one small walkable street, built from the shell's tiles, with the three mercs following the lead. Start opens the map menu: Party (the shared card list from spec 002, now with real mercs), Items (gear and pack, read-only), Export, and Title. Part C replaces the stand-in with Harrowford.
+Until Parts B and C exist, Sign them on drops the company into a **stand-in town**: one small walkable street, built from the shell's tiles, where only the lead walks, as on every map (bible Art, Town street: "Only the lead walks, as in Black Lantern"). The other two never trail behind. Start opens the map menu: Party (the shared card list from spec 002, now with real mercs), Items (gear and pack, read-only), Export, and Title. Part C replaces the stand-in with Harrowford.
 
 ### Wiring
 
