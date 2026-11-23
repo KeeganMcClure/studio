@@ -2,7 +2,7 @@
 
 Written 2026-11-23 by the Game Designer (Story → Adding a new case, step 2). Three options for the last board spot in Keegan's season 1 plan. Keegan picks one; the other two stay here and can come back in a later season.
 
-**Picked: C · Dead Air** (Keegan, Nov 23). Larkspur and Due Date stay available for a later season.
+**Picked: C · Dead Air** (Keegan, Nov 23). Due Date stays available for a later season. Larkspur is held back for the agency arc, like the Missing agent seed (Designer, Nov 23, 2026), so later rounds don't pitch it again.
 
 Season 1 so far: Still Harvest (autumn, Oregon), Good Manners (summer, Kansas, open), Lot 83 (summer, Austin, quiet), Lost Hour (spring, Virginia, quiet), Tracking (winter, Reno, quiet). Round 4's two unpicked pitches, Larkspur and Due Date, come back here unchanged, beside one new pitch, Dead Air.
 
