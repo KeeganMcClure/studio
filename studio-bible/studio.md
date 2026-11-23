@@ -46,3 +46,12 @@ The loop for each feature and the bug route are in the README; the Developer's r
 ## Changing a rule
 
 Locked rules change only on purpose. Change the bible file first in a PR, note the date, then update anything that depends on it.
+
+## Specs
+
+Set Nov 23, 2026, after Rushlight's spec 003 said the mercs follow the lead while the bible said only the lead walks, and the spec got built.
+
+- **The bible beats a spec.** A spec links to the bible rules it relies on (file and section) instead of writing them out again, so the two can't drift apart.
+- A spec that changes a rule says so on a line starting **Rule change:**, and the bible change goes in first, in its own PR.
+- Before a spec PR opens, the Designer checks every line in it that touches a rule against the bible section it cites.
+- If the Developer finds a spec and a bible disagree, they stop and ask Keegan before building that part, as `CLAUDE.md` says. The rest of the spec can go ahead.
