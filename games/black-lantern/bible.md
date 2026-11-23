@@ -21,7 +21,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
     Done Nov 22: fights use the head-on layout from the combat mockup, with the turn-order column, HP bars, the one-row Fight · Skills · Items · Guard box and result lines. Every battle move, status move, item and weapon works by the Combat tab; Downed agents bleed out after 3 turns, lasting injuries roll after the fight, and each enemy has big battle art. The case's enemies are stand-ins at the bible's tiers (the Gleaner at 60 HP, −8 per victim) until Part C.
   - [ ] Demo 5 part C: the story. Its text block, branching paths, fewer but harder fights, and the Gleaner at the bible's numbers
     Left (Nov 23): only the Gleaner's boss tuning check. Do it next, before any new case's part B, because every later boss is tuned against the Gleaner (Combat → Bosses, Tuning check). Keegan's read from the demo playtest: it played OK, maybe a touch harder would be good, with a strong team mix. So tune it a touch harder for a careful Field Team, inside the Boss tier (55–65 HP, Combat numbers): still a win with at most one agent Downed, and a team that skipped the victims can lose.
-- [ ] Leftovers from the demo build (found in the pre-season review, Nov 23): two things the bible asks for that were never built
+- [x] Leftovers from the demo build (found in the pre-season review, Nov 23): two things the bible asks for that were never built
+  Done Nov 23: both leftovers are built: B skips a seen briefing or cutscene, and Mushrooms make the screen shimmer.
   - [x] B skips a briefing or cutscene you've already seen (Skills and menus → Quality of life, Skip replays; spec 006)
     Done Nov 23: once you've seen a briefing or cutscene, a B SKIP tab shows on the box and B skips the rest of it, even after a reload or a game over. Questions and choices still play.
   - [x] Mushrooms' screen shimmer while High on them (Agents and items → Item list)
