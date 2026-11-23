@@ -109,6 +109,26 @@ const BOSSES = {
       G.clues = G.clues.filter(c => c.id !== 'record'); if (s.record) G.clues.push({ id: 'record', text: '' }); G.fs.ident = [];
       if (s.brine) gearOf(party[0]).it.push(newItem('brine')); goMap('cannery', 12, 4, 'up'); },
   },
+  // Tracking (spec 018 part B): its weakening choices are the copies burned (−2 HP each, and no heals: each copy not
+  // burned is a door she heals 5 through, up to 3), the stage lights woken (no −10 to hit her while she dances), her name
+  // said (−6 HP, no second-phase speed) and the chant read backward (−8 HP). Each watch of the tape adds 2 HP, and 3 or
+  // more make her faster. "all" makes every choice; the case's budget is a team that watches once or twice.
+  vesper: {
+    case: 'tracking',
+    entry: 'trkBoss',  // tracking.js: bossFight without the ending
+    scenarios: [
+      { label: 'none, 1 watch', w: 1 },
+      { label: 'none, 0 watches', w: 0 },
+      { label: 'none, 4 watches', w: 4 },
+      { label: 'burned all', w: 1, burned: 5 },
+      { label: 'lights', w: 1, lights: 1 },
+      { label: 'name, chant', w: 1, name: 1, read: 1 },
+      { label: 'all, 1 watch', w: 1, burned: 5, lights: 1, name: 1, read: 1 },
+      { label: 'all, 2 watches', w: 2, burned: 5, lights: 1, name: 1, read: 1 },
+    ],
+    setup: s => { const F = G.flags; F.ph = 3; F.trk = s.w; F.cp = {}; ['bin', 'wes', 'travis', 'gideon', 'bar'].forEach((k, i) => { F.cp[k] = i < (s.burned || 0) ? 'burned' : 'royce'; });
+      F.lights = s.lights ? 1 : 0; F.darlene = s.name ? 1 : 0; F.read = s.read ? 1 : 0; F.knowLight = s.w >= 2 ? 1 : 0; F.boss = 0; G.fs.ident = []; goMap('dub', 8, 6, 'up'); },
+  },
 };
 
 const args = process.argv.slice(2);

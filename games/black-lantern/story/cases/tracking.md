@@ -43,7 +43,7 @@ Public frame it fills in: `games/black-lantern/specs/018-tracking.md`. Where thi
 | `street` | FOURTH STREET | all four phases (day: grey slush; night: neon on snow) | Four-lane street with a crosswalk across the bottom. North side, west to east: the Starlite Motor Lodge's lot (its tall pole sign, the office with an awning, rooms 7–12 in a single-story row: Room 8 is the agents', Room 12 Travis's), the apartment door over the pawn shop (Wes), **Lucky Buck Pawn** (barred windows), a vacant lot with a snowbank, **Club Satin**'s closed front with the dead marquee (east end). The Paydirt casino's sign glows at the street's east end. The bus stop on the south sidewalk. **The club door** opens only on night 2 (Go in / Not yet). |
 | `pawn` | LUCKY BUCK PAWN | day 1 only (closes for good at the first turn) | Glass counter, guitars on the wall, a CRT and VCR on the counter (where Wes first played it), the five-for-a-dollar bin, the cage. |
 | `wes` | WES'S PLACE | all phases | Studio over the pawn shop. Foil on both windows, WE KNOW written on the walls, the fridge, the lampshade. A CRT with the tape still in the VCR. |
-| `room4` | ROOM 4 · STARLITE | all phases | The agents' room: two beds, a CRT on the dresser, the heater. **The bed turns the day** (stand-in in part A). |
+| `room8` | ROOM 8 · STARLITE | all phases | The agents' room: two beds, a CRT on the dresser, the heater. **The bed turns the day** (stand-in in part A). |
 | `room12` | ROOM 12 · STARLITE | night 1 and before; Travis gone after | Travis's room: foil on the window, a hot plate, a copy under the mattress. |
 | `gideon` | GIDEON'S APARTMENT | day 2 (part A: any time) | Wells Avenue, by bus. Walls of tapes floor to ceiling, a viewing chair facing two stacked CRTs. |
 | `records` | COUNTY RECORDS | days only | The basement records room: shelves of boxes, a microfiche reader, Ines's counter. By bus. |
@@ -156,7 +156,7 @@ Phobia subject: **eyes** (being watched). Trigger tags: Wes is in a paranoid spi
 
 ## Items
 
-- **Lantern Box** (1): the club's coat check, night 2: Flashlight, Flashbang, First-aid kit.
+- **Lantern Box** (1): the club's coat check, night 2: Road flare, Flashbang, First-aid kit (the catalog has no flashlight).
 - **Loot table** (5): Energy drink, Painkillers, Road flare, Cigarettes, Booze.
 - **Case-only items:**
   - **The Satin tape** (unnatural, Evidence): *"A VHS tape, the label written over twice: CLUB SATIN 3/96 under WE KNOW. Folded inside the sleeve, a scrap of ruled paper numbered in the corner: 5."* **The key evidence item; carries the page fragment (arc hook: the page).** Big Hat files it: "Records wants it by Monday."
@@ -186,3 +186,85 @@ Phobia subject: **eyes** (being watched). Trigger tags: Wes is in a paranoid spi
   - **The clerk** — "Wes Pratt. Twenty-three. Foiled his windows Friday." Edge: Wes opens the door to Empathy at +10.
   - **The club** — "Club Satin. Closed in '96. Somebody's paying the light bill." Edge: Computers +10 on the club's power.
   - **The cover** — "You're collectors. Collectors are cheap. Act like it." Edge: the first overpay isn't noticed.
+
+## Part B build notes (Developer, Nov 23, 2026)
+
+What part B settled while building. Where these and the sections above differ, these win.
+
+### Turning the day (points of no return)
+
+All three turns happen at the beds in Room 8, each a Go on / Not yet with the cursor on Not yet:
+
+| Turn | Needs | Line naming what closes |
+| --- | --- | --- |
+| Day 1 → night 1 | nothing | Lucky Buck Pawn closes for good. Whatever's still in its bin goes to the next man with cash. |
+| Night 1 → day 2 | nothing | Travis checks out of Room 12 and leaves town, with whatever he's still got. |
+| Day 2 → night 2 | the deduction (the pay phone) | The records room closes, and Gideon stops answering his door. |
+
+Staying with Wes on night 1 (the Redemption moment) is the night 1 → day 2 turn itself, asked at Wes's place with the same line. The club door on night 2 is Go in / Not yet. The trapdoor behind the stage, once found, is Go in / Not yet. In the dub room Vesper dances at the left end of the screens; talking to her or stepping next to her asks Go in / Not yet. The bench (the master) and the notebook are reached from the doorway without passing her.
+
+### The copies
+
+Five copies, one record each in `G.flags.cp`: `bin` (Lucky Buck's bin, day 1), `wes` (Wes's VCR), `travis` (Room 12, under the mattress), `gideon` (Gideon's), `bar` (behind the club's bar, night 2, guarded by a roamer). Plus the master in the dub room. A copy is `got` (carried, as the case item *A copy of the tape*), `burned` (the motel lot's burn barrel, or the bulk eraser), or out in the world: `royce` (Kettering bought it), `gone` (left with Travis), `sold` (Manny's cut), `owner` (stayed with whoever had it). At each turn the copies that close go out: the bin at the first turn, Travis's at the second, Gideon's and Wes's (unless Wes was saved, when he hands his over) at the third: to Kettering if he hasn't been dealt with, else they stay where they are. Dealing with Kettering hands over every copy he holds. A copy still behind the bar at the end is out.
+
+The boss reads them: every copy burned takes 2 HP off her (−10 for all five), and every copy not burned is a door she can heal through (5 HP, at most 3 times).
+
+### Watching the tape
+
+The lead watches (pick the lead first). Watching works on any copy where it sits (Wes's TV, Travis's, Gideon's stacked TVs) or on any carried copy at Room 8's TV, once per copy, and on the master at the dub room's bench. A copy watch gives, in order of how many copies the team has watched: 1) clue `royce` (the man chanting says his own name), 2) Identify on Vesper is free at the boss (the dance floor today, and what light does to her), 3) clue `under` (the label under the label: the master is under the stage; the ledger-ruled scrap numbered 5 shows in the frame). The master watch gives her real name (as `cherry` does, for Say her name). Each watch is a Disturbing unnatural horror for the lead (phobia subject eyes) and one step of the tracking lines (`G.flags.trk`, 0–4, cleared with the case), and each watch gives Vesper +2 HP; at 3 or more she's faster (DEX +4). After the second watch, the motel notepad has WE KNOW on it in the lead's handwriting.
+
+The tracking lines mean the Audience is looking back through the team. Beyond the boss, they're the look; no roll reads them.
+
+### The soft clock (`late`)
+
+Each of these adds 1: searching the records boxes by hand, filling out a slip and waiting, waiting Travis out of Room 12, the wrong deduction, and feeling for the trapdoor in the dark. On night 2, if `late` is 2 or more and Kettering wasn't dealt with, he's been in the dub room first: the master is gone from the deck (its sleeve is left on the bench), and the case ends `worst` even when Vesper is ended.
+
+### Clue routes (so every team template reaches the finale)
+
+- `bin`: Manny tells you for a dollar, no roll (not once the cover's Noticed); Sweep the bin (Search, +10 from the tape intel) also finds the bin copy; Paper trail (Bureaucracy) on the pawn log; Officer Ko, from night 1 (Talk your way in). Opens Wes's door. The clerk intel opens it too.
+- `wes`: Wes, Read or Calm (Empathy, +10 from the clerk intel); Sweep the VCR (the pawn receipt in its sleeve); Luz on night 1 or day 2, free (Talk your way in once Noticed). Opens Room 12's door.
+- `travis`: Travis (Talk your way in, Calm, Sweep the mattress, or painkillers or a medkit for the shakes, no roll), or wait him out (late +1). His copy comes with it. Opens the bus to Wells Avenue; the bus stop's flyer (Sweep) is the second way there.
+- `gideon`: Gideon (Lean on them gives his copy; Talk your way in lets you watch it; Crack it on his database; Dig records on his notes); taking the copy any other way starts the fight (or the cash roll, an overpay, seen). After the fight his notes are on the desk. The club's business license at county records (Paper trail) is the second way. Gideon's notes also give `royce`.
+- `photo`: county records, days, once the team knows the club (the club intel, `gideon`, or Cherry's first words): Paper trail, Crack it on the microfiche, Credentials (fast, but it's flashing a badge: public), Sweep the boxes yourself (late +1) or fill out a slip and wait (late +1, no roll). Local chief locks the room: Credentials or Talk your way in. Dig records on the photo's caption gives `cherry`.
+- `cherry`: Cherry at the bus stop, days: Read (Empathy) or Talk your way in. Her first words (free) name the club.
+- `royce`: watch 1, Luz (Talk your way in), Room 7's trash (Sneak or Examine), Gideon's notes.
+- `under` (not counted on the card): the hidden foil (Mushrooms), watch 3.
+
+The deduction's right answer needs `gideon` plus `royce` or `photo`.
+
+### Kettering (Room 7)
+
+With `royce`, on day 1, night 1 or day 2: Lean on them or Talk your way in (he gives up every copy he holds and how to say the chant backward), Sneak (while he's at the ice machine: his bag of copies and the swap-meet book's page), Force it (seen; he talks), or leave him. Dealt with: `F.royce` and `F.chant`. The ghost answer at the deduction shuts Room 7 for good. On night 2 Room 7 is empty.
+
+### Choices, as built
+
+- `cut` (Money): at Manny's, day 1, when someone holds Money and the team carries a copy: sell him the copies. Each holder +1d4 SAN; Manny pays in trade (cigarettes); every carried copy goes `sold`.
+- `wes` (Redemption): at Wes's on night 1, the Redemption holder can stay the night (the turn to day 2; +1d4 SAN). Anyone can call his sister (Talk your way in) or talk him down (Calm), once each, until night 2. Saved: Wes hands over his copy if it's still there, and tears the foil down at the dawn.
+- `darlene`: knowing her name (`cherry`, or the master watched), Say her name before the fight: −4 HP and no second-phase speed.
+- `lights`: the DJ booth on night 2 (Crack it, +10 from the club intel, or Fix it): the club lights up, the trapdoor shows, and the boss loses her −5. Local chief cuts the breaker first: then only Fix it.
+- `read`: the notebook in the dub room: read the chant backward (no roll with `F.chant`; else Translate or Identify): the working breaks 6 HP early.
+
+### Fights and the boss, as built
+
+- Gideon's nephew Dale and his buddy Kyle Q. (2 × human, 11 HP, 45%, 1d4+1): Lean on them stops it.
+- The Regular, in the club's lobby on the first walk in on night 2 (unnatural, 22 HP, 50%, 1d4+1, WE KNOW at everyone 0/1). Light-shy and tape-born (the bulk eraser Stuns it).
+- Watchers: three roamers on night 2 (12, 12 and 16 HP), guarding the bar copy, the DJ booth and the coat check's Lantern Box.
+- Vesper: numbers in the case code and `tools/boss-sim.js`. Phase 1 dancing: −5 to hit her unless the lights are on. Phase 2 at half: the Audience comes through (+5 to hit, more rolling bar, more spins), DEX 18 unless her name was said. Weakness: steady light (a road flare Shakens her).
+- Bulk eraser: Big Hat's drop after the right deduction. On the map it erases every copy carried (not used up); in a fight, tape-born enemies are Stunned (2 uses).
+
+### Overstepping, as built
+
+Quiet: Noticed, Local chief, Agency call, Federal agents. Marks: an overpay (seen; the cover intel forgives the first), forcing Wes's door, Room 12 or Room 7 (seen), Credentials at records (public). Noticed: Manny and Luz won't talk for free, and Ko trails the team on night 2. Local chief: Ko's scene, records locks, and on night 2 the club's breaker is cut. Agency call: Big Hat's call. Federal agents: the clean-up crew at the next area change, then `worst`.
+
+### Cover stories
+
+- Paper it (Bureaucracy): the club's wiring, a code violation, boarded up by the fire marshal.
+- Sell it (Persuade): a chain-letter prank tape going around the university; +20 with `gideon` (Gideon backs it as a collector).
+- Weak (Luck): it's Reno. Easy (quiet and Clean): collectors bought some junk. Clean books: a building closed since 1996.
+
+### Endings, as built
+
+- `clean`: Vesper ended, the master erased, no copy out in the world (every copy burned or carried home), Wes saved, no agent lost this case, overstepping below Agency call.
+- `costly`: Vesper ended any other way.
+- `worst`: Kettering got the master first, or the Federal agents' shutdown.
+- The master's sleeve (the Satin tape, the page) always reaches Big Hat: picked up after the fight.

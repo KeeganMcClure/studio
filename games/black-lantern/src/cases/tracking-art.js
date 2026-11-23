@@ -27,13 +27,13 @@ const isNight=M=>M.light==='night';
 
 // ================= GROUND =================
 // 's' fresh snow, 'S' trodden snow, '~' slush on the road, ';' slush on the sidewalk, ',' a shoveled sidewalk, '_' the
-// motel lot (slushy asphalt); rooms: 'n' lino, 'c' carpet, 'w' wood, 'v' tile, 'o' concrete; the club: 'k' its carpet
+// motel lot (slushy asphalt); rooms: 'n' lino, 'c' carpet, 'w' wood, 'v' tile, 'o' concrete; the club: 'u' its carpet
 // under dust, 'd' the dance floor.
 const dust=(c,x,y)=>hsh(x>>1,y>>1,501)<.18?shade(c,.12):c;
 const GP={s:(x,y)=>K.snow(x,y,T,false),S:(x,y)=>K.snow(x,y,T,true),'~':(x,y)=>K.slush(x,y,T,false),';':(x,y)=>K.slush(x,y,T,true),',':(x,y)=>K.stoneSidewalk(x,y,T,false),
  '_':(x,y)=>K.slush(x,y+3,T,false),n:(x,y)=>K.floor(x,y,T,'lino'),c:(x,y)=>K.floor(x,y,T,'carpet'),w:(x,y)=>K.floor(x,y,T,'wood'),v:(x,y)=>K.floor(x,y,T,'tile'),
  o:(x,y)=>{const n=hsh(x>>1,y>>1,502);return n<.06?'#4a4850':n>.96?'#7a7880':['#5e5c62','#58565c','#636168'][(hsh(x,y,503)*3)|0]},
- k:(x,y)=>{const a=((x>>3)+(y>>3))%2,b=((x>>2)^(y>>2))&1;return dust(a?(b?'#3a1a32':'#2e1428'):(b?'#2a1a3a':'#24142e'),x,y)},
+ u:(x,y)=>{const a=((x>>3)+(y>>3))%2,b=((x>>2)^(y>>2))&1;return dust(a?(b?'#3a1a32':'#2e1428'):(b?'#2a1a3a':'#24142e'),x,y)},
  d:(x,y)=>{const a=((x>>4)+(y>>4))%2,edge=x%16===0||y%16===0;return dust(edge?'#14101a':a?'#5a4a6a':'#3a3046',x,y)}};
 const SOFT=new Set('sS'.split(''));
 const at=(M,x,y)=>{const r=M.ground[y];return r?r[x]:undefined};
@@ -207,9 +207,14 @@ const SPEC={
  coatcheck:()=>({size:[64,50,0,0],anchor:[32,48],lights:[],draw({R}){R(0,20,64,28,'#3a2a2a',{sh:14});R(0,18,64,4,'#5a3a2a');R(4,0,2,20,'#8a8a94');R(58,0,2,20,'#8a8a94');R(4,2,56,2,'#8a8a94');for(let x=10;x<56;x+=8)R(x,4,4,10,'#5a5a64');R(20,24,24,6,'#e8e4d8')}}),
  tables:()=>({size:[40,44,0,0],anchor:[20,42],lights:[],draw({R,E}){E(20,22,16,6,'#3a2a2a');R(18,24,4,16,'#2a1a1a');R(10,40,20,2,'#2a1a1a');R(6,2,10,18,'#5a4a4a');R(24,2,10,18,'#5a4a4a');R(6,2,10,2,'#7a6a6a');R(24,2,10,2,'#7a6a6a')}}),
  bench:()=>({size:[64,30,0,0],anchor:[32,28],lights:[],draw({R}){R(0,8,64,8,'#6a4a32',{sh:12});R(0,8,64,2,'#8a6a4a');R(4,16,4,12,'#3a2a1a');R(56,16,4,12,'#3a2a1a');R(30,0,14,8,'#3a3a44');R(32,1,10,2,'#ff3fa4');R(10,2,10,6,'#e8e4d8');R(12,3,6,1,'#5a1a22')}}),
+ // the motel lot's burn barrel: an oil drum with holes punched in it; the long-stays keep it going all winter
+ barrel:()=>({size:[30,44,0,0],anchor:[15,42],lights:[[15,6,1.6,.45]],draw({R,E}){R(4,14,22,28,'#5a3a2a',{sh:8});for(const y of[18,28,38])R(4,y,22,2,'#3a2418');for(const[x,y]of[[8,22],[16,24],[12,32],[20,34]])R(x,y,2,2,'#ff9a3c');
+  E(15,14,11,3,'#2a1a14');for(let i=0;i<5;i++)R(7+i*4,4+(i%2)*3,3,10-(i%2)*3,i%2?'#ff9a3c':'#f2c14e');R(13,0,3,6,'#ffe0a0')}}),
+ // a pay phone on a post by the motel office, its cord too short
+ payphone:()=>({size:[24,52,0,0],anchor:[12,50],lights:[],draw({R}){R(10,24,4,26,'#5a5a64');R(2,0,20,26,'#8a8a94',{sh:6});R(4,2,16,4,'#2a4a8a');R(5,9,8,12,'#2a2a30');R(15,9,4,10,'#c8c8d0');for(let k=0;k<3;k++)R(15,10+k*3,4,1,'#5a5a64');R(4,22,4,6,'#2a2a30')}}),
  notebook:()=>({size:[22,16,0,0],anchor:[11,14],lights:[],draw({R}){R(1,2,20,12,'#5a2a1e',{sh:4});R(3,4,16,8,'#e8dcc0');R(10,4,1,8,'#8a7a5a')}})
 };
-const PROPK=new Set(['lamp','car','snowbank','busstop','hydrant','polesign','tree','bin','glasscase','shelf','crt','vcr','tape','counter','desk','bed','chair','recliner','mattress','crate','hotplate','nightstand','dresser','heater','fridge','fiche','tvstack','stage','bar','booth','djbooth','coatcheck','tables','bench','notebook','boxes','dumpster']);
+const PROPK=new Set(['lamp','car','snowbank','busstop','hydrant','polesign','tree','bin','glasscase','shelf','crt','vcr','tape','counter','desk','bed','chair','recliner','mattress','crate','hotplate','nightstand','dresser','heater','fridge','fiche','tvstack','stage','bar','booth','djbooth','coatcheck','tables','bench','notebook','boxes','dumpster','barrel','payphone']);
 const NOSHADOW=new Set(['vcr','tape','notebook']);
 function props(M){
  const out=[],N=isNight(M);
@@ -259,6 +264,9 @@ function fx(ctx,o){const M=o.M,now=o.now,N=isNight(M);
    ctx.globalCompositeOperation='lighter';
    for(const[x,y,r,col]of[[15*T,6*T,70,'255,63,164'],[24*T,6*T,60,'242,193,78'],[45*T,7*T,140,'242,193,78'],[37*T,6*T,40,'255,63,164']]){const X=x-o.camx,Y=y-o.camy,gr=ctx.createRadialGradient(X,Y,0,X,Y,r);gr.addColorStop(0,`rgba(${col},.16)`);gr.addColorStop(1,`rgba(${col},0)`);ctx.fillStyle=gr;ctx.fillRect(X-r,Y-r,r*2,r*2)}
    ctx.globalCompositeOperation='source-over'}
+  // wet shine on the street at night (spec 017's rain kit, once it's on the Shelf: shine only, no drops); without it the
+  // slush look stays as it is
+  if(N&&typeof K.rain==='function'){try{K.rain(ctx,now,{k:.3,shine:(M.props||[]).filter(p=>p.sodium).map(p=>[p.sodium[0]-o.camx-18,p.sodium[1]+12-o.camy,36,14])})}catch(e){}}
   K.snowfall(ctx,now,{k:N?.55:.3,wind:.4})}
  if(N)lantern(ctx,o);
  tracking(ctx,(G.flags&&G.flags.trk)|0,now)}
@@ -292,6 +300,46 @@ function tracking(ctx,step,now){step=Math.max(0,Math.min(4,step|0));if(!step)ret
   if(hsh((now/1800)|0,step,608)<.45&&(now%1800)<110){const ty=d+((hsh((now/1800)|0,2,608)*(h-2*d))|0);ctx.drawImage(TRK.c,0,ty,w,2,4,ty,w,2)}}
  if(step>=4){const hy=h-7+((hsh(t,1,609)*3)|0);for(let x=0;x<w;x+=2){const v=hsh(x,t,610);ctx.fillStyle=v<.4?'#e6ecf6':v<.75?'#7a8aa8':'#1a1a2a';ctx.fillRect(x,hy,2,2)}ctx.drawImage(TRK.c,0,hy-4,w,4,6,hy-4,w,4)}}
 
+// ================= THE TAPE (spec 018, Art: the footage as a short clip drawn in code) =================
+// The tape playing on an old TV, full screen above the dialog box (engine.js G.scene 'clip'). k: 0 snow, 1 the show from
+// March 1996, 2 the dance floor today with her still on it, 3 the label close up, 4 the master: she turns to the camera.
+// Washed-out color, scanlines, the rolling bar, the VCR's own letters in the corner, and the tracking lines over it all.
+function clip(ctx,w,h,now,k){const R=(x,y,a,b,c)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(a)),Math.max(1,Math.round(b)))};
+ R(0,0,w,h,'#05060c');const t=now/1000,ph=Math.round(Math.min(h*.6,w*.78)),py=Math.max(8,Math.round((h*.6-ph)/2)+4),px=8,pw=w-16;
+ R(px-6,py-6,pw+12,ph+12,'#1a1a20');R(px-4,py-4,pw+8,ph+8,'#2a2a32');R(px+pw-2,py+ph+2,4,2,'#c8402e');
+ ctx.save();ctx.beginPath();ctx.rect(px,py,pw,ph);ctx.clip();
+ const f=Math.floor(t*12),cx0=px+pw/2,fy=py+ph*.78;
+ if(k===0){for(let y=py;y<py+ph;y++)for(let x=px;x<px+pw;x+=2){const v=hsh(x>>1,y,f*7+1);R(x,y,2,1,['#e6ecf6','#a8b4c8','#6a7488','#3a4052','#1a1e2a'][(v*5)|0])}}
+ else if(k===3){R(px,py,pw,ph,'#3a3040');R(cx0-58,py+10,116,ph-20,'#14141a');R(cx0-50,py+16,100,ph-32,'#e8e4d8');R(cx0-50,py+16,100,3,'#c8c0b0');
+  R(cx0-46,py+26,60,8,'#d8d0c0');signText(ctx,'CLUB SATIN 3/96',cx0-44,py+28,'#7a7aa0',1);
+  signText(ctx,'WE KNOW',cx0-42,py+42,'#14101a',2);signText(ctx,'WE KNOW',cx0-41,py+42,'#14101a',2);
+  R(cx0+18,py+20,26,30,'#f4efe6');for(let y=py+25;y<py+50;y+=4)R(cx0+18,y,26,1,'#7fa0c8');R(cx0+22,py+20,1,30,'#c8504a');signText(ctx,'5',cx0+37,py+22,'#2a2030',1)}
+ else{// the club: the stage under one spot, the bar's shelf of bottles behind, then her
+  const now96=k===1||k===4;R(px,py,pw,ph,now96?'#1a0e1e':'#0e0a12');
+  for(let i=0;i<9;i++)R(px+6+i*24,py+8,4,10,['#3a5a3a','#5a3a2a','#6a6a74'][i%3]);R(px,py+18,pw,3,'#3a2424');
+  ctx.fillStyle=now96?'rgba(255,90,180,.16)':'rgba(140,140,170,.08)';ctx.beginPath();ctx.moveTo(cx0-10,py);ctx.lineTo(cx0+10,py);ctx.lineTo(cx0+56,fy+6);ctx.lineTo(cx0-56,fy+6);ctx.fill();
+  ctx.fillStyle=now96?'#5a3a5a':'#2a2430';ctx.beginPath();ctx.ellipse(cx0,fy+4,64,10,0,0,6.283);ctx.fill();R(cx0-1,py,2,fy-py,now96?'#c8c8d0':'#6a6a74');
+  if(k===2){for(let i=0;i<4;i++){const x=px+20+i*52;R(x,fy-8,22,3,'#2a1a1a');R(x+2,fy-20,6,12,'#3a2a2a');R(x+14,fy-20,6,12,'#3a2a2a')}for(let i=0;i<30;i++)R(px+hsh(i,f>>2,3)*pw,py+hsh(i,f>>2,4)*ph,1,1,'#8a8aa0')}
+  // the master, close up: her face from the battle art's portrait, twice size, turned to the lens
+  if(k===4&&window.TRKB){const P=CLIPC.p||(CLIPC.p=K.mk(64,64)),open=Math.floor(t*3)%2;TRKB.portrait(P.getContext('2d'),open);const sz=Math.min(ph-16,128);
+   ctx.imageSmoothingEnabled=false;ctx.drawImage(P,Math.round(cx0-sz/2),Math.round(py+ph-sz-6),sz,sz)}
+  else if(window.TRKB){// she dances too fast: the picture skips her ahead every few frames (her battle sprite, small)
+   const jump=Math.floor(t*4),x=cx0+Math.round(Math.sin(jump*1.7)*44),b=TRKB.sprite('vesper',jump%2,0),hh=Math.round((fy-py)*(k===2?.55:.8)),ww=Math.round(b.width*hh/b.height);
+   const draw=(dx,a)=>{ctx.save();ctx.globalAlpha=a;ctx.imageSmoothingEnabled=false;if(jump%3===1){ctx.translate(x+dx,0);ctx.scale(-1,1);ctx.drawImage(b,-ww/2,fy-hh+4,ww,hh)}else ctx.drawImage(b,x+dx-ww/2,fy-hh+4,ww,hh);ctx.restore()};
+   if(k===1)draw(0,1);else if(Math.floor(t*2)%3!==1){draw(0,.55);if(Math.floor(t*6)%2)draw(4,.25)}}}
+ // the tape's own look over the picture: washed-out blue, scanlines, the rolling bar, rows that tear sideways
+ ctx.fillStyle='rgba(127,160,200,.16)';ctx.fillRect(px,py,pw,ph);
+ for(let y=py;y<py+ph;y+=2){ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(px,y,pw,1)}
+ const ry=py+((now/2600)%1)*(ph+30)-15;ctx.fillStyle='rgba(220,230,250,.12)';ctx.fillRect(px,ry,pw,10);
+ for(let i=0;i<4;i++){const y=py+((hsh(i,f,5)*ph)|0);if(hsh(i,f,6)<.5){ctx.fillStyle='rgba(230,236,246,.35)';ctx.fillRect(px+((hsh(i,f,7)*pw)|0),y,20+((hsh(i,f,8)*40)|0),1)}}
+ for(let x=px;x<px+pw;x+=2){const v=hsh(x,f,9);ctx.fillStyle=v<.4?'#e6ecf6':v<.75?'#7a8aa8':'#1a1a2a';ctx.fillRect(x,py+ph-4,2,2)}
+ ctx.restore();
+ // the VCR's letters: PLAY and the counter, the date it was taped
+ if(k){signText(ctx,'PLAY',px+6,py+6,'#e8f0e0',2);ctx.fillStyle='#e8f0e0';for(let i=0;i<6;i++)ctx.fillRect(px+42,py+6+i,i<3?i+1:6-i,1);
+  const date=k===2&&Math.floor(t*2)%2?'-- -- ----':k===3?'':'MAR 9 1996';if(date)signText(ctx,date,px+pw-4-date.length*8,py+ph-16,'#e8f0e0',2)}
+ tracking(ctx,Math.max(2,(G.flags&&G.flags.trk)|0),now)}
+const signText=(c,s,x,y,col,k=1)=>K.signText(c,s,x,y,col,k),CLIPC={};
+
 // the hidden hotspot, while the lead is High on Mushrooms: the foil's crinkles catch light like a wall of eyes, a row of
 // them blinking in time with the tape
 function foilGlint(c,x,y,now){const a=.35+.2*Math.sin(now/500),blink=Math.floor(now/900)%4===0;
@@ -316,6 +364,13 @@ const FOLK={
   body:(A_,ty)=>{const{R}=A_;R(16,ty+3,3,3,'#e8c84a');R(6,ty+14,16,2,'#141018')}},
  cherry:{look:{skin:1,hair:1,hairC:4,acc:0},top:'#5a3a5a',coat:1,inner:'#e88aa8',pants:'#e88aa8',shoes:'#f4efe6',iris:'#4a6a3a',mouth:'smile',cheeks:1,
   body:(A_,ty)=>{const{R}=A_;R(11,ty+8,6,8,'#f4efe6')}},
+ // part B: Royce in Room 7, and Gideon's nephew Dale and his buddy Kyle Q. (their battle look is tracking-battle-art.js)
+ royce:{look:{skin:0,hair:3,hairC:5,acc:1},top:'#6a5a3a',coat:1,inner:'#2a2a30',pants:'#4a4038',shoes:'#2a1e18',iris:'#5a5a4a',mouth:'flat',
+  body:(A_,ty)=>{const{R}=A_;R(12,ty,4,10,'#2a2a30')}},
+ dale:{look:{skin:1,hair:2,hairC:2,acc:0},top:'#8a5a2a',inner:'#c8c0b0',pants:'#2e3a52',shoes:'#2a1e16',iris:'#5a4a3a',mouth:'flat',cap:'#c8402e',
+  body:(A_,ty)=>{const{R}=A_;R(13,ty,2,16,'#5a3a1a')}},
+ kyle:{look:{skin:2,hair:1,hairC:0,acc:0},top:'#2a6a5a',inner:'#5a5a64',pants:'#4a5a7a',shoes:'#e8e4d8',iris:'#3a2418',mouth:'flat',cap:'#1e2440',
+  body:(A_,ty)=>{const{R}=A_;R(13,ty,2,16,'#c8c0b0')}},
  ines:{look:{skin:3,hair:4,hairC:0,acc:1},top:'#5a8a7a',pants:'#3a3446',shoes:'#2a1e18',iris:'#3a2418',mouth:'smile',pencils:1,
   body:(A_,ty)=>{const{R}=A_;R(7,ty+8,4,4,shade('#5a8a7a',-.25));R(17,ty+8,4,4,shade('#5a8a7a',-.25));R(8,ty+6,1,3,'#f4d040');R(18,ty+6,1,3,'#f4d040')}}
 };
@@ -330,6 +385,9 @@ function topper(Ad,F_,dir){const{R,C}=Ad;
 const fcache=new Map();
 function folk(id,dir,idle=0,M){
  const k=id+dir+idle;let v=fcache.get(k);if(v)return v;
+ // Vesper on the dub room's floor: her battle sprite (tracking-battle-art.js), small, flipping as she spins
+ if(id==='vesper'){const b=window.TRKB&&TRKB.sprite('vesper',Math.floor(performance.now()/180)%2,0);if(!b)return folk('wes',dir,idle,M);
+  const h=46,w=Math.round(b.width*h/b.height),c=K.mk(w,h),g=c.getContext('2d');g.imageSmoothingEnabled=false;if(Math.floor(performance.now()/360)%2){g.translate(w,0);g.scale(-1,1)}g.drawImage(b,0,0,w,h);return{c,ax:w/2,ay:h-2,noShadow:false}}
  if(dir==='right'){const l=folk(id,'left',idle,M),c=K.mk(l.c.width,l.c.height),g=c.getContext('2d');g.translate(c.width,0);g.scale(-1,1);g.drawImage(l.c,0,0);v={c,ax:c.width-l.ax,ay:l.ay}}
  else{const F_=FOLK[id]||FOLK.manny,d=dir==='left'?'side':dir,L=F_.look,sk=SKIN[L.skin];
   const sp=Object.assign({skin:sk,hair:sk,hairStyle:'cropped',iris:F_.iris||'#3a2418'},F_);
@@ -421,6 +479,14 @@ CHERRY:{bg:'#3a2436',f(L,t){const s='#e9b98f',hc='#b94a2c',u='#5a3a5a';
  L.r(28,41,8,1,'#c8304e');if(t)mouth(L,32,41,8,true);else{L.r(28,42,8,1,MR);L.p(27,41,MR);L.p(36,41,MR)}}},
 // Ines Park: county records clerk, thirties, black hair in a bun stuck through with pencils, half-moon glasses, a green
 // cardigan with every pocket full of pencils (her weird trait)
+// Royce Kettering: seventies, thin white hair combed over, tinted glasses gone amber, a corduroy blazer over a black
+// turtleneck, a face that was handsome in a mean way once
+ROYCE:{bg:'#2a2420',f(L,t){const s='#e8c4a8',u='#6a5a3a';
+ body(L,u);L.r(24,46,16,8,'#2a2a30');L.r(26,46,12,3,sh('#2a2a30',20));for(const x of[20,42])L.r(x,50,2,14,sh(u,-26));
+ ears(L,s);head(L,32,31,14,16,s);L.r(19,20,26,4,'#e8e8ec');L.r(18,24,4,6,'#d8d8dc');L.r(42,24,4,5,'#c8c8cc');L.r(22,18,18,2,'#f4f4f8');
+ eye(L,21,28,'#5a5a4a',-1);eye(L,37,28,'#5a5a4a',1);glasses(L,'#8a6a2a',26);
+ L.r(21,36,6,1,sh(s,-30));L.r(37,36,6,1,sh(s,-30));L.r(24,39,2,4,sh(s,-26));L.r(38,39,2,4,sh(s,-26));
+ brows(L,'#c8c8cc',24,1);nose(L,s,36);if(t)mouth(L,32,43,7,true);else{L.r(28,44,8,1,MR);L.p(36,43,MR)}}},
 INES:{bg:'#26322e',f(L,t){const s='#c98e62',hc='#1b1414',u='#5a8a7a';
  body(L,u);L.r(26,46,12,6,'#e8e4d8');for(const x of[14,42]){L.r(x,54,8,8,sh(u,-24));for(let k=0;k<3;k++)L.r(x+1+k*2,50,1,5,['#f4d040','#f4d040','#c8402e'][k])}
  L.e(32,12,7,6,hc);L.r(24,4,2,14,'#f4d040');L.r(24,4,2,2,'#e8a0a0');L.r(38,6,2,12,'#f4d040');L.r(38,6,2,2,'#2a2030');L.r(30,2,2,10,'#f4d040');
@@ -469,5 +535,5 @@ const buffet={
   R(mid+86,fy-10,18,10,'#2a1a1e');R(mid+86,fy-10,18,2,'#c8a040');K.signText(c,'KENO',mid+88,fy-7,'#f2c14e')}
 };
 
-return{paint,props,folk,portraits,fx,tracking,buffet,foilGlint,FOLK,PORT,portraitCanvas};
+return{paint,props,folk,portraits,fx,tracking,buffet,foilGlint,clip,FOLK,PORT,portraitCanvas};
 })();
