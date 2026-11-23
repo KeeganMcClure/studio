@@ -129,6 +129,24 @@ const BOSSES = {
     setup: s => { const F = G.flags; F.ph = 3; F.trk = s.w; F.cp = {}; ['bin', 'wes', 'travis', 'gideon', 'bar'].forEach((k, i) => { F.cp[k] = i < (s.burned || 0) ? 'burned' : 'royce'; });
       F.lights = s.lights ? 1 : 0; F.darlene = s.name ? 1 : 0; F.read = s.read ? 1 : 0; F.knowLight = s.w >= 2 ? 1 : 0; F.boss = 0; G.fs.ident = []; goMap('dub', 8, 6, 'up'); },
   },
+  // Dead Air (spec 020 part B): its weakening choices are the 3/9/79 cart burned (−8 HP, no callers), Emile's name said
+  // on the air (−8 HP, no phase-2 heal) and a dead carrier keyed with the crystal (−6 HP, the first dead air fails, and
+  // the circle can't take anyone). The guest mic makes Identify free. "all" makes every choice.
+  nightline: {
+    case: 'dead-air',
+    entry: 'daBoss',  // dead-air.js: bossFight without the ending
+    scenarios: [
+      { label: 'none' },
+      { label: 'burn', burn: 1 },
+      { label: 'name', name: 1 },
+      { label: 'carrier', carrier: 1 },
+      { label: 'burn, name', burn: 1, name: 1 },
+      { label: 'all', burn: 1, name: 1, carrier: 1, ebooth: 1 },
+    ],
+    setup: s => { const F = G.flags; F.ph = 3; F.burn = s.burn ? 1 : 0; F.name = s.name ? 1 : 0; F.carrier = s.carrier ? 1 : 0; F.boss = 0; F.named = null;
+      F.woke = {}; F.taken = null; F.circle = 1; F.lucien = 'safe';
+      G.clues = G.clues.filter(c => c.id !== 'ebooth'); if (s.ebooth) G.clues.push({ id: 'ebooth', text: '' }); G.fs.ident = []; goMap('radials', 11, 12, 'up'); },
+  },
 };
 
 const args = process.argv.slice(2);

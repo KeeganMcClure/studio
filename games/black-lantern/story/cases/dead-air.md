@@ -193,3 +193,86 @@ Phobia subject: **voices** (a voice you can't place that knows your name). Trigg
   - **The missing** — "Two named on air, two gone. A grandmother and a pipefitter. Their families'll talk to a badge." Edge: +10% Empathy with the families.
   - **The sheriff** — "Dutch Fontenot. Called it in himself, which sheriffs don't. He'll help while the town's calm." Edge: Overstepping's first mark is forgiven once.
   - **The town** — "Two thousand people and every one of 'em owns a radio. They're scared, and they're lookin' for somebody to be scared of." Edge: +10% Persuade at the fish fry.
+
+## Part B build notes (Developer, Nov 23, 2026)
+
+What part B settled while building. Where these and the sections above differ, these win.
+
+### Turning the day (points of no return)
+
+Every turn is at the team's car on Main Street (or the porch radio on night 1), a Go on / Not yet with the cursor on Not yet.
+
+| Turn | Needs | Line naming what closes |
+| --- | --- | --- |
+| Day 1 → night 1 | Checked in with Dutch | The shops, the sheriff's office and both houses close for the night. |
+| Night 1 → day 2 | The show heard | Toby's night shift and Miss Odile's porch at three in the morning are tonight only. |
+| Day 2 → night 2 | 3 threshold clues, the fish fry, the deduction | The fish fry ends, and the tower by daylight is gone for good. |
+
+Night 2 starts on Main Street at 11:40 PM. Other things a choice closes, each with its own Go on / Not yet:
+- Driving out to KHLT while the fish-fry crowd stands at Miss Odile's: nobody stops them (her house burns).
+- Walking north into the cane before hearing the second show in the booth: you'll hear it out there, but can't answer it.
+- Burning the cart: it's evidence; once it's ash it's ash.
+- The radial field: Go in / Not yet at the cane's edge (part A). The boss stands at the circle's north end; talking to it, or stepping onto the three tiles in front of it, asks Go in / Not yet. The missing, the radial wires and the way out are all reached without crossing that row.
+
+### The soft clock (`fear`, the town getting meaner)
+
++1 each: reading the whole 1979 microfiche reel by hand at the sheriff's office (the no-skill way to `names`; free once Marcy told you about Wade's granddad), sitting up with Miss Odile after the first show (the no-skill way to `emile`), a nap in Remy's truck on day 2 (a full rest), the wrong deduction, walking Miss Odile to the church hall on night 2 (the Protect the innocent moment). Pulling the radios (`unplug`) takes 1 off. Each point is −10 to calming the fish fry. `fear` 3 or more blocks `clean`. Never progress.
+
+### The broadcasts, as built
+
+- **Night 1** (Miss Odile's porch radio; the porch is a cutscene, so all three roll): sign-on; caller 1 asks for a song for the Hebert boy out in the rows; caller 2 reads a gumbo recipe that turns into a list of names; caller 3 says "Lucien Arceneaux. You know what you took." Horror `show1`, Disturbing, unnatural, subj voices. Then **one thing**: Trace it (Computers Trace, or Craft Fix it "string a loop antenna"; +20 with the direction finder, +10 with the station intel), Record it (Science Sample or Computers Crack it, labelled Record it; the pocket recorder does it with no roll), Call in (Miss Odile's kitchen phone, the station's old request line on an index card by it; no roll: `voices`, the lead is **Named**, 1/1d4 SAN), or Just listen. A failed roll is the one thing spent. Sign-off at 3:33: breathing.
+- **Night 2** (in the booth, the first time the team walks in on night 2; a scene): the host reads a roll call: every name in the church hall if the fish fry boiled, only the eleven families' grandchildren otherwise, fewer again if the radios were pulled (`unplug`); a Named lead hears their own name (Unsettling, 0/1). The callers are the trucks; the last caller is Royce asking his daughter to come home. One thing: Trace it again (the same skills: it's coming up the ground system; opens "follow the ground wire" at the tower gate, straight to the circle's edge, and gives `trace` if missing), Call in on the booth phone and **say Emile's name on his own air** (needs `emile` or `ebooth`; no roll; `name`), or let it play. Record isn't offered (the tape plays back only hiss).
+
+### Clue routes (so every team template reaches 3 of trace, voices, log, names, emile)
+
+- `trace`: night 1 Trace; night 2 Trace in the booth; the direction finder in the cane's ditch on night 2 (the needle swings north and stays).
+- `voices`: night 1 Record or Call in; playing the cart on day 2 or night 2.
+- `log`: the record room cabinet (Dig records, Paper trail, Sweep); Dutch's 1979 incident file on day 2 (Credentials; or no roll once Joelle has told you her grandfather hosted the Night Line).
+- `names`: the sheriff's microfiche reader (Dig records, Paper trail, Sweep; or read the whole reel, fear +1 unless Marcy told you); Mama Lou at the fish fry (Read).
+- `emile`: Miss Odile, day 1 or 2 (Read, Calm, Talk your way in); sitting up with her after the night-1 show (no roll, fear +1); Mama Lou at the fish fry (Read).
+- `cart` (extra): the 3/9/79 cart is in the record room behind the program logs (Sweep, Dig records, Identify "the one that's cold", or no roll once you hold `log`). Played on the booth's cart machine (Fix it, Crack it, Sample) it gives `cart` (and `voices`), a Severe horror for all three, and the Static fight.
+- `ebooth` (extra): the hidden guest mic, High on Mushrooms.
+
+Deduction's right answer: (`emile` or `ebooth`) and (`log` or `names`). Half (Lucien): needs `names`.
+
+### The deduction, as built
+
+At the church hall, after the fish fry, the kitchen phone rings (Big Hat) once the team has 3 threshold clues; until then it rings when they come back with three. Right: Big Hat: "Then give him his name back." Half: Dutch takes Lucien into the holding cell for the night (he doesn't listen; he's safe), and the crystal stays in his safe unless the team asks him at the cell (no roll). Wrong (prankster): fear +1, and the cane's roamers are already up on night 2 (no On guard or Pathfinder roll).
+
+### The fish fry, as built
+
+Entering the church hall on day 2 plays it. Ray Dupuis (a pipefitter, Wade's cousin) climbs on a folding chair. The lead's options, each once: Calm the room (Empathy Calm) → calmed; Talk the room down (Persuade Talk your way in) → calmed; Read them a federal order (Bureaucracy Paper trail) → calmed; Lean on Ray (Persuade Lean on them) → pointed; the pastor's moment (shows when someone holds Faith; no roll; Pray with the room / Tell him it's no devil, only men) → pointed, Faith holders regain SAN, and Mama Lou has gone home before you can talk to her (the cost: her clue routes); Fire a shot into the ceiling (Firearms Shoot it open) → the room scatters, a public overstep, and it boils; Let it go → boils. Every roll is −10 per `fear` point, +10 with the town intel. All failed → boils. Mama Lou (in the hall after the scene): Read → `names` and `emile` if missing, and who drove which truck.
+
+Boiled: on night 2 a crowd (a man with a tire iron, his brother with a gas can, a woman with a shotgun she doesn't want to fire, a teenager filming) stands at Miss Odile's steps. Lean on them (once) ends it; Fight is the human story fight (2 skulls; they run at half HP; the teenager films it: a public overstep); driving away leaves them to it (her house burns). Walking Miss Odile to the hall first (the Protect the innocent moment) leaves them an empty porch: they go home.
+
+### Lucien and the crystal
+
+Named on night 1. Day 2 in the feed store: Talk your way in, Calm, or Read (+20 once Toby told you about "the Arceneaux boy") and he promises to keep the shop radio unplugged tonight (`lucien` safe) and gives you the crystal out of the safe. Break the safe yourself (Force it, Fix it: seen by Lucien) for the crystal without his promise. The half deduction makes him safe and the crystal is his to give at the cell. Not safe by night 2: he's the third person in the circle.
+
+Keying a dead carrier: the crystal back in the transmitter on night 2 (the booth's transmitter window: Fix it or Sample; once). `carrier`.
+
+### Fights and the boss, as built
+
+- **The porch** (human, 2 skulls): `tireiron` 9 HP, `gascan` 8, `shotgun` 8 (40%, 1d6), `filmer` 5 (doesn't attack; films); each runs at half HP.
+- **The Static** (unnatural, 2 skulls): 24 HP, DEX 12, 50%, 1d4+1, feedback at everyone 1d2, a SAN move 0/1. Weak: silence: the static radio from Miss Odile stuns it a round (once a fight). It's part of the cart's horror, so no horror on sight of its own.
+- **Roamers** in the cane on night 2: two `listener`s guarding the direction finder in the ditch and Wade's boot (Track: it marks the way to the circle), and a `rowhand` guarding the Lantern Box at the pump shed. Unnatural, lightshy. Search's On guard and Survival's Pathfinder show their beats on arrival (not after the wrong deduction). A Loud fight out there is an unseen overstep roll.
+- **The Night Line** (boss): numbers in the case code and tools/boss-sim.js. Phase 1: lash, callers (at everyone; gone if `burn`, a hiss instead), dead air (one agent loses their next turn unless they pass POW × 5; with `carrier` the first one fails). At half: it signs off and stops pretending: more callers and lashes, and it pulls the voices in and heals unless `name` (the case file said a shield; a heal tunes the same and needs no new battle rule). The circle: from round 7, unless `carrier`, it takes one person still listening (lost; Severe helplessness for all). Weakness (Identify; free if `ebooth`): silence (the static radio stuns it once a fight) and fire on its cords (tag burns). HP cuts: `burn`, `name`, `carrier`.
+- Before the fight, each missing person can be woken by taking their radio (no roll; Disturbing helplessness for the lead, once): woken, they can't be taken.
+
+### Items, as built
+
+- Case-only: the 3/9/79 cart (unnatural, Evidence, page 6), the 1340 crystal (unnatural, Tool), Emile's headphones (ordinary, Keepsake: the record room's Sweep; given to Miss Odile at dawn, +1 to a Bond of each Protect the innocent holder), the direction finder (ordinary, Tool: the sheriff's evidence shelf, Paper trail or Credentials, or the cane's ditch), Miss Odile's static radio (ordinary, Tool: battle, the Static or the Night Line is Stunned a round, once a fight; she gives it with `emile`), gas station coffee (ordinary, Drink: +1d4+1 WP; Toby). Swamp Candy is the shared Mushrooms item (the feed store's bait cooler, Sweep; or Remy, Talk your way in or the cash).
+- If the cart was burned, the page reaches Big Hat anyway (taped to the case, not the tape).
+- Toby (a liar: Paranoia) on day 1 and night 1: Read or Calm gets "they said the Arceneaux boy" out of him.
+
+### Cover stories
+
+- Paper it (Bureaucracy): the old transmitter came live off the new irrigation line; the FCC seals it.
+- Sell it (Persuade): a pirate broadcaster with old station tapes; +20 with `log`.
+- Weak (Luck): kids with a CB radio and a grudge. Clean books: equipment fault, filed in 1979.
+
+### Endings, as built
+
+- `clean`: the Night Line ended, `name` said, nobody taken by the circle, Miss Odile's house standing, `fear` under 3, no agent lost, overstepping below Agency call.
+- `costly`: ended any other way.
+- `worst`: the Federal agents' shutdown.
