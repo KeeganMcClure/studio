@@ -137,7 +137,9 @@ function applySan(){}
 
 // ================= WORLD =================
 function passable(x,y){const M=G.M;if(x<0||y<0||x>=M.w||y>=M.h)return false;if(BLOCK.has(M.g[y][x]))return false;if(M.npcs.some(n=>(!n.on||n.on())&&n.x===x&&n.y===y))return false;if(roamAt(x,y))return false;return true}
-function goMap(name,x,y,dir,o={}){hud.hidden=true;gEl.classList.remove('battle');if(G.fs&&G.map&&G.map!==name&&!o.restore)G.fs.area=1;G.map=name;G.M=MAPS[name]();StudioMove.place(G,x,y,dir);
+// a case's maps come from its registerCase({maps}); Still Harvest's (and the Dev test season's stand-ins) are its MAPS
+const mapsOf=()=>{const c=caseById(G.case);return c&&c.maps||MAPS};
+function goMap(name,x,y,dir,o={}){hud.hidden=true;gEl.classList.remove('battle');if(G.fs&&G.map&&G.map!==name&&!o.restore)G.fs.area=1;G.map=name;G.M=mapsOf()[name]();StudioMove.place(G,x,y,dir);
  banner(G.M.name);}
 function update(){
  if(G.mode!=='world')return;
@@ -152,8 +154,8 @@ async function interact(){
  if(n){n.dir={up:'down',down:'up',left:'right',right:'left'}[G.dir];held=[];await n.talk(n);G.fs.talked[n.id]=G.clues.length;return}
  const r=roamAt(tx,ty);if(r){held=[];await roamMenu(r);return}  // a roamer: fight, sneak or the rest (field.js)
  // a hotspot is a script (a function) or data that opens the lead's options (field.js, spec 006 A2)
- if(M.O[k]){held=[];const h=M.O[k];if(typeof h==='function')await h();else await hotspot(h,k);return}
- const ch=M.g[ty]&&M.g[ty][tx];if(ch&&TILEDESC[ch]){held=[];await say('',TILEDESC[ch])}
+ const h0=hotAt(M,k);if(h0){held=[];const h=h0;if(typeof h==='function')await h();else await hotspot(h,k);return}
+ const ch=M.g[ty]&&M.g[ty][tx],TD=(caseById(G.case)||{}).tiles||TILEDESC;if(ch&&TD[ch]){held=[];await say('',TD[ch])}
 }
 function cam(){return StudioMove.camera(G,G.M.w,G.M.h,VW,VH)}
 // ================= MAP DRAWING AND LIGHT (spec 005) =================
@@ -186,7 +188,7 @@ function drawWorld(){
   if(see)cx.globalAlpha=.45;p.draw(cx,-camx,-camy);cx.globalAlpha=1}})});
  // townsfolk stand still; they turn to face the lead when spoken to, and blink now and then
  M.npcs.forEach((n,i)=>{if(n.on&&!n.on())return;const fx=n.x*16+8-camx,fy=n.y*16+13-camy,bl=(now+i*1100)%4100<150?1:0;
-  spr.push({y:n.y*16+13,f:()=>{const v=art.folk(n.id,n.dir,bl);cx.fillStyle='rgba(0,0,0,.3)';cx.fillRect(Math.round(fx-5),Math.round(fy-1),10,2);cx.drawImage(v.c,Math.round(fx-v.ax),Math.round(fy-v.ay))}})});
+  spr.push({y:n.y*16+13,f:()=>{const v=art.folk(n.id,n.dir,bl,M);if(!v.noShadow){cx.fillStyle='rgba(0,0,0,.3)';cx.fillRect(Math.round(fx-5),Math.round(fy-1),10,2)}cx.drawImage(v.c,Math.round(fx-v.ax),Math.round(fy-v.ay))}})});
  // Only the lead walks the map (Bible, Art, Maps). Agent sprites from agent-sprite.js; lantern at night only; a blink every few seconds.
  const blink=!moving&&(now%3400)<150?1:0;
  spr.push({y:G.py+13,f:()=>BLA.draw(cx,L.a,G.px+8-camx,G.py+13-camy,G.dir,fr,blink,night)});
@@ -208,10 +210,12 @@ function drawWorld(){
   const lamp=StudioLight.mix(LOOK.lamp[0],LOOK.lamp[1],k),ring=[[G.px+8-camx,G.py+6-camy,StudioLight.mix(LOOK.lantern[0],LOOK.lantern[1],k)*(G.fs&&G.fs.flareMap===G.map?1.6:1)]];
   pools.forEach(([x,y])=>ring.push([x,y,lamp]));roamLit.forEach(p=>ring.push(p));  // roamers walk in plain sight
   if(M.boss)ring.push([13*16+8-camx,11*16-38-camy,LOOK.boss+Math.random()*4]);
-  StudioLight.night(cx,{dark:LOOK.dark,alpha:LOOK.alpha,warm:LOOK.warm,pools:ring,glows:glows.map(([x,y,r,a])=>[x,y,r*.7,a*.6])});
+  StudioLight.night(cx,{dark:LOOK.dark,alpha:M.alpha||LOOK.alpha,warm:M.warm||LOOK.warm,pools:ring,glows:glows.map(([x,y,r,a])=>[x,y,r*.7,a*.6])});
  }
+ if(art.fx)art.fx(cx,{M,camx,camy,now,night,pools});  // a case's own light and air (Good Manners: sodium light, heat shimmer)
  if(k>0)StudioLight.sour(cx,k,{pink:LOOK.pink,cyan:LOOK.cyan});
  shimmer(now);
+ hiddenGlints(camx,camy,now);  // hidden unnatural hotspots, while the lead is High on Mushrooms (field.js)
  post.forEach(f=>f());
  drawMapHud(camx,camy,night);
 }
@@ -243,7 +247,7 @@ function drawMapHud(camx,camy,night){
  const [ax,ay]=StudioMove.ahead(G),M=G.M,n=M.npcs.find(n=>(!n.on||n.on())&&n.x===ax&&n.y===ay);let word,bx,top,bot;
  let dim=false,out=false;
  if(n){word=MH.talk;bx=n.x*16+8;bot=n.y*16+14;top=bot-(n.id==='pip'?24:28);out=talkedOut(n)}
- else if(M.O[ax+','+ay]){word=MH.look;dim=hotUsed(M.O[ax+','+ay],ax+','+ay);const p=M.props.find(p=>(p.tx===ax||p.tx===ax-1)&&(p.ty===ay||p.ty===ay-1)&&M.O[p.tx+','+p.ty]);
+ else if(hotAt(M,ax+','+ay)){word=MH.look;dim=hotUsed(M.O[ax+','+ay],ax+','+ay);const p=M.props.find(p=>(p.tx===ax||p.tx===ax-1)&&(p.ty===ay||p.ty===ay-1)&&hotAt(M,p.tx+','+p.ty));
   bx=p?p.x:ax*16+8;top=p?p.top:ay*16;bot=p?p.y:ay*16+16}
  else return;
  // talked out: a small "…" instead of the speech bubble; a used hotspot's bubble turns grey (Quality of life)
@@ -262,6 +266,12 @@ function drawMapHud(camx,camy,night){
 // Big Hat is on screen when the loop draws this scene (not the board, a battle, a menu screen, the party or the map).
 const hatOnScreen=()=>G.scene==='bighat'&&G.mode!=='world'&&!CB&&!Bt&&!SCR&&!PM;
 let hatCv=null;
+// his bust: the portrait without its backdrop, doubled, standing on fy (the desk top or the case's front piece)
+function hatBust(hf,t,fy,mid,sh){
+ if(!hatCv){hatCv=document.createElement('canvas');hatCv.width=hatCv.height=64}
+ const hc=hatCv.getContext('2d');hc.clearRect(0,0,64,64);drawBigHatPortrait(hc,hf.sh,hf.f,true,Math.floor(t/4)%2===1);
+ const bx=mid-64,by=fy-112;cx.imageSmoothingEnabled=false;cx.drawImage(hatCv,bx,by,128,128);
+ if(!hf.sh&&t%7>6.6){cx.fillStyle='#ffe9b0';cx.fillRect(bx+54,by+66,1,1);cx.fillRect(bx+73,by+66,1,1)}}
 function drawOffice(){
  const now=performance.now(),t=now/1000,sh=G.shout&&now<G.shout;
  // the face: his line's mouth frame and shout face come from drawBox (G.hatF); between lines, calm and shut
@@ -270,6 +280,8 @@ function drawOffice(){
  G.hatChin=fy-10;  // the question list stops above his chin (drawBox)
  cx.save();if(sh)cx.translate(rnd(5)-2,rnd(3)-1);
  const r=(x,y,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+dx,y+dy,w,h)},R=(x,y,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x,y,w,h)};
+ const place=G.hatPlace,v={VW,VH,dx,dy,fy,mid,now,shout:sh};
+ if(place){place.back(cx,v);hatBust(hf,t,fy,mid,sh);place.front(cx,v);cx.restore();if(sh){cx.fillStyle='rgba(170,0,30,.28)';cx.fillRect(0,0,VW,VH)}return}
  // wall, wainscot and floor, edge to edge
  R(-4,-4,VW+8,VH+8,'#2a2030');for(let x=(dx%12+12)%12;x<VW;x+=12)R(x,0,1,dy+150,'#241a2a');
  R(-4,dy+112,VW+8,3,'#3a2c3c');R(-4,dy+115,VW+8,35,'#221a28');for(let x=(dx+4)%10;x<VW;x+=10)R(x,dy+115,1,35,'#1c1622');
@@ -289,10 +301,7 @@ function drawOffice(){
  cx.strokeStyle='#b5532e';cx.lineWidth=1;cx.beginPath();cx.moveTo(113.5+dx,64+dy);cx.lineTo(135+dx,65+dy);cx.lineTo(151+dx,72+dy);cx.moveTo(135+dx,65+dy);cx.lineTo(119+dx,85+dy);cx.stroke();
  // Big Hat: the portrait without its backdrop, doubled. The toothpick switches sides every few seconds;
  // two pinprick glints show in the brim shadow, rarely (Cast).
- if(!hatCv){hatCv=document.createElement('canvas');hatCv.width=hatCv.height=64}
- const hc=hatCv.getContext('2d');hc.clearRect(0,0,64,64);drawBigHatPortrait(hc,hf.sh,hf.f,true,Math.floor(t/4)%2===1);
- const bx=mid-64,by=fy-112;cx.imageSmoothingEnabled=false;cx.drawImage(hatCv,bx,by,128,128);
- if(!hf.sh&&t%7>6.6){R(bx+54,by+66,1,1,'#ffe9b0');R(bx+73,by+66,1,1,'#ffe9b0')}
+ hatBust(hf,t,fy,mid,sh);
  // the desk in front of him covers his lower vest; a box of crullers and a styrofoam cup on top
  r(20,128,130,6,'#7a5234');r(20,128,130,1,'#9a6c44');r(22,134,126,22,'#5a3a24');r(22,134,126,1,'#3e2818');r(26,138,30,14,'#4e3220');r(114,138,30,14,'#4e3220');
  r(108,118,34,10,'#e8dcc0');r(108,118,34,2,'#ff9ec8');r(107,116,36,2,'#d8c8b0');
@@ -400,7 +409,10 @@ function markSeen(k){const s=loadSeason(),e=s.cases[G.case];
 async function cut(id,fn){const up=G.cut;G.cut={id,seen:seenOf().includes(id),skip:false};
  try{await fn();markSeen(id)}finally{G.cut=up}}
 async function shout(text){G.shout=performance.now()+750;G.shoutPor=true;try{return await say('BIG HAT',text)}finally{G.shoutPor=false}}
-async function bigHatScene(fn){await fade(1);G.mode='scene';G.scene='bighat';await fade(0);await sleep(400);await fn();await fade(1);G.scene=null}
+// o.place: a case's own briefing place (Cast, Big Hat, Backdrop: a new place each case; spec 010 is the first), drawn in the
+// back room's layout: {back(ctx, v), front(ctx, v)} paint behind his bust and in front of it (where the desk would be).
+// Without it (Still Harvest, every debrief) he's in the donut shop's back room.
+async function bigHatScene(fn,o={}){await fade(1);G.mode='scene';G.scene='bighat';G.hatPlace=o.place||null;await fade(0);await sleep(400);try{await fn()}finally{await fade(1);G.scene=null;G.hatPlace=null}}
 function drawScene(){if(G.scene==='bighat'){drawOffice();if(G.db)dbCard();return}if(G.scene==='funeral')return drawFuneral();if(G.scene==='home')return drawHome();cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+rnd(20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
 // Logic runs at 60 ticks a second on any screen (engine/clock.js); frames with no tick due are skipped.
 const clock=StudioClock.make();
