@@ -873,14 +873,14 @@ Cut: Art, and Vehicles (Drive, Ride, Heavy Machinery): no stake, so driving happ
 
 ### Using skills (set Nov 18)
 
-- **On the map:** only the lead agent's skills are available. Walk up to a hotspot (a locked shed, a nervous witness, a body) and press A; the lead's usable skill options appear. Options the lead lacks show greyed out with the skill name, so you know to swap leads.
+- **On the map:** only the lead agent's skills are available. Walk up to a hotspot (a locked shed, a nervous witness, a body) and press A; the lead's usable skill options appear. Options the lead lacks show greyed out with the skill name, so you know to swap leads. An option nobody in the party is high enough to use is hidden, not greyed, so the list only shows what this team can do (Keegan's demo playtest, Nov 23, 2026).
 - **Away from hotspots:** a few skills work anywhere from the map menu's Skills row (see Map menu below).
 - **Swapping leads:** anytime from the party menu, except during a fight or cutscene.
 - **Unlocks:** each skill unlocks at least 3 actions or abilities, at 40%, 75% and 90%. An unlock gives you the action; a percentile roll against the skill still decides whether it works. Higher tiers can add perks such as rerolls or a once-per-case auto-success. Creation cap stays 80%, so 90% unlocks are earned in play, through failure growth and the Improve Skill home scene (see Between cases). Skills cap at 99%. Each skill's unlocks are in Skill unlocks below.
 
 ### Skill unlocks (set Nov 18)
 
-Each unlock is a hotspot option, a battle use or a perk; the shape varies per skill. Every skill earns a stake somewhere, not necessarily in battle. Not every skill matters in every case: a case fully supports about 8–10 skills, and the rest show greyed out. Firearms, Melee and Dodge hold a weaker battle move beside each map unlock (see Battle moves in the Combat tab). Most other skills also hold one status move (see Status moves in the Combat tab). Loud actions draw nearby roamers.
+Each unlock is a hotspot option, a battle use or a perk; the shape varies per skill. Every skill earns a stake somewhere, not necessarily in battle. Not every skill matters in every case: a case fully supports about 8–10 skills. At a hotspot, an option a teammate could use shows greyed out; one nobody in the party can use is hidden (set Nov 23). Firearms, Melee and Dodge hold a weaker battle move beside each map unlock (see Battle moves in the Combat tab). Most other skills also hold one status move (see Status moves in the Combat tab). Loud actions draw nearby roamers.
 
 | Skill | 40% | 75% | 90% |
 | --- | --- | --- | --- |
@@ -938,7 +938,7 @@ Press Start on the map to open it. It's the same navy list box as the battle com
 - **Rows:** Party, Skills, Items, Case file, Log, Settings, Save.
 - **Party:** three agent cards stacked, Pokémon-style, each showing HP, SAN, WP and status icons, with the lead marked. Tap a card for Make lead, Dossier or Give item. Open anytime except during a fight or cutscene. Cards stay in seat order and the LEAD tag moves; Give item shows greyed with a one-line reason until Demo 5 brings item slots (set Nov 21, spec 002).
 - **Party card faces (noted Nov 20):** the faces in the approved party menu mockup are too rough and hard to read. Make them clearer when the menu is built; no new mockup needed.
-- **Skills:** the lead's skills usable away from hotspots: First Aid and Medicine, plus Survival's Make camp and Science's Analyze once unlocked. Skills the lead lacks show greyed out with the skill name, as at hotspots.
+- **Skills:** the lead's skills usable away from hotspots: First Aid and Medicine, plus Survival's Make camp and Science's Analyze once unlocked. Skills the lead lacks show greyed out with the skill name, as at hotspots, and skills nobody in the party has are hidden.
 - **Items:** see Item display in the Agents and items tab.
 - **Case file:** a Next line with the current goal at the top, then each clue found with a one-line note, so you never get lost between sittings. A Rules page lists every status, item icon and threat skull.
 - **Log:** rereads the last 30 or so dialog boxes, since clues hide in what people ramble about.
@@ -955,7 +955,7 @@ Small comforts for short phone sittings. None of them change a rule; they save t
 - **Battle cursor memory:** each agent's command menu opens on the last command and target they used.
 - **Odds when targeting:** picking a target shows the agent's to-hit % with every modifier applied (Firearms 50% −20 = 30%) and the weapon's dice.
 - **A prompt:** a small A bubble appears over a usable hotspot when the lead stands next to it. Hidden hotspots stay hidden until found.
-- **Odds on hotspots:** each option shows the lead's chance, like "Force it · Melee 55%"; greyed-out options still name the skill.
+- **Odds on hotspots:** each option shows the lead's chance, like "Force it · Melee 55%"; greyed-out options still name the skill. Options nobody in the party can use are hidden (set Nov 23).
 - **Running:** hold B on the map to run. Walking is the default.
 - **Confirm what sticks:** a "Can't be undone. Sure?" box before permanent choices only: giving up a motivation, hiding evidence from Big Hat, sending an agent on Sabbatical.
 - **Last time:** loading a save opens one box summing up where you were and the Case file's Next goal.
@@ -978,7 +978,7 @@ Small comforts for short phone sittings. None of them change a rule; they save t
 - **Party on the field:** all 3 agents fight at once. No reserve slot. Balance is tuned for 3.
 - **Turn order (set Nov 18):** agents and enemies all act in DEX order, highest first; ties go to agents. A column of small faces down the left edge shows the next few turns, so it never covers the sprites (set Nov 20). Search's On guard means enemies never take the first turn.
 - **Hit rolls:** each attack is a percentile roll against the agent's skill. No dice animation; a short result line pops up instead, e.g. FIREARMS 62% · rolled 41 · HIT.
-- **Command menu (set Nov 18):** a one-row box along the bottom in the dialog-box style (navy, cream border) with Fight, Skills, Items and Guard. D-pad or tap. Fight: attack with the equipped weapon, free. Skills: battle unlocks, which cost WP. Items: meds, Antitoxin and the like. Guard: Defend (half damage until your next turn), Brace, Retch, or Flee (roamers only).
+- **Command menu (set Nov 18):** a one-row box along the bottom in the dialog-box style (navy, cream border) with Fight, Skills, Items and Guard. D-pad or tap. Fight: attack with the equipped weapon, free. Skills: battle unlocks, which cost WP. The list shows only moves the acting agent has unlocked; one they have but can't use right now (not enough WP, no fitting target) shows greyed with the reason (set Nov 23). Items: meds, Antitoxin and the like. Guard: Defend (half damage until your next turn), Brace, Retch, or Flee (roamers only).
 - **Move cost (set Nov 18):** special battle moves cost Willpower Points, the same pool used for bracing, so every big move risks the mind later. Plain Fight attacks are free. Costs follow the unlock tier: 40% moves 1 WP, 75% moves 2 WP, 90% moves 3 WP; free perks cost nothing. Healing skills cost WP like any special; items are free. At 0 WP an agent can't use specials or brace, but Fight, Items and Defend still work (set Nov 18).
 - **0 HP (set Nov 18):** the agent is Downed and bleeds out after 3 of their own turns unless Medicine's Revive gets them up; bleeding out is death, for good. If the fight ends first, they survive at 1 HP. Anyone Downed during a fight, even if Revived, rolls for a lasting injury when it ends (see Lasting injuries below).
 - Purely turn-based. No timed hits or real-time inputs.
