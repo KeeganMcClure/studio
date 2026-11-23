@@ -18,7 +18,7 @@ Keegan picked this split on Nov 22, 2026: a frame spec here, with the Developer 
 | --- | --- | --- |
 | Card | `LANTERN 01`, the black folder card with cream text, dark red pin and red wax seal (spec 009, step 3); place line `AGENCY CASE · <place>`; if the arc file marks it as the finale, the finale card instead (spec 009, step 4) | Title, town, place, the two hook lines (teaser only, like every card) |
 | Unlock | After the home phase, when `closed` reaches its unlock count, the unlock scene plays and the folder pins in the bottom row (spec 009, step 3) | The unlock count (season data file only) and Big Hat's one or two unlock lines |
-| Briefing | Big Hat's own backdrop for this case, a new place (Cast → Big Hat, Backdrop; set Nov 23, 2026), drawn in the back room's layout; two questions from four topics, each an INTEL note and a small edge (spec 013) | Where he briefs them, the four topics, their notes and edges |
+| Briefing | Big Hat's own backdrop for this case, a new place (Cast → Big Hat, Backdrop; set Nov 23, 2026), drawn in the back room's layout, and the debrief plays there too; two questions from four topics, each an INTEL note and a small edge (spec 013) | Where he briefs them, the four topics, their notes and edges |
 | Length | 1–2 hours, one case | Whether it breaks the pattern on purpose (Gameplay loop allows it), kept inside 2 hours |
 | Fights | 2–3 story fights plus a boss, no random encounters (Gameplay loop) | Which ones, human or unnatural, their skulls |
 | Danger zones | 0–2, every roamer guards something | Where, how many roamers |
