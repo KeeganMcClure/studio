@@ -51,6 +51,13 @@ Set Nov 23, 2026, after Black Lantern's intro was built without any spec coverin
 - It is an inbox, not a bible: the Designer moves each item into the repo, ticks it, and replies in its comment thread with where it went.
 - Its New game ideas section is a parking lot for future games and is never cleared.
 
+## Playtests
+
+Set Nov 23, 2026, after Rushlight's look fell well behind Black Lantern's and nobody saw it until all five slice parts were built.
+
+- Before Keegan plays, the Developer puts each new or changed screen side by side with its approved mockup at 375 × 667, fixes anything that falls short, and says in the changelog entry that the check was done.
+- Keegan plays on the phone after the first part of a spec or slice that adds new screens. The Developer waits for those notes before building the next part that adds screens, so a look or feel problem is fixed before it spreads. Parts that only add rules or content can go ahead.
+
 ## Changing a rule
 
 Locked rules change only on purpose. Change the bible file first in a PR, note the date, then update anything that depends on it.
