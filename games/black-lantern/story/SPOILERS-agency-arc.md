@@ -19,7 +19,7 @@ Something kind is buying names. Every case Black Lantern closes files one more p
 - Sympathetic, not a villain. Family and Redemption agents get extra dialog with her.
 
 ## Big Hat
-Clean. He feels something wrong upstairs; the corkboard behind him grows each season (pins, string, the scarecrow photo from Still Harvest). He is the ally. He recognizes Wren's initial in Agency Case A and says nothing until the finale, where he shouts her name (shout portrait, screen shake).
+Clean. He feels something wrong upstairs; the corkboard behind him grows each season (pins, string, the scarecrow photo from Still Harvest). He is the ally. He recognizes Wren's initial in Agency Case A (on the requisition for Teague's file) and says nothing until the finale, where he shouts her name (shout portrait, screen shake).
 
 ## Hidden hooks in regular cases
 Claude adds these when building each regular case. They never appear in pitches, the Bible or the Changelog.
@@ -31,16 +31,19 @@ Claude adds these when building each regular case. They never appear in pitches,
 
 ## Season 1 structure
 Unlocks count closed regular cases, in any order. The rebuilt Still Harvest counts. Agency cases don't count toward the next unlock. They appear on the case board as a red-pinned letter stamped BLACK LANTERN INTERNAL.
-- 2 closed: Agency Case A, "Dead Air"
+- 2 closed: Agency Case A, "Dead Letter"
 - 4 closed: Agency Case B, "Seven Days"
 - 6 closed: Finale, "Records"
 
-### Agency Case A: "Dead Air" (from the player's "WE KNOW" tape seed)
-- **Hook:** a VHS arrives at the donut shop addressed to the agents by name, labeled WE KNOW. On it, a sore-covered club dancer moves with impossible force while someone off camera chants numbers: the page numbers of evidence the team has filed.
-- **Investigation:** the shuttered club (the Velvet Room, Tacoma), the dancer's sister, the camcorder's pawn-shop trail, a Records clerk named Dot Pruitt who mailed the tape out against orders.
-- **Truth:** the dancer, Rae Castell, signed to keep dancing. The tape was Dot's warning. Its chain-of-custody stamp is Black Lantern Records.
-- **Boss:** the Dancer, who can't stop moving (can't be Stunned two turns running; can be Shaken). Weakened by decoding the chant (Search, History) or burning the tape's twin reel (Science).
-- **Ending:** Dot is gone; her desk is cleared. A Records requisition is signed only "W." Big Hat goes quiet: "Not in my jurisdiction." Unlocks Off the books.
+### Agency Case A: "Dead Letter" (from the player's "Missing agent" seed; rewritten Nov 23, 2026 by the Designer)
+The first version of this case used the "WE KNOW" tape seed and the title "Dead Air". Both later went to regular cases (Tracking, spec 018, and Dead Air, spec 020), so the case now tells the Missing agent story. Its job in the arc is unchanged: show that Records is in on it, put "W." on the page, and unlock Off the books.
+- **Hook:** a Black Lantern field agent, Abel Teague (code name SEXTON), stopped answering the call three weeks ago. His last reports went up through Records and nobody upstairs answered them. Big Hat hands the team his file himself: "He's one of ours. Bring him home, or bring me why not." The card reads AGENCY CASE · ASTORIA, OR: a cannery town at the mouth of the Columbia, in February rain.
+- **Investigation:** Teague's safehouse over a shut cannery (his study wall: Occult, History), his landlady, the post office box where his Records mail landed (Bureaucracy, Search), the bar where he drank alone, and a Records clerk, Dot Ferrell, whose last letter to him is in the box: "They read everything you send. Stop sending it."
+- **Truth:** Teague had been studying Outside Entities to fight fire with fire. Following the page numbers on evidence he'd filed, he found the Ledger and tried to bind a lesser thing to use against the Almoner. It used him as a host instead and now wears him. Every report he sent asking for help carries a Records chain-of-custody stamp, and none of them was ever logged.
+- **Boss:** the Tenant, wearing Teague and talking in his voice. Two weakening choices: read Teague's real name aloud from his own service record (History or Bureaucracy, finding the record in the safehouse), and burn the binding book he worked from (Science or Occult). Identify finds that it can't stand salt water (Still Harvest's lantern rules don't apply).
+- **Endings:** clean, Teague dies as himself after a few words for Big Hat; costly, the Tenant is driven out and Teague with it; worst, the Tenant walks into the rain wearing him (a Season 2 seed).
+- **Ending (every outcome):** Dot is gone; her desk is cleared. A Records requisition for Teague's file is signed only "W." Big Hat goes quiet: "Not in my jurisdiction." Unlocks Off the books.
+- **Tracking and Dead Air (regular cases)** are normal cases now. Their secret case files may carry only the usual hidden hooks (the page, at most one cameo). Tracking's dancer may be a Ledger account who signed to keep dancing, as an arc touch, but the tape is no longer a Records warning.
 
 ### Agency Case B: "Seven Days" (from the player's patron's-house seed, all renamed)
 - **Setting:** Corley Falls, Minnesota, the Lindqvist house at 9 Orchard Row.
@@ -56,7 +59,7 @@ Unlocks count closed regular cases, in any order. The rebuilt Still Harvest coun
 - **Briefing:** no donut shop. Big Hat calls from a payphone; he's been suspended. "I don't do paperwork on a Sunday. It's Sunday."
 - **Map:** Black Lantern's Records archive. Overstepping is maxed, so agency internal security patrols as roamers. Bureaucracy's Credentials, Stealth's Blend in and Computers' Backdoor shine.
 - **Wren:** Empathy or Persuade can turn her. Turned, she gives up the Almoner's true name or tears out her own page.
-- **Boss, the Almoner, three phases:** (1) polite: he offers each agent a deal tied to one of their motivations (accept = full SAN restore but the agent becomes a secret account, a Season 2 consequence; refuse = SAN roll); (2) the Ledger's pages fly (Bleeding, Shaken); (3) his eyes open. Weak to fire on the Ledger and to Speak its name. Each page kept off the books, each hidden item, and the burned Agnes page weakens him.
+- **Boss, the Almoner, two phases** (settled Nov 23, 2026 to fit Combat → Bosses, which allows two): (1) polite: he offers each agent a deal tied to one of their motivations (accept = full SAN restore but the agent becomes a secret account, a Season 2 consequence; refuse = SAN roll); (2) at half HP his eyes open and the Ledger's pages fly (Bleeding, Shaken), the old second and third phases as one. Weak to fire on the Ledger and to Speak its name. Each page kept off the books, each hidden item, and the burned Agnes page weakens him.
 - **Endings:**
   - Burn the Ledger: accounts go free, Lily included; Wren goes with the Almoner; the archive burns; Big Hat is reinstated in a quiet donut-shop scene.
   - Bind him (Wren turned plus the true name): the Almoner is sealed in a Lantern Box the agency now keeps. Season 2 opens with Black Lantern owning a god in a box.
