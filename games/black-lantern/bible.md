@@ -136,6 +136,8 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
 - [ ] Lost Hour part B (spec 016): the secret case file first, then its story, the night drive and hypnosis session, fights, boss and endings
 - [ ] First agency case part A (spec 014): the secret case file first, from the arc file; then its maps and art, townsfolk, and the black LANTERN folder on the board, walkable with stand-in scripts. After Lot 83
 - [ ] First agency case part B (spec 014): its story, fights, boss and endings, and the unlock scene's lines
+- [ ] Tracking part A (spec 018): its maps and art, Fourth Street in snow and the closed club, the tracking lines effect, townsfolk, walkable with stand-in scripts. After Lost Hour
+- [ ] Tracking part B (spec 018): the secret case file first, then its story, the trail and watching the tape, fights, boss and endings
 - [ ] Later agency cases and the finale (spec 015): every agency case after the first, built one at a time in arc order, each in a part A and a part B like the first, ending with the finale and the season end screen. Tick this when the season data file has them all and a Dev playtest runs from New game to Season 2's board
 - [x] Turn the Art Bible page into the Asset Library (sprites, drawing code, palette)
 - [x] Update the project instructions to point here
