@@ -32,7 +32,7 @@ const at=(M,x,y)=>{const r=M.ground[y];return r?r[x]:undefined};
 // ================= THE STILL LAYER =================
 const still={};
 function paint(M){
- const key=M.id;if(still[key])return still[key];
+ const key=M.id+'|'+(M.light||'day');if(still[key])return still[key];
  const W=M.w*T,H=M.h*T,c=K.mk(W,H),g=c.getContext('2d'),img=g.createImageData(W,H),d=img.data,glows=[];
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const tx=(x/T)|0,ty=(y/T)|0;let ch=at(M,tx,ty);
   if(SOFT.has(ch)){const jx=Math.min(W-1,Math.max(0,x+((hsh(x>>1,y>>1,61)*5)|0)-2)),jy=Math.min(H-1,Math.max(0,y+((hsh(x>>1,y>>1,62)*5)|0)-2)),jc=at(M,(jx/T)|0,(jy/T)|0);if(SOFT.has(jc))ch=jc}
