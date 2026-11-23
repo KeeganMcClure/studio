@@ -38,6 +38,11 @@ All rough, drawn in code, in `games/rushlight/mockups/` with the code that drew 
 | `36-sprite-upgrade-rough-v2` | The six species as portrait, map sprite and battle back view, now and new | "So much better" (Nov 23); every sprite to meet it |
 | `36-sprite-upgrade-rough-v3` | v2 with a narrower fox face (ears grown into the skull) and reworked back views: hare ears joined to the head, ear backs with a deep rim, a rounder badger head, the fox's cheek ruff | "This is great" (Nov 23). The reference for 8A |
 | `36-creatures-before` | Today's creature sprites, for the audit in 8A | |
+| `37-creatures-upgrade-rough-v1` | The five redraws and four touch-ups, now and new | "Everything else is good" (Nov 23); Severa's wings redrawn as a fan of flight feathers, "These are great!" |
+| `38-folk-front-rough-v1` | Folk enemies front-on: bandits (hatchet or long knife, kerchief or hood) and men-at-arms (kettle hat, quilted jack, spear), face parts varied | "That works!" (Nov 23), after a hand-drawn badger face and longer hare ears |
+| `39-battle-look-rough-v4` | The battle screen: dusk road backdrop, shadows, staggered plates, faces in the strip, party 2× and foes 1.5× | "Good otherwise" (Nov 23); drop the turn arrow |
+| `40-site-look-rough-v1` | A contract site (Hollin at noon) and the den (Lowmoor Pit at night), now and new: 3/4 buildings, rye, stooks, the pump house and whim, night light, the HUD cards | Approved with 41 (Nov 23) |
+| `41-environment-readability-v1` | The readability pass, before and after: Hollin, Lowmoor Pit and the road battle backdrop | "Love all the changes" (Nov 23). The reference for sites, the den and battle backdrops |
 
 ## 8A. Sprites
 
@@ -50,13 +55,22 @@ All rough, drawn in code, in `games/rushlight/mockups/` with the code that drew 
 
 The reference is rough: tidy it while lifting it, but match it side by side at the same zoom (art-style, Quality bar). Check every species with every mark and neckwear.
 
-**Folk enemies.** The bandits, men-at-arms and other folk in battle are drawn front-on from the species art. Add a front battle view built the same way as the back view (shaded head and body, the species' face from the portrait at small size, their weapon in hand, gear by role), so two bandits read as two people, not one flat stamp twice. Vary each with the face parts.
+**Folk enemies** (look check, Nov 23, to `38-folk-front-rough-v1`). The bandits, men-at-arms and other folk in battle are drawn front-on from the species art. Add a front battle view built the same way as the back view (shaded head and body, the species' face from the portrait at small size, their weapon in hand, gear by role), so two bandits read as two people, not one flat stamp twice. Vary each with the face parts.
 
-**Creatures.** Every creature keeps its approved design, size and rules (bible, Creatures, and the two creature batches). Only the craft is brought up to the bar:
+**Creatures** (look check, Nov 23, to `37-creatures-upgrade-rough-v1`). Every creature keeps its approved design, size and rules (bible, Creatures, and the two creature batches). Only the craft is brought up to the bar:
 
 - **Redraw:** the Noonwife, the Counter, the Corpse-candle, the Lampwalkers and Severa the owl. They are flat fills today.
 - **Touch up:** the hedge cat, the Hollow Monk, the rooks and the Withy Hag are close. Give them the rim and the selective outline, and check their ramps have four tones.
 - The creature sprites are imported from the Asset Library (`tools/import-art.js`). File each redraw there as a new version beside the old (rushlight-sprites-noonwife-v2 beside v1, add-only), then import. The unnatural can be wrong in their own ways (bible, Drawing the unnatural), but wrong on purpose, never flat.
+
+**Battle screen** (look check, Nov 23, to `39-battle-look-rough-v4`). Only how the fight looks changes:
+
+- **Sizes, with perspective:** the party's back views at 2× today's size, the foes at 1.5×, drawn natively at those sizes so their pixels match the backdrop. The party is nearer, so it reads bigger, but not by much.
+- **Backdrops:** a lit, dressed backdrop for each kind of place, built like the streets (8B). The mockup's is the road at dusk: a low sun on the left, far hills, a hedge line with pollard willows, the road with ruts and puddles that catch the sky, grass tufts, a milestone.
+- **Shadows:** a soft shadow under every fighter, cast away from the light.
+- **Nameplates:** with three foes or more, every other plate drops a row so no two overlap and no name is cut.
+- **Party strip:** each card shows the merc's face on its backing, the whole name, the HP number beside the bar, and WP and SAN in Bone.
+- **Whose turn:** the active merc's strip card gets the Tallow border. No arrow over the merc in the scene.
 
 **Animation.** Build the rig and timing table from `art-style.md` (Animation):
 
@@ -76,6 +90,15 @@ Built to `34-look-town-rough-v2`. For both towns, every site and the den.
 - **Camera.** On a town street the camera sits 34 px higher, so the rooftops and smoke show under the HUD.
 - **HUD cards** (replace the town strip and the site strip): a lead card top left (a 2× portrait on its backing, the name in Tallow, the HP bar, HP, WP and SAN) and a place card top right (the town's name, the purse, the day). On a site the place card shows the site's name and the day, and the NEXT line stays as one line under the cards. Text never smaller than in the mockup.
 - Only the lead walks (bug batch).
+- **Sites and the den** (look check, Nov 23, to `40-site-look-rough-v1` with the `41` readability pass). Same maps and walk grid; only the drawing changes. Cottages and the church tower stand up in 3/4 with lit and shaded sides; the rye is standing stalks; stooks, fences, a pump house with its beam, a horse whim, carts, ore tubs and a tram road along the lane. Noon shadows pool straight down. Night keeps its dark with a cool moon lift, and windows, lamps and fires glow.
+- **Readability** (all maps and battle backdrops, checked at 1× on the phone):
+  - The floor you walk on is the calm middle value. Things that block sit a clear step darker at night, or carry a hard dark foot line by day.
+  - A big area such as rye or spoil heaps is one quiet mass: low-contrast texture inside, a lit top edge, a dark lip where it ends. A lone heap out on the floor is one whole mound, never a dark square.
+  - Texture is one or two steps apart, never a bright speck on every tile. About three grass specks per tile at most.
+  - The brightest, warmest colors belong to people, lit windows and hotspots. Props on the ground never use Tallow or straw-bright colors.
+  - Hotspot diamonds have a Peat outline and a slow bob, and at night they draw on top of the dark so they keep their glow.
+  - Every person stands on a firm contact shadow.
+  - Battle backdrops: far things paler and hazier, so the foes' dark outlines stand out; no grass speckle behind the party.
 
 ## 8C. Menus
 
