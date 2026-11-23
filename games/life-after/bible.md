@@ -29,7 +29,7 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 - [x] Other survivors and trade: group types, starting moods, what they remember, and barter values (Nov 23). See `survivors.md`.
 - [x] Weather and events: the first list, how often each comes, and how sure the warnings are (Nov 23). See `weather.md`.
 - [x] Difficulty presets: what Gentle, Standard and Harsh change, in numbers (Nov 23). See The run, Difficulty presets.
-- [ ] Cover: 120 × 80 cover art (`studio-bible/launcher.md`). The Developer adds `game.json` when the game is ready for the shelf.
+- [ ] Cover: 120 × 80 cover art (`studio-bible/launcher.md`). The Developer adds `game.json` when the game is ready for the shelf. Design picked Nov 22: Boarded window (see Art, Cover). Left to build: `assets/cover.js` drawn from `mockups/03-cover-b-rough-v2.html`.
 - [x] Spec 001: the first playable slice, cited against this bible. Set Nov 21: survive a week alone. A small generated town (the houses and highway strip sections), the survivor builder with all 12 jobs, scavenging, hunger and sleep, map combat with the noise ring, day and night, one hideout and the death screen. No companions yet. Written Nov 23 in four parts, `specs/001` to `004`.
 - [ ] Build slice part A, a new world: the game folder, title, world setup, the survivor builder, saves and the save code (`specs/001-slice-a-new-world.md`).
 - [ ] Build slice part B, the town: the two sections, the clock, day and night, searching, locks, the bag, items, crafting, the notebook and the map screen (`specs/002-slice-b-the-town.md`).
@@ -284,6 +284,7 @@ Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
 - **Gore:** grounded for people (blood, wounds and bodies shown plainly at pixel size, never lingered on), gorier on zombies (rot, exposed bone, torn flesh, missing parts).
 - **Zombies show who they were:** built from parts (a mail carrier, a nurse, a farmer, a kid in a team jersey) with the gore on top. Their clothes hint at their loot.
 - **Portraits with moods:** 64 × 64 faces for your survivor, companions and traders that change with mood, SAN and injuries.
+- **Cover** (Keegan, Nov 22): Boarded window. A hideout window seen from outside at night, nailed with boards, warm light showing through. A dead hand, a dark silhouette with fingers spread, presses on the glass in the gap between the boards, over a smear. The title LIFE AFTER sits on a dark band at the bottom in Press Start 2P. Reference: `mockups/03-cover-b-rough-v2`; the Developer can clean up the pixels but keeps the layout and the hand's read at actual size.
 - Exact palette hex codes and each season's colors come with the first in-shell mockup.
 - Mockups live in `mockups/` as design references only; the game never loads them. Each keeps the code that drew it.
 
@@ -292,7 +293,7 @@ Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
 | `01-combat-compare-rough-v1` | Rough, Nov 21: fighting on the map (picked) beside a separate battle screen (not picked). Placeholder colors. |
 | `02-baseline-san-rough-v2` | Rough, Nov 21: the same night at normal SAN, a color-drain option (not picked) and phantoms (picked). The phantoms panel is the baseline frame. |
 | `03-cover-options-rough-v1` | Rough, Nov 22: three cover options (Vacancy, Boarded window, First light). Keegan picked Boarded window. |
-| `03-cover-b-rough-v2` | Rough, Nov 22: Boarded window redrawn so the hand reads, as a dark silhouette in a wide gap between boards. For review. |
+| `03-cover-b-rough-v2` | Rough, Nov 22: Boarded window redrawn so the hand reads, as a dark silhouette in a wide gap between boards. Picked Nov 22 (Keegan): this is the cover. |
 
 ## Tech
 
