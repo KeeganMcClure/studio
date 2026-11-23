@@ -59,7 +59,7 @@ async function battle(types,o={}){
   if(Bt.smoke>0)Bt.smoke--;
  }
 }
-function nameEnemies(en){const c={};en.forEach(e=>c[e.base]=(c[e.base]||0)+1);const s={};en.forEach(e=>{if(c[e.base]>1){s[e.base]=(s[e.base]||0)+1;e.name=e.base+' '+'ABC'[s[e.base]-1]}else e.name=e.base})}
+function nameEnemies(en){const c={};en.forEach(e=>c[e.base]=(c[e.base]||0)+1);const s={};en.forEach(e=>{if(c[e.base]>1){s[e.base]=(s[e.base]||0)+1;e.name=e.base+' '+'ABCDEF'[s[e.base]-1]}else e.name=e.base})}
 function layoutFoes(){const n=Bt.en.length,x0=28,w=VW-x0-4;Bt.en.forEach((e,i)=>{e.x=Math.round(x0+w/(n+1)*(i+1))})}
 // the whole team down (Downed, bled out, snapped or gone) loses the fight (Gameplay loop, Game over)
 const teamDown=()=>party.every(m=>m.ko||m.dead||m.out||m.gone||m.san<=0);

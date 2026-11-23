@@ -170,3 +170,77 @@ Phobia subject: **grubs** (small soft crawling things). Trigger tags: Walt is a 
   - **The lot** — "Dead man's estate, bought by the pallet. Family wouldn't say a word about him, which is a word." Edge: +10% Search when counting the lot.
   - **Walt** — "Seventy-one. Widower. Stopped answering his phone Thursday." Edge: Walt's door opens to Empathy at +10.
   - **The tent** — "You're the bug men. Tent goes up at dusk, comes down at dawn, and nobody comes back in between." Edge: the van shows where the work lights stand on night 1.
+
+## Part B build notes (Developer, Nov 23, 2026)
+
+What part B settled before and while building. Where these and the sections above differ, these win.
+
+### The day and the turns (points of no return)
+
+| Turn | Where | Needs | Line naming what closes |
+| --- | --- | --- | --- |
+| Day 1 → night 1 (the tenting) | the van, "Call in the tent crew", after Big Hat's radio question | `count` (the lot counted) and the work order from Lorraine | Walt's storage unit closes, and the tenants go to the motel till dawn (named). |
+
+There is one turn. The deduction is Big Hat's radio question, asked the first time you call the crew; it never stops the tenting.
+The pump-room hatch at night asks Go in / Not yet, then the boss waits at the nest: talking to Walt in the nest or stepping onto the row in front of it (x 10–13, y 4) asks Go in / Not yet. The filter, the pipes and the sump are reached without crossing that row.
+
+### The soft clock (`late`)
+
+Each adds 1: the wrong deduction (swarm), a rest in the laundry room, packing the jars by hand, following the warm pipes to find the hatch, reading Penhallow's books (the Curiosity moment), talking Walt down (the Family moment). `late` 4 or more at the end loses `clean` (dawn comes while you're still in there; the first tenants back see the crew). It never stops anything.
+
+### Clue routes (clues as keys; every team template reaches the boss)
+
+- `count` (Unit 6, the lot on the table): Sweep (Search, +10 with the lot intel) also spots the gap in the ledgers; Sample (Science) also says the brine is warm; Dig records (History) also says the books aren't in any alphabet; or count them by hand, no roll. Opens Lorraine's storage line and the tenting. The empty jar is the Unsettling horror.
+- Unit 6's door by day: `keys` (the office key board: Paper trail on the work order, Sneak it off the hook (a fail in front of Lorraine is a seen overstep), Talk your way in with Lorraine (+10 building intel)); or Denise knocks (Read or Talk: "ask her to knock"); or Force it (seen: Mrs. Ybarra). The Walt intel: +10 on Denise's knock. At night Unit 6 stands open (Walt went out).
+- Storage unit 83 (by van, day): Walt's padlock key on the hook by his door (Look, no roll), Dale (Talk your way in), bolt cutters, or Force it (on camera: public). In the bay: `list` (read the lot list, no roll; the second way is Denise's receipt, Talk, once `count` is held), `grace` (Grace's box: Read or Sweep; second way, Denise's Read), the two jars (take them: `bay`), the books (`read`).
+- `wall`: the Mushrooms patch, Hector (Talk or Read), or Gus (Read or Talk). With it the hatch's padlock hangs open; without it, Force it, Fix it (Craft), bolt cutters, Shoot it open (loud), or follow the warm pipes (no roll, `late` +1).
+- `ledger`: the freezer (Sweep), or Walt tells you where (Read, by day), after which the freezer opens with no roll. Second half: Trey, once you've seen Walt's arm, says cold would kill it (`cold`: the weakness, Identify free).
+- `nits`: a dead nit after Trey's wall fight (Examine, Sample or Identify), or Kenny's video (Talk or Crack it). Opens "pack the jars in ice" without the right deduction.
+
+### The deduction (Big Hat on the van radio, before the tenting)
+
+Right ("one of the jars hatched; it's nesting with Walt") needs `count` plus `list` or `ledger`: the tent crew leaves a cooler of ice and a fogger in the laundry room, so packing the jars needs no roll, and burning the nest is on the crew's paperwork. Swarm: `late` +1, no crew help. Walt did it (needs `count`): Walt's trust is gone (−20 on talking him down). An answer without its clues plays as "no proof" (no help, no cost).
+
+### Choices, as built
+
+- `iced`: pack Unit 6's jars in ice at night (the deer freezer's ice after the Drone, or the crew's cooler): Fix it (Craft), Sample (Science), the crew's cooler (no roll), or by hand (`late` +1). Needs `nits` or the right deduction to think of it.
+- `bay`: the storage pair brought back by van on day 1. Iced with the rest.
+- `crawler`: the crawler on the court at night carries a jar to the nest unless it's beaten (or Ghost lifts the jar).
+- `walt`: talked down in the pump room before the boss: Zuri's drawing (item), Denise's words (`grace`), Ledger 83's line (`ledger`), or Read / Calm / Talk (−20 if his trust is gone). Family moment. `late` +1.
+- `read`: Penhallow's books in Unit 6 or the bay: Dig records (History), Identify (Occult), or, for a Curiosity holder, read until it makes sense, no roll. Costs the reader 1d3 SAN and `late` +1; Curiosity holders regain 1d4. Teaches its name.
+- `kenny`: Kenny stayed behind to film in the courtyard at night, guarded by a nit pack. Talk to him and he goes out under the skirt. Left there, his video goes up (the debrief's cover stories −20).
+- `burn`: after the boss, burn the nest and the iced jars: an overstep (smoke on the tent) unless the crew was told (the right deduction). Leaving it costs `clean`.
+
+### Fights and the boss, as built
+
+- Trey's wall (Unit 9, day 1, when you open the tape): 4 nits (HP 5, DEX 13, 40%, 1d2: 20 HP in all, the story-fight floor; burns, lightshy, cold; resist bleed). A Loud fight in there is a seen overstep (the neighbors).
+- The Drone (laundry room, night 1, the first time you walk in): a drone and 2 nits. Drone HP 20, DEX 9, 50%, 1d4+1, a warm hum at everyone.
+- Roamers on the tented court: the crawler at the east stairs (the shortcut up; the jar), a nit pack under the west stairs (the Lantern Box), a nit pack by the grill (Kenny).
+- The Lodger: the numbers are in the case code and tools/boss-sim.js. Shape: phase 1 nesting (crush, the hum at everyone, "Gracie": it presses Walt close and heals, unless he was talked down; a crawler feeds it for each heal source left); phase 2 at half, it tears out of the pipes (faster, and it heals unless its name is spoken). Weakness: cold, then fire. The fogger chills it (Stunned and Exposed); it burns (Molotov and flare gun double).
+- Weakening: `walt` −8 HP and no Gracie; `read` −6 HP and no phase-2 heal; `iced` and `crawler` take away its feeding heals; `ledger` (or `cold`) makes Identify free.
+
+### Items, as built
+
+- Ledger 83 (unnatural, Evidence, the page). If never found, you find it cleaning out the freezer at dawn, so the page always reaches Big Hat.
+- The fogger (ordinary, Tool): from the crew (right deduction) or Hector's spare (when he talks).
+- Zuri's drawing (ordinary, Keepsake): from the fridge. At the end, if Walt lives, it goes back to Denise: each Family holder's first Bond +1.
+- A sleeping jar (unnatural): kept back when packing the jars, if you want it (bag or hide).
+- "Fun Guy" gummies are the shared Mushrooms: the laundry room's lost-and-found bin and Kenny's drawer (Talk, by day).
+
+### Overstepping, as built
+
+Quiet case: Noticed, Local chief (Sgt. Ruiz's walk-through: the office key board locks; Credentials or Talk gets you in), Agency call, Federal agents (the clean-up crew at the next area change: `worst`). Noticed: Lorraine and Mrs. Ybarra clam up (their options at −20) and Kenny films the crew.
+
+### Cover stories
+
+- Paper it (Bureaucracy): a state-permitted mold remediation.
+- Sell it (Persuade): Formosan termites, the bad kind.
+- Weak (Luck): raccoons in the walls.
+- Easy (a quiet case still Clean): it was a fumigation; that's what everybody saw. Persuade +30.
+- Clean books: routine fumigation, permit on the door.
+
+### Endings, as built
+
+- `clean`: the Lodger ended, Walt alive (`walt`), the nest burned, every jar accounted for (`iced`, `bay`, the crawler's jar), overstepping didn't climb this case, no agent lost, `late` under 4.
+- `costly`: the Lodger ended any other way.
+- `worst`: the Federal agents' shutdown.

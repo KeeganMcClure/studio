@@ -52,6 +52,23 @@ const BOSSES = {
     setup: s => { const F = G.flags; F.ph = 3; F.kept = s.kept ? 1 : 0; F.book = s.book || null; F.voss = s.torn ? 'torn' : null;
       G.clues = G.clues.filter(c => c.id !== 'lesson'); if (s.lesson) G.clues.push({ id: 'lesson', text: '' }); G.fs.ident = []; goMap('under', 10, 5, 'up'); },
   },
+  // Lot 83 (spec 011 part B): its weakening choices are Walt talked down (−8 HP, no "Gracie" heal), its name read in
+  // the books (−6 HP, no phase-2 heal), and the jars: Unit 6's iced (two fewer feeding heals) and the crawler's jar
+  // stopped (one fewer). Ledger 83 makes Identify free. "all" makes every choice.
+  lodger: {
+    case: 'lot-83',
+    entry: 'l83Boss',  // lot-83.js: bossFight without the ending
+    scenarios: [
+      { label: 'none' },
+      { label: 'walt', walt: 1 },
+      { label: 'read', read: 1 },
+      { label: 'jars', iced: 1, crawler: 1 },
+      { label: 'walt, jars', walt: 1, iced: 1, crawler: 1 },
+      { label: 'all', walt: 1, read: 1, iced: 1, crawler: 1, ledger: 1 },
+    ],
+    setup: s => { const F = G.flags; F.ph = 1; F.walt = s.walt ? 'down' : null; F.read = s.read ? 1 : 0; F.iced = s.iced ? 1 : 0; F.crawler = s.crawler ? 1 : 0; F.cold = 0; delete F.pulled;
+      G.clues = G.clues.filter(c => c.id !== 'ledger'); if (s.ledger) G.clues.push({ id: 'ledger', text: '' }); G.fs.ident = []; goMap('pump', 8, 5, 'up'); },
+  },
 };
 
 const args = process.argv.slice(2);
