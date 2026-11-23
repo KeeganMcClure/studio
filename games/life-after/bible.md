@@ -21,14 +21,14 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 - [x] Combat numbers: hit chances, damage, weapons, noise per action, and how zombies and raiders choose a move (Nov 21). See Combat, The numbers. Each weapon's exact damage and wear go in spec 001.
 - [x] Your survivor: each job's skills and starting items, each trait's effect, the want list, the looks parts, the 8 templates, and how fast skills grow with use (Nov 21). See `survivor.md`: 12 jobs and 12 templates now.
 - [x] Rumors and late threats: the first rumor list, how the raider leader forms, and horde timing (Nov 21). See The map, Rumors and late threats.
-- [ ] Companions: the skill, fear and want lists; how bond is counted (hidden); the order rules; the short-job odds; the first set of arc parts and evening scenes.
-- [ ] Shelter: what can be built, what it costs, and how a night attack plays out.
+- [x] Companions: the skill, fear and want lists; how bond is counted (hidden); the order rules; the short-job odds; the first set of arc parts and evening scenes (Nov 23). See `companions.md`.
+- [x] Shelter: what can be built, what it costs, and how a night attack plays out (Nov 23). See `shelter.md`.
 - [x] Crafting and items: the first recipe list and item list, with look-alike brand names (Nov 21). See `items.md`.
 - [x] Art direction: settled Nov 21 (see Art). Exact palette hex codes come with the first in-shell mockup.
 - [x] Studio bible: `art-style.md` lets a game set its own low SAN signal (Nov 21).
-- [ ] Other survivors and trade: group types, starting moods, what they remember, and barter values.
-- [ ] Weather and events: the first list, how often each comes, and how sure the warnings are.
-- [ ] Difficulty presets: what Gentle, Standard and Harsh change, in numbers.
+- [x] Other survivors and trade: group types, starting moods, what they remember, and barter values (Nov 23). See `survivors.md`.
+- [x] Weather and events: the first list, how often each comes, and how sure the warnings are (Nov 23). See `weather.md`.
+- [x] Difficulty presets: what Gentle, Standard and Harsh change, in numbers (Nov 23). See The run, Difficulty presets.
 - [ ] Cover: 120 × 80 cover art (`studio-bible/launcher.md`). The Developer adds `game.json` when the game is ready for the shelf.
 - [ ] Spec 001: the first playable slice, cited against this bible. Set Nov 21: survive a week alone. A small generated town (the houses and highway strip sections), the survivor builder with all 12 jobs, scavenging, hunger and sleep, map combat with the noise ring, day and night, one hideout and the death screen. No companions yet.
 
@@ -69,6 +69,8 @@ None yet.
 ## Setting
 
 - **When and where** (set Nov 21): 1990s America. The first map is a small town and its countryside. Cities and other regions come later as expansions. The game is not meant to stay rural.
+- **Starting region** (Keegan, Nov 23): a made-up farm county in the Midwest. It's quiet and open, a good place to learn.
+- **Planned expansions** (Keegan, Nov 23): a Rust Belt city, the Gulf Coast, the mountain west, the desert southwest and the Pacific Northwest. Each brings its own weather mix and threats. Order not set.
 - **Low-tech survival.** No cell phones or internet. Landlines are dead, radios mostly static, cars need fuel and parts.
 - **Brands** (set Nov 21): look-alike brands only. Made-up names and logos styled after real 1990s brands (a red cola, a big-box store, a pickup truck maker) so the world feels real without using real trademarks. Real brand names and logos never appear (`studio-bible/studio.md`, One repo, one source of truth).
 - **No overarching story.** Nothing explains the outbreak and nothing ends it. The world's history is told only through places, notes and the people you meet.
@@ -76,12 +78,38 @@ None yet.
 ## The run
 
 - **One life, one world** (set Nov 21). Each game generates a new world. When your survivor dies, the game is over and the save is cleared. There's no carry-over.
-- **Goal** (set Nov 21): none. The score is days survived, shown on the death screen. A best-days record may be kept outside the run (open).
+- **Goal** (set Nov 21): none. The score is days survived, shown on the death screen. Each difficulty preset keeps its own best-runs list outside the run (Keegan, Nov 23).
 - **How a game opens** (set Nov 21): weeks after the outbreak. It's already over. You wake with a few items and go straight into play.
-- **Difficulty** (set Nov 21): a few world presets picked at a new game (for example Gentle, Standard, Harsh). They change loot, zombie numbers and how fast the world runs down. The preset shows on the death screen. Numbers: To do.
+- **Difficulty** (set Nov 21): a few world presets picked at a new game (for example Gentle, Standard, Harsh). They change loot, zombie numbers and how fast the world runs down. The preset shows on the death screen. Numbers: see Difficulty presets below.
 - **Learning** (set Nov 21): no tutorial. The first time something comes up (hunger, noise, the first night), your survivor jots a short note you can reread later.
 - **Death screen** (set Nov 21): a short life story. Days survived, how you died, and the run's big moments (who joined, who you lost, falling for a companion, moving hideout), plus the seed and the preset.
 - **Seeded** (Claude's call, for review): each world comes from one seed, and dice draw from a second saved stream, so reopening the game rerolls nothing. The seed shows on the death screen, and a new game can start from a typed seed. Follows `studio-bible/saves.md`, Seeds.
+
+### Difficulty presets
+
+Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
+
+| What changes | Gentle | Standard | Harsh |
+| --- | --- | --- | --- |
+| Hunger: a full bar lasts | 3 days | 2 days | 1.5 days |
+| Pass out after awake | 36 hours | 30 hours | 24 hours |
+| SAN cost of hard moments | Half | As set | 1.5x |
+| Healing per night | 15 | 10 | 5 |
+| Zombie toughness (bat hits) | 2 | 2 to 3 | 3 to 4 |
+| Scratch / bite damage | 5 / 15 | 10 / 20 | 15 / 30 |
+| Bite infection chance | 25% | 50% | 75% |
+| Your hit chance (average) | 85% | 75% | 65% |
+| Loot per search spot | More | As set | Less |
+| Ammo found | 1.5x | As set | Half |
+| Attack odds at the hideout | Half | As set | 1.5x |
+| Hordes per season | At most 1, smaller | At most 1 | Up to 2 |
+| Rumors that are traps | 1 in 5 | 1 in 3 | 1 in 2 |
+| Short-job death chance | Under 2% | Under 5% | Under 10% |
+| Weather warnings | Always shown a day ahead | Radio or sky | Radio only |
+
+- **Never changes:** one life, and death is final on every preset. The map, jobs, traits and story parts are the same.
+- **Picked once** (Keegan, Nov 23): you choose the preset at the start of a run and can't change it. There's no Custom option.
+- **Best runs:** each preset keeps its own best-runs list. The preset shows on the death screen and in the survivor notes, next to days survived.
 
 ## Your survivor
 
@@ -117,7 +145,7 @@ None yet.
   - **Hordes:** at most 1 a season. Your noise adds to a hidden pull, and when it's high a horde of 30 to 60 drifts through over a day. The radio or the sky warns you; you hide, flee or fight with traps. Quiet players rarely face one.
   - **A secret hideout** (Keegan, Nov 21): raiders only come for a hideout they know about. They find out if they follow you home, see cooking smoke by day or light at night, hear it from a raider you let go, or hear it from a trader or on the CB radio. You stay hidden by taking the long way home, cooking without smoke, blacking out windows (a craft) and hiding the entrance. Moving to a new hideout resets it.
 - **Vehicles** (set Nov 21): cars are rare and costly. Most are dead; one that runs needs gas, a battery and repairs. It carries a lot fast but is loud. Bikes and skateboards are quieter ways to get around.
-- **Weather and events** (set Nov 21): grounded. Storms, fog, heat waves, blizzards, a horde passing through, a raider push. A working radio (with batteries) warns you a day ahead; without one you read the sky, which is less sure. First list: To do.
+- **Weather and events** (set Nov 21): grounded. Storms, fog, heat waves, blizzards, a horde passing through, a raider push. A working radio (with batteries) warns you a day ahead; without one you read the sky, which is less sure. The first list, how often each comes and how sure the warnings are: see `weather.md`, part of this bible.
 - **Map view** (`studio-bible/art-style.md`): Stardew-style 3/4 top-down, 16 px tiles, building fronts and faces.
 
 ## Time and seasons
@@ -184,7 +212,8 @@ None yet.
 
 ## Companions
 
-- **Who you play** (set Nov 21): one survivor you control, plus up to 2 companions who travel with you (a party of 3 at most).
+- **Who you play** (set Nov 21): one survivor you control, plus up to 2 companions who travel with you. A 3rd companion can join once you have a bigger hideout (Keegan, Nov 23).
+- **Full lists** (set Nov 23): fears, wants, bond numbers, order rules, short-job odds, arcs, evening scenes and romance are in `companions.md`, part of this bible.
 - **Settlers** (set Nov 21): more people can live at your hideout. They guard, garden and craft, need food, and have their own moods. When you move, each one chooses by mood and bond: come along on a risky trip, stay and keep the old place going (somewhere to return to and trade with), or leave for good.
 - **Simple orders** (set Nov 21): companions act on their own, and you steer them with orders from a quick menu opened with Select: Follow, Hold here, Sneak, Fight. Between orders they follow a short list of rules in order, for example: don't step next to 2 or more zombies, stay inside your noise ring, retreat when badly hurt, never shoot while sneaking, hit whatever threatens you first.
 - **Deaths stick** (set Nov 21): a dead companion is gone. You can meet new people later.
@@ -196,7 +225,7 @@ None yet.
   - **Bond with you:** grows when you share food, save them, keep a promise or let them rest. Drops when you eat while they starve, leave them behind or ignore their fear.
   - **What bond unlocks:** low bond, they hesitate or refuse risky orders. High bond, they take risky orders, guard you while you sleep, team up on attacks and ask you for small personal favors.
   - **Short jobs** (set Nov 21): send a companion out alone to scavenge, hunt or scout while you do something else. You see their chance of success first. They come back with loot and a story, hurt, or not at all.
-  - **Bonds between companions:** your two companions grow close or clash, which shapes who you can send where.
+  - **Bonds between people:** companions and settlers grow close or clash with each other, which shapes who you can send where (Keegan, Nov 23: settlers too).
   - **Low bond has teeth** (set Nov 21): a companion treated badly may walk out, steal supplies, or side with raiders.
   - **Hard choices:** a bitten companion can be treated, locked away to see if they turn, or put down. Traders may offer a deal for one of your people.
 - **Personal arcs** (set Nov 21): small generated arcs built from parts (a missing sister, a past they hide), with a few scenes as bond grows.
@@ -206,6 +235,7 @@ None yet.
 
 - **Mixed, and they remember you** (set Nov 21): loners, families, traders and raider gangs. Each group starts friendlier or more hostile, then shifts with how you treat it: help, trade, theft, a spared life or a killing.
 - **Trade** (set Nov 21): barter, no money. Values shift with need, the season and how much a group trusts you. Medicine is worth the most.
+- **Full lists** (set Nov 23): group types, what they remember, barter values and joining raiders are in `survivors.md`, part of this bible.
 
 ## Controls and screens
 
@@ -221,6 +251,7 @@ None yet.
 - **What brings attacks** (set Nov 21): your choices. Noise, light, cooking smoke and how long you stay raise the odds, and raiders come if they know where you live (see The map, A secret hideout). Quiet nights are common.
 - **You play attacks out** (set Nov 21): you're woken, then fight turn by turn inside your building: hold doors, fix boards, place companions. If you're away, it's worked out from your defenses. Barricades take damage and need repair.
 - **Attacks must never be a chore** (Keegan, Nov 21): short (a few minutes), each with a twist (a weak board gives way, a companion panics, raiders shout a deal through the door), with real choices beyond swinging (fall back a room, light a fire trap, slip out the back). A small attack your defenses clearly win is settled in one line.
+- **Full lists** (set Nov 23): buildings, builds, attack odds, twists and settler jobs are in `shelter.md`, part of this bible. You can hold a main hideout plus safe houses.
 - **Moving** (set Nov 21): when the area runs dry, you can move. You take only what you can carry: your bags, your companions' bags and a working car. Builds stay behind, but some can be stripped for parts.
 
 ## Items and crafting
