@@ -33,7 +33,10 @@ function setProf(a,p){if(a.prof!==p.id)a.picks={};a.prof=p.id}
 const injOf=a=>(Array.isArray(a.inj)?a.inj:[]).map(x=>window.BLS.INJURIES[x&&x.k]).filter(Boolean);
 const derived=a=>{const s=a.stats,hp=injOf(a).reduce((t,I)=>t+(I.hp||0),0);return{HP:Math.max(1,Math.ceil((s.STR+s.CON)/2)+hp),WP:s.POW,SAN:s.POW*5,BP:s.POW*4}};
 // case gains (spec 007, end-of-case improvement) add a.grow[skill]; nothing goes above 99%
-function skillVal(a,k){if(!(k in SKILLS))return 0;const p=profOf(a);const v=Math.min(99,Math.max(SKILLS[k],(p&&p.skills[k])||0)+20*((a.picks||{})[k]||0)+(+((a.grow||{})[k])||0));
+// bonus picks add +20% each, but a pick that would pass 80% stops at 80% (set Nov 23, after the demo playtest)
+const baseVal=(a,k)=>{const p=profOf(a);return Math.max(SKILLS[k],(p&&p.skills[k])||0)};
+const pickedVal=(a,k)=>{const b=baseVal(a,k),n=(a.picks||{})[k]||0;return n?Math.max(b,Math.min(80,b+20*n)):b};
+function skillVal(a,k){if(!(k in SKILLS))return 0;const p=profOf(a);const v=Math.min(99,pickedVal(a,k)+(+((a.grow||{})[k])||0));
  const pen=injOf(a).reduce((t,I)=>t+((I.pen||{})[k]||0),0);return pen?Math.max(SKILLS[k],v+pen):v}
 const picksUsed=a=>Object.values(a.picks).reduce((x,y)=>x+y,0);
 const buyLeft=a=>72-STATS.reduce((t,k)=>t+a.stats[k],0);
@@ -476,15 +479,16 @@ V.skills=()=>{
   const keys=Object.keys(SKILLS).sort((x,y)=>rank(x)-rank(y)||SKILLS[y]-SKILLS[x]||x.localeCompare(y));
   const rows=keys.map(k=>{
     const v=skillVal(a,k),n=a.picks[k]||0,job=!!p.skills[k];
-    const add=()=>{if(picksUsed(a)>=8)return toast('NO BONUS PICKS LEFT');if(v+20>80)return toast('BONUS PICKS CAP AT 80%');a.picks[k]=n+1};
+    const add=()=>{if(picksUsed(a)>=8)return toast('NO BONUS PICKS LEFT');if(pickedVal(a,k)>=80)return toast('BONUS PICKS STOP AT 80%');a.picks[k]=n+1};
+    const gain=pickedVal(a,k)-baseVal(a,k);
     const rem=()=>{if(!n)return;a.picks[k]=n-1;if(!a.picks[k])delete a.picks[k]};
-    return R(`<span class="sk">${esc(k)}</span><span class="bar"><i style="width:${v}%;background:${n?'var(--gold)':job?'#9aa3d6':'#5a5070'}"></i></span>`,{k,cls:'skill',val:`<span class="num">${v}</span><span class="tg">${n?'+'+20*n:job?'<span class="small">job</span>':''}</span>`,left:rem,right:add,a:add});
+    return R(`<span class="sk">${esc(k)}</span><span class="bar"><i style="width:${v}%;background:${n?'var(--gold)':job?'#9aa3d6':'#5a5070'}"></i></span>`,{k,cls:'skill',val:`<span class="num">${v}</span><span class="tg">${n?'+'+gain:job?'<span class="small">job</span>':''}</span>`,left:rem,right:add,a:add});
   });
   rows.push(nextRow());
   const hk=rows[S.sel.skills||0]?.k;let pane='';
   if(hk){const n=a.picks[hk]||0,base=Math.max(SKILLS[hk],p.skills[hk]||0),from=p.strong.includes(hk)?'strong':p.backup.includes(hk)?'backup':'base';
     pane=`<div><span class="hi">${esc(hk.toUpperCase())} ${skillVal(a,hk)}%</span> · ${from} ${base}${n?`, ${['','one pick','two picks','three picks'][n]||n+' picks'}`:''}.${n&&!p.skills[hk]?` A ${esc(p.name)} who ${esc(HOBBY[hk])}.`:''}</div><div class="small">${esc(SKILLJOB[hk])}</div>`}
-  pane+=`<div class="small">◀ ▶: −/+20 · bonus picks cap at 80%</div>`;
+  pane+=`<div class="small">◀ ▶: −/+20 · a pick stops at 80%</div>`;
   return{rows,pane,info:info(whoLine(a),`PICKS <span class="${left?'hi':'grn'}">${8-left}</span>/8 · cap 80%`),foot:'◀▶: PICK · L/R: STEP'};
 };
 V.identity=()=>{
