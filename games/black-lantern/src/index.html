@@ -227,6 +227,9 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 /* on the map the banner sits just under the lead card (spec 005); --pu is 64 map pixels */
 #game:not(.battle) .gban{top:calc(var(--pu,128px) * .56)}
 #gfade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .32s}
+/* the dialog box, its choices and the day banner sit above the fade, so lines played while the screen is black (a drive,
+   the turn of the day) read as narration over black instead of hiding behind it (Lot 83's tent crew, Nov 23 bug) */
+#gfade{z-index:4}#gdlg,#gmenu,#gban{z-index:5}
 
 </style>
 
