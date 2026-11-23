@@ -672,5 +672,6 @@ const DEBRIEF_DATA={
 // loot: the roamers' drop table. onArea: the case's area-change hook (the clean-up crew).
 const TILEDESC=TEXT.tiles;
 registerCase({id:'still-harvest',card:caseCard,opening:caseOpening,intel:TEXT.intel,portraits:name=>SHA.portraits[name]||(name==='THE GLEANER'?SHB.portrait:null),
- enemies:EN,sprite:(k,f)=>SHB.sprite(k,f),spriteSize:k=>SHB.size(k),items:CASE_ITEMS,next:caseNext,quiet:false,loot:LOOT,onArea,
+ enemies:EN,sprite:(k,f,w)=>SHB.sprite(k,f,w),spriteSize:k=>SHB.size(k),items:CASE_ITEMS,next:caseNext,quiet:false,loot:LOOT,onArea,
+ backdrop:(p,o)=>SHB.backdrop(p,o),  // battle backdrops for the town street and the maze (cases/still-harvest-battle-art.js)
  debrief:DEBRIEF_DATA,label:endingLabel,facts:endingFacts});

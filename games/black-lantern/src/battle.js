@@ -2,7 +2,8 @@
 // Demo 5 part B (spec 006): the battle, rebuilt under the bible's Combat tab.
 //   B1 the head-on layout from the approved combat mockup (the studio's engine/battle.js frame): enemies at the top,
 //      the three agents along the bottom from behind, the turn-order column, HP bars, the one-row command box,
-//      the result line, and a still background drawn from the map spot where the fight started
+//      the result line, and the case's painted backdrop for the kind of place the fight started in (a darkened map still
+//      when a case has none; Nov 23 playtest)
 //   B2 the rules: DEX order, Fight · Skills · Items · Guard, WP-costed moves, crits and fumbles, statuses,
 //      enemy cards, targeting, horror on sight, flee, Downed and bleed-out, lasting injuries, snapping at 0 SAN
 // Loaded after field.js as a plain script, so it shares engine.js's G, party, Bt, cx, say and the rest, and field.js's
@@ -30,7 +31,8 @@ async function battle(types,o={}){
   return Object.assign({},E,{t,base:E.name,hp,mhp:hp,st:[],stun:0,dead:false,gone:false,flash:0,alpha:1,last:0,lastHit:null,shk:0})});
  nameEnemies(en);
  Bt={en,boss:!!o.boss,story:!!o.story||!!o.boss,roamer:!!o.roamer||(!o.story&&!o.boss),t:0,round:0,queue:[],ui:null,msg:null,res:null,floaties:[],hits:[],bg,
-  smoke:0,used:{},loud:0,active:null,phase:1,first:true,sprite:c&&c.sprite};
+  smoke:0,used:{},loud:0,active:null,phase:1,first:true,sprite:c&&c.sprite,
+  place:(G.M&&G.M.bg)||G.map,light:(G.M&&G.M.light)||'day',bd:null,sourF:{}};  // where the fight started, for the case's backdrop
  party.forEach(m=>{Object.assign(m,{defend:false,slip:false,drawFire:false,vanish:false,vanishHit:false,tripwire:false,grap:null,braceB:false,koT:0,koLong:false,wasDowned:false,dead:false,skip:0,lastShot:-9,hatchet:false,shk:0,panUsed:false});
   m.stun=hasSt(m,'stun')?1:0;if(m.ko){m.wasDowned=true}});
  G.fs.fight=(G.fs.fight|0)+1;
@@ -457,18 +459,37 @@ function foeFace(e){const k=e.t;let f=faceC.get(k);if(f)return f;const c=caseByI
  if(img){const x=f.getContext('2d'),fc=e.face||[0,0,Math.min(img.width,img.height)];x.imageSmoothingEnabled=false;x.drawImage(img,fc[0],fc[1],fc[2],fc[2],0,0,16,16)}faceC.set(k,f);return f}
 // the layout for this fight: the baseline drops for a tall enemy so its head stays on screen
 function bLayout(){if(Bt.tall==null)Bt.tall=Math.max(0,...Bt.en.map(spriteH));return SB.layout(VW,VH,{tallest:Bt.tall,detailLines:2})}  // a move's whole line shows (Nov 23 playtest)
+// the battle backdrop (Combat, Basics, Backgrounds, Nov 23 playtest): the case paints one per kind of place it fights in,
+// head-on at battle scale, from where the fight started (Bt.place, the map's id) and its light ('day', 'dusk', 'night').
+// case.backdrop(place, {w, h, light, low, feet}) -> a canvas, or null for a place it has none for. low: the lead is
+// below 40 SAN, so the case can shrink its lights; the pink and cyan sour itself is laid on here, fading like the map's.
+// Cached per size and look, so it's painted once; only a sour fade in progress redraws it.
+function battleBackdrop(L){
+ const c=caseById(G.case);if(!c||!c.backdrop)return null;
+ const m=party[G.lead|0],low=!!(m&&m.san<LOOK.lowSan),k=StudioLight.fade(Bt.sourF,low,performance.now());
+ const key=[Bt.place,Bt.light,low?1:0,VW,L.scene.h,L.enemyY].join('|');
+ if(!Bt.bd||Bt.bd.key!==key){let art=null;try{art=c.backdrop(Bt.place,{w:VW,h:L.scene.h,light:Bt.light,low,feet:L.enemyY})}catch(e){}
+  Bt.bd={key,art,out:null,k:-1};if(art){Bt.bd.out=document.createElement('canvas');Bt.bd.out.width=VW;Bt.bd.out.height=L.scene.h}}
+ const b=Bt.bd;if(!b.art)return null;
+ if(b.k!==k){const x=b.out.getContext('2d');x.clearRect(0,0,VW,L.scene.h);x.drawImage(b.art,0,0);if(k>0)StudioLight.sour(x,k,{pink:LOOK.pink,cyan:LOOK.cyan});b.k=k}
+ return b.out}
+// an enemy's damage step for its battle sprite (Art, Townsfolk and monsters, Wounded enemies): 0 unhurt, 1 at half HP, 2 at a quarter
+const woundStep=e=>e.hp<=e.mhp*.25?2:e.hp<=e.mhp*.5?1:0;
 function drawBattle(){
  const L=bLayout(),t=Bt.t++,u=Bt.ui;Bt.hits=[];
- // background: the map spot, darkened so the sprites read
- cx.imageSmoothingEnabled=false;cx.drawImage(Bt.bg,0,0,VW,L.scene.h,0,0,VW,L.scene.h);
- pR(0,0,VW,L.scene.h,'rgba(14,10,26,.68)');pR(0,L.scene.h-30,VW,30,'rgba(14,10,26,.35)');
+ // background: the case's painted backdrop for this place; a case without one gets the map spot, darkened so the sprites read
+ cx.imageSmoothingEnabled=false;const bd=battleBackdrop(L);
+ if(bd)cx.drawImage(bd,0,0);
+ else{cx.drawImage(Bt.bg,0,0,VW,L.scene.h,0,0,VW,L.scene.h);pR(0,0,VW,L.scene.h,'rgba(14,10,26,.68)');pR(0,L.scene.h-30,VW,30,'rgba(14,10,26,.35)')}
  pR(0,L.scene.h,VW,VH-L.scene.h,PC.deep);
  // enemies, facing you
  const tgt=u&&u.kind==='target'?u.opts[u.sel]:null;
  Bt.en.forEach(e=>{
   if(e.dead||e.gone)e.alpha=Math.max(0,e.alpha-.04);if(e.alpha<=0)return;
-  const img=Bt.sprite?Bt.sprite(e.ph2?e.t+'2':e.t,Math.floor((t+e.x)/32)%2):null,w=img?img.width:20,h=img?img.height:20;
+  const img=Bt.sprite?Bt.sprite(e.ph2?e.t+'2':e.t,Math.floor((t+e.x)/32)%2,woundStep(e)):null,w=img?img.width:20,h=img?img.height:20;
   const sx=e.shk>0?(e.shk--%2?2:-2):0,x=Math.round(e.x-w/2+sx),y=L.enemyY-h;
+  // its shadow on the ground it stands on
+  if(bd){cx.globalAlpha=e.alpha*.4;cx.fillStyle='#07050c';const sw=Math.round(Math.min(w,60)*.8);cx.beginPath();cx.ellipse(e.x,L.enemyY-1,sw/2,3,0,0,Math.PI*2);cx.fill();cx.globalAlpha=1}
   if(e.glow){const fl=.55+.35*Math.sin(t*.18);const g=cx.createRadialGradient(e.x,y+h*.2,4,e.x,y+h*.2,70);g.addColorStop(0,e.ph2?`rgba(255,255,240,${.35*fl})`:`rgba(255,190,80,${.32*fl})`);g.addColorStop(1,'rgba(255,150,40,0)');cx.fillStyle=g;cx.fillRect(e.x-80,y-60,160,160)}
   cx.globalAlpha=e.alpha;if(!(e.flash>0&&(e.flash%4)<2)&&img)cx.drawImage(img,x,y);cx.globalAlpha=1;if(e.flash>0)e.flash--;
   if(e.dead||e.gone)return;
