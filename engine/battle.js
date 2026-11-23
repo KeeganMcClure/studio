@@ -6,7 +6,8 @@
 //                                      col (turn-order column), and the baselines agentY and enemyY (o.tallest: tallest enemy;
 //                                      o.detailLines: lines the command box's detail may wrap to, default 1)
 //   StudioBattle.turnColumn(c, T, x, y, faces, maxH)   small faces down the left edge, the one acting first and bigger;
-//                                      faces: [{img, foe}] (img: a canvas or null); returns the column's height
+//                                      faces: [{img, foe, out}] (img: a canvas or null; out: drawn greyed, e.g. a
+//                                      downed fighter still in the order); returns the column's height
 //   StudioBattle.hpBar(c, T, x, y, w, frac, h)          an HP bar with no numbers
 //   StudioBattle.commands(c, T, r, labels, sel, detail, o)  the one-row command box (Fight · Skills · Items · Guard),
 //                                      the detail under it, wrapped to as many lines as the box is tall for; o.msg shows a message there instead of the row;
@@ -54,6 +55,7 @@
       R(c, fx - 1, ry - 1, s + 2, s + 2, i === 0 ? T.gold : (f.foe ? T.foeLine || T.dim : T.dim));
       R(c, fx, ry, s, s, T.faceBack || T.barBack);
       if (f.img) { c.imageSmoothingEnabled = false; c.drawImage(f.img, 0, 0, f.img.width, f.img.height, fx, ry, s, s); }
+      if (f.out) { c.globalAlpha = 0.65; R(c, fx, ry, s, s, T.colBack || T.box); c.globalAlpha = 1; }
       if (i === 0) { const ax = x + W / 2; R(c, ax - 2, ry + s + 2, 5, 1, T.gold); R(c, ax - 1, ry + s + 3, 3, 1, T.gold); R(c, ax, ry + s + 4, 1, 1, T.gold); }
     });
     return hgt;

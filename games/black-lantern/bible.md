@@ -25,12 +25,17 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
   - [ ] B skips a briefing or cutscene you've already seen (Skills and menus → Quality of life, Skip replays; spec 006)
   - [ ] Mushrooms' screen shimmer while High on them (Agents and items → Item list)
 - [ ] Demo playtest fixes (Keegan's notes, Nov 23): build the rule changes from the playtest. Tick this when all eight are done
-  - [ ] Hide skill options nobody in the party can use, at hotspots, on the map menu's Skills row and in battle (Skills and menus → Using skills; Combat → Basics, Command menu)
+  - [x] Hide skill options nobody in the party can use, at hotspots, on the map menu's Skills row and in battle (Skills and menus → Using skills; Combat → Basics, Command menu)
+    Done Nov 23: skill options nobody in the party is high enough for are hidden at hotspots and on the map menu's Skills list; ones a teammate has still show greyed. Battle already showed only the acting agent's moves.
   - [ ] Creator: a bonus pick that would pass 80% stops at 80% (Agents and items → Agent creator, step 3)
-  - [ ] Turn-order column: current round only, each fighter once (Combat → Basics, Turn order)
-  - [ ] Pokémon-style battle backdrops for Still Harvest's town and maze, replacing the darkened map still (Combat → Basics, Backgrounds)
-  - [ ] Wounded enemies: the two damage steps for each Still Harvest enemy, replacing the red dots (Art → Townsfolk and monsters)
-  - [ ] Still Harvest maze: a route to all three victims that skips the Gleaner's clearing, and a go in / not yet choice at its entrance (spec 006, Revision after the demo playtest)
+  - [x] Turn-order column: current round only, each fighter once (Combat → Basics, Turn order)
+    Done Nov 23: the turn column shows only this round, the acting fighter on top, faces dropping off as they act, and a Downed agent greyed.
+  - [x] Pokémon-style battle backdrops for Still Harvest's town and maze, replacing the darkened map still (Combat → Basics, Backgrounds)
+    Done Nov 23: battles now play in front of a painted street or corn maze backdrop, lit for the time of day and soured at low SAN, instead of a darkened map.
+  - [x] Wounded enemies: the two damage steps for each Still Harvest enemy, replacing the red dots (Art → Townsfolk and monsters)
+    Done Nov 23: every Still Harvest enemy now shows how hurt it is, in two steps (at half and at a quarter HP), with straw spilling, husks splitting and people bleeding, instead of red dots.
+  - [x] Still Harvest maze: a route to all three victims that skips the Gleaner's clearing, and a go in / not yet choice at its entrance (spec 006, Revision after the demo playtest)
+    Done Nov 23: the maze now has a route to all three victims, the loot, the page and the danger zone that never enters the Gleaner's clearing, and stepping into the clearing asks Go in / Not yet.
   - [ ] Creator: pronouns (she, he, they) (spec 022) used by all dialog, and a slim or broad body build for map, battle and portrait sprites, plus pronouns for each Bond, with a save step for old agents and Bonds (Agents and items → Agent creator, steps 4 and 5)
   - [ ] Creator: one-word pop-culture code names (spec 022) that Big Hat gives on the Dossier step, from a tagged list of about 60, with new template names (Agents and items → Agent creator, Code names)
 - [ ] Home phase part C (spec 008): enough home scenes for a season, with the played list kept in the season save. Before the season flow
