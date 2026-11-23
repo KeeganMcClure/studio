@@ -155,6 +155,7 @@ Today each choice has one scene per Bond type and mood (Back to Nature has six v
 
 - Part A adds one upgrade step, version + 1. Add test saves: one mid-home-phase, one with an agent on Sabbatical.
 - **New on each agent (`bl.roster`):** cases survived this season; arc beats seen and the choices made; the arc's ending and perk; Therapy count per disorder; Sabbatical cases left and the seat they left; the requisition-refused flag; the no-Withdrawal flag for the next case; each Bond's saved portrait.
+- **Part C (Nov 23, 2026, save step 13):** the home scenes already played move from the home checkpoint to `bl.season.played`, with this break's picks in `bl.season.playedNow`. A new season clears both.
 - **Old saves:** every agent's survived-case count starts at the number of cases closed this season that they were in, where the save knows it, otherwise 0. Nobody is owed a past beat: the next beat plays at the next 1, 3 or 5 they reach. Old Bonds get portraits the first time they appear.
 
 ### Left out on purpose
