@@ -200,3 +200,91 @@ Phobia subject: **medical procedures** (needles, surgery, exam tables). Trigger 
   - **The missing hours** — "Left a wedding at ten. Home at a quarter past three. Forty minutes of road." Edge: the Case file's timeline starts with its first box filled.
   - **The ridge road** — "Mile thirty-one. Fog sits on it like it pays rent." Edge: the pull-off's spot shows on night 1 (the lantern reaches one tile further on the ridge road).
   - **The cover** — "You're from the sleep study. Lab coats, clipboards, a consent form you won't read neither." Edge: +10% Bureaucracy with Hensley.
+- **The debrief** plays in the same laundromat (Cast → Big Hat, Backdrop; registerCase `place`).
+
+## Part B build notes (Developer, Nov 23, 2026)
+
+What part B settled while building. Where these and the sections above differ, these win.
+
+### The timeline (the Case file)
+
+Each clue's note opens with its time, and the Case file lists them in timeline order, 10 PM to 3:15 AM. The Next line counts the boxes filled. Any 3 of the 7 open the day 2 → night 2 turn (with the deduction made and the carrier settled).
+
+| ID | Box | Ways in, as built |
+| --- | --- | --- |
+| `left` | 10:00 PM | The kitchen's wedding photos (Sweep); Jenna (Read, Calm, or Talk your way in), day 1 on Laurel or day 2 in the kitchen; Mae (Talk your way in), by day. The briefing's "missing hours" topic fills it for free. |
+| `radio` | 10:35 PM | The Pruetts' car under the carport: Sample (Science) on the radio's frozen clock, Fix it (Craft) to pull the radio, Examine (Forensics) on the ring; Cecil at the diner (Talk your way in). |
+| `seam` | 10:40 PM | The hidden hotspot (Mushrooms, no roll); the overlook wall's tire tracks (Sweep or Track); Birdie on day 1 (Read or Calm: the card was on the wall, not the ground); the hubcap in the woods (Examine or Identify). |
+| `tally` | 11 PM–2 AM | Ray's scan in the exam room (Treat or Sample), by day once Ray says yes, or "Look anyway" (overstep, seen); Owen's readouts at the lab desk on night 1 (Crack it); beating the Orderly (Owen hands them over). |
+| `memory1` | 1 AM | The hypnosis session, Donna. |
+| `memory2` | 2 AM | The hypnosis session, Ray (Treat) or Donna deeper (Read or Calm, −20). Who answered is kept (`F.m2`). |
+| `tank` | 3:15 AM | The car's fuel cap (Sweep); Hensley (Talk your way in; or Paper trail, +10 with the cover topic) about the plates she ran. |
+
+Mushrooms: Birdie's bag on day 1 (Talk your way in, or Read about her birds), and the trail register at the pull-off on night 1 (no roll). The seam also sets `due` (the missing stroke: one more is coming).
+
+### Turning the day, as built
+
+All at the team's car, Go on / Not yet with the cursor on Not yet:
+
+| Turn | Needs | Line naming what closes |
+| --- | --- | --- |
+| Day 1 → night 1 (the drive) | nothing | Birdie leaves Cullen Gap tonight. |
+| Night 1 → day 2 | nothing | The ridge road and the woods below the overlook close for good. |
+| Day 2 → night 2 | 3 boxes, the deduction, the carrier settled (and its procedure done) | The sleep lab and the exam room close, and the session can't be run again. |
+
+The finale: the pasture gate asks Go in / Not yet; inside, stepping onto the burned ring's edge asks Go in / Not yet again (the boss waits). The barn, the trough and the fence line are reached around the ring.
+
+### The night drive
+
+A cutscene with its own picture (the windshield, the fog, the mile markers, the radio), retracing the Pruetts' route. On the ridge the route shows as trail dots to the wall where the tracks go up. The Glims come over the guardrail on arrival (story fight 1). The first time back at the car after it, Owen calls: something is in the clinic. Drive down and go into the exam room for the Orderly (story fight 2); calling it a night instead moves the Orderly to the start of night 2 on Main Street.
+
+### The hypnosis session (day 2, the sleep lab)
+
+Its own picture: the bed, the wires, the one-way window, and what's remembered playing in the dark glass. Needs Donna's say-so (any talk with her). Memory 1, Donna: Read or Calm; a fail lets you try once more at −20. Memory 2: Ray (Treat) or Donna (Read or Calm, −20); each subject once. Memory 2 is a Disturbing helplessness horror for all three (subj: medical procedures). Memory 3 (push further): no roll; the boss's weakness becomes known (Identify free), the lead takes 1d4 SAN, the Pruetts' trust falls (`push`: −20 on Empathy and Persuade with them), and it oversteps (seen). Donna's shoe from the woods, brought back to her, is +10 on every session roll. The card: with `memory1`, "Ask Donna about the card" unfolds it. Otherwise the card's own Use, with `memory1` and `seam`, offers Sample or Identify. Never unfolded, it lets go on its own when the Surveyor is gone, so the page always reaches Big Hat. Birdie not met on day 1: she left the card with Mae for day 2.
+
+### The deduction and the hard choice
+
+At the kitchen table on day 2 with 3 boxes, Big Hat on speaker. Right: `tally` plus `seam` or `memory2`. Half ("a tracker"): `tally`. Wrong ("the card"): `late` +1. Then: who carries it tonight. Ray (Read, Calm or Talk your way in, +10 with the Pruetts topic, −20 after Memory 3; a no can be asked again); cut it out (Dr. Rao in the exam room: the lead's Treat +20 with him, or Rao alone at 50%; a fail is a stroke, `stroke`); Donna (only when she answered memory 2); one of the agents (Occult 40 in the party). Moving it (Donna or an agent): Identify, then Treat, in the exam room; a fail ends that try, and the carrier is picked again (Ray and the cut stay open, so it never dead-ends).
+
+### The soft clock (`late`), as built
+
++1 each: driving back up the ridge a second time on night 1, the wrong deduction, and Jenna's question when the cover roll fails. At 3 the Pruetts call the paper (public overstep; `paper`; the ending can't be clean). Telling Jenna the truth stops the clock.
+
+### Fights and the boss, as built
+
+- Glim: 7 HP, DEX 14, 40%, 1d3; light-shy. Three on the ridge (21 HP). Roamer pairs in the woods (14).
+- Stray: 12 HP, DEX 11, 45%, 1d3+1; light-shy; Disturbing on sight.
+- Orderly: 22 HP, DEX 10, 50%, 1d4+1; "Hold still" costs an agent their next turn; Severe on sight (subj: medical procedures). With one Glim (29 HP).
+- Woods roamers: the stray at Donna's shoe, a Glim pair at the Lantern Box under the ledge, a Glim pair at the hubcap.
+- The Surveyor: 65 HP, DEX 9, 60% (65% in phase 2), calipers 1d4+2 (1d4+1 with the tally cut out), the count 1d3 to everyone. Phase 1: calipers 5, the count 2, measure 1 (its next calipers on that agent does double), the Lamp 2 (heals 5; 2 while it's Shaken or with flares; none with the headlights). Phase 2 at half: a fog shield of 8 HP unless `count`; +1 calipers, +1 count, and Take 2 when the carrier is a person. Take: Draw fire puts the hands on that agent instead; otherwise its to-hit; two holds lift Ray or Donna (the fight ends, `worst`); an agent carrier is lifted only by a Take landing while Downed (lost: 'taken').
+- Weakening choices: `count` (memory 1 and 2: at the start the best counter rolls Science or Occult; −6 HP, a lost first turn, no shield), the headlights (`light` 'car': −6 HP, no Lamp heals), the card given back (unfolded: −6 HP and a free round). 65 → 47 with all three (28% off).
+- Folding away: on its own turn at a quarter HP or less it folds back up into the Lamp and the fight ends, won.
+- Weakness (Identify): our light; its own light heals it. Memory 3 makes Identify free.
+
+### Motivation moments, as built
+
+- **Revenge:** when it starts to fold away, a Revenge holder can hold it down (the better of Melee and Athletics): they take 1d6, everyone loses 1d4 SAN (violence), and it burns out in the light for good. They regain 1d4. Letting it go is the clean way. A fail: it folds away anyway.
+- **Duty:** the first time in the kitchen on day 2, Jenna asks if you're even a sleep study. Hold the cover (Talk your way in or Paper trail): pass, she backs down and a Duty holder regains 1d4; fail, she storms out (`late` +1). Or tell her the truth: overstep (seen), the clock stops.
+
+### Overstepping, as built (quiet: Noticed, then Local chief)
+
+Seen: the scan without Ray's say-so; Memory 3; telling Jenna. Public: the Pruetts calling the paper. Noticed: the next time in the diner by day, Hensley asks for the study's paperwork (Paper trail); a fail and Mae and Cecil clam up. Local chief: the county sheriff parks outside the clinic for the day; the exam room needs Credentials, Sneak or Talk your way in. Agency call: Big Hat's call. Federal agents: the clean-up crew at the next area change, then the worst ending.
+
+### Horrors, as built
+
+The ring (Unsettling, lead), the seam (Unsettling, lead), the Glims (Unsettling on sight), the scan (Disturbing, lead, subj medical procedures), memory 2 (Disturbing, all), the stray (Disturbing on sight, optional), the Orderly (Severe on sight), the Lamp coming down (Shattering, all, braceable), the Surveyor (Boss). The cut-out is Disturbing helplessness for the lead. The cameo: the kitchen photos' Sweep, first sighting ever 0/1. Ray is a liar ("I feel fine": Paranoia).
+
+### Items, as built
+
+- Lantern Box (under the ledge): road flare ×2, first-aid kit. Loot: road flare, painkillers, energy drink, bandage, cigarettes. Tolliver Hardware hands over one road flare by day.
+- Case-only: the folded card (the page), the tally in a jar (only when cut out), Ray's lineman's tester (a gift at the end when the cover held: in battle, an unnatural enemy is Exposed), the sedative syringe (from the exam cabinet with Treat: an agent's flare calmed, or a living enemy Stunned).
+
+### Cover stories
+
+Medicine (explain it): a sleep study, a bad cyst and a reaction to a sedative. Bureaucracy (paper it): a power-line fault on the ridge that knocked out their car. Weak (Luck): they pulled off and slept in the fog. Easy (quiet, still Clean): Persuade +40, a lovely wedding and nobody watching the clock. Clean books: sealed study results.
+
+### Endings, as built
+
+- `worst`: the Lamp takes Ray or Donna, or the Federal agents' shutdown.
+- `clean`: the Surveyor gone, the carrier Ray or Donna home, no cut and no stroke, the paper never called, no agent lost this case, overstepping below Agency call.
+- `costly`: any other win. An agent who carried it and came home makes a Severe helplessness SAN roll at the end (the hum).
