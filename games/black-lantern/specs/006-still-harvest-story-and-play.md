@@ -20,8 +20,8 @@ What you'll feel in play: you lead with the agent whose skills fit the moment, y
 
 The studio repo is public, and case content in it is readable by anyone (`studio-bible/studio.md`, One repo). So this spec gives only structure and mechanics: beats, clue types, kinds of choices, endings by label. It names no culprit, twist, solution or hidden clue.
 
-- **The case design** (twist, internal logic, clue IDs and what each proves, the choices that matter, the 8–10 skills it supports, its 1–2 motivation moments, enemy cards, the boss's phases and weakening choice, and which endings exist) goes in **`claude/cases/still-harvest.md` in the Black Lantern Claude Project files**, as Story → Adding a new case, step 4 says. Keegan doesn't open it. The Developer writes it there at the start of Part C if it isn't there yet, reads it at build time, and never copies it into this repo. Still Harvest was approved long ago, so there is no pitch step (step 3).
-- **Arc touches:** the agency arc file (`claude/SPOILERS-agency-arc.md`, private `KeeganMcClure/black-lantern` repo) may add small touches to the case. They never appear in this spec, the changelog, the bible or a commit message (Story → Agency arc).
+- **The case design** (twist, internal logic, clue IDs and what each proves, the choices that matter, the 8–10 skills it supports, its 1–2 motivation moments, enemy cards, the boss's phases and weakening choice, and which endings exist) goes in **`games/black-lantern/story/cases/still-harvest.md`**, as Story → Adding a new case, step 4 says. Keegan doesn't open it. The Developer writes it there at the start of Part C if it isn't there yet, reads it at build time, and never copies it into this repo. Still Harvest was approved long ago, so there is no pitch step (step 3).
+- **Arc touches:** the agency arc file (`games/black-lantern/story/SPOILERS-agency-arc.md`) may add small touches to the case. They never appear in this spec, the changelog, the bible or a commit message (Story → Agency arc).
 - **The lines themselves** ship in `cases/still-harvest.js`, the case's text block, because all in-game text lives in the game files (Tech → Where text lives). That's expected. Changelog entries and commit messages describe what was built in mechanical terms only ("the town has a second story fight"), never what it reveals.
 
 ## Bible sections this spec relies on
@@ -183,7 +183,7 @@ Still Harvest rewritten under the new rules, from its private case file.
 
 **C1. Write the case file first** (Story → Adding a new case, steps 4–5)
 
-- In `claude/cases/still-harvest.md` (Project files, never the repo): the twist and internal logic, the maps' hotspots, clue IDs, the choices that matter, the 8–10 skills the case supports, 1–2 motivation moments for different types, every horror's tier and kind with the SAN budget check, enemy and boss cards, the boss's phases and weakening choice, and the endings.
+- In `games/black-lantern/story/cases/still-harvest.md`: the twist and internal logic, the maps' hotspots, clue IDs, the choices that matter, the 8–10 skills the case supports, 1–2 motivation moments for different types, every horror's tier and kind with the SAN budget check, enemy and boss cards, the boss's phases and weakening choice, and the endings.
 - Keep the case's frame: Marrow Creek during the Harvest Lantern Walk, the five townsfolk, the town and maze maps from Demo 4, Big Hat's donut-shop briefing. The case keeps its seven steps (Story → Demo case) as its spine, and the writing may change anything inside them that the new rules call for. A case "can break the pattern on purpose" (Story), so the case file may, but should say so in the changelog in plain terms.
 - Maps: keep Demo 4's layout. Small additions the story needs (a new hotspot, a Lantern Box, a roamer path, a door) are fine. Moving buildings is not: ask Keegan first.
 

@@ -32,7 +32,7 @@ The card's words live in `cases/dead-air.js`'s text block (`caseCard`), as for S
 
 | Source | Section | What it sets |
 | --- | --- | --- |
-| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in the Project files |
+| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in `games/black-lantern/story/cases/` |
 | `games/black-lantern/bible.md` | Story → Case board; Agency arc | The card; the case joins the season's queue |
 | `games/black-lantern/bible.md` | Story → Your original material | Flavor: the sketchy rural gas station. No seed; an original case |
 | `games/black-lantern/bible.md` | Overview → Mature content | Heaviest themes on the card; the old crime stays off screen |
@@ -106,7 +106,7 @@ Early March in south Louisiana: green coming back, wet ground, cane stubble and 
 
 ### Part B: story and play (To do: Dead Air part B)
 
-- **First,** the Developer writes the secret case file, `claude/cases/dead-air.md`, in the Black Lantern Claude Project files, following this spec: who the host and callers are, why these names, what happened to the missing and at KHLT in 1979, each broadcast's calls and which are clues or horrors, what tracing, recording and calling in give and cost, the fish fry's outcomes, the clue IDs and what each proves, the deduction, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags and the phobia subject, and what each ending label means. Every deduction maps to clue IDs.
+- **First,** the Developer writes the secret case file, `games/black-lantern/story/cases/dead-air.md`, following this spec: who the host and callers are, why these names, what happened to the missing and at KHLT in 1979, each broadcast's calls and which are clues or horrors, what tracing, recording and calling in give and cost, the fish fry's outcomes, the clue IDs and what each proves, the deduction, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags and the phobia subject, and what each ending label means. Every deduction maps to clue IDs.
 - **Then** the text block and scripts: the briefing, every scene and line in Keegan's voice, hotspots and their skill options, both broadcasts, the fish fry, the two story fights, the danger zone and its roamers, the boss and its tuning check, items and the Lantern Box, cover stories, and the debrief's facts and ending label (spec 007).
 - **Arc touches,** if the arc file asks for any, go in quietly and never appear in a commit, the changelog or the bible.
 

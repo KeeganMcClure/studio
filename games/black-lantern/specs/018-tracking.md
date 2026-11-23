@@ -32,7 +32,7 @@ The card's words live in `cases/tracking.js`'s text block (`caseCard`), as for S
 
 | Source | Section | What it sets |
 | --- | --- | --- |
-| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in the Project files |
+| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in `games/black-lantern/story/cases/` |
 | `games/black-lantern/bible.md` | Story → Case board; Agency arc | The card; the case joins the season's queue |
 | `games/black-lantern/bible.md` | Story → Your original material | The "WE KNOW" tape seed (every name changed) |
 | `games/black-lantern/bible.md` | Overview → Mature content | Heaviest themes on the card; exploitation and self-harm stay off screen |
@@ -104,7 +104,7 @@ Reno in winter: grey slush and hard snow by day, and by night neon and casino li
 
 ### Part B: story and play (To do: Tracking part B)
 
-- **First,** the Developer writes the secret case file, `claude/cases/tracking.md`, in the Black Lantern Claude Project files, following this spec: what the tape is and what it does, who the dancer is, the chain of hands and the second way to each link, the clue IDs and which place each opens, what watching gives and costs at each copy, what the tracking lines mean, the deduction, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags and the phobia subject, and what each ending label means. Every deduction maps to clue IDs.
+- **First,** the Developer writes the secret case file, `games/black-lantern/story/cases/tracking.md`, following this spec: what the tape is and what it does, who the dancer is, the chain of hands and the second way to each link, the clue IDs and which place each opens, what watching gives and costs at each copy, what the tracking lines mean, the deduction, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags and the phobia subject, and what each ending label means. Every deduction maps to clue IDs.
 - **Then** the text block and scripts: the briefing, every scene and line in Keegan's voice, hotspots and their skill options, the trail, each watch and its clip, the two story fights, the danger zone and its roamers, the boss and its tuning check, items and the Lantern Box, cover stories, and the debrief's facts and ending label (spec 007).
 - **Arc touches,** if the arc file asks for any, go in quietly and never appear in a commit, the changelog or the bible.
 

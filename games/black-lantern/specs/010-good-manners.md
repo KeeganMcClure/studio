@@ -32,7 +32,7 @@ The card's words live in `cases/good-manners.js`'s text block (`caseCard`), as f
 
 | Source | Section | What it sets |
 | --- | --- | --- |
-| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in the Project files |
+| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in `games/black-lantern/story/cases/` |
 | `games/black-lantern/bible.md` | Story → Case board; Agency arc | The card; the case joins the season's queue |
 | `games/black-lantern/bible.md` | Story → Your original material | The Men in black seed; Flavor: the tinted car, the rural gas station |
 | `games/black-lantern/bible.md` | Overview → Mature content | Heaviest themes on the card; what's shown and what's off screen |
@@ -100,7 +100,7 @@ Late summer on the plains: dry grass, hot white sky by day, sodium orange and fa
 
 ### Part B: story and play (To do: Good Manners part B)
 
-- **First,** the Developer writes the secret case file, `claude/cases/good-manners.md`, in the Black Lantern Claude Project files, following this spec: what the men are and want, why people die, the clue IDs and what each proves, the deduction, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags, and what each ending label means. Every deduction maps to clue IDs.
+- **First,** the Developer writes the secret case file, `games/black-lantern/story/cases/good-manners.md`, following this spec: what the men are and want, why people die, the clue IDs and what each proves, the deduction, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags, and what each ending label means. Every deduction maps to clue IDs.
 - **Then** the text block and scripts: the briefing, every scene and line in Keegan's voice, hotspots and their skill options, the two story fights, the danger zone and its roamers, the boss and its tuning check, items and the Lantern Box, cover stories, and the debrief's facts and ending label (spec 007).
 - **Arc touches,** if the arc file asks for any, go in quietly and never appear in a commit, the changelog or the bible.
 

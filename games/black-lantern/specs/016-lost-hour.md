@@ -32,7 +32,7 @@ The card's words live in `cases/lost-hour.js`'s text block (`caseCard`), as for 
 
 | Source | Section | What it sets |
 | --- | --- | --- |
-| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in the Project files |
+| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in `games/black-lantern/story/cases/` |
 | `games/black-lantern/bible.md` | Story → Case board; Agency arc | The card; the case joins the season's queue |
 | `games/black-lantern/bible.md` | Story → Your original material | The Classic abduction seed (every name changed) |
 | `games/black-lantern/bible.md` | Overview → Mature content | Heaviest themes on the card; what's shown and what's off screen (the medical exam stays mostly off screen) |
@@ -103,7 +103,7 @@ April in the Blue Ridge: new green, redbud and dogwood blossom, wet asphalt and 
 
 ### Part B: story and play (To do: Lost Hour part B)
 
-- **First,** the Developer writes the secret case file, `claude/cases/lost-hour.md`, in the Black Lantern Claude Project files, following this spec: what happened on the ridge road, what the lump is, what the card means, the clue IDs and which piece of the timeline each fills, the hypnosis memories and their costs, the deduction, the hard choice and its options, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags and the phobia subject, and what each ending label means. Every deduction maps to clue IDs.
+- **First,** the Developer writes the secret case file, `games/black-lantern/story/cases/lost-hour.md`, following this spec: what happened on the ridge road, what the lump is, what the card means, the clue IDs and which piece of the timeline each fills, the hypnosis memories and their costs, the deduction, the hard choice and its options, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags and the phobia subject, and what each ending label means. Every deduction maps to clue IDs.
 - **Then** the text block and scripts: the briefing, every scene and line in Keegan's voice, hotspots and their skill options, the timeline on the Case file, the night drive and the hypnosis session, the two story fights, the danger zone and its roamers, the boss and its tuning check, items and the Lantern Box, cover stories, and the debrief's facts and ending label (spec 007).
 - **Arc touches,** if the arc file asks for any, go in quietly and never appear in a commit, the changelog or the bible.
 

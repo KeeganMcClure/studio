@@ -14,7 +14,7 @@ Rough picture for the board question: [`009-season-board-rough-v1.png`](009-seas
 
 ## Where the story lives (spoiler wall)
 
-- **The season's numbers** (how many regular cases, each agency case's unlock count, which one is the finale) come from `claude/SPOILERS-agency-arc.md` in the private `KeeganMcClure/black-lantern` repo (since Nov 23, 2026). The Developer copies only those numbers and case ids into a season data file (`seasons/season-1.js`) at build time. They never go in the bible, this spec, the changelog or a commit message (Tech → Saving). Commit messages say "season 1 data", not what it holds.
+- **The season's numbers** (how many regular cases, each agency case's unlock count, which one is the finale) come from `games/black-lantern/story/SPOILERS-agency-arc.md` (since Nov 23, 2026). The Developer copies only those numbers and case ids into a season data file (`seasons/season-1.js`) at build time. They never go in the bible, this spec, the changelog or a commit message (Tech → Saving). Commit messages say "season 1 data", not what it holds.
 - **Agency cases themselves** are cases like any other: each is pitched, specced and built through the case pipeline (Season readiness, step 5), with its story in its secret case file. Their cards' public text (title, place line, hook) is teaser-only, as for every card.
 - **The season-end lines** (Big Hat's words on the end screen) come from the arc file, copied into the season data file's text block.
 
@@ -51,7 +51,7 @@ From the changelog and specs 004, 007 and 008, once they're built:
 ### 1. The season data file
 
 - A new part, `seasons/season-1.js`, loaded before the case files. It holds: the season number; the regular case ids; each agency case's id and the number of closed regular cases that unlocks it; which agency case is the finale; and the season-end text block.
-- The agency half (each agency case's id, its unlock count, which one is the finale) and the season-end text block don't sit in this public file. They live in the private repo and the build merges them in (bible, Tech → File and code, Agency cases stay out of the public repo; set Nov 23, 2026). `season-1.js` in the studio repo holds the season number and the regular cases only.
+- The agency half (each agency case's id, its unlock count, which one is the finale) and the season-end text block go in `seasons/season-1.js` like the rest (set Nov 23, 2026, Keegan's call; for part of that day they lived in a private repo). Commit messages still say only "season 1 data".
 - The board reads the season's cases from it. A case file that's loaded but not listed in the current season doesn't pin (so a later season's case can ship early without showing).
 - Still Harvest is listed in Season 1 as a regular case. Whether the demo case counts toward Season 1's unlocks is the arc file's call.
 
