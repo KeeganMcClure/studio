@@ -206,7 +206,7 @@ Still Harvest rewritten under the new rules, from its private case file.
 - **2–3 placed story fights plus the boss.** The Volunteer stays a story fight unless the case file changes it.
 - **0–2 danger zones**, likely in the maze. Roamers walk them in plain sight with threat skulls showing, each guarding something (a clue, a victim, a shortcut, a stash). Fight, sneak past with a roll, or go around. Loud actions nearby draw them. Loot drops 20% of the time from the case's loot table of 4–6 items, always when the drop is story-related.
 - Fight sizes and lengths by the Combat numbers: roamer fights 10–18 enemy HP in all (2–3 rounds), story fights 20–35 (3–5 rounds).
-- **The Gleaner**, rebuilt: 60 HP, −8 per rescued victim (36 with all three), boss-tier attack and damage, at least one weakness Identify can find, phases from the case file, 8–12 rounds against a careful party. Other weakening choices allowed up to 40% off in all.
+- **The Gleaner**, rebuilt: 60 HP, −8 per rescued victim (36 with all three), boss-tier attack and damage, at least one weakness Identify can find, phases from the case file, 8–12 rounds against a careful party that saved nobody, 5–8 with all three saved (Combat → Bosses, Nov 23, 2026). Other weakening choices allowed up to 40% off in all.
 - **Boss tuning check** before Part C ships (Bosses): run the Gleaner against a mid-level team template; a careful party wins with at most one agent Downed, a party that skipped the case's choices can lose. Put the numbers in the changelog.
 
 **C5. Choices, branches and the clock** (Systems → Gameplay loop; Skills and menus → Overstepping)

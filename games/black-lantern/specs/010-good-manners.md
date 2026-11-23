@@ -58,7 +58,7 @@ The card's words live in `cases/good-manners.js`'s text block (`caseCard`), as f
 | Maps | **Main Street** (the diner, the gas station, the sheriff's office, the motel, the grain co-op's front): day and night. **Elm and Third** (a residential block with the watched houses): day and night. **The county morgue** (a clinic basement two towns over, reached by car): day only. **The fairground** (midway, livestock barn, grandstand, ride field): day 2, then night 2. **The finale area**, which the case file names and places |
 | Story fights | **2.** One human (2 skulls), which Persuade's Lean on them can stop before it starts. One unnatural (2 skulls). Plus the boss |
 | Danger zones | **1:** the fairground on night 2, with 2–3 roamers in plain sight, each guarding something (a clue, a shortcut, a person, a Lantern Box) |
-| Boss | 3 skulls. At least one case choice weakens it (by kind: what you learned and who you protected, as the case file sets), and a weakness Identify can find. Target 8–12 rounds against a careful party |
+| Boss | 3 skulls. At least one case choice weakens it (by kind: what you learned and who you protected, as the case file sets), and a weakness Identify can find. Target 8–12 rounds against a careful party that skipped the weakening choices, 5–8 when it made them all |
 | Clue style | **Threshold plus bonus.** About 6 clues; 3 open the way to night 2. Extras weaken the boss, add intel, or open better cover stories and a better ending |
 | Deduction | One deduction before night 2. A wrong answer costs time or a better ending, never progress (Gameplay loop) |
 | Skills it calls on | Persuade, Empathy, Bureaucracy, Forensics, Search, Computers, History, Occult, Stealth, Firearms. Every team template must be able to reach night 2 |

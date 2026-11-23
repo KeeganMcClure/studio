@@ -1011,7 +1011,7 @@ Fights are rare, so each one hits hard and lasts long enough to use statuses and
 ### Bosses (set Nov 18)
 
 - **Phases:** set per boss in its case file. A boss has up to 2 phases (one phase change, which the battle supports; the Gleaner has two) (accepted Nov 23, 2026 from the Developer's logged calls). A case that needs a third says so in its spec, and the battle grows then.
-- **Every boss needs:** at least one case choice that weakens it (the Gleaner loses strength for each rescued victim), a weakness Identify can find, and 8–12 rounds against a careful party.
+- **Every boss needs:** at least one case choice that weakens it (the Gleaner loses strength for each rescued victim), a weakness Identify can find, and 8–12 rounds against a careful party that skipped the weakening choices, or 5–8 rounds when it made them all (set Nov 23, 2026: the shorter fight is the reward for doing the case well).
 - **Tuning check:** the Gleaner is tuned first (Nov 23, 2026), and its tuned numbers and the simulator result go in Combat numbers as the bar every later boss is checked against. Before a case ships, Claude runs the boss against a mid-level team template. Target: a careful party wins with at most one agent Downed; a party that skipped the case's choices can lose. The demo's Gleaner sets the bar.
 
 ### Lasting injuries (set Nov 20)
