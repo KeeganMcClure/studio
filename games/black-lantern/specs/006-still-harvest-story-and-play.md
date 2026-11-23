@@ -258,3 +258,15 @@ Everything fits with nothing cut off at 375 × 667, 375 × 550 and 320 × 480 (T
 ## Bible notes for the Designer (no change made here)
 
 - Story → Demo case, step 4 still says the maze has "random encounters". Systems → Gameplay loop (set Nov 18) says no random encounters, and the To do asks for fewer but harder fights, so this spec follows the Gameplay loop. A separate PR rewords step 4.
+
+## Revision after the demo playtest (Nov 23, 2026)
+
+Keegan's note: "In the maze, it's impossible to actually do everything because you have to go to the middle where Gleaner is and the fight starts automatically." And: "The maze should have a route to get the scarecrows that doesn't go to Gleaner."
+
+What to change in the built case (Demo 5 part C):
+
+- **A route to the victims that skips the clearing.** Rework the maze's paths so all three scarecrow victims, the danger zone, the Lantern Box and the lore note can be reached without stepping into the Gleaner's clearing. The clearing becomes a dead end you enter on purpose, not a crossroads. Keep the maze's size and look (Demo 4 art); move hedges and openings only.
+- **Going in is a choice.** The tile into the clearing shows a short line and a choice: go in, or not yet. Not yet steps the lead back one tile. Going in starts the boss fight as today (committed, no fleeing).
+- **Nothing else changes:** the Gleaner's numbers, the victims' −8 each and the endings stay as built. A test save inside the maze must still open; if a saved spot is now a hedge, the lead moves to the nearest open tile.
+- Bible: Systems → Gameplay loop (The boss waits for you) and Story → Demo case, step 5.
+
