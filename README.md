@@ -15,6 +15,7 @@ studio/
     launcher.md        cover art size, how games register
     saves.md           save slots, versions, export and import
     rules-checks.md    what a rules check verifies
+    play.md            how every game treats the player
   engine/              shared code: combat, dialogue, saves, input
   launcher/            the home screen app and game shelf
   games/
