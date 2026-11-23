@@ -1,0 +1,241 @@
+// Rushlight · content/sites.js
+// Each contract site's room chunks (spec 006, D1 section 1 and D2): hand-made tile screens that the seed picks and joins
+// left to right. A chunk: {rows (tile key in site-art.js), spots: {letter: [x, y]}} where spots name where a job's
+// hotspots, fights and caches go. Walking off a chunk's right edge goes to the next; off the first chunk's left edge
+// leaves the site. Content data only; site.js and content/jobs.js read it.
+const CHUNKS={
+ // ---- the charcoal camp (Pell; the approved Mockup 6 camp) ----
+ 'camp-trail':{rows:[
+  'TTTTTTTTTTTTTTT',
+  'TTT..T....TTTTT',
+  'TT......T...TTT',
+  'T....T.....T..T',
+  '..............T',
+  ',,,,,,,,,,,,,,,',
+  '...........T...',
+  'T....T.........',
+  'TT.........T..T',
+  'TTT...T......TT',
+  'TTTTTTTTTTTTTTT'],spots:{a:[6,4],c:[12,7]}},
+ 'camp-track':{rows:[
+  'TTTTTTTTTTTTTTT',
+  'TT....TTT....TT',
+  'T..........T..T',
+  'T...T..........',
+  '..............T',
+  ',,,,,,,,,,,,,,,',
+  ',,,,,,,,,,,,,,,',
+  '...T...........',
+  'T.........T...T',
+  'TT...T......TTT',
+  'TTTTTTTTTTTTTTT'],spots:{a:[8,4],c:[2,8]}},
+ 'camp-clearing':{rows:[
+  'TTTTTTTTTTTTTTT',
+  'T...r.....HHHHT',
+  'T.........HHDHT',
+  'T.www..........',
+  '...........cc..',
+  ',,,,..f........',
+  '...,,,,........',
+  'T....,,...c....',
+  'T.c...,,......T',
+  'TT.....,....TTT',
+  'TTTTTTTTTTTTTTT'],spots:{a:[5,1],F:[8,5],d:[12,3],c:[2,4]}},
+ 'camp-hut':{rows:[
+  'TTTTTTTTTTTTTTT',
+  'THHHHHHHHHT...T',
+  'THHHHDHHHHT...T',
+  'T.............T',
+  '..........w...T',
+  ',,,,,.........T',
+  '....,,,.....T.T',
+  'T.....,,......T',
+  'TT.....,......T',
+  'TTT.........TTT',
+  'TTTTTTTTTTTTTTT'],spots:{P:[5,4],k:[5,3],t:[8,3],c:[11,7]}}
+};
+// which chunks a site is built from: lists are choices (the seed picks one); single names are fixed
+const SITES={
+ camp:{name:'CHARCOAL CAMP',tod:'dusk',chunks:[['camp-trail','camp-track'],'camp-clearing','camp-hut'],cache:'ST-CACHE-1'}
+};
+
+// ---- Hollin (the Noonwife; rough mockup 30, at noon) ----
+CHUNKS['hollin-lane']={rows:[
+  'yyyyyyyyyyyyyyy',
+  'k.,...hh..hh..y',
+  'k.,...........y',
+  '..,..........yy',
+  ',,,,,,,,,,,,,,,',
+  '..,...........y',
+  'y.,......s....y',
+  'yy,...........y',
+  'yy,..s.....s.yy',
+  'yyyyyyyyyyyyyyy'],spots:{r:[3,2],m:[8,3],c:[12,6],s:[1,3]}};
+CHUNKS['hollin-cottages']={rows:[
+  'yyyyyyyyyyyyyyy',
+  'y.hh.....hh...y',
+  'y..............',
+  'y..........x...',
+  ',,,,,,,,,,,,,,,',
+  '...............',
+  'y.....hh.......',
+  'y.............y',
+  'yy...........yy',
+  'yyyyyyyyyyyyyyy'],spots:{w:[4,3],c:[12,7],g:[8,5]}};
+CHUNKS['hollin-edge']={rows:[
+  'yyyyyyyyyyyyyyy',
+  'y..s.....s....y',
+  'y...........s..',
+  '...x...........',
+  ',,,,,,,,,,,,,,,',
+  '.....s.........',
+  'y........s.....',
+  'y..s..........y',
+  'yy...........yy',
+  'yyyyyyyyyyyyyyy'],spots:{d:[3,3],k:[10,2],c:[12,7]}};
+CHUNKS['hollin-field']={rows:[
+  'yyyyyyyyyyyyyyy',
+  'y.s....y....s.y',
+  'y......y......y',
+  '..s....y...s..y',
+  ',,,,...........',
+  'y.......s.....y',
+  'y..s..........y',
+  'y.......y..s..y',
+  'yy....s......yy',
+  'yyyyyyyyyyyyyyy'],spots:{F:[9,4],h:[11,6]}};
+// ---- Sallow End (Severa; rough mockup 31, at dusk) ----
+CHUNKS['sallow-yards']={rows:[
+  'TTTTTTTTTTTTTTT',
+  'T.hh.....hh...T',
+  'T..............',
+  '...x.......w...',
+  ',,,,,,,,,,,,,,,',
+  '...............',
+  'T....hh........',
+  'T.............T',
+  'TT...........TT',
+  'TTTTTTTTTTTTTTT'],spots:{y:[3,2],c:[12,6]}};
+CHUNKS['sallow-church']={rows:[
+  'TTTTTTTTTTTTTTT',
+  'T....kkkkk....T',
+  'T....kkkkk.....',
+  '.......l.......',
+  ',,,,,,,,,,,,,,,',
+  '...g.......g...',
+  'T..............',
+  'T....g.....g..T',
+  'TT...........TT',
+  'TTTTTTTTTTTTTTT'],spots:{l:[7,3],F:[8,5],p:[11,2],c:[2,6]}};
+CHUNKS['sallow-cottage']={rows:[
+  'TTTTTTTTTTTTTTT',
+  'T....hhhh.....T',
+  'T....hhhh.....T',
+  '...............',
+  ',,,,,,,,,,,,,,,',
+  '.....w.........',
+  'T..............',
+  'T.............T',
+  'TT...........TT',
+  'TTTTTTTTTTTTTTT'],spots:{p:[7,3],y:[3,6],F:[10,6]}};
+// ---- the osier causeway (the Withy Hag; rough mockup 32, at night) ----
+CHUNKS['cause-causeway']={rows:[
+  'ooooooooooooooo',
+  'oo~~~~~~~~~~~oo',
+  '~~~~~~~~~~~~~~~',
+  'qqqqqqqqqqqqqqq',
+  'qqqqqqqqqqqqqqq',
+  '~~~~~~~~~~~~~~~',
+  'oo~~~~b~~~~~~oo',
+  'ooooooooooooooo'],spots:{m:[5,3],c:[12,4],F:[11,4]}};
+CHUNKS['cause-beds-l']={rows:[
+  'ooooooooooooooo',
+  'oo...o...o....o',
+  'o.......o......',
+  '...o...........',
+  ',,,,,,,,,,,,,,,',
+  '.....o....o....',
+  'o..........o..o',
+  'ooo..o.......oo',
+  'ooooooooooooooo'],spots:{k:[6,3],c:[2,6]}};
+CHUNKS['cause-beds-r']={rows:[
+  'ooooooooooooooo',
+  'o....o.......oo',
+  '......o........',
+  '..........o....',
+  ',,,,,,,,,,,,,,,',
+  '....o..........',
+  'o.......o.....o',
+  'oo..o........oo',
+  'ooooooooooooooo'],spots:{k:[9,3],c:[12,6]}};
+CHUNKS['cause-boats']={rows:[
+  'ooooooooooooooo',
+  'o.............o',
+  '..............o',
+  '...b.....b....o',
+  ',,,,,,,,,,,,,..',
+  '.......b.......',
+  '~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~'],spots:{b:[7,4],F:[11,2],c:[2,2]}};
+// ---- Crookback (the Counter; rough mockup 33, overcast) ----
+CHUNKS['crook-ditch']={rows:[
+  'aaaaaaaaaaaaaaa',
+  'a.............a',
+  '...xxxxxxx.....',
+  '...xxxxxxx.....',
+  ',,,,,,,,,,,,,,,',
+  '...............',
+  'a....~~~~......',
+  'a....~~~~.....a',
+  'aa...........aa',
+  'aaaaaaaaaaaaaaa'],spots:{r:[6,1],p:[7,5],F:[7,5]}};
+CHUNKS['crook-street']={rows:[
+  'aaaaaaaaaaaaaaa',
+  'a.hh.....hh...a',
+  'a..............',
+  '...............',
+  ',,,,,,,,,,,,,,,',
+  '...............',
+  'a.hh......hh...',
+  'a.............a',
+  'aa...........aa',
+  'aaaaaaaaaaaaaaa'],spots:{f:[3,2],s:[10,2],l:[3,5]}};
+CHUNKS['crook-church']={rows:[
+  'aaaaaaaaaaaaaaa',
+  'a....kkkkk....a',
+  'a....kkkkk.....',
+  '.g.g.......g.g.',
+  ',,,,,,,,,,,,,,,',
+  '.g.g.......g.g.',
+  'a..............',
+  'a.............a',
+  'aa...........aa',
+  'aaaaaaaaaaaaaaa'],spots:{g:[2,2],b:[7,3]}};
+CHUNKS['crook-bakehouse']={rows:[
+  'aaaaaaaaaaaaaaa',
+  'a....OOO......a',
+  'a....OOO.......',
+  '...............',
+  ',,,,,,,,,,,,,,,',
+  '...........hh..',
+  'a..............',
+  'a.............a',
+  'aa...........aa',
+  'aaaaaaaaaaaaaaa'],spots:{n:[6,3],c:[12,7]}};
+CHUNKS['crook-ruin']={rows:[
+  'aaaaaaaaaaaaaaa',
+  'a...aaa.......a',
+  'a...aaa........',
+  '...............',
+  ',,,,,,,,,,,,,,,',
+  '...............',
+  'a..............',
+  'a.............a',
+  'aa...........aa',
+  'aaaaaaaaaaaaaaa'],spots:{e:[5,3],c:[12,7]}};
+Object.assign(SITES,{
+ hollin:{name:'HOLLIN',tod:'noon',chunks:['hollin-lane','hollin-cottages','hollin-edge','hollin-field'],cache:'ST-CACHE-2'},
+ sallow:{name:'SALLOW END',tod:'dusk',chunks:['sallow-yards','sallow-church','sallow-cottage'],cache:'ST-CACHE-1'},
+ cause:{name:'THE OSIER CAUSEWAY',tod:'night',chunks:[['cause-beds-l','cause-beds-r'],'cause-causeway','cause-boats'],cache:'ST-CACHE-1'},
+ crook:{name:'CROOKBACK',tod:'overcast',chunks:['crook-ditch','crook-street','crook-church','crook-bakehouse','crook-ruin'],cache:'ST-CACHE-2'}
+});

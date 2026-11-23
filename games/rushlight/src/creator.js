@@ -17,7 +17,7 @@ const T=(id,o)=>window.RLT(id,o);
 const RLP=window.Studio?Studio.savePrefix('rl.'):'rl.',K=k=>RLP+k;
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 // The save version (studio-bible/saves.md): each change to what a save holds adds a step here. Old steps never change.
-const VERSION=3;
+const VERSION=4;
 const newLedger=()=>({bestiary:{},dead:[],companies:[]});
 // Each step takes the save as one object {run, ledger, draft, legacy} and returns it at the next version.
 const STEPS_UP={
@@ -29,7 +29,11 @@ const STEPS_UP={
  2:o=>{const r=o.run;if(r){r.place=null;r.day=1;r.rations=Math.min(15,r.rations|0);r.region=makeRegion(r);(r.party||[]).forEach(m=>{m.hunger=0})}return o},
  // 2 → 3 (spec 005): the boards, the pool's order, givers, hire pools, townsfolk, rumors, factions, the Hue and cry and the
  // between-contracts flags, all filled from the seed as if the company had just arrived (makeTowns, town.js)
- 3:o=>{const r=o.run;if(r)makeTowns(r);return o}
+ 3:o=>{const r=o.run;if(r)makeTowns(r);return o},
+ // 3 → 4 (spec 006, D1): empty versions of the job in progress, the fight in progress, each merc's injuries, XP and level
+ // picks, and the ledger's bestiary and dead; everything else kept
+ 4:o=>{const r=o.run;if(r){r.job=r.job||null;r.fight=null;r.rests=r.rests|0;(r.party||[]).forEach(m=>{m.inj=m.inj||[];m.xp=m.xp|0;m.picks=m.picks|0;m.dis=m.dis||[];m.st=m.st||[];m.adapt=m.adapt||{v:0,h:0}})}
+  o.ledger=o.ledger||newLedger();o.ledger.bestiary=o.ledger.bestiary||{};o.ledger.dead=o.ledger.dead||[];o.ledger.companies=o.ledger.companies||[];return o}
 };
 function upgradeSave(o,from){for(let v=from+1;v<=VERSION;v++)o=STEPS_UP[v](o);o.version=VERSION;return o}
 // On open: back up older saves first (all rl.* keys in one block), then run each step above the stored version.

@@ -96,3 +96,31 @@ Keegan's standing approvals for this run: no questions; pick what the bible and 
 - **Crime witnesses:** robbing on the two main roads counts as "busy" (−40%); anywhere else as seen (−20%), since the
   victims are right there.
 - **New art not yet filed** (add to the list): the two streets' buildings and props in `src/town-art.js`.
+
+## Spec 006 D1: the rules, proved on Pell's camp
+
+- **Tuning check: Pell, PASSED on all 3 seeds.** 20 runs per seed, the seed's Free Company at level 1, the 2 cousins
+  then Pell, HP carried between the fights, auto-played carefully (Revive a Downed comrade, Patch up the badly hurt,
+  otherwise fight the weakest foe). Pass: at most 1 merc Downed in 3 of 4 runs, and nobody dies.
+  - 0001-A: 20/20 runs pass · 0 deaths · 3.9 rounds · 1.4 SAN lost (people budget 0–3).
+  - 4242-C: 20/20 · 0 deaths · 3.6 rounds · 1.3 SAN lost.
+  - 9021-M: 20/20 · 0 deaths · 4.0 rounds · 1.4 SAN lost.
+- **Part B and C tuning re-run with D1's full rules** (the company's armor, wear, breaking; the same careful play):
+  - Felled tree: Downed in 1 / 1 / 0 fights of 20 (pass; it missed on 4242-C without armor). Ambushed 1 / 0 / 0.
+  - Night attack, 2 bandits: 3.8 / 2.6 / 2.1 HP lost (pass).
+  - Rooks: 4.3 / 5.0 / 4.2 HP lost (pass); they take 2.8–3.5 rations during the fight but keep only **0.1–0.6 net**
+    (Skittish rooks now break and fly off with what they took, but most die first). **Still misses** the spec's 1–3.
+  - 2 men-at-arms: Downed in 1 / 2 / 0 fights, longest fights 9 / 10 / 9 rounds (pass; it missed on 4242-C before).
+- **Pell is paid at Harrowford.** A bounty's proof is the body (People jobs), so the job ends at the camp and pays when
+  the company walks back into Harrowford (the reeve signs for him). Letting him go pays at once (nothing).
+- **The A prompt's Select** works as the mockup says (Select swaps to the best other merc and rolls), and the same
+  choice also shows as a SELECT row, so it can be tapped.
+- **Who the fight checks against:** a hotspot's "best other merc" is shown when they beat the lead, or when the lead
+  lacks the skill.
+- **Grapple** is simplified: the pinned enemy rolls each turn to break free as the bible says, but the comrades' +20%
+  against it is the only other effect.
+- **A Downed merc keeps their place in the turn order** (each of their turns is one of the 3 before they bleed out).
+- **Not built yet (noted for later parts):** using items and skills from the map menu (a Skills row; Use, Swap and Drop
+  in Items); Fast battles as a Settings row; the King's Hounds and other cast; burial (Part E).
+- **New art not yet filed** (add to the list): the site tiles in `src/site-art.js` (the charcoal camp's ground, trees,
+  hut, woodpile, fire pit, rack and charcoal clamps, plus tiles the D2 sites use).

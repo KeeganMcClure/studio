@@ -114,7 +114,7 @@ function renderMenu(){const m=menu;if(!m)return;
  if(m.onSel)m.onSel(m.sel);posMenu();const on=menuEl.querySelector('.gi.on');if(on)on.scrollIntoView({block:'nearest'})}
 function posMenu(){if(menuEl.hidden)return;let b=6;const bx=dhost.querySelector('.bld'),tab=bx&&bx.querySelector('.bld-tab');
  if(G.mode==='battle'&&!hud.hidden)b=hud.offsetHeight+8;else if(bx)b=bx.offsetHeight+(tab?tab.offsetHeight:0)+10;menuEl.style.bottom=b+'px'}
-function choose(items,o={}){if(G.auto&&G.auto.menu)return Promise.resolve(G.auto.menu(items,o));return new Promise(res=>{menu={items,sel:o.sel||0,res,cancel:o.cancel,title:o.title,desc:o.desc,onSel:o.onSel,inBox:o.inBox};renderMenu()})}
+function choose(items,o={}){if(G.auto&&G.auto.menu)return Promise.resolve(G.auto.menu(items,o));return new Promise(res=>{menu={items,sel:o.sel||0,res,cancel:o.cancel,title:o.title,desc:o.desc,onSel:o.onSel,inBox:o.inBox,onSelect:o.onSelect};renderMenu()})}
 function closeMenu(v){const m=menu;menu=null;menuEl.hidden=true;StudioMenu.unlock(menuEl);if(m.inBox&&box)box.choices=null;if(Bt)Bt.hover=-1;m.res(v)}
 async function ask(name,text,opts){if(G.auto&&G.auto.menu){await say(name,text);return G.auto.menu(opts,{title:text})}await say(name,text,{keep:true,instant:false});const r=await choose(opts,{cancel:true,inBox:true});hideTB();return r<0?opts.length-1:r}
 function banner(t){ban.textContent=t;ban.hidden=false;clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,2200)}
@@ -128,8 +128,9 @@ const sourFade={};
 function applySan(){const m=lead();if(!m)return;const fr=clamp(m.san/m.msan,0,1);sanEl.innerHTML=`SAN <b class="${fr<.4?'red':''}">${m.san}</b>`;}
 
 // ================= WORLD =================
-function passable(x,y){const M=G.M;if(x<0||y<0||x>=M.w||y>=M.h)return false;if(BLOCK.has(M.g[y][x]))return false;if(M.npcs.some(n=>(!n.on||n.on())&&n.x===x&&n.y===y))return false;return true}
-function goMap(name,x,y,dir){hud.hidden=true;gEl.classList.remove('battle','region');G.map=name;G.M=MAPS[name]();StudioMove.place(G,x,y,dir);G.trail=[];
+const SITE_BLOCK=new Set('THDwfrc~bogWhksOpmuLa'.split(''));
+function passable(x,y){const M=G.M;if(x<0||y<0||x>=M.w||y>=M.h)return false;if((M.site?SITE_BLOCK:BLOCK).has(M.g[y][x]))return false;if(M.npcs.some(n=>(!n.on||n.on())&&n.x===x&&n.y===y))return false;return true}
+function goMap(name,x,y,dir){hud.hidden=true;gEl.classList.remove('battle','region','site','town');if(name.startsWith('site_'))gEl.classList.add('site');if(name.startsWith('town_'))gEl.classList.add('town');G.map=name;G.M=MAPS[name]();StudioMove.place(G,x,y,dir);G.trail=[];
  banner(G.M.name);saveRun()}
 function update(){
  if(G.mode!=='world')return;
@@ -149,7 +150,7 @@ function cam(){return StudioMove.camera(G,G.M.w,G.M.h,VW,VH)}
 function drawWorld(){
  const M=G.M,[camx,camy]=cam();cx.fillStyle='#0a0710';cx.fillRect(0,0,VW,VH);
  const x0=Math.floor(camx/16),y0=Math.floor(camy/16);
- if(M.town)drawStreet(M,camx,camy);else for(let ty=y0;ty<=y0+Math.ceil(VH/16)+1;ty++)for(let tx=x0;tx<=x0+Math.ceil(VW/16)+1;tx++){const ch=M.g[ty]&&M.g[ty][tx];if(!ch)continue;let v=(tx*7+ty*13)%4;if(ch==='V')v=M.vv[tx+','+ty];if(ch==='T')v=(tx*3+ty*5)%3;cx.drawImage(tile(ch,v),tx*16-camx,ty*16-camy)}
+ if(M.town)drawStreet(M,camx,camy);else if(M.site)drawSiteTiles(M,camx,camy);else for(let ty=y0;ty<=y0+Math.ceil(VH/16)+1;ty++)for(let tx=x0;tx<=x0+Math.ceil(VW/16)+1;tx++){const ch=M.g[ty]&&M.g[ty][tx];if(!ch)continue;let v=(tx*7+ty*13)%4;if(ch==='V')v=M.vv[tx+','+ty];if(ch==='T')v=(tx*3+ty*5)%3;cx.drawImage(tile(ch,v),tx*16-camx,ty*16-camy)}
  const spr=[];
  M.npcs.forEach(n=>{if(n.on&&!n.on())return;spr.push({y:n.y*16,f:()=>cx.drawImage(RLSP.map(n.sp,n.look),n.x*16+1-camx,n.y*16+16-26-camy)})});
  // the other mercs follow the lead, a tile apart, along the lead's own steps (spec 003, 10)
@@ -159,7 +160,7 @@ function drawWorld(){
  const blink=!moving&&(performance.now()%3400)<150?1:0;
  spr.push({y:G.py,f:()=>{const s=RLSP.map(lead().sp,lead().look);cx.drawImage(s,Math.round(G.px+1-camx),Math.round(G.py+16-26-camy+(moving&&fr%2?-1:0)))}});
  spr.sort((a,b)=>a.y-b.y).forEach(s=>s.f());
- lights(M,camx,camy);
+ if(M.site){drawSiteOver(M,camx,camy);siteLight(M,camx,camy);drawSiteStrip()}else{lights(M,camx,camy);if(M.town)drawTownStrip()}
 }
 // Night and lamps on the shared light (engine/light.js): the dark from Peat, Tallow pools from the rushlight and lamps.
 // The rushlight's pool shrinks as the lead's SAN falls (the old rule), and below 40% SAN the picture sours.
@@ -181,7 +182,9 @@ window.addEventListener('resize',()=>{if(G.active)fit()});
 // rl.run holds the run: seed, the three streams' positions, the company, lead, purse, pack and where they stand.
 // It autosaves on every screen change (a map, a menu closing, the lead changing). Deaths stick: nothing reloads a roll.
 let DICE=null;
-function useDice(saved){DICE=StudioSeed.load(saved);StudioRoll.use(DICE)}
+// the Dev settings' forced rolls (spec 006, D1): G.dev.rolls is a queue of d100 results the next rolls take, in order,
+// so any rule (a crit, a fumble, a break, an injury, a horror) can be forced; with the queue empty, the run's dice stream
+function useDice(saved){DICE=StudioSeed.load(saved);StudioRoll.use(()=>{const q=G.dev&&G.dev.rolls;if(q&&q.length)return (q.shift()-1)/100+0.0001;return DICE.next()})}
 function saveRun(){const r=G.run;if(!r||r.ended)return;r.party=party;r.lead=G.lead|0;if(DICE)r.streams.dice=DICE.save();
  if(G.M&&G.mode==='world')r.place={map:G.map,x:G.x,y:G.y,dir:G.dir};else if(G.mode==='region')r.place=null;store.set(B.key('run'),r)}
 function enter(){G.active=true;scr.classList.add('gaming');sanEl.hidden=false;fit();cancelAnimationFrame(raf);clock.reset();raf=requestAnimationFrame(loop)}
@@ -195,9 +198,12 @@ function begin(rn){
  // a street or site the company stood in (Parts C and D), else the region map; a march saved mid-road picks up again
  if(!rn.boards)makeTowns(rn);
  const p=rn.place;if(p&&p.map&&p.map.startsWith('town_')){G.town=p.map.slice(5);MAPS[p.map]=()=>townMap(G.town)}
+ // a contract site the company stood in (D1): rebuild its chunk, and a fight saved mid-round picks up at that round
+ if(p&&p.map&&p.map.startsWith('site_')&&rn.job){const J=JOBS[rn.job.id],S=SITES[J.site]||{};G.site={name:(S.name||P_[J.site].name).toUpperCase(),kind:J.kind,shape:J.shape};MAPS[p.map]=()=>chunkMap(rn.job,rn.job.chunk,rn.job.chunks[rn.job.chunk])}
  if(p&&p.map&&MAPS[p.map]){G.mode='world';goMap(p.map,p.x,p.y,p.dir)}else enterRegion();
  applySan();saveRun();
- if(rn.region.trip)run(async()=>{await say('','On the road, where you left off.',{auto:900});await walk()});
+ if(rn.fight&&rn.fight.key&&rn.job){const F=rn.fight,key=F.key;run(async()=>{const M=G.M,f=(M&&M.fights||[]).find(x=>x.id===key);if(f)await siteFight(f,{en:F.en,round:F.round})})}
+ else if(rn.region.trip)run(async()=>{await say('','On the road, where you left off.',{auto:900});await walk()});
 }
 function resume(){const r=store.get(B.key('run'),null);if(!r||r.ended||!r.party)return false;begin(r);return true}
 G.onLead=()=>{G.trail=[];saveRun()};
@@ -206,9 +212,10 @@ G.onLead=()=>{G.trail=[];saveRun()};
 async function pauseMenu(){
  held=[];
  for(;;){
-  const rows=['Party','Items','Export','Title','Close'];if(G.town&&G.mode==='world')rows.splice(2,0,'Sleep rough');
+  const rows=['Party','Items','Bestiary','Export','Title','Close'];if(G.town&&G.mode==='world')rows.splice(2,0,'Sleep rough');
   const r0=await choose(rows,{cancel:true,title:'MENU · '+(G.mode==='region'?'THE WITHY MARCH':G.M.name)});
   if(rows[r0]==='Sleep rough'){G.run.day++;await eatDay();await camp({road:false});await say('','You sleep rough by the wall. Free, and it feels it.');continue}
+  if(rows[r0]==='Bestiary'){await openBestiary();continue}
   const r=r0<0?-1:['Party','Items','Export','Title','Close'].indexOf(rows[r0]);
   if(r===0)await openParty();
   else if(r===1)await openItems(G.lead|0);
@@ -264,6 +271,7 @@ function input(k){
   else if(k==='down'){menu.sel=(menu.sel+1)%n;renderMenu()}
   else if(k==='a'){const it=menu.items[menu.sel];if(it&&it.dis)return;closeMenu(menu.sel)}
   else if(k==='b'&&menu.cancel){closeMenu(-1)}
+  else if(k==='select'&&menu.onSelect){const i=menu.onSelect();if(i>=0)closeMenu(i)}
   return}
  if(G.mode==='region'){regionPress(k);return}
  if(k==='select'){mapSelect();return}
@@ -298,19 +306,28 @@ async function newRun(seedArg){
  if(!G.active||party.length!==3)problems.push('the company did not sign on');
  return {ok:!problems.length,problems};
 }
-window.RLG={begin,resume,input,hold,newRun,saveRun,get active(){return G.active},
- _t:{start:testStart,sim,foe:(k,o)=>foe(k,o),fight:(o={})=>{run(async()=>{const r=await battle([Object.assign({},TEST_FOE)],Object.assign({roamer:true,bg:'noon',countdown:{label:'NOON BELL',n:12}},o));G.lastFight=r});return true},
+window.RLG={begin,resume,input,hold,newRun,saveRun,dev:o=>{G.dev=Object.assign(G.dev||{},o);return G.dev},get active(){return G.active},
+ _t:{start:testStart,sim,simSeq,foe:(k,o)=>foe(k,o),fight:(o={})=>{run(async()=>{const r=await battle([foe('manatarms'),foe('manatarms')],Object.assign({roamer:true,bg:'dusk',countdown:{label:'COUNT',n:12}},o));G.lastFight=r});return true},
   go:(m,x,y)=>goMap(m,x,y,'right'),G:()=>G,party:()=>party,Bt:()=>Bt,PM:()=>PM,IV:()=>IV,EX:()=>EX,lead:()=>G.lead|0,quit}};
 
 // ================= TEST HOOKS (the automatic checks only) =================
-// A test fight against one stand-in enemy (spec 002). Its numbers are placeholders, not a real card (those come in Part D).
-const TEST_FOE={name:'Stand-in',lvl:1,skulls:1,hp:16,dex:11,hit:45,dmg:'1d4+1',sprite:'noonwife',faceless:true,known:false,foe:true};
+// The checks' fight (spec 002's test fight, replaced in D1 by a real card): two men-at-arms, as the reeve's men
 function testStart(seed){if(!G.active)newRun(seed||'0001-A')}
+// a sequence of fights on one company (a job's fights in order), HP and statuses carried between them; per run: how many
+// different mercs went down, how many died, and whether every fight was won. o.level raises the company first.
+async function simSeq(seed,mks,n,o={}){
+ await newRun(seed);if(o.level){for(const m of party){m.lvl=o.level;m.mhp+=o.level-1;m.hp=m.mhp;const sk=RLS.TRADES.find(t=>t.id===m.tradeId).strong;for(let i=0;i<(o.level-1)*2;i++){const k=sk[i%2];m.sk[k]=Math.min(95,m.sk[k]+5)}}}
+ if(o.kit)o.kit(party);const base=JSON.parse(JSON.stringify(party)),out=[];
+ G.auto={cmd:()=>0,list:(t,rows)=>Math.max(0,rows.findIndex(r=>!r.dis)),menu:items=>Math.max(0,items.indexOf('Leave')),choice:()=>0,yield:o.yieldPick||(()=>0),smart:true};
+ for(let i=0;i<n;i++){party=JSON.parse(JSON.stringify(base));G.lead=0;G.run.party=party;G.run.job={id:'sim',sanLost:{},horrors:{}};const downed=new Set();let won=true,rounds=0;
+  for(const mk of mks){if(party.every(m=>m.dead||m.ko))break;const res=await battle(mk(i),Object.assign({},o.battle||{}));party.forEach(m=>{if(m.downs)downed.add(m.id)});rounds+=(G.lastStats||{}).rounds|0;if(res!=='win'){won=false;break}}
+  out.push({won,downed:downed.size,dead:party.filter(m=>m.dead).length,rounds,hp:party.reduce((a,m)=>a+m.hp,0),san:base.reduce((a,m,j)=>a+(m.san-party[j].san),0)})}
+ G.auto=null;G.run.job=null;return out}
 // Tuning sims (spec 004 onward): the seed's Free Company, fresh each fight, against foes made by mk(), auto-played
 // (Fight, at the first target), with the run's own dice. Returns one row per fight.
 async function sim(seed,mk,n,o={}){
  await newRun(seed);const base=JSON.parse(JSON.stringify(party)),out=[];
- G.auto={cmd:()=>0,list:(t,rows)=>Math.max(0,rows.findIndex(r=>!r.dis)),menu:items=>Math.max(0,items.indexOf('Leave')),choice:()=>0};
+ G.auto={cmd:()=>0,list:(t,rows)=>Math.max(0,rows.findIndex(r=>!r.dis)),menu:items=>Math.max(0,items.indexOf('Leave')),choice:()=>0,smart:true};
  for(let i=0;i<n;i++){party=JSON.parse(JSON.stringify(base));G.lead=0;G.run.party=party;G.run.rations=o.rations==null?9:o.rations;
   const hp0=party.reduce((a,m)=>a+m.hp,0),r0=G.run.rations;
   const res=await battle(mk(),Object.assign({},o.battle||{}));
