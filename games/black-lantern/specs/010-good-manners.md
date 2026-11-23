@@ -69,7 +69,7 @@ The card's words live in `cases/good-manners.js`'s text block (`caseCard`), as f
 | Cover stories | 2 strong ones (Persuade and Bureaucracy) plus the weak Luck story. Clean books adds its safe one as always |
 | Ending labels | `clean`, `costly`, `worst` (Federal agents' shutdown also plays `worst`) |
 | Lantern Boxes and loot | 1 Lantern Box (2–3 catalog items). A loot table of 5 field items that fit a farm town and a fair. Up to 3 case-only items, at least one unnatural, so bag or hide has a real choice |
-| Briefing | Big Hat's backdrop for this case: the cab of a parked combine behind a truck stop off I-70, dusk, the fair's lights far off across the wheat (Cast → Big Hat, Backdrop: a new place each case; set Nov 23, 2026). Part A draws it as the case's briefing backdrop, in the back room's layout (spec 013: Big Hat's bust centered, the place behind him). Two questions from four topics, each an INTEL note and a small edge (spec 013); the case file writes the four topics, spoiler-free |
+| Briefing | Big Hat's backdrop for this case: the cab of a parked combine behind a truck stop off I-70, dusk, the fair's lights far off across the wheat (Cast → Big Hat, Backdrop: a new place each case; set Nov 23, 2026). Part A draws it as the case's briefing backdrop, in the back room's layout, and part B plays the debrief there too (Nov 23, 2026) (spec 013: Big Hat's bust centered, the place behind him). Two questions from four topics, each an INTEL note and a small edge (spec 013); the case file writes the four topics, spoiler-free |
 | Requisition | As usual at the briefing |
 
 ## Art
