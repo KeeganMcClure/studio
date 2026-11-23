@@ -31,6 +31,7 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 - [x] Difficulty presets: what Gentle, Standard and Harsh change, in numbers (Nov 23). See The run, Difficulty presets.
 - [ ] Cover: 120 × 80 cover art (`studio-bible/launcher.md`). The Developer adds `game.json` when the game is ready for the shelf. Design picked Nov 22: Boarded window (see Art, Cover). Left to build: `assets/cover.js` drawn from `mockups/03-cover-b-rough-v2.html`.
 - [x] Spec 001: the first playable slice, cited against this bible. Set Nov 21: survive a week alone. A small generated town (the houses and highway strip sections), the survivor builder with all 12 jobs, scavenging, hunger and sleep, map combat with the noise ring, day and night, one hideout and the death screen. No companions yet. Written Nov 23 in four parts, `specs/001` to `004`.
+- [ ] Look check before the build (studio rules from Rushlight's look lessons, Nov 23): Keegan approves the street by day and night (`mockups/04-look-street-rough-v2`), the survivor builder (`05-look-builder-rough-v2`) and the sprite reference (`06-sprite-reference-rough-v2`). Together they set the palette hex codes, the top bar card, the menu surface and the sprite bar (see Art, Look bar). Build part A starts after this is ticked.
 - [ ] Build slice part A, a new world: the game folder, title, world setup, the survivor builder, saves and the save code (`specs/001-slice-a-new-world.md`).
 - [ ] Build slice part B, the town: the two sections, the clock, day and night, searching, locks, the bag, items, crafting, the notebook and the map screen (`specs/002-slice-b-the-town.md`).
 - [ ] Build slice part C, survival and fights: needs, SAN, wounds, infection, zombies, fights, noise, sight and sneaking (`specs/003-slice-c-survival-and-fights.md`).
@@ -48,26 +49,26 @@ None yet.
 
 ## Screens
 
-Every screen you can see, in play order (studio rule: `studio-bible/studio.md`, Screen list, set Nov 23, 2026). A spec that adds a screen adds its row here. Specs are in `specs/`. Nothing is built yet.
+Every screen you can see, in play order (studio rule: `studio-bible/studio.md`, Screen list, set Nov 23, 2026). A spec that adds a screen adds its row here. Specs are in `specs/`, mockups in `mockups/`. A screen marked To draw gets an approved mockup before the part that builds it (`studio-bible/studio.md`, Screen list). Nothing is built yet.
 
-| Screen | What you do there | Spec |
-| --- | --- | --- |
-| Title | New world, Continue, Best runs, Import save | 001 (2) |
-| New world | Set up the world before you start | 001 (3) |
-| Survivor builder | Make your survivor | 001 (4, 5) |
-| Map | Walk the town's sections, with the top bar, search, locks and night | 002 (1 to 7) |
-| Fights on the map | Turns, zombies, attacks, noise, sneaking, fleeing | 003 (1 to 8) |
-| Bag (L) | Your items, crafting | 002 (8, 10) |
-| Map screen (R) | The map of what you've found | 002 (12) |
-| Start menu | Party, Notebook, Wait, Sleep, Claim this place, Save code, Quit to title | 001 (wiring), 002, 004 (wiring) |
-| Party card | You and your companions | 001 (6), `studio-bible/ui.md` |
-| Notebook | What you've learned | 002 (11) |
-| Hideout | Claim a place, build, cook, sleep, store | 004 (1 to 4, 8) |
-| Attack on the hideout | Defend it when something comes | 004 (5, 6) |
-| Death screen | Your run ends: days survived | 004 (9) |
-| Best runs | Your best runs for each preset | 001 (2), 004 (10) |
-| Companion orders (Select) | Give companions orders | **No spec yet** (not in the first slice; Companions sets the rules) |
-| Trade with survivors | Trade with other survivors | **No spec yet** (not in the first slice; Other survivors and trade) |
+| Screen | What you do there | Spec | Mockup |
+| --- | --- | --- | --- |
+| Title | New world, Continue, Best runs, Import save | 001 (2) | `03-cover-b-rough-v2` and the night street in `04` (a mood piece; the rows use the `05` surface) |
+| New world | Set up the world before you start | 001 (3) | `05` (same surface and cards) |
+| Survivor builder | Make your survivor | 001 (4, 5) | `05`, sprites to `06` |
+| Map | Walk the town's sections, with the top bar, search, locks and night | 002 (1 to 7) | `04` |
+| Fights on the map | Turns, zombies, attacks, noise, sneaking, fleeing | 003 (1 to 8) | **To draw** (`01` is an old placeholder) |
+| Bag (L) | Your items, crafting | 002 (8, 10) | **To draw** |
+| Map screen (R) | The map of what you've found | 002 (12) | **To draw** |
+| Start menu | Party, Notebook, Wait, Sleep, Claim this place, Save code, Quit to title | 001 (wiring), 002, 004 (wiring) | `05` (same surface) |
+| Party card | You and your companions | 001 (6), `studio-bible/ui.md` | `05` (the taped photo and cards) |
+| Notebook | What you've learned | 002 (11) | **To draw** |
+| Hideout | Claim a place, build, cook, sleep, store | 004 (1 to 4, 8) | **To draw** |
+| Attack on the hideout | Defend it when something comes | 004 (5, 6) | **To draw** |
+| Death screen | Your run ends: days survived | 004 (9) | **To draw** |
+| Best runs | Your best runs for each preset | 001 (2), 004 (10) | `05` (same surface) |
+| Companion orders (Select) | Give companions orders | **No spec yet** (not in the first slice; Companions sets the rules) | None yet |
+| Trade with survivors | Trade with other survivors | **No spec yet** (not in the first slice; Other survivors and trade) | None yet |
 
 ## Overview
 
@@ -267,7 +268,7 @@ Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
 ## Controls and screens
 
 - **Buttons** (set Nov 21): D-pad moves and faces, A acts, B goes back, Start opens the full menu, Select opens companion orders. L opens the bag and R opens the map; both stop the clock. Inside the bag and the map, L and R flip between pages.
-- **Top bar** (set Nov 21): day, clock, the four need bars and a small season mark, as in the baseline mockup. Your weapon and ammo show only in fights.
+- **Top bar** (set Nov 21; made a framed card Nov 23, mockup `04`): a framed card across the top with your survivor's face (from the portrait, so mood, SAN and injuries show), the four need bars each with an icon and a short label (FOOD, HP, REST, SAN), the day, the clock and the season mark. The section's name sits on a small tab under it. Your weapon and ammo show only in fights.
 - **Bag** (set Nov 21): a grid of slots. Pockets are one row, and each bag adds rows of item squares with pixel icons, counts and a wear mark. L and R flip to companions' bags. A uses an item, B goes back.
 - **Party menu** (set Nov 21): the studio's party cards (`studio-bible/ui.md`) for you and each companion: portrait, needs, wounds, traits, the rough bond word, and Give item. No Make lead, since you always play your own survivor.
 
@@ -308,7 +309,12 @@ Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
 - **Zombies show who they were:** built from parts (a mail carrier, a nurse, a farmer, a kid in a team jersey) with the gore on top. Their clothes hint at their loot.
 - **Portraits with moods:** 64 × 64 faces for your survivor, companions and traders that change with mood, SAN and injuries.
 - **Cover** (Keegan, Nov 22): Boarded window. A hideout window seen from outside at night, nailed with boards, warm light showing through. A dead hand, a dark silhouette with fingers spread, presses on the glass in the gap between the boards, over a smear. The title LIFE AFTER sits on a dark band at the bottom in Press Start 2P. Reference: `mockups/03-cover-b-rough-v2`; the Developer can clean up the pixels but keeps the layout and the hand's read at actual size.
-- Exact palette hex codes and each season's colors come with the first in-shell mockup.
+- Exact palette hex codes and each season's colors come with the first in-shell mockup. Drawn Nov 23: the day ramps are on `06-sprite-reference-rough-v2`, night is `02`'s NIGHT set; locked when Keegan approves the look check. Other seasons come with the town spec's season work.
+- **Look bar** (set Nov 23, from Rushlight's look lessons, studio PR #168): Life After keeps its own look and meets the studio's bars: `art-style.md` Quality bar, Maps are lit, dressed and alive, People pop, No twins, and `ui.md` Screen craft. Because there's no grit, texture comes from shape and tone: four-tone ramps, hard edges, and flat shapes for cracks, weeds, furrows and folds, never grain or noise.
+- **Light:** by day, a low sun from the upper left with hard shadows to the lower right (stark, as in `03`). Night as above.
+- **Maps are alive:** crows on the wires, strays nosing trash, a sign that flickers, litter that blows, smoke from a far fire. Places people would be have the dead or the dead-and-gone in them (a body against a wall), shown plainly.
+- **Menu surface** (proposed Nov 23, mockup `05`): flattened cardboard with marker writing and duct tape, like a sign a survivor made. Job and place names in red marker, the rest in black. Your survivor's portrait is a photo taped to it. The picked row is edged in cyan, the same cyan as usable things. Flat tones only: a lit spot, darker edges, the flutes showing on a cut edge.
+- **Sprite reference** (`06`): your survivor's portrait in four moods, the map sprite at 1× and 3×, another person, and four of the dead (no two alike: a kid is shorter, the farmer has lost an arm). Every new sprite is checked against it side by side.
 - Mockups live in `mockups/` as design references only; the game never loads them. Each keeps the code that drew it.
 
 | Mockup | What it shows |
@@ -317,6 +323,12 @@ Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
 | `02-baseline-san-rough-v2` | Rough, Nov 21: the same night at normal SAN, a color-drain option (not picked) and phantoms (picked). The phantoms panel is the baseline frame. |
 | `03-cover-options-rough-v1` | Rough, Nov 22: three cover options (Vacancy, Boarded window, First light). Keegan picked Boarded window. |
 | `03-cover-b-rough-v2` | Rough, Nov 22: Boarded window redrawn so the hand reads, as a dark silhouette in a wide gap between boards. Picked Nov 22 (Keegan): this is the cover. |
+| `04-look-street-rough-v1` | Rough, Nov 23: the highway strip by day and night in the shell at 375 × 667, at the studio's look bar: lit, dressed and alive, with the top bar card. Keegan, Nov 23: the direction is right; necks too long, shading read as stubble, cars didn't read as cars. |
+| `04-look-street-rough-v2` | Rough, Nov 23: v1 with shorter necks, clean faces lit from the side (no stubble look), and real cars (side view with the roof showing, wheels in arches, glass, lights). Awaiting Keegan. |
+| `05-look-builder-rough-v1` | Rough, Nov 23: the survivor builder's Job step on the proposed cardboard menu surface, jobs as cards. Keegan, Nov 23: the direction is right; necks too long, shading read as stubble, cars didn't read as cars. |
+| `05-look-builder-rough-v2` | Rough, Nov 23: v1 with shorter necks, clean faces lit from the side (no stubble look), and real cars (side view with the roof showing, wheels in arches, glass, lights). Awaiting Keegan. |
+| `06-sprite-reference-rough-v1` | Rough, Nov 23: the sprite reference and day palette. Keegan, Nov 23: the direction is right; necks too long, shading read as stubble, cars didn't read as cars. |
+| `06-sprite-reference-rough-v2` | Rough, Nov 23: v1 with shorter necks, clean faces lit from the side (no stubble look), and real cars (side view with the roof showing, wheels in arches, glass, lights). Awaiting Keegan. |
 
 ## Tech
 

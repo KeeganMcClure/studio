@@ -88,7 +88,7 @@ From `bible.md`, Time and seasons, The clock.
 
 ### 4. The top bar
 
-As in the baseline frame: day number, clock (12-hour, "7:40 AM"), the four need bars (hunger, health, sleep, SAN), and a small season mark. In this part the bars show but only hunger and sleep move (see Needs below). Your weapon and ammo show only in fights (Part C).
+As the bible's Controls and screens, Top bar, sets it (mockup `04-look-street-rough-v2`): a framed card with your survivor's face, the day number, clock (12-hour, "7:40 AM"), the four need bars (hunger, health, sleep, SAN) each with an icon and label, and a small season mark, with the section's name on a tab under it. In this part the bars show but only hunger and sleep move (see Needs below). Your weapon and ammo show only in fights (Part C).
 
 ### 5. Night
 

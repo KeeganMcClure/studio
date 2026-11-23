@@ -1,0 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<link rel="stylesheet" href="../../../engine/shell.css">
+<style>:root{--page:#0e1012;--shell:#3e4f4c;--shell-hi:#56696a;--shell-lo:#2a3533;--bezel:#121518;--bezel-edge:#08090a;--brand-ink:#9aa6a0;--led:#3ff0e8;--led-off:#22302e;--scr-bg:#0c0e10;--scr-fg:#e8dcc0;--scr-hi:#e8c88a;--btn:#1a2022;--label:#9aa6a0;--btn-a:#b4582e;--btn-b:#6a3424;--btn-ink:#f2ead6;--px:"Press Start 2P",monospace;--vt:"VT323",monospace}
+#cv{width:100%;height:auto;image-rendering:pixelated;display:block}</style></head><body>
+<div class="screen" id="screen" data-brand="LIFE AFTER" data-brand-sub=""><canvas id="cv"></canvas></div>
+<script src="../../../engine/shell.js"></script><script src="../../../engine/move.js"></script>
+<script src="la-look-rough-v2.js"></script><script src="04-look-street-rough-v2.js"></script><script>Promise.all([document.fonts.load('16px VT323'),document.fonts.load('8px "Press Start 2P"')]).then(()=>{const s=document.getElementById('screen');const f=StudioMove.fit(s,document.getElementById('cv'));window.FIT=f;drawStreet(document.getElementById("cv"),location.hash.slice(1)||"day");})</script>
+</body></html>
