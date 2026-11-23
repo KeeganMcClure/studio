@@ -124,3 +124,39 @@ Keegan's standing approvals for this run: no questions; pick what the bible and 
   in Items); Fast battles as a Settings row; the King's Hounds and other cast; burial (Part E).
 - **New art not yet filed** (add to the list): the site tiles in `src/site-art.js` (the charcoal camp's ground, trees,
   hut, woodpile, fire pit, rack and charcoal clamps, plus tiles the D2 sites use).
+
+## Spec 006 D2: the other five jobs
+
+All tuning: 20 runs per seed on 0001-A, 4242-C and 9021-M, the seed's own Free Company (level 1 for the Hag, the wool
+buyer and Severa; level 2 for the hunts, with 2 level picks to their strong skills and +1 HP), auto-played carefully
+(Revive the Downed, Patch up the badly hurt, else fight the weakest), with D1's full rules.
+
+- **The Withy Hag (3 road bandits and the Veteran leader), MISSED.** Pass: at most 1 Downed in 3 of 4 runs, nobody dies.
+  Runs passing 19/20, 19/20, 20/20; but **one merc died** (bled out) on 0001-A and on 4242-C. SAN 1.9–3.6 (the people rolls).
+- **The wool buyer (the felled tree with the client in it), PASSED.** The client lived in 20/20 runs on every seed.
+- **The Noonwife, MISSED (too easy).** Pass: careful-with-prep wins with at most 1 Downed; no-prep can lose.
+  - With the prep (HP 49, no Question): won 20/20 on every seed; Downed per run 0.05 / 0.30 / 0.05; one death on 4242-C.
+  - No prep (HP 58): **won 20/20 on every seed** (Downed 0.15 / 0.25 / 0.05; 2 deaths on 4242-C), so skipping the prep
+    never lost. Fights last 4.5–6.5 rounds against the bible's 8–12 for contract targets, and the noon bell's 12 rounds
+    never ran out. SAN lost 3.8–5.7 per hunt, under the hunt budget's 6–10.
+- **Severa, MISSED.** Pass: no merc dies, and the night fight Downs a merc more often than the day fight.
+  No merc died or went down in either. By day she's Stunned and dies or flees in 1.5 rounds; by night in 1.6–2.0. As
+  Skittish (1.5× break chance) she breaks at the first big hit, and a fled owl ends the fight (the job then waits a night).
+- **The Counter, MISSED.** Pass as the Noonwife's.
+  - Careful (muffled, nest burned, HP 41): won 20/20; Downed per run 0.10 / 0.35 / 0.35; runs passing 19, 19, 17 of 20;
+    **deaths 1 and 2** on 0001-A and 9021-M.
+  - No prep (HP 48): won 20, 19, 20; deaths 0 / 4 / 2. So no prep can lose (pass), but the careful company isn't safe.
+- **Hunts are paid on the site**, at the kill, not back at the giver's town (only Pell, a bounty whose proof is the body,
+  is paid in Harrowford). The spec doesn't say where; this keeps a hunt's pay screen with its trophy.
+- **Tales count as heard** once the creature is Sighted (the bestiary lists all three), so Hold up iron shows in the
+  Noonwife's fight from the start. A tale sorted in any run stays sorted in the bestiary.
+- **The Counter's poppy seed** ("the company starts the fight Exposed") is built as +20% to its attacks in round 1, since
+  Exposed is an enemy status.
+- **The Withy Hag's turn-them-in** needs a Persuade roll ("a Persuade scene"); a fail leads to the fight.
+- **The sealed house** (Revenge) and the parish book's full read (Curiosity) only show when a merc holds that motive.
+- **The wool buyer's returned purse** is handed back at the next Harrowford visit (+1 Town favor then).
+- **Hollin's dead reaper** is Examined with Butchery 40%; seeing him is the Disturbing violence roll either way.
+- **The site mockups 30–33** are drawn as tile maps in the same kit as the camp; the open question (sites fitting the
+  240-wide canvas without the strip covering hotspots) didn't come up: chunks are 15 tiles wide and scroll vertically.
+- **New art not yet filed:** the new site tiles (rye, stooks, osiers, causeway planks, boats, graves, ruins, the oven,
+  the church front) in `src/site-art.js`.

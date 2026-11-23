@@ -81,7 +81,7 @@ function rollQuirk(e){for(let t=0;t<20;t++){const q=QUIRKS[StudioRoll.die(QUIRKS
 async function endBattle(res){
  Bt.active=null;const o=Bt.o;
  // Downed mercs who live through it stand at 1 HP; the dead stay dead
- party.forEach(m=>{m.defend=false;m.slip=false;if(m.ko&&res!=='lose'){m.ko=false;m.hp=Math.max(1,m.hp)}if(m.snapped&&!m.dead){m.snapped=false;mercGone(m,'LG-END-SNAP')}});
+ party.forEach(m=>{m.defend=false;m.slip=false;m.wrung=null;m.carried=false;if(m.ko&&res!=='lose'){m.ko=false;m.hp=Math.max(1,m.hp)}if(m.snapped&&!m.dead){m.snapped=false;mercGone(m,'LG-END-SNAP')}});
  const back=Bt.en.filter(e=>e.thief&&e.dead).reduce((a,e)=>a+(e.took|0),0);if(back&&G.run)G.run.rations=Math.min(15,G.run.rations+back);
  G.lastStats=Object.assign({},Bt.stats,{rounds:Bt.round,back,res,yielded:Bt.yielded.map(e=>e.base),fled:Bt.fled.map(e=>e.base)});
  if(res!=='lose'){
@@ -96,7 +96,7 @@ async function endBattle(res){
 // autosave each round, so reopening mid-fight resumes the same round with the same dice position
 function saveFight(){if(!G.run||G.auto)return;const o=Object.assign({},Bt.o);['onStart','onRound'].forEach(k=>delete o[k]);
  G.run.fight={en:Bt.en.map(e=>{const c=Object.assign({},e);return c}),round:Bt.round,o,key:Bt.o.key||null};saveRun()}
-const aliveFoes=()=>Bt.en.filter(e=>!e.dead&&!e.gone);
+const aliveFoes=()=>Bt.en.filter(e=>!e.dead&&!e.gone&&!e.burrowed);  // a burrowed foe can't be targeted, but the fight isn't over
 function bsay(text,ms=900){Bt.log=text;if(G.auto)return Promise.resolve();return new Promise(res=>{Bt.ui={kind:'msg',res:()=>{clearTimeout(t);Bt.ui=null;res()}};const t=setTimeout(()=>{if(Bt&&Bt.ui&&Bt.ui.kind==='msg')Bt.ui.res()},fastOn()?Math.round(ms*.45):ms)})}
 function bcmd(m){if(G.auto)return Promise.resolve(G.auto.cmd(m));return new Promise(res=>{Bt.ui={kind:'cmd',m,sel:m.bsel||0,res:i=>{m.bsel=i;res(i)}}})}
 function blist(title,rows,o={}){if(G.auto)return Promise.resolve(G.auto.list(title,rows,o));return new Promise(res=>{Bt.ui={kind:'list',title,rows,sel:Math.max(0,rows.findIndex(r=>!r.dis)),top:0,res,hover:o.hover}})}
@@ -124,6 +124,7 @@ async function mercTurn(m){
   if(m.koT>=3){await bsay(`${m.name} stops breathing.`,1400);await mercDies(m,'LG-END-BLEED');return}
   await bsay(`${m.name} is Downed. ${3-m.koT} turn${3-m.koT>1?'s':''} to live.`,1000);return}
  await tickMerc(m);if(m.dead||m.ko)return;
+ if(Bt.o.mercPre&&await Bt.o.mercPre(m))return;
  if((m.st||[]).includes('Stunned')){m.st=m.st.filter(s=>s!=='Stunned');await bsay(`${m.name} is Stunned and loses the turn.`,800);return}
  if(m.reload){m.reload=false;await bsay(`${m.name} reloads the hand cannon.`,800);return}
  if(m.snapped)return snappedTurn(m);
@@ -146,7 +147,7 @@ async function pickFoe(m,o){const f=aliveFoes();if(f.length===1&&!o.list)return 
 async function attack(m,e,o){
  const w=weaponOf(m),p=hitChance(m,e,o),r=o.sure?{ok:true,crit:false,fumble:false,r:0,target:99}:R_.pct(p);
  if(!o.sure)showRes(R_.line(BW.skill[w.skill]||w.skill.toUpperCase(),r,BW.words),r);
- if(w.skill==='Shooting')m.lastShot=Bt.round;if(w.loud){Bt.loud++;if(G.site)G.site.loud=1}
+ if(w.skill==='Shooting')m.lastShot=Bt.round;if(w.loud){Bt.loud++;Bt.loudest=m;if(G.site)G.site.loud=1}
  if(w.id==='cannon')m.reload=true;if(w.thrown)m.hatchetOut=true;
  if(r.fumble){await bsay(`${m.name}: ${BW.fumble[die(BW.fumble.length)-1]}`,1000);wearWeapon(m);
   if(w.id==='cannon'||w.id==='flail'){const d=die(4);hurtMerc(m,d,null);await bsay(`${m.name} is hurt by their own ${w.name.toLowerCase()} for ${d}.`,900)}return false}
@@ -161,7 +162,7 @@ async function attack(m,e,o){
  if(!e.dead){if(w.id==='cleaver'||(r.crit&&(w.id==='sickle'||w.id==='sword'))||m.venom&&w.melee){addSt(e,m.venom&&w.melee?'Poisoned':'Bleeding');if(m.venom&&w.melee)m.venom--}
   if(w.id==='spear')e.blockT=m;if(r.crit&&w.id==='halberd'){const q=Bt.queue.indexOf(e);if(q>0){Bt.queue.splice(q,1);Bt.queue.push(e)}}
   if(e.hedgehog&&w.melee){}}
- if(e.onHurt)await FOE_AI[e.ai].onHurt(e,m,d,r);
+ if(e.onHurt&&FOE_AI[e.ai]&&FOE_AI[e.ai].onHurt)await FOE_AI[e.ai].onHurt(e,m,d,r);
  return true;
 }
 function wearWeapon(m){const g=m.gear,it=g&&g[g.hand||'w1'];if(it&&RLS.ITEMS[it.id].dmg){it.wear=Math.min(3,(it.wear|0)+1);if(it.wear>=3)bsay(`${m.name}'s ${RLS.ITEMS[it.id].name.toLowerCase()} breaks.`,800)}}
@@ -227,7 +228,7 @@ async function useMove(m,x){const [sk,,name,wp]=x;const S=()=>R_.pct(skillOf(m,s
  if(name==='Vanish'){spend();if(S().ok){m.vanish=true;await bsay(`${m.name} is gone from sight.`,800)}else await bsay(`${m.name} is still in plain view.`,800);return}
  if(name==='Quicklime'){const e=await pickFoe(m,{special:true,list:1});if(!e)return false;spend();if(e.kind!=='Unnatural'&&S().ok){addSt(e,'Poisoned');await bsay(`${e.name} is Poisoned.`,800)}else await bsay('It does nothing.',800);return}
  if(name==='Bind'){const e=await pickFoe(m,{special:true,list:1});if(!e)return false;spend();if(e.kind==='Unnatural'&&e.known&&S().ok){e.stun=1;await bsay(`${m.name} says the binding. ${e.name} is held.`,900)}else await bsay('The words don\'t catch.',800);return}
- if(name==='Intimidate'){const f=aliveFoes().filter(e=>e.kind==='Folk');if(!f.length)return false;const e=f.length>1?await pickFoe(m,{special:true,list:1}):f[0];if(!e)return false;spend();const o=S();if(o.crit){e.gone=true;Bt.fled.push(e);await bsay(`${e.name} runs.`,800)}else if(o.ok){addSt(e,'Shaken');await bsay(`${e.name} is Shaken.`,800)}else await bsay(`${e.name} laughs.`,800);return}
+ if(name==='Intimidate'){Bt.loudest=m;const f=aliveFoes().filter(e=>e.kind==='Folk');if(!f.length)return false;const e=f.length>1?await pickFoe(m,{special:true,list:1}):f[0];if(!e)return false;spend();const o=S();if(o.crit){e.gone=true;Bt.fled.push(e);await bsay(`${e.name} runs.`,800)}else if(o.ok){addSt(e,'Shaken');await bsay(`${e.name} is Shaken.`,800)}else await bsay(`${e.name} laughs.`,800);return}
  if(name==='Tripwire'){spend();if(S().ok){m.tripwire=true;await bsay(`${m.name} strings a tripwire.`,800)}return}
  if(name==='Calm'){const t=await pickMerc('CALM WHO?',{noKO:true});if(!t)return false;spend();if(S().ok){t.st=(t.st||[]).filter(s=>s!=='Shaken');await bsay(`${t.name} breathes again.`,800)}return}
  if(name==='Cow'){const f=aliveFoes().filter(e=>e.kind==='Beast');if(!f.length)return false;const e=f.length>1?await pickFoe(m,{special:true,list:1}):f[0];if(!e)return false;spend();if(S().ok){addSt(e,'Shaken');await bsay(`${e.name} is Shaken.`,800)}return}
@@ -330,6 +331,9 @@ async function yieldKill(e,o,seen){const k=party.filter(p=>!p.dead&&!p.ko)[0];e.
 const FOE_AI={};
 async function foeTurn(e){
  Bt.active=e;await later(350);
+ // an escorted client (the wool buyer): 1 in 4 enemy attacks go at him (People jobs)
+ const cl=Bt.o.client||(G.run&&G.run.escort&&G.run.escort.alive?G.run.escort:null);
+ if(cl&&cl.hp>0&&!e.ai&&R_.rand()<.25){const r=R_.pct(e.hit);showRes(R_.line(e.name.toUpperCase(),r,BW.words),r);if(r.ok){const d=Math.max(1,rollDice(e.dmg));cl.hp=Math.max(0,cl.hp-d);await bsay(`${e.name} goes for the wool buyer. ${d}.${cl.hp<=0?' He falls.':''}`,1100)}else await bsay(`${e.name} swings at the wool buyer and misses.`,900);return}
  if(e.ai&&FOE_AI[e.ai]&&FOE_AI[e.ai].turn){const done=await FOE_AI[e.ai].turn(e);if(done)return}
  const t=pickTarget(e);if(!t)return;await foeAttack(e,t);
 }
@@ -344,7 +348,7 @@ function pickTarget(e,o={}){let alive=party.filter(m=>!m.ko&&!m.dead&&!m.vanish&
 // one enemy attack: its roll (Veteran +10, Shaken −20, Drunk), Defend, Slip and Riposte, armor (floor 1; crits through),
 // the kettle hat's first crit, shields, wear, spines, caltrops and tripwires
 async function foeAttack(e,t,o={}){
- let p=e.hit+(e.quirk==='Veteran'?10:0)+((e.quirk==='Sworn'&&Bt.en.some(x=>x.dead))?10:0)-((e.st||[]).includes('Shaken')?20:0)-(Bt.smoke?20:0)+(o.mod|0)+(e.quirk==='Maneater'&&t.st.includes('Bleeding')?10:0);
+ let p=e.hit+(Bt.round===1&&Bt.o.foesFirstBonus?Bt.o.foesFirstBonus:0)+(e.quirk==='Veteran'?10:0)+((e.quirk==='Sworn'&&Bt.en.some(x=>x.dead))?10:0)-((e.st||[]).includes('Shaken')?20:0)-(Bt.smoke?20:0)+(o.mod|0)+(e.quirk==='Maneater'&&t.st.includes('Bleeding')?10:0);
  const r=R_.pct(p);showRes(R_.line(e.name.toUpperCase(),r,BW.words),r);
  if(!r.ok){await bsay(`${e.name} misses ${t.name}.`,800);return false}
  if(t.slip&&t.defend){const s=R_.pct(skillOf(t,'Dodge'));if(s.ok){await bsay(`${t.name} slips it.`,800);if((t.sk.Dodge||0)>=90&&!e.dead){await attack(t,e,{})}return false}}

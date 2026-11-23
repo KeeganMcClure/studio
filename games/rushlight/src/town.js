@@ -113,7 +113,8 @@ const PLACES={
   if(c===0){const ok=free?await restInn(false):await restInn();if(ok)r.day++}
   else if(rows[c]==='Mercs for hire')await hireCorner(k);else return}},
  async tavern(k,name){for(;;){const r=G.run,left=r.rumors.order.length-r.rumors.bought;
-  const c=await choose([{label:`A rumor (3 gr)`,dis:!left||r.purse<3},{label:'Ale (1 gr, into the pack)',dis:r.purse<1},'Leave'],{cancel:true,title:name.toUpperCase()});
+  const c=await choose([{label:`A rumor (3 gr)`,dis:!left||r.purse<3},{label:'Ale (1 gr, into the pack)',dis:r.purse<1},...(r.fence&&k==='harrow'?[{label:'The fence (sells anything)'}]:[]),'Leave'],{cancel:true,title:name.toUpperCase()});
+  if(c===2&&r.fence&&k==='harrow'){await sell('fence');continue}
   if(c===0){if(!left){await say('','Nobody has anything new.');continue}r.purse-=3;await buyRumor()}
   else if(c===1){r.purse-=1;toPack('ale',1);banner('ALE → PACK')}else return}},
  async barber(k,name){const r=G.run,hurt=alive().filter(m=>m.hp<m.mhp);for(;;){
