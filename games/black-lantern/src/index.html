@@ -167,6 +167,10 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 #gdlg .bld-c li{cursor:pointer}
 #gdlg .bld-c li.dis{opacity:.4;cursor:default}
 #game.battle #gdlg .bld{top:calc(var(--u) * 2);bottom:auto}
+/* Skip replays: a tab on the box's top right edge, in the dim hint color */
+#gdlg .bskip{position:absolute;right:calc(var(--u) * 3);bottom:100%;margin-bottom:calc(var(--u) * -1);background:#0d1322;border:var(--u) solid #7c86a6;border-bottom:0;padding:calc(var(--u) * 2.5) calc(var(--u) * 3) calc(var(--u) * 1.5);font:calc(var(--u) * 4)/1 var(--px);color:#7c86a6;pointer-events:none}
+#game.battle #gdlg .bskip{bottom:auto;top:100%}
+#gdlg .bskip.up{margin-bottom:calc(var(--u) * 10);border-bottom:var(--u) solid #7c86a6}
 #gmenu{right:6px;bottom:6px;min-width:52%;max-width:calc(100% - 12px);max-height:62%;overflow-y:auto;padding:4px 6px}
 #gmenu .mt{font:7px/1.6 var(--px);color:var(--scr-hi);margin:0 0 2px 2px}
 #gmenu .gi{display:flex;gap:4px;padding:1px 2px;cursor:pointer;white-space:nowrap}
