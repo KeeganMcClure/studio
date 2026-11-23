@@ -43,7 +43,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
     Done Nov 23: every Still Harvest enemy now shows how hurt it is, in two steps (at half and at a quarter HP), with straw spilling, husks splitting and people bleeding, instead of red dots.
   - [x] Still Harvest maze: a route to all three victims that skips the Gleaner's clearing, and a go in / not yet choice at its entrance (spec 006, Revision after the demo playtest)
     Done Nov 23: the maze now has a route to all three victims, the loot, the page and the danger zone that never enters the Gleaner's clearing, and stepping into the clearing asks Go in / Not yet.
-  - [ ] Creator: pronouns (she, he, they) (spec 022) used by all dialog, and a slim or broad body build for map, battle and portrait sprites, plus pronouns for each Bond, with a save step for old agents and Bonds (Agents and items → Agent creator, steps 4 and 5)
+  - [x] Creator: pronouns (she, he, they) (spec 022) used by all dialog, and a slim or broad body build for map, battle and portrait sprites, plus pronouns for each Bond, with a save step for old agents and Bonds (Agents and items → Agent creator, steps 4 and 5)
+    Done Nov 23: the creator picks she, he or they and a slim or broad build that shows on the face, map and battle sprites; Bonds get pronouns too; every line about an agent or Bond follows them, and old agents open as they with the broad build.
   - [ ] Creator: one-word pop-culture code names (spec 022) that Big Hat gives on the Dossier step, from a tagged list of about 60, with new template names (Agents and items → Agent creator, Code names)
 - [ ] Home phase part C (spec 008): enough home scenes for a season, with the played list kept in the season save. Before the season flow
 - [ ] Season flow (spec 009): the season data file, the board for a full season, agency case unlocks, the finale, the season's end and the next season. After the home phase

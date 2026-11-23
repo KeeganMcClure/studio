@@ -13,7 +13,15 @@
 
 const FI=BLS.ITEMS,IU=BLS.ITEMUI,DZ=BLS.DISORDERS,SW=BLS.SANW,MMW=BLS.MAPMENU,SOPT=BLS.SKILLOPT,SKW=BLS.SKILLW,REC=BLS.RECRUITS,RW=BLS.RECRUITW;
 const SR=StudioRoll;
-const fillT=(t,o)=>String(t).replace(/\{(\w+)\}/g,(x,k)=>k.length===1||k in o?o[k]??'':x);  // {n} and longer keys ({wn}); unknown long ones like {code} stay
+// Pronoun tokens first ({n.their}, {n:is|are}; Agent creator, Pronouns and body): the person is o['n@'] when the caller
+// gives one, otherwise whoever answers to o.n's name (whoNamed). Then {n} and longer keys ({wn}); unknown long ones like {code} stay.
+function whoNamed(v){if(v&&typeof v==='object')return v;const s=String(v??'').trim();if(!s)return null;const f=x=>String(x||'').split(' ')[0];
+ const ps=typeof party!=='undefined'?party:[];
+ for(const m of ps)if(m&&m.a&&(m.name===s||m.a.name===s||f(m.a.name)===s))return m.a;
+ for(const m of ps)for(const b of (m&&m.a&&m.a.bonds)||[])if(b&&b.name===s)return b;
+ for(const a of (B.S&&B.S.roster)||[])if(a&&(a.name===s||f(a.name)===s))return a;
+ return null}
+const fillT=(t,o)=>BLS.pron(String(t),k=>(k+'@') in o?o[k+'@']:k in o?whoNamed(o[k]):undefined).replace(/\{(\w+)\}/g,(x,k)=>k.length===1||k in o?o[k]??'':x);
 const live=()=>party.filter(m=>!m.gone);
 
 // ================= SETTINGS (bl.settings) =================
@@ -458,7 +466,7 @@ async function offerRecruit(o={}){  // o.ask: the opening line; o.late: joined a
   const opts=[same,...others].filter(Boolean).sort(()=>Math.random()-.5);
   await say('',o.ask||RW.ask);
   const rows=opts.map(r=>`${r.name} · ${(profOf(r)||{}).name}`).concat([RW.build]);
-  const i=await choose(rows,{title:'RECRUIT',desc:opts.map(r=>r.backstory).concat([''])});
+  const i=await choose(rows,{title:'RECRUIT',desc:opts.map(r=>BLS.pron(r.backstory,{a:r})).concat([''])});
   let a,line;
   if(i===opts.length){a=await buildRecruit();if(!a)continue;line=RW.built}
   else{a=B.fromTemplate(opts[i]);delete a.first;line=fillT(RW.hat,{p:(profOf(a)||{}).name,n:a.name})}
@@ -551,7 +559,7 @@ async function useItem(m,it){
  const drug=async t=>{t.doses=t.doses||{};t.doses[it.k]=(t.doses[it.k]||0)+1;await addStatus(t,'high',{noShrug:true});t.stc.high=4;t.high=it.k;
   const ad=(t.dis||[]).find(x=>x.k==='addiction'&&x.s===d.name);
   if(ad){if(t.flare)delete t.flare.addiction;if(!G.fs.perk['used'+t.a.id]){G.fs.perk['used'+t.a.id]=1;bondsLoseOne(t)}}
-  else if(t.doses[it.k]===2){const r=SR.pct(t.san);await say('',resultLine('SAN',r),{auto:1000});if(!r.ok){t.dis=t.dis||[];t.dis.push({k:'addiction',s:d.name});await say('',`${t.name} needs more ${d.name.toLowerCase()} than they should.`)}}};
+  else if(t.doses[it.k]===2){const r=SR.pct(t.san);await say('',resultLine('SAN',r),{auto:1000});if(!r.ok){t.dis=t.dis||[];t.dis.push({k:'addiction',s:d.name});await say('',fillT('{n} needs more {d} than {n.they} should.',{n:t.name,'n@':t.a,d:d.name.toLowerCase()}))}}};
  switch(d.map){
   case 'heal4':{const t=await who();if(!t)return false;await heal(t,roll(1,4));return true}
   case 'heal6':{const t=await who();if(!t)return false;await heal(t,roll(1,6));return true}

@@ -1,5 +1,6 @@
 // Automatic playtest checks (the Bible's Process, Playtest checklist, the parts a script can do).
 // Runs the bundled build (dist/index.html) at each target screen size and checks:
+//   0. game text has no bare he or she next to an agent or Bond token (tools/pronoun-lint.js, spec 022)
 //   1. it loads with no errors and no blank screen
 //   2. every button (D-pad, A, B, L, R, Select, Start) is fully on screen and takes taps
 //   3. 600 random button presses throw no errors
@@ -27,6 +28,11 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
 (async () => {
   const browser = await chromium.launch();
   let failed = 0;
+  // 0. text: no bare he or she next to an agent or Bond token (spec 022, Text; tools/pronoun-lint.js)
+  const lint = require('./pronoun-lint.js')();
+  console.log(`${lint.length ? 'FAIL' : 'ok  '} pronoun lint`);
+  lint.forEach(p => console.log('     - ' + p));
+  failed += lint.length;
   for (const [w, h] of SIZES) {
     const errors = [];
     const ctx = await browser.newContext({ viewport: { width: w, height: h }, hasTouch: true });
