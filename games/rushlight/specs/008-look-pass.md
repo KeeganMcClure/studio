@@ -36,11 +36,12 @@ All rough, drawn in code, in `games/rushlight/mockups/` with the code that drew 
 | `34-look-town-rough-v2` | Harrowford: late autumn sun, roofs, chimneys and smoke, jettied upper floors, signs, washing, more folk, a dog, the lane, the HUD cards | "A lot better" (Nov 23) |
 | `35-look-company-rough-v3` | Pick a company in two steps on aged parchment, wax-seal cursor | "Looks great" (Nov 23) |
 | `36-sprite-upgrade-rough-v2` | The six species as portrait, map sprite and battle back view, now and new | "So much better" (Nov 23); every sprite to meet it |
+| `36-sprite-upgrade-rough-v3` | v2 with a narrower fox face (ears grown into the skull) and reworked back views: hare ears joined to the head, ear backs with a deep rim, a rounder badger head, the fox's cheek ruff | "This is great" (Nov 23). The reference for 8A |
 | `36-creatures-before` | Today's creature sprites, for the audit in 8A | |
 
 ## 8A. Sprites
 
-**The six species.** Replace the drawing in `species-art.js` with the reference code in `36-sprite-upgrade-rough-v2.js`: its `vol` shaded ellipses, the four-tone ramps, the selective `outline`, the `rim`, the lit `backing`, the clothes (`shoulders`), and the map sprite and back view builders. Keep `RLSP`'s calls and the face-part hooks (spec 003, 6):
+**The six species.** Replace the drawing in `species-art.js` with the reference code in `36-sprite-upgrade-rough-v3.js`: its `vol` shaded ellipses, the four-tone ramps, the selective `outline`, the `rim`, the lit `backing`, the clothes (`shoulders`), and the map sprite and back view builders. Keep `RLSP`'s calls and the face-part hooks (spec 003, 6):
 
 - **Coat shade:** each ramp is built from the shaded base color, so shade 0 and 2 shift the whole ramp.
 - **Mark:** the scar, torn ear and grey muzzle are redrawn in the ramp's tones (a scar is the light tone with a deep-tone edge; the torn ear is a notch with an outline).
