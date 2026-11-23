@@ -483,7 +483,9 @@ function drawBattle(){
  else{cx.drawImage(Bt.bg,0,0,VW,L.scene.h,0,0,VW,L.scene.h);pR(0,0,VW,L.scene.h,'rgba(14,10,26,.68)');pR(0,L.scene.h-30,VW,30,'rgba(14,10,26,.35)')}
  shimmer(performance.now(),L.scene.h);  // the lead High on Mushrooms: the backdrop sways, sprites and numbers hold still (engine.js)
  pR(0,L.scene.h,VW,VH-L.scene.h,PC.deep);
- // enemies, facing you
+ // enemies, facing you. Their bars, names, tags and target arrow are drawn after the agents, so on a short screen,
+ // where a tall enemy's feet stand behind the agents' heads (L.over), what you read stays on top
+ const labels=[];
  const tgt=u&&u.kind==='target'?u.opts[u.sel]:null;
  Bt.en.forEach(e=>{
   if(e.dead||e.gone)e.alpha=Math.max(0,e.alpha-.04);if(e.alpha<=0)return;
@@ -494,6 +496,7 @@ function drawBattle(){
   if(e.glow){const fl=.55+.35*Math.sin(t*.18);const g=cx.createRadialGradient(e.x,y+h*.2,4,e.x,y+h*.2,70);g.addColorStop(0,e.ph2?`rgba(255,255,240,${.35*fl})`:`rgba(255,190,80,${.32*fl})`);g.addColorStop(1,'rgba(255,150,40,0)');cx.fillStyle=g;cx.fillRect(e.x-80,y-60,160,160)}
   cx.globalAlpha=e.alpha;if(!(e.flash>0&&(e.flash%4)<2)&&img)cx.drawImage(img,x,y);cx.globalAlpha=1;if(e.flash>0)e.flash--;
   if(e.dead||e.gone)return;
+  labels.push(()=>{
   // HP bar under the sprite, no numbers until Identify (case) or Spot weak point (fight)
   const known=e.spotted||(G.fs.ident||[]).includes('en:'+e.t),bw=Bt.boss&&e.boss?100:Math.max(30,Math.min(48,w));
   // a boss gets one line: its name, a wide bar, and its HP once known (GLEANER ▬▬▬ 38/60, the mockup)
@@ -502,7 +505,7 @@ function drawBattle(){
   else{SB.hpBar(cx,BT_THEME,e.x-bw/2,L.enemyY+3,bw,e.hp/e.mhp,4);if(known){const s=`${e.hp}/${e.mhp}`;pT(s,e.x-pW(s,12)/2,L.enemyY+9,PC.cream,12)}}
   // status tags over it (Exposed, Shaken, Bleeding, Poisoned, Stunned)
   let ty=Math.max(2,y-12);const tags=[...e.st,...(e.stun>0?['stun']:[])];tags.forEach(k=>{const S=PST[k];if(!S)return;const tw=pW(S.chip,11)+6;pR(e.x-tw/2,ty,tw,10,S.col);pT(S.chip,e.x-tw/2+3,ty-1,PC.chipInk,11);ty+=11});
-  if(tgt===e){const ay=Math.max(2,y-10)+Math.round(Math.sin(t*.2)*2);pR(e.x-3,ay,7,2,PC.gold);pR(e.x-2,ay+2,5,2,PC.gold);pR(e.x-1,ay+4,3,2,PC.gold)}
+  if(tgt===e){const ay=Math.max(2,y-10)+Math.round(Math.sin(t*.2)*2);pR(e.x-3,ay,7,2,PC.gold);pR(e.x-2,ay+2,5,2,PC.gold);pR(e.x-1,ay+4,3,2,PC.gold)}});
   if(u&&u.kind==='target'&&u.opts.includes(e))Bt.hits.push({x:x,y:y,w:w,h:h+12,fn:()=>{u.sel=u.opts.indexOf(e);battlePress('a')}});
  });
  // the three agents along the bottom, backs to the camera, waist up
@@ -511,6 +514,7 @@ function drawBattle(){
   if(!m.gone)cx.drawImage(img,Math.round(cxm-BLB.AX+sx),L.agentY-BLB.AY+dy);
   if(tgt===m||(act&&u&&u.kind==='cmd')){const ay=L.agentY-BLB.H+2+dy+Math.round(Math.sin(t*.2)*2);if(tgt===m){pR(cxm-3,ay,7,2,PC.gold);pR(cxm-2,ay+2,5,2,PC.gold);pR(cxm-1,ay+4,3,2,PC.gold)}}
   if(u&&u.kind==='target'&&u.opts.includes(m))Bt.hits.push({x:cxm-40,y:L.agentY-46,w:80,h:46+L.strip.h,fn:()=>{u.sel=u.opts.indexOf(m);battlePress('a')}})});
+ labels.forEach(f=>f());
  // the turn-order column down the left edge (Turn order, Nov 23 playtest): this round only, each fighter once, the one
  // acting now on top (bigger). A face drops off once that fighter has acted and the full order is back next round.
  // Enemies that die or flee leave; a Downed agent stays, greyed, since their bleed-out counts their turns.
