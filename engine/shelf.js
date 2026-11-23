@@ -746,6 +746,205 @@ function washer(kind="washer",on=false){return{size:[34,48,0,0],anchor:[17,46],l
   if(kind==="dryer"){E(16,26,10,10,P.outline);E(16,26,8,8,on?shade(P.glass,-.15):shade(P.stone,-.4));if(on){C(13,29,3,P.cloth);C(19,24,3,P.accent);C(17,30,2,P.cream);}E(13,23,3,2,rgba(P.lightTo,.5));}
   else{R(4,10,26,4,wd);R(5,11,24,2,shade(wt,.1));R(6,18,22,22,shade(wt,-.06));R(14,20,6,2,P.outline);}
   R(1,44,32,2,P.outline);}};}
-return{T,S,SLOTS,PALETTES,use,pal,RGB,hex,rgba,shade,hsh,mk,art,drawChar,charSprite,SAMPLE_AGENTS,LAMP,BENCH,prop,summerGrass,summerTree,dryDirt,heat,sodium,storefront,signBlank,signText,signWidth,WATERTOWER,trafficLight,gasPump,ranchHouse,porch,mailbox,sedan,floor,innerWall,counter,tableChairs,DESK,BED,shelving,stringLights,booth,ferrisWheel,asphalt,paintLine,bugZap,BUGLIGHT,workLight,VAN_SIGN,van,walkway,metalStairs,numberDoor,windowAC,chainLink,chainLinkSide,pool,dumpster,FRIDGE_FRONT,kitchen,ceilingFan,boxes,washer,
+/* ===== Lost Hour part A pieces (spec 017) ===== */
+/* SPRING, WEATHER, ROADS AND WILD GROUND, CLINIC · more v1 pieces, added Nov 23, 2026.
+   Drawn first for Black Lantern's Lost Hour (its spec 017 lists the kits): spring grass, blossom trees and mud; a night
+   fog and light rain; a two-lane mountain road with its guardrail, mile markers, a low stone wall and a coin viewer;
+   steep wooded ground, evergreen thickets and a creek; and a hospital bed, a bedside monitor and waiting room chairs.
+   Four new palette slots (a game's palette without them falls back as noted): fog (fog), blossom (blossom pink),
+   mud (wet earth), water (creek and puddle water, wet asphalt's sheen). */
+SLOTS.push(["fog","night fog"],["blossom","blossom pink"],["mud","wet earth"],["water","creek water, wet shine"]);
+Object.assign(PALETTES.blacklantern,{fog:"#b4a8e0",blossom:"#e886b0",mud:"#4e3a2e",water:"#4a6886"});
+Object.assign(PALETTES.rushlight,{fog:"#a8a8b2",blossom:"#d49aa8",mud:"#4a3a2a",water:"#4a6470"});
+
+/* ---------- SPRING (seasonal) ---------- */
+// shared-tiles-springgrass-v1: new green spring grass (wet = false), or rain-wet (wet = true: darker, with drops that
+// catch the light). Pixel function like grass().
+function springGrass(x,y,T=16,wet=false){const u=T/16,nx=(x/u)|0,ny=(y/u)|0,L=slot("leaf","grass"),g=wet?shade(L,-.12):shade(L,.16);
+  const patch=hsh(nx>>2,ny>>2,251)<.28?shade(g,-.12):hsh(nx>>2,ny>>2,252)<.15?shade(g,.1):g;
+  if(ny%2===0&&hsh(nx,ny,253)<.14)return shade(patch,wet?.3:.26);                       // blade tips in the light
+  if(hsh(nx,ny,254)<.012)return wet?shade(slot("water","glass"),.5):shade(P.text,-.1);      // a drop of rain, or a tiny white flower
+  if(hsh(nx,ny,255)<.008)return slot("blossom","accent");                                 // a fallen petal
+  return[patch,shade(patch,-.1),shade(patch,.05),shade(patch,-.2)][(hsh(nx,ny,256)*4)|0];}
+// shared-props-blossomtree-v1: a flowering tree in spring (redbud or dogwood), lit from the upper left in four tones.
+// white = false paints it in P.blossom (pink), true in white. v = 0, 1, 2 varies the crown. Its canopy box is like summerTree's.
+function blossomTree(v=0,white=false){return{size:[100,124,0,0],anchor:[50,118],lights:[],draw({R,C}){const B=white?shade(P.text,-.04):slot("blossom","accent"),L=slot("leaf","grass");
+  const t=[shade(B,.35),shade(B,.12),B,shade(B,-.24),shade(B,-.46)];
+  R(45,70,10,50,shade(P.woodDark,.1),{sh:true});R(40,114,20,4,P.woodDark);R(46,76,2,22,shade(P.wood,-.1));
+  for(const[a,b,c]of[[50,82,-1],[50,78,1]])for(let i=0;i<16;i++)R(a+c*i*1.4,b-i*1.6,3,2,shade(P.woodDark,.15));     // two forked limbs
+  const lobes=[[50,50,30],[28,60,18],[72,58,19],[50,28,22],[32,38,14],[68,38,15],[50,66,16]].map(([x,y,r],i)=>[x+((hsh(i,v,15)-.5)*8)|0,y+((hsh(i,v,16)-.5)*6)|0,r]);
+  lobes.forEach(([x,y,r])=>C(x+3,y+4,r,t[4]));lobes.forEach(([x,y,r])=>C(x+1,y+2,r,t[3]));lobes.forEach(([x,y,r])=>C(x,y,r-3,t[2]));
+  lobes.forEach(([x,y,r])=>C(x-r*.3,y-r*.3,r*.5,t[1]));lobes.forEach(([x,y,r])=>C(x-r*.42,y-r*.45,r*.2,t[0]));
+  for(let i=0;i<70;i++){const an=hsh(i,v,17)*6.283,rd=Math.sqrt(hsh(i,v,18))*40,x=50+Math.cos(an)*rd,y=48+Math.sin(an)*rd*.85;R(x,y,2,2,hsh(i,v,19)<.2?shade(L,.1):x+y<94?t[0]:t[3]);}
+  for(let i=0;i<10;i++)R(20+hsh(i,v,20)*60,114+hsh(i,v,21)*6,2,1,t[1]);}};}                    // petals under it
+// shared-tiles-mud-v1: mud with puddles that hold the sky (dark = false), or rain-dark mud (dark = true). Pixel function.
+function mud(x,y,T=16,dark=false){const u=T/16,nx=(x/u)|0,ny=(y/u)|0,m=dark?shade(slot("mud","earth"),-.18):slot("mud","earth"),W=slot("water","glass");
+  const c=12,gx=Math.floor(nx/c),gy=Math.floor(ny/c);
+  if(hsh(gx,gy,261)<.45){const px=(gx+.25+hsh(gx,gy,262)*.5)*c,py=(gy+.3+hsh(gx,gy,263)*.4)*c,rx=2.5+hsh(gx,gy,264)*3,ry=rx*.55,d=((nx-px)/rx)**2+((ny-py)/ry)**2;
+    if(d<1)return ny<py-ry*.35?shade(W,.28):d<.5&&hsh(nx,ny,265)<.1?shade(W,.45):shade(W,dark?-.12:0);  // the puddle: sky at its far edge
+    if(d<1.5)return shade(m,-.3);}                                                                  // its wet rim
+  if(hsh(nx,ny,266)<.05)return shade(m,.18);if(ny%3===0&&hsh(nx>>1,ny,267)<.3)return shade(m,-.15);   // tire ridges, crumbs
+  return[m,shade(m,-.07),shade(m,.06)][(hsh(nx,ny,268)*3)|0];}
+
+/* ---------- WEATHER ---------- */
+// shared-effects-fog-v1: drifting night fog, after the night darkness is drawn. It hides distance, never the ground under
+// the party: around each clear spot (the lantern) the air stays clear, then the fog thickens to its full veil a little way
+// out. o: heavy (true: thick fog), clear ([[x, y, r], ...] canvas pixels: the lantern and lamps), ox, oy (the camera, so
+// the fog drifts across the world), col (P.fog: the glow where a light catches it), veil (the fog in the dark, col darkened). fogReach(heavy) is how much a light's radius shrinks in it (light .8,
+// heavy .62); a game multiplies its lantern by it.
+const FOGC={c:null,t:null};
+function fogTile(){if(FOGC.t)return FOGC.t;const N=128,c=mk(N,N),g=c.getContext("2d"),img=g.createImageData(N,N),d=img.data,P8=8;
+  const lat=(i,j)=>hsh(((i%P8)+P8)%P8,((j%P8)+P8)%P8,271),sm=t=>t*t*(3-2*t);
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){let v=0,a=1,f=1,tot=0;for(let o=0;o<3;o++){const s=N/(P8*f),fx=x/s,fy=y/s,i=Math.floor(fx),j=Math.floor(fy),tx=sm(fx-i),ty=sm(fy-j),p=P8*f;
+      const L=(a_,b_)=>hsh(((a_%p)+p)%p,((b_%p)+p)%p,271+o);v+=a*((L(i,j)*(1-tx)+L(i+1,j)*tx)*(1-ty)+(L(i,j+1)*(1-tx)+L(i+1,j+1)*tx)*ty);tot+=a;a*=.5;f*=2;}
+    v/=tot;const k=Math.max(0,Math.min(1,(v-.32)*2.2)),i4=(y*N+x)*4;d[i4]=d[i4+1]=d[i4+2]=255;d[i4+3]=Math.round(k*255);}
+  g.putImageData(img,0,0);return FOGC.t=c;}
+const fogReach=heavy=>heavy?.62:.8;
+function fog(ctx,now=0,o={}){const cv=ctx.canvas,w=cv.width,h=cv.height,col=o.col||slot("fog","night"),veil=o.veil||shade(col,-.5),hv=!!o.heavy,base=hv?.3:.22,top=hv?.54:.46;
+  if(!FOGC.c)FOGC.c=mk(w,h);const B=FOGC.c;if(B.width!==w||B.height!==h){B.width=w;B.height=h;}const b=B.getContext("2d");b.globalCompositeOperation="source-over";b.clearRect(0,0,w,h);
+  b.fillStyle=rgba(veil,base);b.fillRect(0,0,w,h);
+  const t=fogTile(),N=t.width,ox=o.ox||0,oy=o.oy||0;
+  for(const[sp,al,dy]of[[.012,top-base,0],[-.007,(top-base)*.8,47]]){const sx=((-(ox*.9+now*sp))%N+N)%N,sy=((-(oy*.9+dy))%N+N)%N;b.globalAlpha=al*2.2;
+    for(let y=-sy;y<h;y+=N)for(let x=-sx;x<w;x+=N)b.drawImage(t,Math.round(x),Math.round(y));}
+  b.globalAlpha=1;b.globalCompositeOperation="source-in";b.fillStyle=veil;b.fillRect(0,0,w,h);
+  b.globalCompositeOperation="destination-out";
+  (o.clear||[]).forEach(([x,y,r])=>{const gr=b.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,"rgba(0,0,0,1)");gr.addColorStop(.5,"rgba(0,0,0,.92)");gr.addColorStop(1,"rgba(0,0,0,0)");b.fillStyle=gr;b.fillRect(x-r,y-r,r*2,r*2);});
+  b.globalCompositeOperation="source-over";ctx.drawImage(B,0,0);
+  // a light in fog blooms: a soft halo at the edge of each clear spot
+  ctx.globalCompositeOperation="lighter";
+  (o.clear||[]).forEach(([x,y,r])=>{const gr=ctx.createRadialGradient(x,y,r*.35,x,y,r*1.05);gr.addColorStop(0,rgba(col,0));gr.addColorStop(.7,rgba(col,hv?.22:.16));gr.addColorStop(1,rgba(col,0));ctx.fillStyle=gr;ctx.fillRect(x-r*1.1,y-r*1.1,r*2.2,r*2.2);});
+  ctx.globalCompositeOperation="source-over";}
+// shared-effects-rain-v1: light rain over a map, after everything else on the map. Slanted streaks fall, drops splash,
+// and on wet roads a sheen of sky slides along. o: k (0..1, how hard), shine ([[x, y, w, h], ...] canvas pixels of road that
+// shines), col (the drops: P.water lightened). Whole pixels only.
+function rain(ctx,now=0,o={}){const cv=ctx.canvas,w=cv.width,h=cv.height,k=o.k==null?.6:o.k,W=slot("water","glass"),dc=o.col||shade(W,.55);
+  ctx.fillStyle=rgba(shade(W,-.4),.08*k);ctx.fillRect(0,0,w,h);
+  (o.shine||[]).forEach(([x,y,sw,sh],i)=>{for(let j=0;j<sw;j+=3)for(let r=0;r<sh;r+=4){const n=hsh(((x+j)/3)|0,((y+r)/4)|0,281),ph=Math.sin(now/700+n*6.28+j*.05);
+      if(ph>.82){ctx.fillStyle=rgba(shade(W,.6),.28*k*(ph-.82)/.18);ctx.fillRect(Math.round(x+j),Math.round(y+r+n*3),3,1);}}});
+  const n=Math.round(70*k*(w*h)/(240*320));ctx.fillStyle=rgba(dc,.5);
+  for(let i=0;i<n;i++){const sx=hsh(i,1,282)*w,sp=.22+hsh(i,2,282)*.1,yy=(hsh(i,3,282)*h+now*sp)%(h+12)-6,xx=(sx-yy*.25+w)%w;
+    ctx.fillRect(Math.round(xx),Math.round(yy),1,3);ctx.fillRect(Math.round(xx-1),Math.round(yy+3),1,2);}
+  ctx.fillStyle=rgba(dc,.55);for(let i=0;i<n/3;i++){const c=((now/90)|0)+i,x=hsh(c,i,283)*w,y=hsh(c,i,284)*h;if(hsh(c,i,285)<.5){ctx.fillRect(Math.round(x)-1,Math.round(y),1,1);ctx.fillRect(Math.round(x)+1,Math.round(y),1,1);ctx.fillRect(Math.round(x),Math.round(y)-1,1,1);}}}
+
+/* ---------- ROADS AND WILD GROUND ---------- */
+// shared-tiles-twolane-v1: a two-lane road with a center line and shoulders, in pixels. twoLane(g, x0, x1, top, T, o)
+// runs straight across the screen; top = the top shoulder's top. o: lanes (each lane's width, 1.5 tiles), shoulder (0.4
+// tiles of gravel each side), pass (true: a dashed center line; false: a double solid), wet (a darker, shinier top).
+// Returns {top, bot, center} (the asphalt's top and bottom and the center line's y). twoLaneCurve(g, cx, cy, r, a0, a1, T, o)
+// is the same road bending around (cx, cy): r is the center line's radius, a0..a1 the angles it covers (radians).
+function roadPx(x,y,T,wet){const a=slot("asphalt","panel"),u=T/16,nx=(x/u)|0,ny=(y/u)|0,n=hsh(nx,ny,291),b=wet?shade(a,-.12):a;
+  if(n<.04)return shade(b,.2);if(hsh(nx>>2,ny>>3,292)<.1&&n<.5)return shade(b,-.15);if(wet&&hsh(nx>>1,ny,293)<.06)return shade(slot("water","glass"),-.1);
+  return[b,shade(b,-.05),shade(b,.06)][(hsh(nx,ny,294)*3)|0];}
+function shoulderPx(x,y,T){const u=T/16,nx=(x/u)|0,ny=(y/u)|0,n=hsh(nx,ny,295),e=shade(P.stoneWarm,-.1);
+  return n<.18?shade(P.stone,.15):n<.3?shade(e,-.25):[e,shade(e,.06),shade(e,-.08)][(hsh(nx,ny,296)*3)|0];}
+function twoLane(g,x0,x1,top,T=16,o={}){const u=T/16,ln=(o.lanes||1.5)*T,sh=(o.shoulder==null?.4:o.shoulder)*T,a0=top+sh,a1=a0+2*ln,b1=a1+sh,cy=a0+ln,yl=P.light,wt=shade(P.text,-.08);
+  for(let y=top;y<b1;y++)for(let x=x0;x<x1;x++)F(g,x,y,1,1,(y<a0||y>=a1)?shoulderPx(x,y,T):roadPx(x,y,T,o.wet));
+  F(g,x0,a0,x1-x0,u,rgba(P.outline,.35));F(g,x0,a1-u,x1-x0,u,rgba(P.lightTo,.12));
+  for(const ey of[a0+2*u,a1-3*u])for(let x=x0;x<x1;x++)if(hsh(x>>2,ey,297)>.08)F(g,x,ey,1,u,wt);       // edge lines, worn in places
+  for(let x=x0;x<x1;x++){if(o.pass){if(((x-x0)/(6*u)|0)%2===0)F(g,x,cy-u,1,2*u,yl);}else if(hsh(x>>2,cy,298)>.05){F(g,x,cy-2*u,1,u,yl);F(g,x,cy+u,1,u,yl);}}
+  return{top:a0,bot:a1,center:cy};}
+function twoLaneCurve(g,cx,cy,r,a0,a1,T=16,o={}){const u=T/16,ln=(o.lanes||1.5)*T,sh=(o.shoulder==null?.4:o.shoulder)*T,R0=r-ln-sh,R1=r+ln+sh,yl=P.light,wt=shade(P.text,-.08);
+  const lo=Math.min(a0,a1),hi=Math.max(a0,a1);
+  for(let y=Math.floor(cy-R1);y<cy+R1;y++)for(let x=Math.floor(cx-R1);x<cx+R1;x++){const d=Math.hypot(x+.5-cx,y+.5-cy);if(d<R0||d>=R1)continue;let an=Math.atan2(y+.5-cy,x+.5-cx);
+    while(an<lo)an+=6.2832;while(an>hi+1e-6&&an-6.2832>=lo)an-=6.2832;if(an<lo||an>hi)continue;
+    const q=d-r;let c=Math.abs(q)>=ln?shoulderPx(x,y,T):roadPx(x,y,T,o.wet);
+    if(Math.abs(Math.abs(q)-(ln-2.5*u))<.6*u&&hsh(x>>2,y>>2,297)>.08)c=wt;
+    if(o.pass?(Math.abs(q)<u&&((an*r/(6*u))|0)%2===0):(Math.abs(Math.abs(q)-1.5*u)<.55*u))c=yl;
+    F(g,x,y,1,1,c);}}
+// shared-props-guardrail-v1: a metal W-beam guardrail on wooden posts, in pixels along the screen at its rail top y.
+// o: ends ("left", "right" or "both": a flared end piece), post (tiles between posts, 1), reflectors (true: amber reflectors
+// on the posts). Returns the reflectors' [x, y] (for a glint in the dark).
+function guardrail(g,x0,x1,y,T=16,o={}){const u=T/16,m=shade(P.stone,.38),md=shade(m,-.4),ml=shade(m,.35),out=[],ends=o.ends||"";
+  for(let x=x0+.3*T;x<x1;x+=(o.post||1)*T){F(g,x,y+2*u,3*u,.6*T,P.woodDark);F(g,x,y+2*u,u,.6*T,shade(P.wood,-.1));F(g,x-u,y+.6*T+2*u,5*u,u,rgba(P.outline,.4));
+    if(o.reflectors!==false){F(g,x,y+u,3*u,2*u,P.brass);F(g,x,y+u,u,u,shade(P.brass,.5));out.push([x+1.5*u,y+2*u]);}}
+  F(g,x0,y,x1-x0,u,ml);F(g,x0,y+u,x1-x0,u,m);F(g,x0,y+2*u,x1-x0,u,md);F(g,x0,y+3*u,x1-x0,u,m);F(g,x0,y+4*u,x1-x0,u,md);F(g,x0,y+5*u,x1-x0,u,rgba(P.outline,.5));
+  for(let x=x0;x<x1;x+=2*u)if(hsh(x,y,299)<.12)F(g,x,y+u+((hsh(x,1,299)*3)|0)*u,u,u,shade(P.accent,-.3));  // rust
+  const end=(ex,dir)=>{for(let i=0;i<4*u;i++)F(g,ex+dir*i,y+i*.5,u,5*u-i*.5,i%2?m:md);F(g,ex+dir*4*u,y+2*u,2*u,.55*T,P.woodDark);};
+  if(ends==="left"||ends==="both")end(x0,-1);if(ends==="right"||ends==="both")end(x1-u,1);
+  return out;}
+// shared-props-milemarker-v1: mileMarker(n) is a small green mile marker on a post (n up to 3 digits); roadSign(kind) a blank
+// road sign on a post: kind "curve" (yellow diamond, a bending arrow), "diamond" (blank yellow) or "plate" (a blank white
+// plate for the case to letter).
+function digits(R,s,x,y,k,c){for(const ch of String(s)){const gl=GLYPH3[ch];if(gl)for(let i=0;i<15;i++)if(gl[i]==="1")R(x+(i%3)*k,y+((i/3)|0)*k,k,k,c);x+=4*k;}}
+function mileMarker(n=0){const s=String(n);return{size:[18,48,0,0],anchor:[9,46],lights:[],draw({R}){const gr=shade(slot("leaf","grass"),-.3);
+  R(8,18,3,28,shade(P.stone,.2),{sh:1});R(1,0,16,20,shade(P.text,-.05));R(2,1,14,18,gr,{sh:2});R(2,1,14,1,shade(gr,.3));digits(R,"MI",4,3,1.5,shade(P.text,-.05));
+  const k=s.length>2?1.2:2;digits(R,s,9-(s.length*4*k-k)/2,10,k,shade(P.text,-.05));R(7,44,5,2,shade(P.earth,-.2));}};}
+function roadSign(kind="curve"){return{size:[30,62,0,0],anchor:[15,60],lights:[],draw({R}){const y=P.light,yd=shade(y,-.35);
+  R(14,24,3,36,shade(P.stone,.2),{sh:1});R(12,58,7,2,shade(P.earth,-.2));
+  if(kind==="plate"){R(2,0,26,22,P.outline);R(3,1,24,20,shade(P.text,-.04));R(3,1,24,1,shade(P.text,.2));return;}
+  for(let i=0;i<14;i++){R(15-i,i,2*i+1,1,P.outline);R(15-i,28-i,2*i+1,1,P.outline);}
+  for(let i=0;i<13;i++){R(16-i,i+1,2*i-1,1,i<4?shade(y,.2):y);R(16-i,27-i,2*i-1,1,yd);}R(3,14,25,1,y);
+  if(kind==="curve"){R(13,8,4,12,P.outline);R(13,8,8,3,P.outline);R(19,6,2,7,P.outline);R(21,8,2,3,P.outline);}}};}
+// shared-tiles-stonewall-v1: a low dry-stone wall along the screen (overlooks, bridges, old farms), in pixels; top = its
+// cap's top. o: h (its height, 0.7 tiles), cap (false: no cap stones). stoneWallSide(g, x, y0, y1, T) runs up the screen.
+function stoneWall(g,x0,x1,top,T=16,o={}){const u=T/16,h=Math.round((o.h||.7)*T),s=P.stone,fb=top+h;
+  F(g,x0,top,x1-x0,h,shade(s,-.5));
+  for(let row=0,y=top+(o.cap===false?0:4*u);y<fb-u;row++){const rh=(3+((hsh(row,x0,301)*2)|0))*u;let x=x0-((row%2)*3*u);
+    while(x<x1){const sw=(4+((hsh(x,row,302)*5)|0))*u,xs=Math.max(x,x0),xe=Math.min(x+sw-u,x1),c=[s,shade(s,-.1),shade(s,.08),shade(P.stoneWarm,-.05)][(hsh(x,row,303)*4)|0];
+      if(xe>xs){F(g,xs,y,xe-xs,rh-u,c);F(g,xs,y,xe-xs,u,shade(c,.22));if(hsh(x,row,304)<.25)F(g,xs+u,y+u,Math.min(2*u,xe-xs-u),u,shade(slot("leaf","grass"),-.15));}x+=sw;}
+    y+=rh;}
+  if(o.cap!==false){F(g,x0-u,top,x1-x0+2*u,4*u,shade(s,.12));F(g,x0-u,top,x1-x0+2*u,u,shade(s,.4));for(let x=x0;x<x1;x+=(5+((hsh(x,top,305)*4)|0))*u)F(g,x,top+u,u,3*u,shade(s,-.35));}
+  F(g,x0,fb-u,x1-x0,u,P.outline);F(g,x0,fb,x1-x0,2*u,rgba(P.outline,.3));return fb;}
+function stoneWallSide(g,x,y0,y1,T=16){const u=T/16,s=P.stone,w=.5*T;
+  for(let y=y0;y<y1;y+=3*u)F(g,x,y,w,3*u,[s,shade(s,-.12),shade(s,.1)][(hsh(x,y,306)*3)|0]);F(g,x,y0,u,y1-y0,shade(s,.35));F(g,x+w-u,y0,u,y1-y0,P.outline);}
+// shared-props-coinviewer-v1: a coin-operated viewer on a post, binocular head tilted out at the view, no brand.
+const COINVIEWER={size:[30,58,0,0],anchor:[14,56],lights:[],draw({R,C,E}){const b=shade(slot("leaf","grass"),-.15),m=shade(P.stone,.2);
+  R(12,28,6,26,m,{sh:2});R(7,52,16,4,shade(m,-.3));R(10,22,10,8,shade(b,-.2));
+  R(4,6,22,16,b,{sh:6});R(4,6,22,2,shade(b,.3));E(15,6,11,4,shade(b,.12));R(2,10,6,7,P.outline);R(22,10,6,7,P.outline);C(5,13,2.5,shade(P.stone,-.3));C(25,13,2.5,shade(P.stone,-.3));
+  R(10,14,10,5,shade(P.text,-.15));R(11,15,8,1,shade(P.text,-.45));R(14,16,2,2,P.outline);R(26,18,3,6,m);R(13,24,4,2,P.brass);}};
+// shared-tiles-slope-v1: steep wooded ground with rocks: last year's leaves, moss, roots and the slope's fall lines (dark =
+// true: the shaded side). Pixel function.
+function slope(x,y,T=16,dark=false){const u=T/16,nx=(x/u)|0,ny=(y/u)|0,e=dark?shade(P.earth,-.25):P.earth,L=slot("leaf","grass");
+  const c=14,gx=Math.floor(nx/c),gy=Math.floor(ny/c);
+  if(hsh(gx,gy,311)<.3){const px=(gx+.5)*c+(hsh(gx,gy,312)-.5)*6,py=(gy+.5)*c+(hsh(gx,gy,313)-.5)*6,rx=3+hsh(gx,gy,314)*3,d=((nx-px)/rx)**2+((ny-py)/(rx*.7))**2;
+    if(d<1){const s=P.stone;return ny<py-rx*.3?shade(s,.25):nx>px+rx*.3?shade(s,-.3):d<.3&&hsh(nx,ny,315)<.3?shade(L,-.1):s;}
+    if(d<1.4&&ny>py)return shade(e,-.45);}
+  const fall=((nx*2+ny*5+((hsh(nx>>3,0,316)*9)|0))%23);if(fall===0)return shade(e,-.3);if(fall===1)return shade(e,.14);         // fall lines down the hill
+  const n=hsh(nx,ny,317);if(n<.12)return shade(L,-.2+hsh(nx,ny,318)*.25);if(n<.2)return shade(P.wood,.15);if(n<.24)return shade(P.straw,-.25);
+  if(hsh(nx>>3,ny>>1,319)<.06)return shade(P.woodDark,.1);                                                                       // a root
+  return[e,shade(e,-.07),shade(e,.07),shade(P.wood,-.05)][(hsh(nx,ny,320)*4)|0];}
+// shared-props-thicket-v1: dense evergreen shrubs (rhododendron, laurel, holly) with glossy leaves, lit from the upper left.
+// v = 0, 1, 2 varies the shape; buds = true dots it with pale P.blossom buds.
+function thicket(v=0,buds=false){return{size:[56,44,0,0],anchor:[28,42],lights:[],draw({R,C,E}){const L=shade(slot("leaf","grass"),-.28),t=[shade(L,.3),shade(L,.12),L,shade(L,-.25),shade(L,-.48)];
+  const lobes=[[14,26,12],[30,22,14],[44,27,11],[22,14,10],[38,13,9]].map(([x,y,r],i)=>[x+((hsh(i,v,321)-.5)*6)|0,y+((hsh(i,v,322)-.5)*4)|0,r]);
+  E(28,38,26,5,t[4]);lobes.forEach(([x,y,r])=>C(x+2,y+3,r,t[4]));lobes.forEach(([x,y,r])=>C(x,y+1,r-1,t[3]));lobes.forEach(([x,y,r])=>C(x-1,y,r-3,t[2]));
+  for(let i=0;i<46;i++){const an=hsh(i,v,323)*6.283,rd=Math.sqrt(hsh(i,v,324))*20,x=28+Math.cos(an)*rd*1.1,y=22+Math.sin(an)*rd*.7;R(x,y,3,1,x+y<44?t[0]:t[1]);R(x+1,y+1,2,1,t[3]);}
+  if(buds)for(let i=0;i<7;i++){const x=10+hsh(i,v,325)*36,y=8+hsh(i,v,326)*20;R(x,y,2,2,shade(slot("blossom","accent"),.3));}}};}
+// shared-tiles-creek-v1: a small creek's water with stones and ripples. Pixel function for the water tiles; o.bank: the
+// tile's edge toward the bank ("top", "bottom", "left", "right"), where it shallows to mud and pebbles.
+function creek(x,y,T=16,o={}){const u=T/16,nx=(x/u)|0,ny=(y/u)|0,W=slot("water","glass"),ty=(y%T)/T,tx=(x%T)/T;
+  const edge=o.bank==="top"?ty:o.bank==="bottom"?1-ty:o.bank==="left"?tx:o.bank==="right"?1-tx:1;
+  if(edge<.2)return hsh(nx,ny,331)<.4?shade(P.stone,.1+hsh(nx,ny,332)*.2):shade(slot("mud","earth"),-.1);
+  const c=6,gx=Math.floor(nx/c),gy=Math.floor(ny/c);
+  if(hsh(gx,gy,333)<.22){const px=(gx+.5)*c,py=(gy+.5)*c,d=((nx-px)/2.6)**2+((ny-py)/1.8)**2;if(d<1)return ny<py?shade(P.stone,.3):shade(P.stone,-.1);if(d<1.6)return shade(W,.5);}
+  const r=Math.sin(nx*.9+ny*.35)+Math.sin(nx*.23-ny*.7);if(r>1.55)return shade(W,.38);if(r<-1.5)return shade(W,-.2);
+  return edge<.35?shade(W,.12):[W,shade(W,-.06)][(hsh(nx,ny,334)*2)|0];}
+
+/* ---------- CLINIC ---------- */
+// shared-props-hospitalbed-v1: a hospital bed with rails, seen from the foot in the 3/4 view: a wheeled frame, the
+// headboard's controls, a white sheet and a pale blanket. empty = false puts a pillow dent and a folded blanket on it.
+function hospitalBed(empty=true){return{size:[56,66,0,0],anchor:[28,62],lights:[],draw({R,C}){const m=shade(P.stone,.35),sh=shade(P.text,-.02),bl=shade(slot("water","glass"),.45);
+  R(6,0,44,12,m,{sh:6});R(6,0,44,2,shade(m,.3));R(10,3,10,5,shade(P.panel,.2));R(11,4,2,1,P.accent);R(14,4,2,1,P.grass);
+  R(8,12,40,8,sh);R(12,13,18,6,shade(sh,.06));R(14,14,14,1,shade(sh,-.15));
+  R(6,20,44,30,sh,{sh:8});R(6,20,44,2,shade(sh,.2));R(8,28,40,20,bl,{sh:8});R(8,28,40,2,shade(bl,.25));for(let y=34;y<48;y+=5)R(8,y,40,1,shade(bl,-.15));
+  if(!empty){R(26,24,16,6,shade(bl,-.1));R(26,24,16,1,shade(bl,.2));}
+  for(const x of[2,50]){R(x,18,4,22,m,{sh:1});R(x,18,4,1,shade(m,.4));for(let y=22;y<38;y+=5)R(x,y,4,1,shade(m,-.35));}
+  R(6,50,44,4,shade(m,-.25));R(6,54,44,2,P.outline);for(const x of[8,44])C(x+2,58,3,P.outline);}};}
+// shared-props-monitor-v1: a bedside monitor on a rolling stand. MONITOR is the prop; its screen, in design pixels, is
+// MONITOR_SCREEN [x, y, w, h]. monitorLine(ctx, x, y, w, h, now, col) draws the moving heartbeat line straight onto a scene
+// (canvas pixels, over the screen), with a blinking dot; col defaults to P.grass lightened.
+const MONITOR_SCREEN=[4,4,22,14];
+const MONITOR={size:[30,72,0,0],anchor:[15,70],lights:[[15,11,.8,.35]],draw({R,C}){const m=shade(P.stone,.3),bx=shade(P.panel,.15);
+  R(14,24,3,42,m,{sh:1});for(const[x,d]of[[4,1],[22,-1]])R(x,64,6,3,shade(m,-.3));R(6,66,18,2,shade(m,-.3));C(6,68,2,P.outline);C(24,68,2,P.outline);
+  R(1,0,28,24,bx,{sh:5});R(1,0,28,2,shade(bx,.3));R(4,4,22,14,P.outline);R(5,5,20,12,shade(slot("water","glass"),-.6));R(5,10,20,1,shade(P.grass,.2));
+  R(4,20,4,2,P.accent);R(10,20,4,2,P.light);R(16,20,8,2,shade(bx,-.3));R(18,26,10,4,m);}};
+function monitorLine(ctx,x,y,w,h,now=0,col){const c=col||shade(P.grass,.55),mid=y+h*.55,t=(now/16)%w;ctx.fillStyle=rgba(c,.9);
+  for(let i=0;i<w;i++){const ph=(i+w-t)%w,beat=ph%22,dy=beat===10?-h*.4:beat===11?h*.3:beat===12?-h*.15:0,age=(t-i+w)%w;if(age>w*.8)continue;ctx.globalAlpha=1-age/(w*.8);ctx.fillRect(Math.round(x+i),Math.round(mid+dy),1,1);}
+  ctx.globalAlpha=1;if(((now/500)|0)%2){ctx.fillStyle=rgba(P.accent,.9);ctx.fillRect(Math.round(x+w-3),Math.round(y+1),2,2);}}
+// shared-props-waitingchairs-v1: a row of waiting room chairs on one rail, n seats (3 when left out); col: the seats (P.cloth).
+function waitingChairs(n=3,col){const W_=n*16+4;return{size:[W_,34,0,0],anchor:[W_/2,32],lights:[],draw({R}){const c=col||P.cloth,m=shade(P.stone,.25);
+  R(1,22,W_-2,3,m);R(1,22,W_-2,1,shade(m,.3));for(const x of[4,W_-7])R(x,25,3,8,shade(m,-.2));
+  for(let i=0;i<n;i++){const x=3+i*16;R(x,2,14,12,c,{sh:4});R(x,2,14,2,shade(c,.25));R(x+1,14,13,6,shade(c,.08),{sh:4});R(x+1,19,13,2,shade(c,-.35));if(i<n-1)R(x+14,8,2,13,m);}}};}
+return{T,S,SLOTS,PALETTES,use,pal,RGB,hex,rgba,shade,hsh,mk,art,drawChar,charSprite,SAMPLE_AGENTS,LAMP,BENCH,prop,summerGrass,summerTree,dryDirt,heat,sodium,storefront,signBlank,signText,signWidth,WATERTOWER,trafficLight,gasPump,ranchHouse,porch,mailbox,sedan,floor,innerWall,counter,tableChairs,DESK,BED,shelving,stringLights,booth,ferrisWheel,asphalt,paintLine,bugZap,BUGLIGHT,workLight,VAN_SIGN,van,walkway,metalStairs,numberDoor,windowAC,chainLink,chainLinkSide,pool,dumpster,FRIDGE_FRONT,kitchen,ceilingFan,boxes,washer,springGrass,blossomTree,mud,fog,fogReach,rain,twoLane,twoLaneCurve,guardrail,mileMarker,roadSign,stoneWall,stoneWallSide,COINVIEWER,slope,thicket,creek,hospitalBed,MONITOR,MONITOR_SCREEN,monitorLine,waitingChairs,
   dirtRoad,boardwalk,stoneSidewalk,grass,paint,F,picketFence,wall,roof,windowPane,door,awning,light,dusk,autumn,rr,shell,dialog};
 })();
