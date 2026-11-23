@@ -46,6 +46,29 @@ None yet.
 - Boats, for a map with lakes or a coast (Keegan, Nov 21).
 - More jobs after the first 12.
 
+## Screens
+
+Every screen you can see, in play order (studio rule: `studio-bible/studio.md`, Screen list, set Nov 23, 2026). A spec that adds a screen adds its row here. Specs are in `specs/`. Nothing is built yet.
+
+| Screen | What you do there | Spec |
+| --- | --- | --- |
+| Title | New world, Continue, Best runs, Import save | 001 (2) |
+| New world | Set up the world before you start | 001 (3) |
+| Survivor builder | Make your survivor | 001 (4, 5) |
+| Map | Walk the town's sections, with the top bar, search, locks and night | 002 (1 to 7) |
+| Fights on the map | Turns, zombies, attacks, noise, sneaking, fleeing | 003 (1 to 8) |
+| Bag (L) | Your items, crafting | 002 (8, 10) |
+| Map screen (R) | The map of what you've found | 002 (12) |
+| Start menu | Party, Notebook, Wait, Sleep, Claim this place, Save code, Quit to title | 001 (wiring), 002, 004 (wiring) |
+| Party card | You and your companions | 001 (6), `studio-bible/ui.md` |
+| Notebook | What you've learned | 002 (11) |
+| Hideout | Claim a place, build, cook, sleep, store | 004 (1 to 4, 8) |
+| Attack on the hideout | Defend it when something comes | 004 (5, 6) |
+| Death screen | Your run ends: days survived | 004 (9) |
+| Best runs | Your best runs for each preset | 001 (2), 004 (10) |
+| Companion orders (Select) | Give companions orders | **No spec yet** (not in the first slice; Companions sets the rules) |
+| Trade with survivors | Trade with other survivors | **No spec yet** (not in the first slice; Other survivors and trade) |
+
 ## Overview
 
 **Pitch.** Life After is a turn-based zombie survival game for the phone. It's the 1990s in America, and the dead have risen. You play one survivor in a small town and its countryside, scavenging for food, fortifying a shelter, and keeping up to two companions alive and on your side. There's no story to finish and no way to win. You survive as many days as you can, against zombies, raiders, hunger and the dark, and the score is how many days you lasted.
