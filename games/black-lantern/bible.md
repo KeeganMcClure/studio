@@ -53,6 +53,7 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
 - [ ] Season flow (spec 009): the season data file, the board for a full season, agency case unlocks, the finale, the season's end and the next season. After the home phase
 - [x] Home phase part D (spec 008, Part C table): 4 more Fulfill Responsibilities scenes at Close for each of the 8 Bond types (7 each, 32 new scenes), so a season never repeats one. After the season flow
   Done Nov 23: each Bond type now has 7 Close scenes (32 new), so a season of visits to the same close Bond never repeats one.
+- [ ] Creator look fixes (spec 022, Part 3): the backstory in a detail box, the map and battle sprites under the face on Identity, AGENT ??? before Big Hat names the agent, and a solid box over a darker Dossier
 - [ ] Good Manners part A (spec 010): its maps and art, townsfolk and the two men, walkable with stand-in scripts. After the season flow
 - [ ] Good Manners part B (spec 010): the secret case file first, then its story, fights, boss and endings
 - [ ] Lot 83 part A (spec 011): its maps and art, the tented night, townsfolk and Walt, walkable with stand-in scripts. After Good Manners
