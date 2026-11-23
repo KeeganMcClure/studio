@@ -58,7 +58,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
   Done Nov 23: Identity shows the full backstory in a box at the bottom and the map and battle sprites under the face; the Dossier reads AGENT ??? until Big Hat names the agent, and his box is solid over a darker Dossier.
 - [x] Good Manners part A (spec 010): its maps and art, townsfolk and the two men, walkable with stand-in scripts. After the season flow
   Done Nov 23: Good Manners pins on the board. Its town, street, fairground and rooms all walk by day and night, every door and drive goes where it should, everyone has a sprite and a talking face, and Big Hat briefs from a new place.
-- [ ] Good Manners part B (spec 010): the secret case file first, then its story, fights, boss and endings
+- [x] Good Manners part B (spec 010): the secret case file first, then its story, fights, boss and endings
+  Done Nov 23: Good Manners plays start to finish: its full briefing, clues, a deduction, two story fights, the fair's last night, the boss and all three endings, with the debrief in Big Hat's cab.
 - [ ] Lot 83 part A (spec 011): its maps and art, the tented night, townsfolk and Walt, walkable with stand-in scripts. After Good Manners
 - [ ] Lot 83 part B (spec 011): the secret case file first, then its story, fights, boss and endings
 - [ ] Lost Hour part A (spec 016): its maps and art, the ridge road in fog, townsfolk and the Pruetts, walkable with stand-in scripts. After Lot 83
