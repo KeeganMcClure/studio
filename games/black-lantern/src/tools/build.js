@@ -26,26 +26,6 @@ html = html.replace(/<link rel="stylesheet" href="([^":]+)">/g, (_, href) => {
   parts.push(href);
   return `<style>/* ${href} */\n${fs.readFileSync(file, 'utf8').replace(/<\/style/gi, '<\\/style')}\n</style>`;
 });
-// Agency cases stay out of the public repo (bible, Tech → File and code). They live in the private
-// KeeganMcClure/black-lantern repo under agency/: season data files (season-N.js, which call registerAgency) and the
-// agency case files (lantern-NN.js and their art). BL_PRIVATE_DIR points at that agency/ folder; without it, a local
-// clone next to the studio is tried. A Dev or Release build (the launcher sets STUDIO_CHANNEL) stops if they can't be
-// reached, so a season never ships without its agency cases. A plain local build (npm run check) goes on without
-// them, and the Dev test season stands in.
-const privDir = process.env.BL_PRIVATE_DIR || path.join(root, '..', '..', '..', '..', 'black-lantern', 'agency');
-const privFiles = fs.existsSync(privDir) ? fs.readdirSync(privDir).filter(f => f.endsWith('.js')).sort((a, b) =>
-  (/^season-/.test(b) - /^season-/.test(a)) || a.localeCompare(b, 'en', { numeric: true })) : [];
-// Paused Nov 23, 2026: the deploy doesn't check out the private repo yet (its token can't reach it), so the hard stop
-// only applies when the deploy names the folder (BL_PRIVATE_DIR). Restoring the checkout step in pages.yml turns it back on.
-if (process.env.STUDIO_CHANNEL && process.env.BL_PRIVATE_DIR && !privFiles.some(f => /^season-/.test(f)))
-  throw new Error(`Black Lantern's private agency files can't be reached (looked in ${privDir}). ` +
-    'The deploy checks them out from KeeganMcClure/black-lantern with the BL_PRIVATE_TOKEN secret; see .github/workflows/pages.yml.');
-const marker = /<!-- agency:[^>]*-->\n?/;
-if (!marker.test(html)) throw new Error('index.html has lost its agency marker');
-html = html.replace(marker, () => privFiles.map(f => {
-  parts.push('agency/' + f);
-  return `<script>/* agency/${f} (private) */\n${fs.readFileSync(path.join(privDir, f), 'utf8').replace(/<\/script/gi, '<\\/script')}\n</script>\n`;
-}).join(''));
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
 fs.writeFileSync(path.join(root, 'dist', 'index.html'), html);
 console.log(`Built dist/index.html from ${parts.length} parts: ${parts.join(', ')} (${(html.length / 1024).toFixed(1)} KB)`);

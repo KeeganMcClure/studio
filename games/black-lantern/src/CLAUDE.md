@@ -10,7 +10,7 @@ Black Lantern is Keegan's phone-first horror JRPG. Keegan is the designer and wr
 | Design rules, To do, Changelog | The **Build Bible** doc: https://claude.ai/artifact/DsXEoTZYTSpYdTMPk5cojd. It is the single source of truth and wins any conflict, including with this file. Open only the tab a task needs (Start here lists them). |
 | Art reference and drawing code | The **Asset Library**: https://claude.ai/artifact/3urWxdTcEECQ57KKNaz7Z1 (core page, plus one page per case) |
 | Generic and seasonal art | The **Shared Shelf**: https://claude.ai/artifact/Jmv2FBeGHXczqy7juZW8dL (versions in use: Bible, Art, Shared Shelf) |
-| Secret story files (agency arc, motivation arcs, home scenes) | The private repo `KeeganMcClure/black-lantern`, under `claude/` (since Nov 23, 2026; that copy is the master), **never in this repo**. Read them there at build time when a task needs them, and copy only the game data the task needs into code (season length and unlock counts go into game data, never into the Bible). |
+| Secret story files (agency arc, motivation arcs, home scenes, secret case files) | `games/black-lantern/story/` in this repo (Keegan's call, Nov 23, 2026; the private repo `KeeganMcClure/black-lantern` is retired). That copy is the master. Read them at build time when a task needs them, copy only the game data the task needs into code, and never quote or summarize them in the bible, specs, changelog, To do, commits, PR text or chat. |
 | Where Keegan plays | The **Black Lantern Intake** artifact: https://claude.ai/artifact/DtJF15pDw7jKP64omvVrF5 |
 
 Design, story, mockups, Bible reviews and the Asset Library stay in the claude.ai Project. This repo is for building.

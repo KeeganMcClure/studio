@@ -24,7 +24,7 @@ If the fix would change a bible rule, stop and ask, because that goes to the Des
 
 Work on one game never opens another game's story or case files, such as `games/black-lantern/src/cases/`.
 To fix shared code, read only the code file involved.
-Secret story files (agency arc, motivation arcs, home scenes) never go in this repo, because it is public.
+Each game's secret story files (agency arc, motivation arcs, home scenes, secret case files) live in that game's `story/` folder (Keegan's call, Nov 23, 2026: Black Lantern's moved here from a private repo). Never quote or summarize them in a bible, spec, changelog, To do, commit message, PR text or chat.
 
 ## During setup (until the Setup Bible's to-do list is done)
 
