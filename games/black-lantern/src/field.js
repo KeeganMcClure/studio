@@ -307,6 +307,20 @@ async function runOpt(o,r,key){
  if(o.item){spend(r.h.m,r.h.it);if(o.run)await o.run(r.h.m);return}
  if(o.run)await o.run();
 }
+// Hidden hotspots (Item list, Mushrooms; first used by Good Manners): a hotspot with hidden:'mushrooms' only shows and
+// works while the lead is High on Mushrooms. Sober, A, the A bubble and the map treat it as plain ground. While it shows,
+// a faint glint hangs over it (hiddenGlints, drawn after the shimmer so it holds still); h.glint(ctx, x, y, now) can
+// draw its own. Later cases reuse the flag; a new kind of reveal (the Scientist's UV lamp) adds its own test to HIDDEN.
+const HIDDEN={mushrooms:()=>tripping(lead())};
+const hotShown=h=>!h||typeof h==='function'||!h.hidden||!!(HIDDEN[h.hidden]&&HIDDEN[h.hidden]());
+const hotAt=(M,k)=>{const h=M&&M.O&&M.O[k];return h&&hotShown(h)?h:null};
+function hiddenGlints(camx,camy,now){const M=G.M;if(!M||!M.O)return;
+ for(const [k,h] of Object.entries(M.O)){if(!h||typeof h==='function'||!h.hidden||!hotShown(h))continue;const [x,y]=k.split(',').map(Number),px=x*16+8-camx,py=y*16+8-camy;
+  if(px<-16||py<-24||px>VW+16||py>VH+16)continue;
+  if(h.glint){h.glint(cx,px,py,now);continue}
+  const t=now/400,c=[LOOK.shim[0],LOOK.shim[1],PC.cream];
+  for(let i=0;i<5;i++){const a=t+i*1.257,r=4+Math.sin(t*1.3+i)*1.5;cx.fillStyle=c[i%3];cx.fillRect(Math.round(px+Math.cos(a)*r),Math.round(py-4+Math.sin(a)*r*.6),1,1)}
+  cx.fillStyle=PC.cream;if(Math.floor(now/250)%2)cx.fillRect(Math.round(px),Math.round(py-12),1,3)}}
 // dim used hotspots: nothing left to look at or try (Quality of life)
 function hotUsed(h,key){if(typeof h==='function')return false;if(h.used)return !!h.used();return !!G.fs.used[h.id||key]&&!hotOpts(h).length}
 // talked out: a townsperson with nothing new (case npc.out(), else talked to since the last new clue)

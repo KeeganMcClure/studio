@@ -56,7 +56,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
   Done Nov 23: each Bond type now has 7 Close scenes (32 new), so a season of visits to the same close Bond never repeats one.
 - [x] Creator look fixes (spec 022, Part 3): the backstory in a detail box, the map and battle sprites under the face on Identity, AGENT ??? before Big Hat names the agent, and a solid box over a darker Dossier
   Done Nov 23: Identity shows the full backstory in a box at the bottom and the map and battle sprites under the face; the Dossier reads AGENT ??? until Big Hat names the agent, and his box is solid over a darker Dossier.
-- [ ] Good Manners part A (spec 010): its maps and art, townsfolk and the two men, walkable with stand-in scripts. After the season flow
+- [x] Good Manners part A (spec 010): its maps and art, townsfolk and the two men, walkable with stand-in scripts. After the season flow
+  Done Nov 23: Good Manners pins on the board. Its town, street, fairground and rooms all walk by day and night, every door and drive goes where it should, everyone has a sprite and a talking face, and Big Hat briefs from a new place.
 - [ ] Good Manners part B (spec 010): the secret case file first, then its story, fights, boss and endings
 - [ ] Lot 83 part A (spec 011): its maps and art, the tented night, townsfolk and Walt, walkable with stand-in scripts. After Good Manners
 - [ ] Lot 83 part B (spec 011): the secret case file first, then its story, fights, boss and endings
