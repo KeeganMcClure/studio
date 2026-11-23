@@ -48,7 +48,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
     Done Nov 23: the creator picks she, he or they and a slim or broad build that shows on the face, map and battle sprites; Bonds get pronouns too; every line about an agent or Bond follows them, and old agents open as they with the broad build.
   - [x] Creator: one-word pop-culture code names (spec 022) that Big Hat gives on the Dossier step, from a tagged list of about 60, with new template names (Agents and items → Agent creator, Code names)
     Done Nov 23: Big Hat gives a one-word pop-culture code name on the Dossier in his dialog box, with Take it, Another or Type my own; template agents have new hand-picked names, and old agents keep theirs until they ask.
-- [ ] Home phase part C (spec 008): enough home scenes for a season, with the played list kept in the season save. Before the season flow
+- [x] Home phase part C (spec 008): enough home scenes for a season, with the played list kept in the season save. Before the season flow
+  Done Nov 23: every home scene choice now draws from a pool big enough for a season, and the same scene doesn't come back until the rest have played; the game remembers what played across the whole season, even after a reload.
 - [ ] Season flow (spec 009): the season data file, the board for a full season, agency case unlocks, the finale, the season's end and the next season. After the home phase
 - [ ] Good Manners part A (spec 010): its maps and art, townsfolk and the two men, walkable with stand-in scripts. After the season flow
 - [ ] Good Manners part B (spec 010): the secret case file first, then its story, fights, boss and endings
