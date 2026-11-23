@@ -93,18 +93,28 @@ async function checkRushlight(page, base) {
   await page.click(cover(RL));
   await page.waitForURL(/\/studio\/dev\/rushlight\/$/);
   await page.waitForTimeout(500);
-  // Start a draft agent the way Quick roll does, so the game writes its own save
-  await page.evaluate(() => { RL.S.a = RL.randomAgent(); RL.store.set(RL.key('draft'), RL.S.a); });
+  // Roll a company of three with the game's own dice, open its Muster roll and sign it on with the real button,
+  // so the game writes its own run save (Rushlight spec 003: the company creator replaced the one-agent creator)
+  await page.evaluate(() => {
+    const seed = 'SHELF', st = RL.streams(RL.seedNum(seed)), R = StudioSeed.load(st.muster), used = [];
+    const seats = ['a', 'b', 'c'].map(() => { const c = RL.rollDraft(R, RLS.TRADES[0].id, used); used.push(c.name, c.kin.name); return c; });
+    RL.S.draft = { seed, mpos: R.save(), tpl: 'blank', seats, kept: [true, true, true], used, name: 'Shelf Check' };
+    RL.S.review = 0; RL.goto('review'); RL.render();
+  });
+  await page.click('#list .row:has-text("Sign them on")');
+  await page.waitForFunction(() => window.RLG && RLG.active, null, { timeout: 5000 });
   const keys = await page.evaluate(() => Object.keys(localStorage).filter((k) => /^(dev\.)?rl\./.test(k)));
-  ok(keys.includes('dev.rl.draft') && !keys.some((k) => k.startsWith('rl.')), 'Dev Rushlight saves under dev.rl.*, nothing under rl.*');
+  ok(keys.includes('dev.rl.run') && !keys.some((k) => k.startsWith('rl.')), 'Dev Rushlight saves under dev.rl.*, nothing under rl.*');
+  await page.goto(base + 'dev/rushlight/');
+  await page.waitForTimeout(500);
   await page.click('#list .row:has-text("Game shelf")');
   await page.waitForURL(base);
   ok(true, 'Game shelf row goes back to the shelf');
   ok(await page.isVisible(cont(RL)), 'Continue appears for Rushlight after a Dev save');
   await page.click(cont(RL));
   await page.waitForURL(/\/studio\/dev\/rushlight\/\?continue=1$/);
-  const step = await page.waitForFunction(() => window.RL && RL.S.step === 'dossier', null, { timeout: 5000 }).then(() => true, () => false);
-  ok(step, 'Continue opens straight into the draft agent');
+  const back = await page.waitForFunction(() => window.RLG && RLG.active, null, { timeout: 5000 }).then(() => true, () => false);
+  ok(back, 'Continue opens straight into the saved run');
   await page.goto(base);
   await page.click('#openSettings'); await page.click('#channel [data-ch=release]'); await page.click('#closeSettings');
   await page.evaluate(() => Object.keys(localStorage).filter((k) => /^(dev\.)?rl\./.test(k)).forEach((k) => localStorage.removeItem(k)));
