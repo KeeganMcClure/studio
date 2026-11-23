@@ -46,13 +46,14 @@ Picked pitch: `pitches/<round file>.md`, option <letter>, picked <date>.
 | Length | 1–2 hours, or Part 1 and Part 2 if Keegan split it |
 | Open or quiet | Open (badges) or quiet (undercover); Overstepping's first step follows |
 | Day and night | Which beats turn it to night; any clock |
+| Points of no return | Each beat that turns the day, and what it closes for good (maps, people, items), so each gets its Go on / Not yet line (`studio-bible/play.md`; Systems → Gameplay loop, Turning the day). The boss waits for you |
 | Maps | Each area by name, with its size and whether it's a danger zone |
 | Story fights | 2–3, each with its threat skulls; human or unnatural |
 | Danger zones | 0–2, with how many roamers and what each guards |
 | Boss | Threat 3; the kind of weakening choice (by type, not what it is); target 8–12 rounds |
 | Clue style | Threshold plus bonus, or clues as keys; how many clues and how many to move on |
 | Skills it calls on | The 8–10 skills, so a template team can always find a way through |
-| Motivation moments | 1–2, and which motivation types they aim at |
+| Motivation moments | 1–2, and which motivation types they aim at. Check the season's spread so all nine types get a moment (Systems → Motivations, Every motivation, every season) |
 | Horrors | Rough count per tier, inside the case budget (SAN loss table) |
 | Ending labels | For example `clean`, `costly`, `worst` |
 | Lantern Boxes and loot | How many boxes; the loot table's size; any case-only items, ordinary or unnatural |

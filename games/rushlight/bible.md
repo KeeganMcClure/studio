@@ -134,6 +134,33 @@ I am thinking that I want it to be a procedurally generated rogue like where you
 
 **Bestiary reference (Nov 19):** [Archives of Nethys](https://2e.aonprd.com/), the open Pathfinder 2e rules site, as a creature source for the Creatures task. Since Nov 21 it's the first source for every batch (Creatures: Archives of Nethys). It's a d20 system, so stats get converted to Rushlight's percentile rules rather than copied, and only creatures that can read as non-fantasy (cryptid, cosmic, folklore) are candidates.
 
+## Screens
+
+Every screen you can see, in play order (studio rule: `studio-bible/studio.md`, Screen list, set Nov 23, 2026). A spec that adds a screen adds its row here. Specs are in `specs/`.
+
+| Screen | What you do there | Spec |
+| --- | --- | --- |
+| Title | New run, Continue, Import, Game shelf; a typed seed | 003 (1, 2) |
+| Pick a company | Pick a company template, roll or build each seat | 003 (3, 4) |
+| Merc creator | Build one merc step by step, faces included | 003 (5, 6) |
+| Muster roll | The whole merc on one page, then Sign on | 003 (7) |
+| Region map | The chart, road card, Key on L, Contracts on R | 004 (3) |
+| Travel, camp and inn | Days on the road, rations, a night's rest | 004 (4, 5) |
+| Road events | Events rolled on each travel day | 004 (6) |
+| Town streets | Walk Harrowford and Saint Ebbe's | 005 (1) |
+| Notice board, givers and the contract card | Read and take contracts | 005 (2, 3), 006 |
+| Hiring, shops and services | Hire mercs, buy, rest, heal | 005 (4, 5) |
+| Map menu | Start: Party and its merc cards, items and the rest of the bible's rows | 002 (4), 004 (3); rows: Skills and menus → Map menu |
+| Dialog box | Talk, signs, narration, questions | 001, `studio-bible/ui.md` |
+| Contract site | Walk a job's site, hotspots, signs, caches | 006 (D1 1, 4, 5, 6) |
+| Battle | Fight in the shell | 002 (3), 006 (D1 2) |
+| Pay screen | Pay, XP and trophies after a job | 006 (D1 7, 8) |
+| Bestiary | What the company knows about each creature | 006 (D1 9) |
+| Lowmoor Pit | The great creature's den and fight | 007 (1, 2) |
+| Burial | Bury a dead merc, or leave them in a ditch | 007 (4) |
+| Death screen | A wipe ends the run, with its seed | 007 (6) |
+| Ledger | One line per merc, one entry per company | 007 (5, 6) |
+
 ## Overview
 
 **Pitch.** Rushlight is a procedurally generated roguelike for the phone. You run a party of 3 mercenaries across the Empire, a fictional land of woodland creatures with a 1400s Central Europe feel, taking contracts in towns to hunt the things in the dark: cosmic and cryptid creatures most people won't believe in. The pay is never enough, so the party takes what work it can get, and as often as not the fight is with people. Each run crosses a chain of new regions, each with one great creature at its heart; when the whole party is dead, the run is over. The Witcher, with woodland creatures and almost no magic.

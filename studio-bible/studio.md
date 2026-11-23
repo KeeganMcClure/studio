@@ -21,6 +21,7 @@ The loop for each feature and the bug route are in the README; the Developer's r
 
 - Anything two games could use (combat, dialogue, saves, input, menus) goes in `engine/`, never inside one game.
 - Spoiler wall: work on one game never opens another game's story or case files. Fixing shared code means reading only the code file involved.
+- **Shared rules start here (set Nov 23, 2026).** A new rule about screens, controls, UI, art or saves goes into `studio-bible/` first. A game's `bible.md` then adds only its own colors, contents or a named exception. Only rules about one game's story, theme or systems start in that game's bible. Why: full screen was tried and reversed in both games, and the party menu and the corner-portrait rule each started in one game and moved here later.
 
 ## Roles
 
@@ -37,12 +38,36 @@ The loop for each feature and the bug route are in the README; the Developer's r
 - The Designer changes bibles and specs only through GitHub pull requests, one per change. Keegan merges. Never straight to `main`.
 - Mockups are made by the Designer. Final sprites follow `art-style.md` and go in the game's `assets/` folder as drawing code, so nothing gets redrawn.
 
+## Screen list
+
+Set Nov 23, 2026, after Black Lantern's intro was built without any spec covering it.
+
+- Each game's `bible.md` keeps a **Screens** section: one row per screen the player can see, in play order from the title to game over (title, intro, creator, map, menus, battle, endings and so on).
+- Each row names the spec that covers it. A screen with no spec is a gap: the Designer writes or extends a spec before it's built, and the Developer asks before building a screen that isn't on the list.
+- A spec that adds a screen adds its row in the same PR.
+
 ## Design Inbox
 
 - Keegan writes changes and comments in the [Design Inbox](https://claude.ai/artifact/7rVc59Lu79KGHHmQ4bVY7H) doc.
 - It is an inbox, not a bible: the Designer moves each item into the repo, ticks it, and replies in its comment thread with where it went.
 - Its New game ideas section is a parking lot for future games and is never cleared.
 
+## Playtests
+
+Set Nov 23, 2026, after Rushlight's look fell well behind Black Lantern's and nobody saw it until all five slice parts were built.
+
+- Before Keegan plays, the Developer puts each new or changed screen side by side with its approved mockup at 375 × 667, fixes anything that falls short, and says in the changelog entry that the check was done.
+- Keegan plays on the phone after the first part of a spec or slice that adds new screens. The Developer waits for those notes before building the next part that adds screens, so a look or feel problem is fixed before it spreads. Parts that only add rules or content can go ahead.
+
 ## Changing a rule
 
 Locked rules change only on purpose. Change the bible file first in a PR, note the date, then update anything that depends on it.
+
+## Specs
+
+Set Nov 23, 2026, after Rushlight's spec 003 said the mercs follow the lead while the bible said only the lead walks, and the spec got built.
+
+- **The bible beats a spec.** A spec links to the bible rules it relies on (file and section) instead of writing them out again, so the two can't drift apart.
+- A spec that changes a rule says so on a line starting **Rule change:**, and the bible change goes in first, in its own PR.
+- Before a spec PR opens, the Designer checks every line in it that touches a rule against the bible section it cites.
+- If the Developer finds a spec and a bible disagree, they stop and ask Keegan before building that part, as `CLAUDE.md` says. The rest of the spec can go ahead.

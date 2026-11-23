@@ -16,6 +16,8 @@ Sources: Black Lantern Art and Rushlight Art (Look, Art across games, Palette), 
 - Detailed pixel art with Stardew Valley's craft: proportions, animation, big heads and chunky bodies. Not chunky 8-bit.
 - Dark outlines and hard shading on the shadow side. A light rim on the lit edge for portraits and battle sprites only; map sprites skip it.
 - Maps: Stardew-style 3/4 top-down. You see building fronts and faces.
+- Maps are lit (set Nov 23, 2026): every map has a light direction, a shadow under each building, prop and character, and light sources (lamps, windows, fires) that glow at dusk and night. Daylight maps still shade; nothing is flat fill.
+- Maps are dressed (set Nov 23, 2026): no stretch of bare floor wider than about 3 tiles on screen. The ground varies (worn paths, puddles, moss, cracks), props break up open space, and the edges are framed with trees, walls or buildings, so the screen never ends on blank ground. A game whose bible bans texture (Life After) does this with flat shapes and tone, not grain.
 - Scale "Wide": 16 px tiles, characters in a frame of about 14 × 26 px.
 - Portraits: 64 × 64 in the dialog box.
 - Talking: a two-frame mouth flap at 140 ms a frame, in bursts while text types, then a rest.
