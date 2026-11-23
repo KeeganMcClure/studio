@@ -281,7 +281,7 @@ function fx(ctx,o){const M=o.M,N=o.night;
   if(p.tv&&Math.floor(o.now/700)%3===0){ctx.fillStyle='rgba(200,220,255,.18)';ctx.fillRect(Math.round(x-10),Math.round(y-36),20,16)}
   if(p.juke){const k=Math.floor(o.now/260)%4;ctx.fillStyle=['#ff5a6a','#5ae0d0','#f0c040','#ff8a5a'][k];ctx.fillRect(Math.round(x-6+k*3),Math.round(y-50),2,2)}});
  if(M.id==='cannery'){for(let i=0;i<5;i++){const x=(2+i*4)*T+8-o.camx,ph=((o.now/1000)*(.6+i*.13)+i*.37)%1,y=3*T+ph*(7*T)-o.camy;ctx.fillStyle='rgba(190,210,230,.55)';ctx.fillRect(Math.round(x),Math.round(y),1,3)}}
- if(N){const lx=G.px+8-o.camx,ly=G.py+6-o.camy,lr=58;ctx.globalCompositeOperation='multiply';let gr=ctx.createRadialGradient(lx,ly,0,lx,ly,lr);
+ if(N){const lx=G.px+8-o.camx,ly=G.py+6-o.camy,lr=58*(M.lanternK||1);ctx.globalCompositeOperation='multiply';let gr=ctx.createRadialGradient(lx,ly,0,lx,ly,lr);
   gr.addColorStop(0,'rgba(240,196,120,.7)');gr.addColorStop(1,'rgba(240,196,120,0)');ctx.fillStyle=gr;ctx.fillRect(lx-lr,ly-lr,lr*2,lr*2);
   ctx.globalCompositeOperation='lighter';gr=ctx.createRadialGradient(lx,ly,0,lx,ly,lr*.5);gr.addColorStop(0,'rgba(214,164,58,.14)');gr.addColorStop(1,'rgba(214,164,58,0)');ctx.fillStyle=gr;ctx.fillRect(lx-lr,ly-lr,lr*2,lr*2);
   ctx.globalCompositeOperation='source-over'}}
@@ -322,11 +322,17 @@ function dog(dir){const v=art(30,24,2,2,S,({R,E,C})=>{const fur='#8a6a4a',boot='
  if(dir==='side'){E(14,13,10,5,fur);R(6,16,3,6,boot);R(19,16,3,6,boot);R(23,10,5,2,fur);C(6,8,5,fur);R(1,9,3,2,fur);R(4,2,2,4,shade(fur,-.3));R(3,7,2,2,'#14101a');R(1,10,1,1,'#14101a');return}
  E(13,14,8,6,fur);R(8,17,3,5,boot);R(15,17,3,5,boot);C(13,8,5,fur);R(7,2,3,5,shade(fur,-.3));R(16,2,3,5,shade(fur,-.3));R(10,7,2,2,'#14101a');R(14,7,2,2,'#14101a');R(10,7,1,1,'#ffffff');R(14,7,1,1,'#ffffff');R(12,11,2,1,'#14101a')});
  v.ax=v.sx(13);v.ay=v.sy(22);return v}
+// the bull on the dock (part B): a sea lion hauled out on the pier, head up, looking at you and not blinking
+function bull(){const v=art(46,30,2,2,S,({R,E,C})=>{const b='#7a5a3a',bd=shade(b,-.3);
+ E(20,22,18,6,bd);E(19,21,17,5,b);R(2,24,6,3,bd);E(34,14,7,9,bd);E(33,13,6,8,b);E(37,7,6,5,b);E(42,9,3,2,shade(b,.1));
+ R(33,5,3,3,'#f4efe6');R(39,5,3,3,'#f4efe6');R(34,6,1,1,'#14101a');R(40,6,1,1,'#14101a');R(44,9,1,1,'#14101a');R(28,26,5,2,bd);R(36,26,5,2,bd)});
+ v.ax=v.sx(22);v.ay=v.sy(28);return v}
 const fcache=new Map();
 function folk(id,dir,idle=0,M){
  const k=id+dir+idle;let v=fcache.get(k);if(v)return v;
  if(dir==='right'){const l=folk(id,'left',idle,M),c=K.mk(l.c.width,l.c.height),g=c.getContext('2d');g.translate(c.width,0);g.scale(-1,1);g.drawImage(l.c,0,0);v={c,ax:c.width-l.ax,ay:l.ay}}
  else if(id==='dog'){const d=dog(dir==='left'?'side':dir);v={c:d.c,ax:d.ax,ay:d.ay}}
+ else if(id==='bull'){const d=bull();v={c:d.c,ax:d.ax,ay:d.ay}}
  else{const F_=FOLK[id]||FOLK.ray,d=dir==='left'?'side':dir,L=F_.look,sk=SKIN[L.skin];
   const sp=Object.assign({skin:sk,hair:sk,hairStyle:'cropped',iris:F_.iris||'#3a2418'},F_);
   const a=art(40,90,6,30,F_.s||S,Ad=>{K.drawChar(Ad,sp,d,0,idle);BLA.extras(Ad,{look:L},dir,0);topper(Ad,F_,d)});

@@ -90,6 +90,25 @@ const BOSSES = {
     setup: s => { const F = G.flags; F.ph = 3; F.carrier = s.carrier; F.light = s.light || null; F.unfolded = s.card ? 1 : 0; delete F.taken; delete F.takenAgent; delete F.folded; delete F.revenge;
       G.clues = G.clues.filter(c => !['memory1', 'memory2'].includes(c.id)); if (s.count) G.clues.push({ id: 'memory1', text: '' }, { id: 'memory2', text: '' }); G.fs.ident = []; goMap('field', 15, 12, 'up'); },
   },
+  // LANTERN 01 (spec 014 part B): its weakening choices are his service record in hand (−6 HP; reading his name, here
+  // taken as read in phase 1, drops phase 2's shield), the Psalter's page burned (−8 HP, no phase-2 heal) and the right
+  // deduction (−6 HP, Identify free, and the van's brine: its weakness, 3 throws). "all" makes every choice. An agency
+  // case isn't on the board until it unlocks, so prep pins it first (as the Dev shortcut does).
+  tenant: {
+    case: 'lantern-01',
+    entry: 'l01Boss',  // lantern-01.js: bossFight without the ending
+    prep: () => { const s = loadSeason(); if (!s.agency.some(a => a.id === 'lantern-01')) s.agency.push({ id: 'lantern-01', played: true }); s.cases['lantern-01'] = { file: 1, state: 'open', ending: null }; store.set(seasonKey(), s); },
+    scenarios: [
+      { label: 'none' },
+      { label: 'record read', record: 1, named: 1 },
+      { label: 'burned', burn: 1 },
+      { label: 'brine', brine: 1 },
+      { label: 'all', record: 1, named: 1, burn: 1, right: 1, brine: 1 },
+    ],
+    setup: s => { const F = G.flags; F.ph = 1; F.coat = 1; F.canIn = 1; F.named = s.named ? 1 : 0; F.talked = 0; F.burn = s.burn ? 'safe' : null; F.deduce = s.right ? 'right' : 'half';
+      G.clues = G.clues.filter(c => c.id !== 'record'); if (s.record) G.clues.push({ id: 'record', text: '' }); G.fs.ident = [];
+      if (s.brine) gearOf(party[0]).it.push(newItem('brine')); goMap('cannery', 12, 4, 'up'); },
+  },
 };
 
 const args = process.argv.slice(2);
@@ -176,6 +195,8 @@ function installPage() {
     // low with no heal coming from anyone: Slip (Dodge 40+) or Defend
     if (m.hp <= 4 && !team.some(x => x !== m && (canMove(x, 'patch') || healItem(x)))) return { c: 3, row: skillVal(m.a, 'Dodge') >= 40 ? 1 : 0 };
     if (!e) return { c: 0 };
+    // salt water (a can of brine) against things that can't stand it
+    const br = hasIt(m, 'brine'); if (br && e.weak === 'salt') return { c: 2, row: itemsRow(m, br), t: e };
     // fire against things that burn
     const mo = hasIt(m, 'molotov'); if (mo && ((e.tags || []).includes('burns') || e.weak === 'fire')) return { c: 2, row: itemsRow(m, mo), t: e };
     // Spot weak point when the agents acting before the boss's next turn gain more than this agent's own shot
@@ -266,6 +287,7 @@ function summarize(recs) {
   await row('New game'); await page.waitForTimeout(150);
   await row(TEAM); await page.waitForTimeout(150);
   await page.keyboard.press('Enter'); await page.waitForTimeout(300);  // Start on Your team: the case board
+  if (BOSS.prep) await page.evaluate(BOSS.prep);
   await page.evaluate(id => { const i = boardTargets(boardLayout()).findIndex(t => t.id === id); if (i >= 0) CB.sel = i; }, BOSS.case);  // the boss's case card
   for (let i = 0; i < 400 && !await page.evaluate(() => !!localStorage.getItem('bl.game')); i++) { await page.keyboard.press('z'); await page.waitForTimeout(50); }
   const cp = await page.evaluate(() => localStorage.getItem('bl.game'));

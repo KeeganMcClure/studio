@@ -193,6 +193,7 @@ async function attack(m,t,o={}){
  return{hit:true,crit:r.crit,dmg}}
 function toBack(e){const i=Bt.queue.indexOf(e);if(i>0){Bt.queue.splice(i,1);Bt.queue.push(e)}}
 async function hurtFoe(e,d,src){
+ if(e.onHurt)d=e.onHurt(e,d,src);  // a case's own damage rule (LANTERN 01's boss: a shield in its second phase)
  e.hp=Math.max(0,e.hp-d);e.flash=16;e.shk=10;floatOn(e,fillT(BL_.dmgFloat,{h:d}));if(src)e.lastHit=src;
  if(e.hp<=0&&!e.dead){e.dead=true;if(e.grapBy){e.grapBy.grap=null;e.grapBy=null}await bsay(fillT(BL_.eDie,{e:e.name,d:e.die||'falls'}),1000);return}
  // a boss's second phase (stand-in until Part C designs the Gleaner's phases)
@@ -379,6 +380,7 @@ async function foeTurn(e){
  // Bleeding and Poisoned take 2 HP a turn from enemies (bigger bodies, bigger HP)
  if(chip(e,'bleed')){await bsay(fillT(BL_.eBleed,{e:e.name,h:2}),800);await hurtFoe(e,2,null);if(e.dead)return}
  if(chip(e,'poison')){await bsay(fillT(BL_.ePoison,{e:e.name,h:2}),800);await hurtFoe(e,2,null);if(e.dead)return}
+ if(e.onTurn){await e.onTurn(e);if(e.dead)return}  // a case's own start-of-turn rule (LANTERN 01's boss heals in its second phase)
  if(e.stun>0){e.stun--;e.lastStun=Bt.round;await bsay(fillT(BL_.eStunned,{e:e.name}),900);return}
  // Grapple: it rolls its attack % against the grappler's Melee to break free
  if(e.grapBy){const g=e.grapBy;if(g.ko||g.dead||g.out){g.grap=null;e.grapBy=null}else{
