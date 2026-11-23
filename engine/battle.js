@@ -3,7 +3,8 @@
 // It knows nothing about any game's rules: the game says who is in the fight, what the rows say, its colors and words.
 //
 //   StudioBattle.layout(w, h, o)       rects for a w × h canvas: scene, strip (party cards), cmd (command box),
-//                                      col (turn-order column), and the baselines agentY and enemyY (o.tallest: tallest enemy;
+//                                      col (turn-order column), the baselines agentY and enemyY, and over (true when a tall enemy's
+//                                      feet stand behind the agents: draw its bar and name after them) (o.tallest: tallest enemy;
 //                                      o.detailLines: lines the command box's detail may wrap to, default 1)
 //   StudioBattle.turnColumn(c, T, x, y, faces, maxH)   small faces down the left edge, the one acting first and bigger;
 //                                      faces: [{img, foe, out}] (img: a canvas or null; out: drawn greyed, e.g. a
@@ -35,14 +36,18 @@
 
   // The mockup's proportions on a 240 px wide canvas: the command box (a row and a detail line) along the bottom,
   // the party cards just above it, the scene above those with enemies in its top half and agents at its foot.
-  // o.tallest: the tallest enemy sprite, so its head stays on screen (the baseline drops for it, never into the agents)
+  // o.tallest: the tallest enemy sprite, so its head stays on screen. The baseline drops for it, keeping clear of the
+  // agents (AGENT_ROOM) when the scene is tall enough; on a shorter screen the head still wins and the enemy's feet
+  // stand behind the agents' heads (over: true, so the game draws enemy bars and names after the agents)
   const DL = 10;  // a detail line's height
+  const AGENT_ROOM = 66, TOP = 6;  // the agents' heads and the enemy's bar under its feet; the gap above the head
   function layout(w, h, o) {
     const cmdH = 40 + DL * (((o && o.detailLines) || 1) - 1), stripH = 27, cmd = { x: 2, y: h - cmdH - 2, w: w - 4, h: cmdH };
     const strip = { x: 0, y: cmd.y - stripH - 1, w, h: stripH };
     const scene = { x: 0, y: 0, w, h: strip.y }, tall = (o && o.tallest) || 0;
-    const enemyY = Math.round(Math.min(scene.h - 66, Math.max(scene.h * 0.5, tall + 6)));
-    return { scene, strip, cmd, col: { x: 2, y: 3, w: 22 }, agentY: strip.y, enemyY };
+    const clear = scene.h - AGENT_ROOM, want = Math.max(scene.h * 0.5, tall + TOP);
+    const enemyY = Math.round(Math.min(want <= clear ? want : Math.max(clear, tall + TOP), scene.h - 2));
+    return { scene, strip, cmd, col: { x: 2, y: 3, w: 22 }, agentY: strip.y, enemyY, over: enemyY > clear };
   }
 
   function turnColumn(c, T, x, y, faces, maxH) {
