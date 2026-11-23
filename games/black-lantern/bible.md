@@ -110,6 +110,9 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
   Done Nov 21: one copy of each now lives in the studio's `engine/` (`engine/shelf.js`, `engine/dialog.js`), shared with Rushlight, with a sync step that brings in a new version from the source page and a check that fails if either is edited by hand.
 - [x] Big Hat's briefing rework (spec 013): Big Hat drawn from his portrait, large and center in the back room; no corner portrait while he's on screen; two questions from four topics, each an INTEL note and a small edge; the new briefing lines
   Done Nov 22: Big Hat in the back room is now his portrait drawn twice as big, behind the desk, and the old desk sprite is gone. His lines in his own scene show just the name tab. At each briefing you ask two of four questions (or none), and each answer adds an INTEL note to the Case file and a small edge in the case. The briefing has the new lines.
+- [ ] Leftovers from the demo build (found in the pre-season review, Nov 23): two things the bible asks for that were never built
+  - [ ] B skips a briefing or cutscene you've already seen (Skills and menus → Quality of life, Skip replays; spec 006)
+  - [ ] Mushrooms' screen shimmer while High on them (Agents and items → Item list)
 - [ ] Demo playtest fixes (Keegan's notes, Nov 23): build the rule changes from the playtest. Tick this when all eight are done
   - [ ] Hide skill options nobody in the party can use, at hotspots, on the map menu's Skills row and in battle (Skills and menus → Using skills; Combat → Basics, Command menu)
   - [ ] Creator: a bonus pick that would pass 80% stops at 80% (Agents and items → Agent creator, step 3)
@@ -413,7 +416,7 @@ Big Hat is the only character who appears in every case; his 64 × 64 calm and s
 - **Units:** teams carry a founding name until they're wiped out; a fallen member is replaced by someone with similar skills.
 - **Big Hat:** legally doesn't exist; nobody learns his backstory. His thick country accent may be fake, and agents suspect the huge hats keep anyone from describing his face. He hands out gear in absurd packaging, like pink Walmart gift bags. His look stays as set in Cast.
 
-**Case board.** You pick a case from a board, which opens Big Hat's briefing for it. Each case is a self-contained module. The board is a cork board of pinned case cards (decided Nov 21; mockup listed in Art, Reference mockups). Each card shows its file number, title and town; the D-pad moves a cursor between cards, and the selected card opens a description box at the bottom (place, a two-line hook, A for the briefing, B to back out). A closed case is stamped CLOSED, then moves to a CLOSED pile in the board's corner; A on the pile lists every closed case (set Nov 22, spec 009, replacing "closed cases stay pinned"). The board always shows six open regular cases: the rest of the season's cases wait in a hidden queue, in the season data file's order with no randomness (Keegan, Nov 23, after the demo playtest), and when one closes the next pins into its spot, until the queue runs out (Keegan, Nov 22). An open agency case pins in the bottom row, over Big Hat's sticky note, one at a time, beside the pile and the memorial plaque. The board always fits, so there is no plain list.
+**Case board.** You pick a case from a board, which opens Big Hat's briefing for it. Each case is a self-contained module. The board is a cork board of pinned case cards (decided Nov 21; mockup listed in Art, Reference mockups). Each card shows its file number, title and town; the D-pad moves a cursor between cards, and the selected card opens a description box at the bottom (place, a two-line hook, A for the briefing, B to back out). A closed case is stamped CLOSED, then moves to a CLOSED pile in the board's corner; A on the pile lists every closed case (set Nov 22, spec 009, replacing "closed cases stay pinned"). The board always shows six open regular cases: the rest of the season's cases wait in a hidden queue, in the season data file's order with no randomness (Keegan, Nov 23, after the demo playtest), and when one closes the next pins into its spot, until the queue runs out (Keegan, Nov 22). An open agency case pins in the bottom row, over Big Hat's sticky note, one at a time, beside the pile and the memorial plaque. The board always fits, so there is no plain list. When a case closes, the next case from the queue takes its spot and the other cards stay put (the season save keeps which case sits in each spot), and the agency folder pins in the bottom row's right spot (accepted Nov 23, 2026 from the Developer's logged calls). Finishing a case goes straight to the board.
 
 The demo case, "Operation Still Harvest," is built and playable. It's the test build, not a chapter one.
 
@@ -611,6 +614,7 @@ A disorder is the lasting scar of a Breaking Point. It stays quiet until its tri
   - The unnatural (seeing it, learning about it): Paranoia or Phobia. Phobia takes its subject from the horror that caused it.
   - Addiction never comes from a Breaking Point, only from drugs.
 - **Flaring:** when a trigger hits, the agent rolls SAN. Pass: they hold it together. Fail: the disorder flares for the rest of the scene (in a fight, the rest of the fight). At most one flare per disorder per scene. Addiction skips the roll.
+- **Built calls (accepted Nov 23, 2026 from the Developer's logged calls):** an arc's bad ending that would name a disorder outside these six uses the closest of the six.
 - **Who checks:** a trigger the agent has to see or hear checks only the lead on the map, and everyone in cutscenes and battles, the same as SAN rolls. A trigger that happens to the whole party (a rest, a death, a new case) checks every agent with that disorder.
 - **Calming a flare:** the Therapist's sedatives or Medicine's Sedate end it for the scene.
 - **Between flares:** nothing. A disorder only costs something when it flares.
@@ -624,6 +628,7 @@ Statuses are short-term conditions that end within a case. Map and combat rules 
 
 - **Who has them:** any agent. Damage ticks hit whoever has the status; roll penalties matter only for whoever rolls (on the map, usually the lead). Icons show in the party menu and beside HP and SAN.
 - **Ticks on the map:** each area or room change.
+- **Map floor and scenes (accepted Nov 23, 2026 from the Developer's logged calls):** status damage on the map stops at 1 HP; in a fight, Bleeding and Poisoned can Down an agent. On the map, "the rest of the scene" ends at the next area change. SAN rolls take no status penalties except Mushrooms'.
 - **Ending:** every status clears at the end-of-case heal-up. Disorders (from SAN) and lasting injuries carry between cases.
 - **Lasting injuries:** separate from statuses and long-term, Delta Green style: a serious wound can leave a lasting injury, such as a lost stat point or a limp. The table, tiers and odds are under Lasting injuries in the Combat tab (set Nov 20).
 - **Drunk and High:** mostly the player's choice, with trade-offs; sometimes forced by the story or an enemy.
@@ -681,6 +686,8 @@ Picking a home scene plays a quick cutscene that changes with who the Bond is an
 
 **One choice per agent.** Between cases, each agent picks exactly one home scene option from the table below, never several. Within an option that offers an "or" (like Personal Motivation), the agent also does only one of them.
 
+**Built calls (accepted Nov 23, 2026 from the Developer's logged calls):** a scene plays straight after its pick, so B on the home list does nothing (B backs out of the Bond picker and sub-menus). New Bond offers four names or a typed one. A mixed arc ending's Bond cost never takes a Bond below 1. A recruit covering a Sabbatical gets no home scene that break.
+
 | Choice | Effect |
 | --- | --- |
 | Fulfill Responsibilities | SAN roll. Success: +1d6 to a Bond (up to CHA). Crit: also +1 SAN. Fumble: −1d4 Bond and −1 SAN. |
@@ -725,6 +732,7 @@ Picking a home scene plays a quick cutscene that changes with who the Bond is an
 - Tweak keeps each Bond's type; only Rebuild changes it. Tweak never touches profession, stats or skills.
 - Done checks every step and jumps to the first unfinished one: all 8 picks spent, a name, both Bonds named, 2 motivations with a Main.
 - Start files all 3 agents to the roster and begins the case with seat 1 as the lead.
+- New game asks first when a case is closed or past Season 1, since it starts the seasons over (accepted Nov 23, 2026 from the Developer's logged calls).
 - Each agent keeps a codename, since case dialog uses it. Given at the Dossier step since Nov 23 (Code names, above); it was on the Identity step before.
 - Until Demo 5: each profession borrows 2 of the old battle abilities, and play still uses the old shared item pack; the creator already shows the Bible's kit and weapon. Weapons use the Combat numbers dice.
 - Old agents converted to the nearest new profession (Federal Agent to Investigator, Priest to Therapist, Ice Cream Truck Driver to Talker, and so on); picks in cut skills are dropped, so a converted agent can have fewer than 8.
@@ -761,7 +769,7 @@ Every agent carries a handgun. Six professions also carry a better weapon and a 
 | Profession | Weapon | Item |
 | --- | --- | --- |
 | Shooter | Assault rifle: +2 damage, Loud | Painkillers, 1 use: heal 1d4 HP |
-| Bodyguard | Shotgun: +3 damage, −20% to hit | Zip ties, once per case: tie up a beaten human enemy for an extra clue at the debrief |
+| Bodyguard | Shotgun: +3 damage, −20% to hit | Zip ties, once per case: tie up a beaten human enemy (one at a quarter HP or less, or Stunned) for an extra clue at the debrief |
 | Park ranger | Hunting rifle: +4 damage, can't fire two turns in a row | Bear spray, once per case: a beast-like enemy is Stunned |
 | Tracker | Compound bow: handgun damage, silent (never draws roamers) | Snare trap, once per case: a roamer is caught and you slip past, or the fight opens with it Stunned |
 | Bruiser | Baseball bat: +1 damage, quiet | Energy drink, 1 use: clears Exhausted, +1d4 WP |
@@ -923,6 +931,7 @@ Cut: Art, and Vehicles (Drive, Ride, Heavy Machinery): no stake, so driving happ
 - **Away from hotspots:** a few skills work anywhere from the map menu's Skills row (see Map menu below).
 - **Swapping leads:** anytime from the party menu, except during a fight or cutscene.
 - **Unlocks:** each skill unlocks at least 3 actions or abilities, at 40%, 75% and 90%. An unlock gives you the action; a percentile roll against the skill still decides whether it works. Higher tiers can add perks such as rerolls or a once-per-case auto-success. Creation cap stays 80%, so 90% unlocks are earned in play, through failure growth and the Improve Skill home scene (see Between cases). Skills cap at 99%. Each skill's unlocks are in Skill unlocks below.
+- **Built calls (accepted Nov 23, 2026 from the Developer's logged calls):** a 90% once-per-case auto-success fires by itself on that skill's first failed roll of the case. A hotspot whose only option is Look plays it at once.
 
 ### Skill unlocks (set Nov 18)
 
@@ -989,7 +998,7 @@ Press Start on the map to open it. It's the same navy list box as the battle com
 - **Case file:** a Next line with the current goal at the top, then each clue found with a one-line note, so you never get lost between sittings. A Rules page lists every status, item icon and threat skull.
 - **Log:** rereads the last 30 or so dialog boxes, since clues hide in what people ramble about.
 - **Settings:** one toggle, Fast battles, that speeds up battle animations and result lines. It's the only setting for now.
-- **Save:** saves to the one slot. Autosaves still happen.
+- **Save:** saves to the one slot, then asks Keep playing or Quit to title (the menu has no quit row) (accepted Nov 23, 2026 from the Developer's logged calls). Autosaves still happen. Retch sits in the Skills row.
 - **Select button:** cycles the lead agent on the map without opening the menu, in seat order; it works inside Party too (set Nov 21, spec 002).
 
 ### Quality of life (set Nov 19)
@@ -1027,6 +1036,7 @@ Small comforts for short phone sittings. None of them change a rule; they save t
 - **Command menu (set Nov 18):** a one-row box along the bottom in the dialog-box style (navy, cream border) with Fight, Skills, Items and Guard. D-pad or tap. Fight: attack with the equipped weapon, free. Skills: battle unlocks, which cost WP. The list shows only moves the acting agent has unlocked; one they have but can't use right now (not enough WP, no fitting target) shows greyed with the reason (set Nov 23). Items: meds, Antitoxin and the like. Guard: Defend (half damage until your next turn), Brace, Retch, or Flee (roamers only).
 - **Move cost (set Nov 18):** special battle moves cost Willpower Points, the same pool used for bracing, so every big move risks the mind later. Plain Fight attacks are free. Costs follow the unlock tier: 40% moves 1 WP, 75% moves 2 WP, 90% moves 3 WP; free perks cost nothing. Healing skills cost WP like any special; items are free. At 0 WP an agent can't use specials or brace, but Fight, Items and Defend still work (set Nov 18).
 - **0 HP (set Nov 18):** the agent is Downed and bleeds out after 3 of their own turns unless Medicine's Revive gets them up; bleeding out is death, for good. If the fight ends first, they survive at 1 HP. Anyone Downed during a fight, even if Revived, rolls for a lasting injury when it ends (see Lasting injuries below).
+- **Built calls (accepted Nov 23, 2026 from the Developer's logged calls):** Defend only halves damage. Brace in battle spends 1d4 WP and halves that agent's next SAN loss this fight. Riposte's counter is a plain Fight. Burst rolls one d100 against each enemy. A grappler holds automatically each turn. Patch up has no once-per-hurt limit in battle (that's a map rule). WP comes back only from rests and items, never after each fight.
 - Purely turn-based. No timed hits or real-time inputs.
 - Classic JRPG difficulty: defend, heal and use abilities wisely. The Gleaner fight is the benchmark.
 - **Must-haves for the redesign** (Nov 15 playtest), all met: the turn-order column, enemy health bars, status moves and the Fight floor for agents who can't shoot, WP-costed moves against Attack-spamming, and threat skulls as the risk read.
@@ -1115,7 +1125,7 @@ Fights are rare, so each one hits hard and lasts long enough to use statuses and
 
 ### Bosses (set Nov 18)
 
-- **Phases:** set per boss in its case pitch; there's no default.
+- **Phases:** set per boss in its case file. A boss has up to 2 phases (one phase change, which the battle supports; the Gleaner has two) (accepted Nov 23, 2026 from the Developer's logged calls). A case that needs a third says so in its spec, and the battle grows then.
 - **Every boss needs:** at least one case choice that weakens it (the Gleaner loses strength for each rescued victim), a weakness Identify can find, and 8–12 rounds against a careful party.
 - **Tuning check:** before a case ships, Claude runs the boss against a mid-level team template. Target: a careful party wins with at most one agent Downed; a party that skipped the case's choices can lose. The demo's Gleaner sets the bar.
 
@@ -1157,7 +1167,7 @@ The game is the "Black Lantern Intake" HTML artifact, played on an iPhone SE ins
 ### File and code
 
 - One artifact, split into parts (since Nov 21). The parts live in the studio repo (KeeganMcClure/studio) under `games/black-lantern/src/` and are built in Claude Code, which bundles them into one HTML file for the artifact; the CLAUDE.md files there carry these rules (since Nov 21). No outside assets except Google Fonts: Press Start 2P (headings, UI) and VT323 (body text). All art is drawn in code on canvas; there is no sound or music.
-- The parts, loaded in this order (updated Nov 22): `index.html` (the page and Black Lantern's shell colors), then the studio's shared `engine/studio.js`, `engine/shell.js`, `engine/input.js`, `engine/move.js`, `engine/clock.js` and `engine/party.js` (the site's Dev/Release saves, the shell layout, buttons and keyboard, map walking, the 60-ticks-a-second clock, and the party card list; shared with Rushlight, spec 001 and later), `strings.js` (the shared strings block, `window.BLS`), `creator.js` (agent creator and portraits, and where button presses go, `window.BL`), `engine/shelf.js` (the Shared Shelf script), `agent-sprite.js` (agent map sprites, `window.BLA`), `engine/dialog.js` (the Lantern Bust box, `window.BLD`), `engine.js` (map, dialog, sanity, battle, Big Hat scenes, saves, pause, input, `window.BLG`), `party-menu.js` (the Party screen and Dossier, spec 002), `engine/nearest.js` (moves a cursor to the nearest thing in a direction) and `case-board.js` (the case board, spec 004), then one file per case in `cases/` (Still Harvest: `cases/still-harvest.js`). `engine/shelf.js` and `engine/dialog.js` are the one shared copy of each, synced unchanged from the Shared Shelf and the Asset Library, never edited by hand. A chat reads only the parts its task touches. A new case is a new file in `cases/`, added as a script line at the end of `index.html`; each case file supplies its maps, enemies, scripts, a `caseOpening` briefing and a `caseCard` (file number, title, town, place line, two-line hook, pin color), and ends with `registerCase`, which puts it on the case board.
+- The parts, loaded in this order (updated Nov 22): `index.html` (the page and Black Lantern's shell colors), then the studio's shared `engine/studio.js`, `engine/shell.js`, `engine/input.js`, `engine/move.js`, `engine/clock.js` and `engine/party.js` (the site's Dev/Release saves, the shell layout, buttons and keyboard, map walking, the 60-ticks-a-second clock, and the party card list; shared with Rushlight, spec 001 and later), `strings.js` (the shared strings block, `window.BLS`), `creator.js` (agent creator and portraits, and where button presses go, `window.BL`), `engine/shelf.js` (the Shared Shelf script), `agent-sprite.js` (agent map sprites, `window.BLA`), `engine/dialog.js` (the Lantern Bust box, `window.BLD`), `engine.js` (map, dialog, sanity, battle, Big Hat scenes, saves, pause, input, `window.BLG`), `field.js` (hotspots, items, statuses, roamers and loot on the map), `battle.js` and `agent-back.js` (the battle and the agents seen from behind), with the shared `engine/battle.js` and `engine/patrol.js`, `party-menu.js` (the Party screen and Dossier, spec 002), `engine/nearest.js` (moves a cursor to the nearest thing in a direction) and `case-board.js` (the case board, spec 004), then one file per case in `cases/` (Still Harvest: `cases/still-harvest.js`). `engine/shelf.js` and `engine/dialog.js` are the one shared copy of each, synced unchanged from the Shared Shelf and the Asset Library, never edited by hand. A chat reads only the parts its task touches. A new case is a new file in `cases/`, added as a script line at the end of `index.html`; each case file supplies its maps, enemies, scripts, a `caseOpening` briefing and a `caseCard` (file number, title, town, place line, two-line hook, pin color), and ends with `registerCase`, which puts it on the case board.
 - Agents on the map (since Nov 21): the Shared Shelf's method v1 and person v1 are the pieces in use. The engine calls `BLA.draw` for the lead; since Demo 4 (spec 005, Nov 22) the townsfolk have their own map sprites and talking portraits, and the old `drawChar` look is gone.
 - **Agency cases stay out of the public repo (set Nov 23, 2026, from the pre-season review).** Every agency case's file (`lantern-nn.js`, its text block and its art), the agency entries in each season data file (ids, unlock counts, which one is the finale) and the season-end lines live in the private `KeeganMcClure/black-lantern` repo, under `agency/`. The studio repo holds only the regular cases, the season data's regular-case list and the public frames (specs 014 and 015). When Black Lantern is built for Dev or Release, the build pulls the private files in and bundles them into the page with everything else; it fails loudly if they can't be reached rather than shipping a season without its agency cases. How the build reads the private repo (a deploy key or a repository secret) is the Developer's call, and no key or token is ever committed. The built page is still public to play, as every case is; the rule keeps the story out of the readable repo, its history and its PRs. `npm run check` runs with the private files when they're there and with the Dev test season when they aren't.
 - Cases are data plus small async functions: `say`, `ask`, `choose`, `battle`, `sanCheck`, `clue`, `checkpoint`.
