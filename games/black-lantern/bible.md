@@ -69,7 +69,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
   Done Nov 23: Lost Hour pins on the board. Cullen Gap, the Pruett house, the diner, the clinic, the ridge road and the woods in fog, and the finale area all walk by day and night, every door and drive goes where it should, everyone has a sprite and a talking face, and Big Hat briefs from a new place.
 - [x] Lost Hour part B (spec 016): the secret case file first, then its story, the night drive and hypnosis session, fights, boss and endings
   Done Nov 23: Lost Hour plays start to finish: its full briefing, a timeline of clues, the night drive and the hypnosis session, a deduction and a hard choice, two story fights, the woods at night, the boss and all three endings, with the debrief in Big Hat's laundromat.
-- [ ] First agency case part A (spec 014): the secret case file first, from the arc file; then its maps and art, townsfolk, and the black LANTERN folder on the board, walkable with stand-in scripts. After Lot 83
+- [x] First agency case part A (spec 014): the secret case file first, from the arc file; then its maps and art, townsfolk, and the black LANTERN folder on the board, walkable with stand-in scripts. After Lot 83
+  Done Nov 23: LANTERN 01 pins on the board through a real unlock and, on Dev only, straight from the board's Start button. Its maps all walk by day and night, everyone has a sprite and a talking face, Big Hat briefs from a new place, and its art is on its own Asset Library page.
 - [ ] First agency case part B (spec 014): its story, fights, boss and endings, and the unlock scene's lines
 - [ ] Tracking part A (spec 018): its maps and art, Fourth Street in snow and the closed club, the tracking lines effect, townsfolk, walkable with stand-in scripts. After Lost Hour
 - [ ] Tracking part B (spec 018): the secret case file first, then its story, the trail and watching the tape, fights, boss and endings
