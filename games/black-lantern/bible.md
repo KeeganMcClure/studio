@@ -203,6 +203,33 @@ Drop loose ideas here; Claude sorts them into the right section next build.
 
 Your medieval spin-off notes moved, word for word, to their own doc on Nov 19: Doc
 
+## Screens
+
+Every screen you can see, in play order (studio rule: `studio-bible/studio.md`, Screen list, set Nov 23, 2026). A spec that adds a screen adds its row here. Screens marked **Built before specs** were built from the bible and mockups alone; the next change to one of them needs a spec first.
+
+| Screen | What you do there | Spec |
+| --- | --- | --- |
+| Title | New game, Continue, Case board, roster and agent codes | **Built before specs** (Agents and items → Agent creator, Kept from the demo) |
+| Pick a team | Pick one of 6 team templates or a Blank team | **Built before specs** (Demo 1: Agent creator and the approved creator mockup) |
+| Your team | Keep, Tweak or Rebuild each seat | **Built before specs** (Demo 1) |
+| Agent creator | 7 steps: Profession, Stats, Skills, Identity, Bonds, Motives, Dossier | **Built before specs** (Demo 1). The code names line on To do changes the Dossier step |
+| Roster | Put a saved agent in a seat | **Built before specs** (Demo 1) |
+| Case board | Pick a case from the season's cork board | 004, 009 |
+| Big Hat's briefing | Big Hat in the scene, two questions, requisition | 013 (each case's spec sets its lines) |
+| Map | Walk, talk, use hotspots; lead card, NIGHT tag, A bubble | 001, 005, and each case's part A |
+| Dialog box | Talk, signs, narration, questions | `studio-bible/ui.md`, 013 |
+| Hotspot skill prompt | Pick who rolls a skill at a hotspot | 006 part A |
+| Map menu | Party, Skills, Items, Case file, Log, Settings, Save | 006 part A |
+| Party and Dossier | Party cards, Make lead, Dossier, Give item | 002, 006 part A |
+| Items | Each agent's items with a detail box | 006 part A |
+| Big Hat's recruits | Pick one of 3 ready-made recruits after a loss | 006 part A, 007 |
+| Battle | Fight in the shell | 006 part B |
+| Game over | Retry from checkpoint or quit to title | 006 part B |
+| Debrief | Big Hat's wrap-up, bag or hide, cover story, case gains | 007 |
+| Funeral or goodbye | A cutscene for each agent lost or retired | 007 |
+| Home phase | One home scene per agent between cases | 008 |
+| Season's end and finale | The finale, then the season wraps up | 009, 015 |
+
 ## Overview
 
 Black Lantern is a turn-based party JRPG with a cosmic-horror heart, played on a phone. It takes its rules spirit from the Delta Green tabletop RPG. You are the designer and writer; Claude is developer, art director and co-writer. We build in small steps over many chats. Do not produce anything playable without explicit permission. The game has no sound or music: you play it silent.
