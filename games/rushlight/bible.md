@@ -111,6 +111,12 @@ One item per chat, in order, biggest open decisions first. Claude ticks the item
 
   Scope (set Nov 21, lean): the Withy March cut to about 8 points and 2 towns; a pool of 6 (the Noonwife hunt, the Counter hunt, one beast job (Severa the owl, set Nov 21), the Withy Hag, 2 people jobs (Pell the poacher, the wool buyer)) and the Hollow Monk. In: food, camp and inn, Hue and cry, XP, hiring, trophies, the bestiary. Out: the feud and war contracts, magic, bargainers, debt, the Crown's people, retiring, Quarters, arcs. The run ends at the Monk's death on a ledger screen.
 
+- [ ] Look pass (spec 008, `specs/008-look-pass.md`): every screen and sprite brought up to the studio's Screen craft and Quality bar, in four builds. Build the look bug batch first (project files, `handoffs/rushlight-look-bugs-dev-prompt.md`).
+  - [ ] 8A Sprites: the six species from the reference code, folk enemies front-on, five creatures redrawn and four touched up, the animation rig and the contact sheet
+  - [ ] 8B Streets, sites and the HUD cards
+  - [ ] 8C Menus: parchment panels and Pick a company in two steps
+  - [ ] 8D The check against Screen craft and the Quality bar
+
 ### Bugs
 
 - [x] Text Library: VO-BOARD-2 and any PJ-PELL row that says alive pays double should say alive pays more; bounties pay +50% alive (set Nov 21). Fix when the Text Library is next opened.
@@ -524,6 +530,13 @@ References: from the era, Bosch's hell panels, Bruegel's Triumph of Death, Schon
 **Open questions**
 
 - How do cosmic and cryptid creatures look wrong without looking like fantasy monsters? Answered by the creature art study (Nov 20): see Drawing the unnatural. The test creature it was tried on was scrapped Nov 21. Set Nov 20: not every unnatural thing wears a folk shape; a cosmic being can be a danger all its own.
+
+**Look pass (set Nov 23, from Keegan's slice playtest).** The slice looked far below Black Lantern, so the look was redone at the style level; spec 008 builds it. Keegan's picks, each on a rough mockup in `mockups/`:
+
+- **Streets** (`34-look-town-rough-v2`): late autumn sun from the upper left, roofs from the 3/4 view with chimneys and smoke, jettied upper floors, hanging signs, a mud lane with puddles and leaves, dressing by every door, a hedge and pollard willows on the bottom edge, more townsfolk, crows and a dog. Only the lead walks.
+- **HUD:** two framed cards, the lead (portrait, name, HP, WP, SAN) and the place (name, purse, day), in place of the one-line town and site strips. The site's NEXT line stays under them.
+- **Menus** (`35-look-company-rough-v3`): aged parchment like the region map, with an ink border, stained edges and a wax-seal cursor. No ruled lines: Keegan turned down a ruled ledger as notebook paper. Pick a company becomes two steps like Black Lantern's: the company cards with a text tag each (Keegan kept text over icons), then the three seat cards with Keep, Reroll, Tweak and Rebuild buttons. Kin, motivations and backstory move to Tweak and the Merc card.
+- **Sprites** (`36-sprite-upgrade-rough-v2`): the six species redrawn to the studio Quality bar (four-tone volume, tufted fur, selective outline, rim, real clothes, a lit backing). This replaces the species sheet's flat two-tone shading; the species' shapes, colors and face rules stay. Keegan asked that every sprite in the game meets it, so the folk enemies and the creatures are redrawn too, keeping their approved designs.
 
 ## World and contracts
 

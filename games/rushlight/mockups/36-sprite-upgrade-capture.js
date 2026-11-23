@@ -1,0 +1,14 @@
+const { chromium } = require('playwright');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1260,height:900}});
+p.on('pageerror',e=>console.log('ERR',e.message));
+await p.goto('file:///home/user/studio/games/rushlight/src/dist/index.html');await p.waitForTimeout(700);
+await p.addScriptTag({path:'/mnt/project-files/mockups/rushlight/sprite-upgrade-rough-v2.js'});
+await p.evaluate(()=>{const d=document.createElement('canvas');d.width=1260;d.height=900;d.style='position:fixed;left:0;top:0;z-index:99999';document.body.appendChild(d);const x=d.getContext('2d');x.imageSmoothingEnabled=false;
+ x.fillStyle='#141210';x.fillRect(0,0,1260,900);x.font='12px "Press Start 2P", monospace';
+ const S=window.SPRITE_V2;const ks=['mouse','rat','hare','hedgehog','badger','fox'];
+ ks.forEach((k,i)=>{const X=20+i*205;x.fillStyle='#d9b45a';x.fillText(k.toUpperCase(),X,24);
+  x.fillStyle='#857e72';x.fillText('now',X,48);x.drawImage(RLSP.portrait(k,{shade:1}),0,0,64,64,X,56,128,128);x.drawImage(RLSP.map(k,{shade:1}),0,0,14,26,X+140,70,42,78);
+  x.drawImage(RLSP.back(k,{shade:1}),0,0,30,40,X+20,190,90,120);
+  x.fillStyle='#d9b45a';x.fillText('new',X,350);x.drawImage(S.portrait(k),0,0,64,64,X,360,192,192);x.drawImage(S.map(k),0,0,14,26,X+20,570,42,78);x.drawImage(S.map(k),0,0,14,26,X+80,610,21,39);
+  x.drawImage(S.back(k),0,0,30,40,X+20,670,135,180);});});
+await p.waitForTimeout(400);await p.screenshot({path:'/mnt/project-files/mockups/rushlight/sprite-upgrade-rough-v2.png'});await b.close()})();
