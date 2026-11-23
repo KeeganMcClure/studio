@@ -265,7 +265,7 @@ Big Hat is the only character who appears in every case; his 64 × 64 calm and s
 | Outfit | Small body in a leather vest over a cream shirt, turquoise bolo on a silver slide. Huge ten-gallon hat with a cattleman crease and a turquoise concho on the band. |
 | Hat size | Locked at the current size. The hat-grows-each-chapter gag is dropped; remove it from the game code. |
 | Shout | Portrait shakes, mustache flares, mouth opens wide, toothpick flies off, red marks flash. In game the screen also shakes and flashes red. |
-| Backdrop | Plain in the portrait. The scene behind him changes with each mission's intro. Demo case: the back room of a 24-hour donut shop off I-5 (crullers, flickering tube light, corkboard with a scarecrow photo). |
+| Backdrop | Plain in the portrait. The scene behind him changes with each mission's intro: every case spec names its own place, somewhere odd near the case's road, and part A draws it as the briefing backdrop in the back room's layout (set Nov 23, 2026). Demo case: the back room of a 24-hour donut shop off I-5 (crullers, flickering tube light, corkboard with a scarecrow photo). |
 | Sound | None; the game has no audio. |
 | Lines | "Sit." · "Don't make it weird." · "You were awake." · "Be smart, be careful, don't get burned." · "Put a bow on this." · "I don't do paperwork on a Sunday." · "Not in my jurisdiction." |
 | Colors | Hat felt #7a5a34, hat shadow #3a2814, vest leather #6b3a22, bolo turquoise #3fb8a6, skin #c98a62, mustache #4a2e1c, brim shadow #0c0a10 |
