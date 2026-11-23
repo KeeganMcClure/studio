@@ -1,0 +1,11 @@
+const { chromium } = require('playwright');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:375,height:667},deviceScaleFactor:2});
+p.on('pageerror',e=>console.log('ERR',e.message));
+await p.goto('file:///home/user/studio/games/rushlight/src/dist/index.html');await p.evaluate(()=>localStorage.clear());await p.reload();await p.waitForTimeout(800);
+await p.keyboard.press('z');await p.waitForTimeout(300);await p.keyboard.press('z');await p.waitForTimeout(600);
+const D='/tmp/claude-0/-home-user/a231c428-4c20-5c82-a6dc-a53036fc99be/scratchpad/shots/';
+await p.screenshot({path:D+'co-before.png'});
+await p.addScriptTag({path:'/mnt/project-files/mockups/rushlight/'+(process.argv[2]||'look-pass-company-rough-v1.js')});
+await p.evaluate(()=>MOCK(1));await p.waitForTimeout(300);await p.screenshot({path:D+(process.argv[3]||'co')+'-1.png'});
+await p.evaluate(()=>MOCK(2));await p.waitForTimeout(300);await p.screenshot({path:D+(process.argv[3]||'co')+'-2.png'});
+await b.close()})();
