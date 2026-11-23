@@ -121,7 +121,7 @@ async function mercTurn(m){
  Bt.active=m;m.defend=false;m.slip=false;m.drawFire=false;
  // Downed: bleeds out after 3 of their own turns unless Revived
  if(m.ko){m.koT=(m.koT|0)+1;Bt.koLong=Bt.koLong||new Set();if(m.koT>=2)Bt.koLong.add(m);
-  if(m.koT>=3){await bsay(`${m.name} stops breathing.`,1400);await mercDies(m,'LG-END-BLEED');return}
+  if(m.koT>=3){await bsay(`${m.name} stops breathing.`,1400);const k=m.lastBy;await mercDies(m,k&&(k.target||k.kind==='Unnatural'||k.kind==='Beast')?'LG-END-FIGHT':'LG-END-BLEED',k?k.base:'');return}
   await bsay(`${m.name} is Downed. ${3-m.koT} turn${3-m.koT>1?'s':''} to live.`,1000);return}
  await tickMerc(m);if(m.dead||m.ko)return;
  if(Bt.o.mercPre&&await Bt.o.mercPre(m))return;
@@ -171,7 +171,7 @@ const addSt=(x,s)=>{x.st=x.st||[];if(!x.st.includes(s))x.st.push(s)};
 async function hurtFoe(e,d,by,o={}){
  if(e.pool){d=Math.min(d,e.hp)}
  Bt.stats.dealt+=Math.min(d,e.hp);e.hp=Math.max(0,e.hp-d);e.flash=16;floaty(e,d);e.lastHurt=by||e.lastHurt;e.hitOnce=1;
- if(e.hp<=0){if(e.onZero&&await FOE_AI[e.ai].onZero(e,by))return;e.dead=true;Bt.stats.killed.push(e.base);
+ if(e.hp<=0){if(e.onZero&&await FOE_AI[e.ai].onZero(e,by))return;e.dead=true;Bt.stats.killed.push(e.base);if(e.great&&by&&G.run)G.run.monkKiller=by.id;
   if(by&&e.kind==='Folk'){await sanRoll('Disturbing','violence',{who:[by],quiet:false,label:`${by.name} killed a man`})}
   if(Bt.o.onKill)await Bt.o.onKill(e,by);return}
  if(e.kind==='Unnatural'||e.quirk==='Frenzied'||e.quirk==='Rabid'||e.target&&e.kind!=='Folk'||e.noBreak)return;
@@ -278,6 +278,7 @@ async function guardMenu(m){const sick=(m.st||[]).includes('Sickened');
 function fleeOdds(){const up=party.filter(p=>!p.dead&&!p.ko),out=up.find(p=>(p.sk.Athletics||0)>=75);if(out)return skillOf(out,'Athletics')+(out.sp==='hare'?10:0);return Math.min(...up.map(p=>skillOf(p,'Athletics')+(p.sp==='hare'?10:0)))}
 // the careful auto-player used by the tuning sims: revive a Downed comrade, patch a badly hurt one, else fight the weakest
 async function smartTurn(m){const has=n=>MOVES.find(x=>x[2]===n&&(m.sk[x[0]]||0)>=x[1]&&m.wp>=x[3]);
+ const ex=Bt.o.extraMoves?Bt.o.extraMoves(m):[],greet=ex.find(x=>x.label==='Greet him'),light=ex.find(x=>x.label==='Light a lamp');if(greet)return greet.run(m);if(light)return light.run(m);
  const down=party.find(p=>p.ko&&!p.dead),low=party.filter(p=>!p.ko&&!p.dead&&p.hp<=Math.max(3,p.mhp/3)).sort((a,b)=>a.hp-b.hp)[0];
  if(down&&has('Revive')){m.wp-=2;if(R_.pct(skillOf(m,'Medicine')).ok){down.ko=false;down.hp=die(4);down.koT=0;await bsay(`${m.name} gets ${down.name} up.`,1)}return}
  if(low&&has('Patch up')){m.wp-=1;if(R_.pct(skillOf(m,'First Aid')).ok)low.hp=Math.min(low.mhp,low.hp+die(4));return}
@@ -372,7 +373,7 @@ async function foeAttack(e,t,o={}){
 async function areaAttack(e,label,o={}){await bsay(label,1000);for(const m of party.filter(x=>!x.dead&&!x.ko)){let d=o.dmg?rollDice(o.dmg):die(3);const body=m.gear.body;if(!o.throughArmor&&body)d-=({jack:1,mail:2,plate:3}[body.id]|0);d=Math.max(1,d);if(m.defend)d=Math.max(1,Math.floor(d/2));hurtMerc(m,d,e)}}
 async function grappleTurn(e){const g=e.grappled;if(!g||g.dead||g.ko){e.grappled=null;return foeTurn(e)}
  const a=R_.pct(e.hit),b=R_.pct(skillOf(g,'Melee'));if(a.ok&&(!b.ok||a.r>b.r)){e.grappled=null;g.grapple=null;await bsay(`${e.name} breaks free.`,800);return foeTurn(e)}await bsay(`${e.name} can't get loose.`,800)}
-function hurtMerc(m,d,by){if(m.dead)return;Bt.stats.taken+=Math.min(d,m.hp);m.hp=Math.max(0,m.hp-d);m.shk=10;
+function hurtMerc(m,d,by){if(m.dead)return;if(by&&by.foe)m.lastBy=by;Bt.stats.taken+=Math.min(d,m.hp);m.hp=Math.max(0,m.hp-d);m.shk=10;
  if(m.hp<=0&&!m.ko){m.ko=true;m.koT=0;m.downs=(m.downs|0)+1;Bt.stats.downs=(Bt.stats.downs|0)+1;Bt.downed.add(m);Bt.log=`${m.name} goes down.`;if(m.grapple){m.grapple.grappled=null;m.grapple=null}}}
 const later=ms=>G.auto?Promise.resolve():sleep(fastOn()?Math.round(ms*.45):ms);
 function showRes(text,o){Bt.res={text:text.replace(/ (HIT|MISS|CRIT|FUMBLE)$/,' '),word:o.crit?'CRIT':o.fumble?'FUMBLE':o.ok?'HIT':'MISS',col:o.ok?PAL.tallow:PAL.ash,until:Bt.t+90}}

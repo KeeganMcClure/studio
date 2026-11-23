@@ -14,7 +14,7 @@ const LETTERS=40;
 function makeTowns(run){
  const W=StudioSeed.load(run.streams.world),rn=n=>Math.floor(W.next()*n),pick=a=>a[rn(a.length)],shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rn(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
  const used=run.used||(run.used=[]);
- const order=shuf(Object.keys(JOBS));
+ const order=shuf(Object.keys(JOBS).filter(k=>JOBS[k].by!=='none'));
  // 4 up at the start, at least one at each town
  let posted=order.slice(0,4);['harrow','ebbe'].forEach(t=>{if(!posted.some(j=>JOBS[j].town===t)){const j=order.find(x=>JOBS[x].town===t&&!posted.includes(x));posted[3]=j}});
  const givers={};Object.keys(GIVERS).forEach(k=>{givers[k]={name:pickName2(W,used),sp:RLSP.ORDER[rn(6)],look:{shade:rn(3),mark:rn(4),neck:rn(3)},quirk:pick(['Tight-fisted','Desperate','Pious','Grieving']),haggled:{},read:false,met:false}});

@@ -223,7 +223,8 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
       if (T.version === 0 && (r.run || r.roster)) probs.push('old Black Lantern keys kept');
       if (T.keys['rl.run'] && !(await page.evaluate(() => RLG.resume()))) probs.push('the run did not open');
       if (T.keys['rl.run'] && await page.evaluate(() => RLG._t.party().length) !== 3) probs.push('the company did not load');
-      if (T.expect) { await page.waitForTimeout(600); const got = await page.evaluate(() => { const r = RLG._t.G().run; return { at: r.region && r.region.at, day: r.day, rations: r.rations, trip: !!(r.region && r.region.trip), hungry: RLG._t.party().some(m => m.hunger > 0), contracts: (r.contracts || []).length, hue: r.hue, site: !!(RLG._t.G().map || '').startsWith('site_'), fight: !!RLG._t.Bt() }; });
+      if (T.expect && T.expect.companies != null) { const n = await page.evaluate(() => (RL.store.get(RL.key('ledger')).companies || []).length); if (n !== T.expect.companies) probs.push(`${n} companies in the ledger`); const lr = await page.evaluate(() => [...document.querySelectorAll('#list .row')].some(x => /Ledger/.test(x.innerText))); if (!lr) probs.push('no Ledger row on the title'); }
+      else if (T.expect) { await page.waitForTimeout(600); const got = await page.evaluate(() => { const r = RLG._t.G().run; return { at: r.region && r.region.at, day: r.day, rations: r.rations, trip: !!(r.region && r.region.trip), hungry: RLG._t.party().some(m => m.hunger > 0), contracts: (r.contracts || []).length, hue: r.hue, site: !!(RLG._t.G().map || '').startsWith('site_'), fight: !!RLG._t.Bt(), bodies: (r.bodies || []).length }; });
         for (const k in T.expect) if (got[k] !== T.expect[k]) probs.push(`${k} is ${got[k]}, expected ${T.expect[k]}`); }
       probs.push(...errors);
       console.log(`${probs.length ? 'FAIL' : 'ok  '} test save: ${f}`); probs.forEach(p => console.log('     - ' + p)); failed += probs.length;
@@ -517,6 +518,68 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
     await page.evaluate(() => { const g = RLG._t.G(); g.auto = null; g.dev = {}; });
     bad.push(...errors);
     console.log(`${bad.length ? 'FAIL' : 'ok  '} spec 006 D2: the five jobs on 3 seeds, every ending, the Signs list to 3, a job by the keys, the bestiary through a wipe`);
+    bad.forEach(p => console.log('     - ' + p)); failed += bad.length;
+    await ctx.close();
+  }
+
+  // 12. spec 007 (Part E): the den and the Monk on 3 seeds with and without prep, the wipe, death, burial and the ditch,
+  //     and random presses in the den, on the death screen and on the ledger
+  {
+    const bad = [];
+    const ctx = await browser.newContext({ viewport: { width: 375, height: 667 }, hasTouch: true });
+    const page = await ctx.newPage(); const errors = [];
+    page.on('pageerror', e => errors.push('page error: ' + e.message));
+    await page.goto(url); await page.waitForTimeout(500);
+    const den = (seed, prep) => page.evaluate(async ([seed, prep]) => {
+      if (RLG.active) RLG._t.quit(); await RLG.newRun(seed); const g = RLG._t.G(), r = g.run; g.dev = { fast: true, noevents: true };
+      g.auto = { cmd: () => 0, list: (t, rows) => Math.max(0, rows.findIndex(x => !x.dis)), smart: true, yield: () => 0, choice: () => 0, said: [],
+        menu: items => { const L = items.map(x => x.label || x); let i = L.findIndex(x => /^Take it|^Set out|^Go on|^Stay$|^Eat/.test(x)); if (i >= 0) return i;
+          if (L.includes('Leave it')) { i = items.findIndex(x => !x.dis && !/^\s*SELECT/.test(x.label || x) && (prep ? (!/GO DOWN/.test(x.label || x) || (G.run.den && G.run.den.pumps)) : /GO DOWN/.test(x.label || x))); if (i >= 0 && L[i] !== 'Leave it') return i; } i = L.findIndex(x => /^Leave/.test(x)); return i >= 0 ? i : 0; } };
+      r.purse = 80; party.forEach(m => { m.lvl = 3; m.mhp += 2; m.hp = m.mhp; if (prep) { m.sk.Craft = Math.max(m.sk.Craft, 70); m.sk.Empathy = Math.max(m.sk.Empathy, 70); } });
+      // three signs, the way a run finds them: the Noonwife's miner, the Counter's lamp room, the tavern rumor
+      ['CR-MONK-SIGN-4', 'CR-MONK-SIGN-1', 'CR-MONK-SIGN-2'].forEach(addSign); Object.keys(MARCH.points).forEach(k => { if (MARCH.points[k].kind !== 'lie') scout(k); });
+      if (!denFound() || !knownPt('pit')) return { err: 'the den did not show' };
+      if (prep) { enterTown('ebbe', 'left'); const policy = g.auto.menu; g.auto.menu = (items, o) => { const L = items.map(x => x.label || x); if (o && /CHURCH/.test(o.title || '')) { const i = L.findIndex(x => /Light a lamp|A mass/.test(x) && !items[L.indexOf(x)].dis); return i >= 0 ? i : L.indexOf('Leave'); } return 0; };
+        await PLACES.church('ebbe', 'The priory church'); g.auto.menu = policy;
+        await leaveTown(); }
+      await march('pit'); const job = r.job; if (!job || job.id !== 'monk') return { err: 'Lowmoor Pit did not open the den' };
+      for (let pass = 0; pass < 8 && RLG.active; pass++) for (let c = 0; c < job.chunks.length && RLG.active && r.job; c++) { if (job.chunk !== c) enterChunk(c, 'left'); drawWorld(); for (const h of G.M.hot) { if (!RLG.active) break; await hotspot(h); } }
+      const L = RL.store.get(RL.key('ledger')); return { step: RL.S.step, active: RLG.active, end: L.companies[0] && L.companies[0].end, ended: !!(RL.store.get(RL.key('run')) || {}).ended, killed: !!(L.bestiary.monk || { pieces: {} }).pieces.killed, prep: (r.den || {}) };
+    }, [seed, prep]);
+    for (const seed of ['0001-A', '4242-C', '9021-M']) for (const prep of [true, false]) {
+      const r = await den(seed, prep);
+      if (r.err) bad.push(`${seed}${prep ? ' with prep' : ''}: ${r.err}`);
+      else if (r.end === 'end') { if (r.step !== 'ledger' || !r.ended || !r.killed) bad.push(`${seed}: the Monk's kill did not reach the ledger (${JSON.stringify(r)})`); }
+      else if (r.end === 'wipe') { if (r.step !== 'death') bad.push(`${seed}: a wipe in the den did not reach the death screen`); }
+      else bad.push(`${seed}${prep ? ' with prep' : ''}: the den ended oddly (${JSON.stringify(r).slice(0, 160)})`);
+      if (prep && !(r.prep && r.prep.pumps && r.prep.lamp)) bad.push(`${seed}: the prep wasn't all done (${JSON.stringify(r.prep)})`);
+    }
+    // a forced wipe on 3 seeds: the death screen, then the ledger, then a new run that starts with the old bestiary
+    for (const seed of ['0001-A', '4242-C', '9021-M']) {
+      const r = await page.evaluate(async seed => { if (RLG.active) RLG._t.quit(); await RLG.newRun(seed); const g = RLG._t.G(); g.auto = { menu: () => 0, cmd: () => 0, list: () => 0, said: [] };
+        bestiary('wipe-test-' + seed, 'sighted', { name: 'test' }); const B0 = JSON.stringify(RL.store.get(RL.key('ledger')).bestiary); party.forEach(m => m.hp = 0);
+        await wipe(); g.auto = null; const s1 = RL.S.step, run = !!RL.store.get(RL.key('run')); RL.goto('ledger'); RL.render(); const rows = document.querySelectorAll('#list .row').length;
+        await RLG.newRun(seed); return { s1, run, rows, kept: JSON.stringify(RL.store.get(RL.key('ledger')).bestiary).length >= B0.length && !!RL.store.get(RL.key('ledger')).bestiary['wipe-test-' + seed] }; }, seed);
+      if (r.s1 !== 'death') bad.push(`${seed}: a wipe went to ${r.s1}, not the death screen`); if (r.run) bad.push(`${seed}: a wipe left rl.run`); if (!r.rows) bad.push(`${seed}: the ledger screen is empty`); if (!r.kept) bad.push(`${seed}: the bestiary didn't carry into the new run`);
+    }
+    // a death, a burial and a ditch: their SAN rolls and ledger lines
+    { const r = await page.evaluate(async () => { if (RLG.active) RLG._t.quit(); await RLG.newRun('1234-B'); const g = RLG._t.G(), run = g.run; g.auto = { menu: () => 0, cmd: () => 0, list: () => 0, said: [] }; g.dev = { fast: true };
+        const s0 = party.map(m => m.san); await mercGone(party[2], 'LG-END-FIGHT', { killer: 'The Counter', place: 'Crookback' }); const rolled = party.slice(0, 2).some((m, i) => m.san !== s0[i]) || g.auto.said.some(x => /saw/.test(x));
+        const bodies = (run.bodies || []).length; run.purse = 20; await bury(0, 'harrow'); const buried = run.lines[party[2].id].owed;
+        await mercGone(party[1], 'LG-END-BLEED', {}); run.contracts.push({ id: 'owl', title: 'x', pay: 25 }); await payScreen('owl', {}); const ditched = run.lines[party[1].id].owed;
+        g.auto = null; return { rolled, bodies, buried, ditched, line: lineText(run.lines[party[2].id]) }; });
+      if (!r.rolled) bad.push('a death cost the comrades no SAN roll'); if (r.bodies !== 1) bad.push('the body was not waiting for burial'); if (!/Buried/.test(r.buried)) bad.push('burial wrote no LG-BURIED line'); if (!/ditch/.test(r.ditched)) bad.push('an unburied body was not left in a ditch');
+      if (!/Taken by the Counter at Crookback/.test(r.line)) bad.push('the ledger line reads: ' + r.line); }
+    // random presses in the den fight, on the death screen and on the ledger
+    { await page.evaluate(async () => { if (RLG.active) RLG._t.quit(); await RLG.newRun('0001-A'); ['CR-MONK-SIGN-2', 'CR-MONK-SIGN-3', 'CR-MONK-SIGN-4'].forEach(addSign); RG().at = 'pit'; scout('pit'); RLG._t.G().dev = { fast: true }; run(() => openDen()); return 1; });
+      await page.waitForTimeout(600); await page.evaluate(() => { run(() => monkFight(G.run.job)); return 1; });
+      let seed = 77; const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+      for (let i = 0; i < 200; i++) { await page.keyboard.press(KEYS[Math.floor(rnd() * KEYS.length)]); if (i % 40 === 0) await page.waitForTimeout(30); }
+      await page.evaluate(async () => { const g = RLG._t.G(); if (RLG.active) { g.auto = { menu: () => 0, cmd: () => 0, list: () => 0 }; await wipe(); g.auto = null; } return 1; }).catch(() => {});
+      for (let i = 0; i < 200; i++) await page.keyboard.press(KEYS[Math.floor(rnd() * KEYS.length)]);
+      await page.evaluate(() => { RL.goto('ledger'); RL.render(); return 1; }); for (let i = 0; i < 200; i++) await page.keyboard.press(KEYS[Math.floor(rnd() * KEYS.length)]); }
+    bad.push(...errors);
+    console.log(`${bad.length ? 'FAIL' : 'ok  '} spec 007: the den and the Monk on 3 seeds (with and without prep), the wipe, death, burial and the ditch, presses in the den, death screen and ledger`);
     bad.forEach(p => console.log('     - ' + p)); failed += bad.length;
     await ctx.close();
   }

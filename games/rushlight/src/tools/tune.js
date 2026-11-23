@@ -28,6 +28,10 @@ const SCEN = {
     ['the Counter at level 2, careful (muffled, nest burned -15%)', 'countP', "[()=>[{name:'The Counter',base:'The Counter',kind:'Unnatural',lvl:3,hp:41,dex:18,hit:65,dmg:'1d6+2',sprite:'counter',faceless:true,target:true,ai:'counter',horror:{tier:'Disturbing',id:'ct'+Math.random()}}]]", { seq: true, level: 2, battle: { target: true, stunFirst: true }, crit: 'target' }],
     ['the Counter at level 2, no prep', 'countN', "[()=>[{name:'The Counter',base:'The Counter',kind:'Unnatural',lvl:3,hp:48,dex:18,hit:65,dmg:'1d6+2',sprite:'counter',faceless:true,target:true,ai:'counter',horror:{tier:'Disturbing',id:'ct'+Math.random()}}]]", { seq: true, level: 2, battle: { target: true }, crit: 'target' }],
   ],
+  e: [
+    ['the Hollow Monk at level 3, careful (pumps -15% and no rising, the greeting, a church-lit lamp)', 'monkP', "[()=>[{name:'The Hollow Monk',base:'The Hollow Monk',kind:'Unnatural',lvl:4,hp:66,dex:12,hit:60,dmg:'1d4+2',sprite:'monk',target:true,great:true,ai:'monk',onHurt:true,onZero:true,horror:{tier:'Severe',id:'mk'+Math.random()}}]]", { seq: true, level: 3, den: { pumps: true }, kit: "p=>p[0].slots.push({id:'churchlamp',n:1})", battle: "()=>({target:true,great:true,extraMoves:m=>[...(!Bt.greetUsed?[{label:'Greet him',run:async mm=>{Bt.greetUsed=true;Bt.greeted=mm}}]:[])]})", crit: 'target' }],
+    ['the Hollow Monk at level 3, no prep (he rises once)', 'monkN', "[()=>[{name:'The Hollow Monk',base:'The Hollow Monk',kind:'Unnatural',lvl:4,hp:78,dex:12,hit:60,dmg:'1d4+2',sprite:'monk',target:true,great:true,ai:'monk',onHurt:true,onZero:true,horror:{tier:'Severe',id:'mk'+Math.random()}}]]", { seq: true, level: 3, den: { pumps: false }, battle: "()=>({target:true,great:true,extraMoves:m=>[...(Bt.lampOut&&m.slots.some(s=>['torch','lantern','rushbundle'].includes(s.id))?[{label:'Light a lamp',run:async()=>{Bt.lampOut=false}}]:[])]})", crit: 'target' }],
+  ],
   c: [
     ['the reeve\'s men or bounty hunters: 2 men-at-arms', 'maa', "()=>[0,1].map(()=>RLG._t.foe('manatarms'))", {}],
   ],
@@ -43,7 +47,7 @@ const SCEN = {
       console.log(`\nPart ${part.toUpperCase()} · ${label}`);
       for (const seed of SEEDS) {
         if (o.seq) {
-          const rows = await page.evaluate(async ([s, mk, o]) => { if (o.battle && o.battle.mercPre) o.battle.mercPre = window[o.battle.mercPre] || eval(o.battle.mercPre); return await RLG._t.simSeq(s, eval(mk), 20, o); }, [seed, mk, o]);
+          const rows = await page.evaluate(async ([s, mk, o]) => { if (typeof o.battle === 'string') o.battle = eval(o.battle); if (typeof o.kit === 'string') o.kit = eval(o.kit); if (o.battle && o.battle.mercPre) o.battle.mercPre = window[o.battle.mercPre] || eval(o.battle.mercPre); return await RLG._t.simSeq(s, eval(mk), 20, o); }, [seed, mk, o]);
           const n = rows.length, ok = rows.filter(r => r.downed <= 1 && !r.dead).length;
           if (o.client) { console.log(`  ${seed}: the client lived in ${rows.filter(r => r.clientAlive).length}/${n} runs · won ${rows.filter(r => r.won).length}/${n} · deaths ${rows.reduce((a, r) => a + r.dead, 0)}`); continue; }
           console.log(`  ${seed}: won ${rows.filter(r => r.won).length}/${n} · Downed per run ${(rows.reduce((a, r) => a + r.downed, 0) / n).toFixed(2)} · runs with at most 1 merc Downed and nobody dead ${ok}/${n} (${Math.round(ok / n * 100)}%) · deaths ${rows.reduce((a, r) => a + r.dead, 0)} · rounds ${(rows.reduce((a, r) => a + r.rounds, 0) / n).toFixed(1)} · SAN lost ${(rows.reduce((a, r) => a + r.san, 0) / n).toFixed(1)}`);

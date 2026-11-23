@@ -202,7 +202,7 @@ function begin(rn){
  if(p&&p.map&&p.map.startsWith('site_')&&rn.job){const J=JOBS[rn.job.id],S=SITES[J.site]||{};G.site={name:(S.name||P_[J.site].name).toUpperCase(),kind:J.kind,shape:J.shape};MAPS[p.map]=()=>chunkMap(rn.job,rn.job.chunk,rn.job.chunks[rn.job.chunk])}
  if(p&&p.map&&MAPS[p.map]){G.mode='world';goMap(p.map,p.x,p.y,p.dir)}else enterRegion();
  applySan();saveRun();
- if(rn.fight&&rn.fight.key&&rn.job){const F=rn.fight,key=F.key;run(async()=>{const M=G.M,f=(M&&M.fights||[]).find(x=>x.id===key);if(f)await siteFight(f,{en:F.en,round:F.round})})}
+ if(rn.fight&&rn.fight.key&&rn.job){const F=rn.fight,key=F.key;run(async()=>{const M=G.M,f=(M&&M.fights||[]).find(x=>x.id===key);if(key==='monk')await monkFight(rn.job,{en:F.en,round:F.round});else if(f)await siteFight(f,{en:F.en,round:F.round})})}
  else if(rn.region.trip)run(async()=>{await say('','On the road, where you left off.',{auto:900});await walk()});
 }
 function resume(){const r=store.get(B.key('run'),null);if(!r||r.ended||!r.party)return false;begin(r);return true}
@@ -317,7 +317,7 @@ function testStart(seed){if(!G.active)newRun(seed||'0001-A')}
 // different mercs went down, how many died, and whether every fight was won. o.level raises the company first.
 async function simSeq(seed,mks,n,o={}){
  await newRun(seed);if(o.level){for(const m of party){m.lvl=o.level;m.mhp+=o.level-1;m.hp=m.mhp;const sk=RLS.TRADES.find(t=>t.id===m.tradeId).strong;for(let i=0;i<(o.level-1)*2;i++){const k=sk[i%2];m.sk[k]=Math.min(95,m.sk[k]+5)}}}
- if(o.kit)o.kit(party);const base=JSON.parse(JSON.stringify(party)),out=[];
+ if(o.kit)o.kit(party);if(o.den)G.run.den=Object.assign({},o.den);const base=JSON.parse(JSON.stringify(party)),out=[];
  G.auto={cmd:()=>0,list:(t,rows)=>Math.max(0,rows.findIndex(r=>!r.dis)),menu:items=>Math.max(0,items.indexOf('Leave')),choice:()=>0,yield:o.yieldPick||(()=>0),smart:true};
  for(let i=0;i<n;i++){party=JSON.parse(JSON.stringify(base));G.lead=0;G.run.party=party;G.run.job={id:'sim',sanLost:{},horrors:{}};const downed=new Set();let won=true,rounds=0;
   const client=o.client?{hp:12,mhp:12,alive:true}:null;

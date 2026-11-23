@@ -15,9 +15,13 @@ const T=(id,o)=>window.RLT(id,o);
 // ================= SAVES =================
 // Keys start with rl. on Release and dev.rl. on Dev (engine/studio.js). Outside the site (the checks) they stay rl.
 const RLP=window.Studio?Studio.savePrefix('rl.'):'rl.',K=k=>RLP+k;
-const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+// battle-only links between mercs and enemies (who hurt whom, who holds whom) never go into a save: they point at each
+// other and would make the save unwritable
+const TRANSIENT=new Set(['lastBy','lastHurt','wrung','wring','carried','carry','grapple','grappled','blockT','shk','bsel']);
+const saveJSON=v=>JSON.stringify(v,(k,x)=>TRANSIENT.has(k)?undefined:x);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,saveJSON(v))}catch(e){console.error('save failed: '+k,e)}}};
 // The save version (studio-bible/saves.md): each change to what a save holds adds a step here. Old steps never change.
-const VERSION=4;
+const VERSION=5;
 const newLedger=()=>({bestiary:{},dead:[],companies:[]});
 // Each step takes the save as one object {run, ledger, draft, legacy} and returns it at the next version.
 const STEPS_UP={
@@ -33,7 +37,11 @@ const STEPS_UP={
  // 3 → 4 (spec 006, D1): empty versions of the job in progress, the fight in progress, each merc's injuries, XP and level
  // picks, and the ledger's bestiary and dead; everything else kept
  4:o=>{const r=o.run;if(r){r.job=r.job||null;r.fight=null;r.rests=r.rests|0;(r.party||[]).forEach(m=>{m.inj=m.inj||[];m.xp=m.xp|0;m.picks=m.picks|0;m.dis=m.dis||[];m.st=m.st||[];m.adapt=m.adapt||{v:0,h:0}})}
-  o.ledger=o.ledger||newLedger();o.ledger.bestiary=o.ledger.bestiary||{};o.ledger.dead=o.ledger.dead||[];o.ledger.companies=o.ledger.companies||[];return o}
+  o.ledger=o.ledger||newLedger();o.ledger.bestiary=o.ledger.bestiary||{};o.ledger.dead=o.ledger.dead||[];o.ledger.companies=o.ledger.companies||[];return o},
+ // 4 → 5 (spec 007): the den's state, the dead waiting for burial, the ledger lines and the ended flag; Part D's dead move
+ // into one company entry for the run they served in; everything else kept
+ 5:o=>{const r=o.run;if(r){r.den=r.den||null;r.bodies=r.bodies||[];r.lines=r.lines||{};r.ended=!!r.ended;r.great=r.great|0}
+  const L=o.ledger;if(L&&L.dead&&L.dead.length){L.companies.unshift({name:r&&r.company?r.company.name:'The company',seed:r?r.seed:'',end:'current',regions:0,contracts:r?r.done|0:0,great:0,days:r?r.day|0:0,mercs:L.dead.map(d=>({name:d.name,nick:d.nick||[],end:d.end||'LG-END-FIGHT',place:d.place||'',killer:d.killer||'',owed:''}))});L.dead=[]}return o}
 };
 function upgradeSave(o,from){for(let v=from+1;v<=VERSION;v++)o=STEPS_UP[v](o);o.version=VERSION;return o}
 // On open: back up older saves first (all rl.* keys in one block), then run each step above the stored version.
@@ -133,7 +141,7 @@ V.title=()=>({rows:[
  ST(`<canvas class="lantern pix" id="lantern" width="96" height="96" style="border:0;background:transparent"></canvas><div class="logo">RUSHLIGHT<small>THE WITHY MARCH</small></div>`),
  R_('New run',{a:newRun}),
  ...(runSaved()?[R_('Continue',{cls:'go',val:esc(runSaved().seed),a:()=>window.RLG&&RLG.resume()})]:[]),
- ...(ledgerHas()&&window.RLG&&RLG.ledger?[R_('Ledger',{a:()=>RLG.ledger()})]:[]),
+ ...(ledgerHas()?[R_('Ledger',{a:()=>{S.ledgerOpen={company:0,from:'title'};goto('ledger')}})]:[]),
  R_('Import',{a:()=>{S.importIn='';S.importBad=false;goto('import')}}),
  ...(window.Studio&&Studio.fromShelf?[R_('Game shelf',{val:'◀',a:()=>Studio.toShelf()})]:[]),
  ST(`<div class="small" style="text-align:center;margin-top:6px">Keyboard: arrows · Z = A · X = B · Q/W = L/R · Enter = Start</div>`)],foot:'A: SELECT'});
@@ -278,6 +286,20 @@ function signOn(){const d=S.draft,n=seedNum(d.seed),st=streams(n),tp=TEMPLATES.f
  store.set(K('run'),run);store.set(K('draft'),null);S.draft=null;S.ed=null;S.step='title';
  if(window.RLG)RLG.begin(run);
 }
+// the death screen (spec 007, 6): DS-WIPE, the company, the seed, the day and where they fell, each merc's line, the score
+const scoreOf=c=>(c.contracts|0)+3*(c.great|0);
+const lineOf=l=>window.lineText?lineText(l):l.name;
+V.death=()=>{const L=store.get(K('ledger'),null)||newLedger(),c=L.companies[0];if(!c)return V.title();
+ return {rows:[ST(`<div class="muster"><div class="red">${esc(T('DS-WIPE'))}</div><b>${esc(c.name)}</b><div class="small">Seed ${esc(c.seed)} · day ${c.days} · fell at ${esc(c.where||'')}</div>
+  ${c.mercs.map(l=>`<div class="bk">${esc(lineOf(l))}</div>`).join('')}<div>Contracts done ${c.contracts} · great creatures killed ${c.great} · days ${c.days}</div></div>`),
+  R_('To the ledger ▶',{cls:'go',a:()=>{S.ledgerOpen={company:0,from:'death'};goto('ledger')}})],foot:'A: THE LEDGER',back:()=>{S.ledgerOpen={company:0,from:'death'};goto('ledger')}}};
+// the ledger screen: one row per company, newest first; the best so far marked with the Tallow dot; A opens its page
+V.ledger=()=>{const L=store.get(K('ledger'),null)||newLedger(),cs=L.companies||[];const best=cs.reduce((b,c,i)=>b<0||scoreOf(c)>scoreOf(cs[b])||scoreOf(c)===scoreOf(cs[b])&&(c.days|0)>(cs[b].days|0)?i:b,-1);
+ const END={wipe:'wiped',abandoned:'abandoned',end:'the slice\'s end',current:'serving'};
+ const rows=cs.length?cs.map((c,i)=>R_(`${i===best?'<span class="hi">●</span> ':''}${esc(c.name)}`,{val:`<span class="small">${esc(c.seed)} · ${END[c.end]||c.end} · ${c.contracts} jobs${c.great?' · '+c.great+' great':''}</span>`,a:()=>{S.ledgerOpen={company:i,from:S.ledgerOpen&&S.ledgerOpen.from};goto('ledgerco')}})):[ST('Nothing in the ledger yet.')];
+ return {rows:[ST('<h3>THE LEDGER</h3>'),...rows],foot:'A: OPEN · B: BACK',back:()=>goto('title')}};
+V.ledgerco=()=>{const L=store.get(K('ledger'),null)||newLedger(),c=(L.companies||[])[S.ledgerOpen?S.ledgerOpen.company:0];if(!c)return V.ledger();
+ return {rows:[ST(`<div class="muster"><b class="hi">${esc(c.name)}</b><div class="small">Seed ${esc(c.seed)} · ${c.days} days · ${c.contracts} contracts · ${c.great} great creatures</div>${c.mercs.map(l=>`<div class="bk">${esc(lineOf(l))}</div>`).join('')}</div>`),R_('Back',{a:()=>goto('ledger')})],foot:'B: BACK',back:()=>goto('ledger')}};
 V.confirm=()=>{const c=S.confirm;return {rows:[ST(`<div style="padding:8px 0">${esc(c.q)}</div>`),R_(c.labels[0],{cls:'go',a:()=>{S.confirm=null;c.yes()}}),R_(c.labels[1],{a:()=>{S.confirm=null;c.no()}})],foot:'A: PICK',back:()=>{S.confirm=null;c.no()}}};
 V.import=()=>({rows:[ST('Paste a save code.'),R_('Code',{input:{bind:'import',value:S.importIn,ph:'RL1:…',max:200000}}),
  R_('Read it ▶',{cls:'go',a:()=>{const o=readCode(S.importIn);if(!o){S.importBad=true;return}ask('Replace your run and ledger with this one?',()=>{applyCode(o);toast('LOADED');goto('title')},()=>goto('title'))}}),
@@ -293,7 +315,7 @@ function render(scroll=true){
  if(!V[S.step])S.step='title';
  cur=V[S.step]();
  const s=fixSel(cur.rows);
- $('#hTitle').textContent=STEPNAME[S.step]||'';
+ $('#hTitle').textContent=(STEPNAME[S.step]||({death:'THE DEAD',ledger:'THE LEDGER',ledgerco:'A COMPANY'})[S.step]||'');
  $('#hStep').textContent=cur.seed?'SEED '+cur.seed:cur.step?`${cur.step}/7`:S.draft&&S.step!=='title'&&S.step!=='seed'?'SEED '+S.draft.seed:'';
  list.innerHTML=cur.rows.map((r,i)=>r.static?`<div class="static">${r.static}</div>`:
   `<div class="row ${i===s?'on':''} ${r.cls||''}" data-i="${i}"><span class="cur">▶</span>${r.input?`<input data-bind="${r.input.bind}" value="${esc(r.input.value)}" placeholder="${esc(r.input.ph)}" maxlength="${r.input.max||28}" autocomplete="off" spellcheck="false">`:`<span class="lab">${r.label}</span>`}<span class="val">${r.left?'<b data-act="left">◀</b>':''}${r.val??''}${r.right?'<b data-act="right">▶</b>':''}</span></div>`).join('');
