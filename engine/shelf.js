@@ -945,6 +945,122 @@ function monitorLine(ctx,x,y,w,h,now=0,col){const c=col||shade(P.grass,.55),mid=
 function waitingChairs(n=3,col){const W_=n*16+4;return{size:[W_,34,0,0],anchor:[W_/2,32],lights:[],draw({R}){const c=col||P.cloth,m=shade(P.stone,.25);
   R(1,22,W_-2,3,m);R(1,22,W_-2,1,shade(m,.3));for(const x of[4,W_-7])R(x,25,3,8,shade(m,-.2));
   for(let i=0;i<n;i++){const x=3+i*16;R(x,2,14,12,c,{sh:4});R(x,2,14,2,shade(c,.25));R(x+1,14,13,6,shade(c,.08),{sh:4});R(x+1,19,13,2,shade(c,-.35));if(i<n-1)R(x+14,8,2,13,m);}}};}
-return{T,S,SLOTS,PALETTES,use,pal,RGB,hex,rgba,shade,hsh,mk,art,drawChar,charSprite,SAMPLE_AGENTS,LAMP,BENCH,prop,summerGrass,summerTree,dryDirt,heat,sodium,storefront,signBlank,signText,signWidth,WATERTOWER,trafficLight,gasPump,ranchHouse,porch,mailbox,sedan,floor,innerWall,counter,tableChairs,DESK,BED,shelving,stringLights,booth,ferrisWheel,asphalt,paintLine,bugZap,BUGLIGHT,workLight,VAN_SIGN,van,walkway,metalStairs,numberDoor,windowAC,chainLink,chainLinkSide,pool,dumpster,FRIDGE_FRONT,kitchen,ceilingFan,boxes,washer,springGrass,blossomTree,mud,fog,fogReach,rain,twoLane,twoLaneCurve,guardrail,mileMarker,roadSign,stoneWall,stoneWallSide,COINVIEWER,slope,thicket,creek,hospitalBed,MONITOR,MONITOR_SCREEN,monitorLine,waitingChairs,
+/* ===== Tracking part A pieces (spec 019) ===== */
+/* WINTER, CITY STREET, OLD ELECTRONICS AND PANELING · v1 pieces, added Nov 23, 2026
+   Drawn first for Black Lantern's Tracking (its spec 019 lists the kits): snow and slush, snowbanks, icicles, falling snow,
+   a four-lane city street with a crosswalk, a bus stop, a blank neon sign, a tall pole sign, a barred shop window, a fire
+   hydrant, an old CRT TV, a VCR and a tape, and wood paneling. No words or logos on any of them: the case letters its own.
+   Three new palette slots (a game's palette without them falls back as noted): snow, slush (grey road slush), neon (a tube). */
+SLOTS.push(["snow","snow, frost"],["slush","grey road slush"],["neon","neon tube"]);
+Object.assign(PALETTES.blacklantern,{snow:"#dfe6ee",slush:"#77757e",neon:"#ff3fa4"});
+Object.assign(PALETTES.rushlight,{snow:"#dcdad0",slush:"#75716a",neon:"#d06a5a"});
+
+/* ---------- WINTER ---------- */
+// shared-tiles-snow-v1: snow ground, a pixel function. trodden = true: packed paths, boot prints and grey patches.
+function snow(x,y,T=16,trodden=false){const u=T/16,nx=(x/u)|0,ny=(y/u)|0,s=slot("snow","text"),n=hsh(nx,ny,301);
+  if(n<.025)return shade(s,.35);
+  const drift=hsh(nx>>2,ny>>1,302);let c=drift<.25?shade(s,-.08):drift>.85?shade(s,.06):s;
+  if(trodden){const bx=nx%6,by=ny%10,col=(nx/6)|0;if(hsh(col,(ny/10)|0,303)<.45&&bx>0&&bx<3&&by<4)return shade(s,-.26);
+    if(hsh(nx>>3,ny>>3,304)<.3)c=shade(c,-.14);if(hsh(nx,ny,305)<.04)return shade(slot("slush","stone"),.25);}
+  return hsh(nx,ny,306)<.12?shade(c,-.05):c;}
+// shared-tiles-slush-v1: grey slush, a pixel function. On a road (walk = false) it lies in wet tire ruts over asphalt;
+// on a sidewalk (walk = true) it lies in melt patches over paving. Both have a dark wet shine.
+function slush(x,y,T=16,walk=false){const u=T/16,nx=(x/u)|0,ny=(y/u)|0,sl=slot("slush","stone"),n=hsh(nx,ny,311);
+  const base=walk?stoneSidewalk(x,y,T,false):asphalt(x,y,T);
+  const rut=walk?hsh(nx>>2,ny>>2,312)<.42:((ny%8)<2||((ny+4)%16)<1);
+  if(rut){if(n<.08)return shade(sl,.3);if(n>.9)return shade(sl,-.3);return[sl,shade(sl,-.08),shade(sl,.08)][(hsh(nx,ny,313)*3)|0];}
+  if(hsh(nx>>1,ny,314)<.05)return shade(base,-.3);
+  return base;}
+// shared-props-snowbank-v1: a plowed snowbank, len tiles long (1 to 4 read best), grey and gritty at its foot.
+function snowbank(len=2){const W_=len*32;return{size:[W_+4,30,2,0],anchor:[W_/2,28],lights:[],draw({R,E}){const s=slot("snow","text"),sd=shade(s,-.22),sl=slot("slush","stone");
+  for(let i=0;i<len*2;i++){const cx=8+i*16+(hsh(i,len,321)*6-3),h=10+hsh(i,len,322)*7;E(cx,26-h*.5,11,h*.6,sd);E(cx-1,25-h*.6,10,h*.55,s);E(cx-4,22-h*.8,4,2,shade(s,.3));}
+  R(0,24,W_,4,shade(sl,.1));for(let x=2;x<W_;x+=5)R(x,23+(hsh(x,1,323)*3|0),2,1,shade(sl,-.25));R(0,27,W_,1,shade(sl,-.3));}};}
+// shared-props-icicles-v1: icicles drawn straight onto the scene along a roof edge or sign bottom, from x0 to x1 hanging
+// from y. o.seed varies them; o.long makes them longer.
+function icicles(g,x0,x1,y,T=16,o={}){const u=T/16,s=slot("snow","text"),ic=shade(slot("snow","text"),.15),id=shade(P.glass,.2);F(g,x0,y,x1-x0,u,s);
+  for(let x=x0+u;x<x1-u;x+=2*u){const n=hsh(x,o.seed|0,331);if(n<.3)continue;const L=Math.round((1+n*(o.long?7:4))*u);F(g,x,y+u,u,L,ic);if(L>2*u)F(g,x,y+u,u,u,id);F(g,x,y+u+L-u,u,u,shade(ic,.4));}}
+// shared-effects-snowfall-v1: falling snow over a map, after everything else on the map (and after the night pass, so the
+// flakes catch the light). o.k: how hard (light .35, heavy 1). o.wind: the drift sideways (-1 to 1). Sparse whole pixels, so
+// the ground, the people and the dialog box stay readable.
+function snowfall(ctx,now=0,o={}){const cv=ctx.canvas,w=cv.width,h=cv.height,k=o.k==null?.4:o.k,wind=o.wind==null?.3:o.wind,n=Math.round((w*h/900)*k),s=shade(slot("snow","text"),.3);
+  for(let i=0;i<n;i++){const sp=.012+hsh(i,1,341)*.02,big=hsh(i,2,341)<.25,t=now*sp+hsh(i,3,341)*h*3,y=t%(h+8)-4,x=((hsh(i,4,341)*w+wind*t*.35+Math.sin(t*.03+i)*3)%w+w)%w;
+    ctx.fillStyle=rgba(s,big?.9:.6);ctx.fillRect(Math.round(x),Math.round(y),big?2:1,big?2:1);}}
+
+/* ---------- CITY STREET ---------- */
+// shared-tiles-citystreet-v1: a four-lane street across the screen, drawn in pixels over a road ground (asphalt or slush):
+// a curb at top and bottom, dashed white lane lines, a double yellow center line. top = the top curb's y; the street is
+// 4 lanes of one tile each between the curbs (so 4 tiles plus the curbs). o.cross: [x0, x1] a zebra crosswalk; o.slush:
+// grey slush banked along both curbs.
+function cityStreet(g,x0,x1,top,T=16,o={}){const u=T/16,w=x1-x0,bot=top+4*T,cb=shade(P.stone,.18),wl=shade(P.text,-.04),yl=P.light,cr=o.cross;
+  const lane=(y,col,dash)=>{for(let x=x0;x<x1;x+=12*u){if(cr&&x+7*u>cr[0]&&x<cr[1])continue;F(g,x,y,dash?7*u:12*u,u,col);}};
+  lane(top+T-u/2,wl,true);lane(top+3*T-u/2,wl,true);lane(top+2*T-1.5*u,yl,false);lane(top+2*T+.5*u,yl,false);
+  if(cr)for(let y=top+2*u;y<bot-2*u;y+=4*u)F(g,cr[0],y,cr[1]-cr[0],2*u,wl);
+  for(const[y,dn]of[[top-2*u,1],[bot,0]]){F(g,x0,y,w,2*u,cb);F(g,x0,dn?y+2*u-u:y,w,u,shade(cb,-.4));for(let x=x0;x<x1;x+=T)F(g,x,y,u,2*u,shade(cb,-.25));}
+  if(o.slush){const sl=slot("slush","stone");for(const y of[top,bot-3*u])for(let x=x0;x<x1;x+=u){const n=hsh(x,y,351);if(n<.7)F(g,x,y,u,n<.3?3*u:2*u,n<.15?shade(sl,.25):sl);}}
+  return{top,bot};}
+// shared-props-busstop-v1: a bus stop shelter with a bench and a blank sign on a post (BUSSTOP_SIGN: [x, y, w, h] of its face,
+// in design pixels, for the case's route name). About 3 tiles wide.
+const BUSSTOP_SIGN=[78,4,16,18];
+const BUSSTOP={size:[100,84,0,0],anchor:[46,82],lights:[[40,10,1.2,.25]],draw({R}){const m=P.panel,ml=shade(m,.3),gl=shade(P.stone,.45);
+  R(84,22,3,60,shade(P.stone,.1));R(76,2,20,22,P.text,{sh:4});R(78,4,16,18,shade(P.text,-.06));R(76,2,20,2,shade(P.text,.25));
+  R(2,10,70,6,m,{sh:12});R(2,10,70,2,ml);R(4,16,3,64,m);R(66,16,3,64,shade(m,-.2));
+  for(const x of[8,28,48])R(x,18,18,48,rgba(gl,.38));R(8,18,58,2,rgba(P.lightTo,.35));for(const x of[10,30,50])R(x,22,1,36,rgba(P.lightTo,.3));
+  R(10,56,50,6,P.wood,{sh:10});R(10,56,50,2,shade(P.wood,.25));R(12,62,3,16,P.outline);R(55,62,3,16,P.outline);R(36,14,12,2,shade(P.light,.2));}};
+
+// shared-props-neonsign-v1: a blank neon sign drawn straight onto the scene: a dark backing board at (x, y), w x h, with a
+// tube running round its edge in col (P.neon when left out). on = lit. Returns its glow and the inner box [x, y, w, h] for the
+// case's words, which it letters with neonText(g, text, x, y, col, on, k): k = 1 for the small size, 2 for the big one.
+// neonFlicker(now, seed) gives 0 (dark this instant) or 1 for a sign that stutters; a case redraws the words when it changes.
+function neonSign(g,x,y,w,h,col,on=true,T=16){const u=T/16,c=col||slot("neon","accent"),tube=on?shade(c,.45):shade(c,-.55),halo=on?c:shade(c,-.7);
+  F(g,x-u,y-u,w+2*u,h+2*u,P.outline);F(g,x,y,w,h,shade(P.panel,-.2));F(g,x+u,y+u,w-2*u,h-2*u,shade(P.panel,-.35));
+  for(const[a,b,c2,d]of[[x+u,y+u,w-2*u,u],[x+u,y+h-2*u,w-2*u,u],[x+u,y+u,u,h-2*u],[x+w-2*u,y+u,u,h-2*u]]){F(g,a,b,c2,d,halo);}
+  for(const[a,b,c2,d]of[[x+2*u,y+2*u,w-4*u,u],[x+2*u,y+h-3*u,w-4*u,u],[x+2*u,y+2*u,u,h-4*u],[x+w-3*u,y+2*u,u,h-4*u]])F(g,a,b,c2,d,tube);
+  return{glow:[x+w/2,y+h/2,Math.max(w,h)*.9,on?.45:0],inner:[x+4*u,y+4*u,w-8*u,h-8*u]};}
+function neonText(g,s,x,y,col,on=true,k=1){const c=col||slot("neon","accent");
+  if(on){signText(g,s,x-1,y,rgba(c,.55),k);signText(g,s,x+1,y,rgba(c,.55),k);signText(g,s,x,y-1,rgba(c,.55),k);signText(g,s,x,y+1,rgba(c,.55),k);signText(g,s,x,y,shade(c,.6),k);}
+  else signText(g,s,x,y,shade(c,-.5),k);}
+const neonFlicker=(now,seed=0)=>{const t=(now/70)|0;return hsh(t,seed,361)<.06||(hsh((t/12)|0,seed,362)<.08&&t%3===0)?0:1;};
+// shared-props-polesign-v1: a tall roadside sign blank on a pole (motels, diners, gas), with a lit face. poleSign(w, h, col):
+// the face is w x h design pixels (POLESIGN face at spec.face [x, y, w, h]); the case letters it. Stands about 5 tiles tall.
+function poleSign(w=64,h=40,col){const W_=w+8,H_=h+132,c=col||P.accent;return{face:[4,4,w,h],size:[W_,H_,0,0],anchor:[W_/2,H_-2],lights:[[W_/2,4+h/2,2.2,.45]],draw({R}){
+  R(W_/2-4,h+6,8,H_-h-8,shade(P.stone,.05),{sh:3});R(W_/2-4,h+6,2,H_-h-8,shade(P.stone,.3));R(W_/2-8,H_-6,16,4,shade(P.stone,-.3));
+  R(0,0,W_,h+8,P.outline);R(2,2,W_-4,h+4,c,{sh:6});R(2,2,W_-4,2,shade(c,.3));R(4,4,w,h,shade(P.text,-.02));R(4,4,w,2,shade(P.text,.2));
+  for(let x=6;x<W_-4;x+=8)R(x,h+4,3,3,shade(P.light,.2));}};}
+// shared-tiles-barredwindow-v1: a shop window with security bars, drawn onto a wall at (x, y), w x h pixels. lit = the shop's
+// lights on behind it. Returns its glow.
+function barredWindow(g,x,y,w,h,T=16,lit=true){const u=T/16,fr=shade(P.woodDark,-.2),gl=lit?P.glass:shade(P.night,.1),bar=shade(P.panel,.25);
+  F(g,x-u,y-u,w+2*u,h+2*u,fr);F(g,x,y,w,h,gl);F(g,x,y+h*.55,w,h*.45,shade(gl,-.2));if(lit)for(let k=x+u;k<x+w-u;k+=5*u)if(hsh(k,y,371)<.55)F(g,k,y+h*.4,2*u,h*.25,shade(gl,-.45));
+  F(g,x+u,y+u,u,h*.4,shade(gl,.3));for(let bx=x+2*u;bx<x+w-u;bx+=3*u){F(g,bx,y,u,h,bar);F(g,bx+u,y,u,h,rgba(P.outline,.3));}
+  F(g,x,y+2*u,w,u,bar);F(g,x,y+h-3*u,w,u,bar);F(g,x-u,y+h,w+2*u,1.5*u,shade(P.cream,-.1));
+  return[x+w/2,y+h/2,Math.max(w,h)*.8/T*T,lit?.3:0];}
+// shared-props-hydrant-v1: a fire hydrant (P.accent when no col).
+function hydrant(col){return{size:[22,30,0,0],anchor:[11,28],lights:[],draw({R,E}){const c=col||P.accent;
+  R(5,8,12,18,c,{sh:4});E(11,7,6,4,c);R(9,1,4,3,shade(c,-.2));R(1,12,4,5,shade(c,-.1));R(17,12,4,5,shade(c,-.3));R(5,8,2,18,shade(c,.25));R(3,25,16,3,shade(c,-.35));R(9,14,4,3,P.brass);}};}
+
+/* ---------- OLD ELECTRONICS AND PANELING ---------- */
+// shared-props-crttv-v1: an old CRT TV on a little stand. on = showing static (frame picks the noise, so a case can flicker
+// it by passing a changing number). CRT_SCREEN: [x, y, w, h] of the glass in design pixels, for a case's own picture.
+const CRT_SCREEN=[6,6,32,24];
+function crtTV(on=false,frame=0,col){return{size:[44,58,0,0],anchor:[22,56],lights:on?[[22,18,1.3,.4]]:[],draw({R}){const b=col||shade(P.panel,.12);
+  R(2,36,40,6,P.wood,{sh:8});R(2,36,40,2,shade(P.wood,.25));R(5,42,3,14,P.woodDark);R(36,42,3,14,P.woodDark);R(8,50,28,2,P.woodDark);
+  R(1,0,42,36,b,{sh:6});R(1,0,42,2,shade(b,.3));R(4,3,36,30,P.outline);
+  if(on){for(let y=6;y<30;y+=2)for(let x=6;x<38;x+=2){const v=hsh(x+frame*31,y,381);R(x,y,2,2,v<.33?shade(P.text,.2):v<.66?shade(P.stone,.2):shade(P.panel,-.1));}R(6,6+((frame*3)%24),32,2,rgba(P.text,.5));}
+  else{R(6,6,32,24,shade(P.stone,-.55));R(8,8,10,3,rgba(P.lightTo,.18));}
+  R(36,31,3,2,on?P.light:shade(P.accent,-.3));R(30,31,4,1,shade(b,-.3));}};}
+// shared-props-vcr-v1: a VCR with no brand (tape = true: a tape half in the slot), and vhsTape(label): a VHS tape lying flat,
+// its blank label in label's color (P.text when left out) for the case to write on.
+function vcr(tape=false){return{size:[44,16,0,0],anchor:[22,14],lights:[[34,6,.5,.3]],draw({R}){const b=shade(P.panel,.2);
+  R(1,2,42,12,b,{sh:5});R(1,2,42,1,shade(b,.35));R(4,5,22,3,P.outline);if(tape){R(6,2,18,4,shade(P.outline,.15));R(9,2,12,2,P.text);}
+  R(30,5,10,4,shade(P.outline,.1));R(31,6,8,2,shade(P.neon||P.light,.1));R(4,10,3,2,shade(b,-.3));R(9,10,3,2,shade(b,-.3));R(1,13,42,1,shade(b,-.4));}};}
+function vhsTape(label){return{size:[28,18,0,0],anchor:[14,16],lights:[],draw({R}){const b=shade(P.outline,.12);
+  R(1,2,26,14,b,{sh:4});R(1,2,26,1,shade(b,.3));R(5,5,18,6,label||P.text);R(5,5,18,1,shade(label||P.text,-.2));R(4,12,6,3,shade(b,.2));R(18,12,6,3,shade(b,.2));}};}
+// shared-tiles-paneling-v1: wood paneling on an interior wall seen from the room, in pixels: top = the ceiling line, bot =
+// the floor line. Grooved sheets, a lighter grain, a baseboard. col: the wood (P.wood when left out).
+function paneling(g,x0,x1,top,bot,col,T=16){const u=T/16,c=col||P.wood,w=x1-x0;F(g,x0,top,w,bot-top,c);
+  for(let x=x0;x<x1;x+=u){const n=hsh(x,7,391);if(n<.35)F(g,x,top,u,bot-top,shade(c,.07));else if(n>.85)F(g,x,top,u,bot-top,shade(c,-.07));}
+  for(let x=x0+6*u;x<x1;x+=6*u)F(g,x,top,u,bot-top,shade(c,-.42));for(let x=x0;x<x1;x+=24*u)F(g,x,top,u,bot-top,shade(c,-.6));
+  for(let k=0;k<w/10;k++){const gx=x0+hsh(k,1,392)*w,gy=top+hsh(k,2,392)*(bot-top-6*u);F(g,gx,gy,u,(2+hsh(k,3,392)*4)*u,shade(c,-.2));}
+  F(g,x0,top,w,2*u,shade(c,-.5));F(g,x0,bot-3*u,w,3*u,shade(c,-.3));F(g,x0,bot-3*u,w,u,shade(c,.2));}
+return{T,S,SLOTS,PALETTES,use,pal,RGB,hex,rgba,shade,hsh,mk,art,drawChar,charSprite,SAMPLE_AGENTS,LAMP,BENCH,prop,summerGrass,summerTree,dryDirt,heat,sodium,storefront,signBlank,signText,signWidth,WATERTOWER,trafficLight,gasPump,ranchHouse,porch,mailbox,sedan,floor,innerWall,counter,tableChairs,DESK,BED,shelving,stringLights,booth,ferrisWheel,asphalt,paintLine,bugZap,BUGLIGHT,workLight,VAN_SIGN,van,walkway,metalStairs,numberDoor,windowAC,chainLink,chainLinkSide,pool,dumpster,FRIDGE_FRONT,kitchen,ceilingFan,boxes,washer,springGrass,blossomTree,mud,fog,fogReach,rain,twoLane,twoLaneCurve,guardrail,mileMarker,roadSign,stoneWall,stoneWallSide,COINVIEWER,slope,thicket,creek,hospitalBed,MONITOR,MONITOR_SCREEN,monitorLine,waitingChairs,snow,slush,snowbank,icicles,snowfall,cityStreet,BUSSTOP,BUSSTOP_SIGN,neonSign,neonText,neonFlicker,poleSign,barredWindow,hydrant,crtTV,CRT_SCREEN,vcr,vhsTape,paneling,
   dirtRoad,boardwalk,stoneSidewalk,grass,paint,F,picketFence,wall,roof,windowPane,door,awning,light,dusk,autumn,rr,shell,dialog};
 })();
