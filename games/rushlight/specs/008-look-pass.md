@@ -45,6 +45,7 @@ All rough, drawn in code, in `games/rushlight/mockups/` with the code that drew 
 | `41-environment-readability-v1` | The readability pass, before and after: Hollin, Lowmoor Pit and the road battle backdrop | "Love all the changes" (Nov 23). The reference for sites, the den and battle backdrops |
 | `42-menus-look-rough-v1` | The creator (Tweak), the pause menu, Party, the Merc card, Items, the Bestiary and the Ledger, now and new, on the approved parchment | "Great!" (Nov 23). Wax seal kept; Keegan may revisit it on playtest |
 | `43-map-look-rough-v1` | The region map, now and new: inked chart, place pictures, name ribbons, edge tags, the HUD cards | "Looks good" (Nov 23) |
+| `44-last-screens-rough-v1` | The last screens, now and new: title, map key, contracts, pick lists in town, the hotspot prompt, pay and level-up, the death screen | "All these are great" (Nov 23) |
 
 ## 8A. Sprites
 
@@ -144,6 +145,15 @@ Built to `35-look-company-rough-v3`.
   - **Bestiary:** the list of entries with what's known (sighted, identified, killed); the picked entry's card with its drawing beside the name, kind and nature, then signs and tales. What isn't known yet says how to learn it.
   - **Ledger:** one card per company (name, seed, how it ended, hunts and kills); the roll with every merc who served, face, name, trade and how they ended; a dead merc's nicknames and what they were owed in italic ink.
   - The wax-seal cursor stays (Keegan, Nov 23: fine for now, may revisit on playtest).
+- **The last screens** (look check, Nov 23, to `44-last-screens-rough-v1`):
+  - **Title:** the lantern drawn large in a warm glow, RUSHLIGHT in Tallow with THE WITHY MARCH under it, the menu (Continue with the company and day, New run, Ledger, Import) as a parchment card, and the keyboard hint in Bone.
+  - **Map key:** a parchment card that uses the chart's own pictures (8B): town, hamlet, wild site, den, main road with its day stroke, side road, den road, the picked route, not yet known, roamer met, a contract's seal, the company's coin. Every row fits inside the card.
+  - **Contracts page:** one parchment card per contract (its title, the pay, where with days and food, who it's for and the kind of job, what's known, whose motivation it touches), then Signs and The dead as their own cards.
+  - **Pick lists over a street or a site** (hiring, the notice board, shops, selling, mending, the inn, the church, place menus): a parchment card that sits just above the dialog box, its title in dark Rust, the wax-seal cursor. Hire rows show the face, name, trade · species, level and fee; prices are never cut.
+  - **Hotspot prompt:** the card's title names the person or thing. Each choice shows the roller's small face and odds at the right; the better merc's row (SELECT) sits under it; a choice that needs no roll says so; a locked choice is dimmed with the skill and level it needs.
+  - **Pay and level-up:** one card with the fee and, as right-aligned rows, XP, favor, SAN lost by merc and what was gained. Then the level-up card: the merc's face, level, picks left and the +1 max HP, and each skill as a row showing its value now and after the pick.
+  - **Death screen:** the company's name with STRUCK FROM THE ROLL stamped in Blood, where and on what day; every merc greyed, with how each one ended; contracts done, great creatures killed and regions crossed; a line that what they learned stays in the bestiary. A goes on to the ledger.
+  - The dialog box is the shared hand copy (`dialog.js`) and stays as it is, with Bone text from the bug batch.
 
 ## 8D. The check
 
