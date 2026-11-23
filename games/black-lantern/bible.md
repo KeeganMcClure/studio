@@ -663,7 +663,7 @@ Picking a home scene plays a quick cutscene that changes with who the Bond is an
 - **The full creator**, one step per screen, L/R to move between steps:
   1. **Profession:** one of the 18 roles below. It sets 2 strong skills at 50% and 2 backup skills at 30% (40% for Melee, Dodge and Athletics); every other skill starts at its Delta Green base (see Combat numbers).
   2. **Stats:** roll (4d6, drop the lowest, one full reroll allowed) or point buy (72 points, each stat 3–18). Template agents come with their stats already set.
-  3. **Skills:** 8 bonus picks of +20%, cap 80%, into any skill. Weird hobbies live here: a funeral director who boxes, a hockey player who reads tarot.
+  3. **Skills:** 8 bonus picks of +20%, cap 80%, into any skill. A pick that would pass 80% stops at 80%, so a skill that starts at 10, 30, 50 or 70% can still reach 80 (that pick gives only +10; set Nov 23, 2026, after the demo playtest). Weird hobbies live here: a funeral director who boxes, a hockey player who reads tarot.
   4. **Identity:** name, Storybook face built from parts, a one-line backstory.
   5. **Bonds:** 2 people, each picked from a preset list of types (Partner, Kid, Parent, Sibling, Friend, Ex, Coworker, Mentor) and then named; each starts at CHA. The type decides which home scenes they get (set Nov 19).
   6. **Motivations:** pick 2 from the preset list and mark one as Main, which drives the agent's personal arc (see Motivations below).
