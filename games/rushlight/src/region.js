@@ -211,8 +211,9 @@ async function travelDay(L,days){
  else if(G.dev&&G.dev.event||!(G.dev&&G.dev.noevents)&&d100()<=25*(G.dev&&G.dev.eventx||1))res=await roadEvent(L);
  if(res==='back'||res==='end'||!G.active)return res;
  await eatDay();if(!G.active)return 'end';
+ if(G.run.escort&&G.run.escort.alive&&G.run.escort.hp<=0)await woolDied();
  const daysNow=roadDays(L.road)+L.extra;
- if(L.day<daysNow){await camp({road:true});if(!G.active)return 'end'}
+ if(L.day<daysNow){await camp({road:true});if(!G.active)return 'end';if(typeof afterCamp==='function')await afterCamp()}
  saveRun();return null;
 }
 async function forage(){
@@ -232,7 +233,7 @@ function cookMeat(){const g=RG(),n=g.meat.reduce((a,l)=>a+l.n,0);if(!n)return;g.
 async function eatDay(o={}){
  const r=G.run,live=alive();if(!live.length)return;
  let eaters=live;G.whoEats=0;
- const extra=(o.client?1:0);
+ const extra=(o.client||G.run.escort&&G.run.escort.alive?1:0);
  if(r.rations<live.length+extra){
   const n=Math.max(0,r.rations-extra),order=live.slice().sort((a,b)=>((b.hunger|0)>0)-((a.hunger|0)>0)||a.hp-b.hp);
   let pick=new Set(order.slice(0,n));G.whoEats=1;

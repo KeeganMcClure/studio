@@ -386,7 +386,7 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
         party[0].sk.Letters = 80; r.hue = 2; g.paid = 0; g.auto.menu = (items, o) => { const L = items.map(x => x.label || x); return o && /REEVE/.test(o.title || '') ? (g.paid ? L.indexOf('Leave') : (g.paid = 1, 1)) : 0; }; StudioRoll.use(fixed(5)); await PLACES.reeve('harrow'); StudioRoll.use(null); if (r.hue !== 1) out.push('a Writ did not settle a step');
         r.hue = 2; g.paid = 0; party[0].writUsed = 0; g.auto.menu = (items, o) => { const L = items.map(x => x.label || x); return o && /REEVE/.test(o.title || '') ? (g.paid ? L.indexOf('Leave') : (g.paid = 1, 2)) : 0; }; StudioRoll.use(fixed(97)); await PLACES.reeve('harrow'); StudioRoll.use(null); if (r.hue !== 3) out.push('a failed talk with the reeve did not climb');
         if (r.fac.lord.step !== 0) out.push('Outlawed did not drop the Lord to Hated');
-        g.dev.event = 'storm'; StudioRoll.use(fixed(1)); const res = await roadEvent({ road: 'hs', to: 'cause', day: 1, extra: 0 }); StudioRoll.use(null); if (!G.lastStats || G.lastStats.rounds === fought && !res) out.push('no bounty hunters at Outlawed'); }
+        g.dev.event = 'storm'; G.lastStats = null; StudioRoll.use(fixed(1)); await roadEvent({ road: 'hs', to: 'cause', day: 1, extra: 0 }); StudioRoll.use(null); if (!G.lastStats || !G.lastStats.rounds) out.push('no bounty hunters at Outlawed'); }
       RLG._t.G().auto = null; return out;
     });
     bad.push(...res, ...errors);
@@ -453,6 +453,70 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
     });
     bad.push(...res, ...errors);
     console.log(`${bad.length ? 'FAIL' : 'ok  '} spec 006 D1: Pell's job on 3 seeds, and each rule forced (wear, Downed, injuries, breaking, horror, 0 SAN, Breaking Points, pay and levels, trophies, the bestiary)`);
+    bad.forEach(p => console.log('     - ' + p)); failed += bad.length;
+    await ctx.close();
+  }
+
+  // 11. spec 006 D2: every job on 3 seeds and every ending, the Signs list to 3 without the strange sign, one job by keys
+  {
+    const bad = [];
+    const ctx = await browser.newContext({ viewport: { width: 375, height: 667 }, hasTouch: true });
+    const page = await ctx.newPage(); const errors = [];
+    page.on('pageerror', e => errors.push('page error: ' + e.message));
+    await page.goto(url); await page.waitForTimeout(500);
+    const play = async (seed, id, pref, extra) => page.evaluate(async ([seed, id, pref, extra]) => {
+      if (RLG.active) RLG._t.quit(); await RLG.newRun(seed); const g = RLG._t.G(), r = g.run; g.dev = { fast: true, noevents: true };
+      const want = new RegExp(pref || '^$');
+      g.auto = { cmd: () => 0, list: (t, rows) => Math.max(0, rows.findIndex(x => !x.dis)), smart: true, yield: (e, rows) => { const i = rows.findIndex(x => want.test(x.label)); return i >= 0 && !rows[i].dis ? i : 0; }, choice: () => 0, said: [],
+        menu: (items) => { const L = items.map(x => x.label || x); let i = L.findIndex(x => want.test(x)); if (i >= 0 && !items[i].dis) return i; i = L.findIndex(x => /^Take it|^Set out|^Go on|^Stay$|^Eat/.test(x)); if (i >= 0) return i;
+          if (L.includes('Leave it')) { i = items.findIndex(x => !x.dis && !/^\s*SELECT/.test(x.label || x)); if (i >= 0 && L[i] !== 'Leave it') return i; } i = L.findIndex(x => /^Leave/.test(x)); return i >= 0 ? i : 0; } };
+      r.purse = 80; party.forEach(m => { m.lvl = 2; m.mhp += 1; m.hp = m.mhp; }); party[0].slots.push({ id: 'manacles', n: 1 });
+      if (extra === 'muffle') party[0].sk.Craft = 60;
+      if (!r.boards.posted.includes(id)) r.boards.posted.push(id); await takeJob(id);
+      if (id === 'wool') { await march('ebbe'); const c = r.contracts.find(c => c.id === 'wool'); return { done: !!c.done, purse: r.purse }; }
+      await march(JOBS[id].site); const job = r.job; if (!job) return { err: 'no site' };
+      const order = extra === 'pitlast' ? job.chunks.map((c, i) => i).reverse() : job.chunks.map((c, i) => i);
+      for (let pass = 0; pass < 5 && r.job; pass++) for (const c of order) { if (!r.job) break; if (job.chunk !== c) enterChunk(c, 'left'); drawWorld(); const M = G.M;
+        for (const h of M.hot) { if (!r.job) break; if (h.when && !h.when(job)) continue; await hotspot(h); }
+        for (const f of M.fights) { if (!r.job) break; if (f.when && !f.when(job)) continue; if (!job.fights[f.id]) await siteFight(f); } }
+      if (r.job && r.job.resolved && r.contracts.find(c => c.id === id).payAt) { await leaveSite(); await march(r.contracts.find(c => c.id === id).payAt); }
+      return { done: !!(r.contracts.find(c => c.id === id) || {}).done, left: !!r.job, ending: job.ending || '', signs: RG().signs.slice(), purse: r.purse, said: g.auto.said.slice(-3).join(' | ') };
+    }, [seed, id, pref, extra]);
+    for (const seed of ['0001-A', '4242-C', '9021-M']) for (const id of ['hag', 'wool', 'noon', 'owl', 'counter']) {
+      const r = await play(seed, id, '', id === 'counter' ? 'pitlast' : '');
+      if (!r.done) bad.push(`${seed}: ${id} did not finish (${JSON.stringify(r).slice(0, 160)})`);
+    }
+    // every ending: Pell's four, the Hag's four ways and the fight, the wool buyer's purse choices, Severa by day and by night
+    for (const [id, pref, extra] of [['pell', 'Let him go'], ['pell', 'Bind'], ['pell', 'Rob'], ['pell', 'Kill'],
+      ['hag', 'Turn them in|Unmask'], ['hag', 'Take a cut|Unmask'], ['hag', 'Sell the guild|Unmask'], ['hag', '^Fight'],
+      ['owl', 'CLIMB'], ['owl', 'ASK FOR THE SMOCK'], ['counter', 'MUFFLE', 'muffle']]) {
+      const r = await play('0001-A', id, pref, extra || (id === 'counter' ? 'pitlast' : ''));
+      if (!r.done) bad.push(`ending ${id} / ${pref}: not reached (${JSON.stringify(r).slice(0, 160)})`);
+    }
+    // the Signs list reaches 3 on every seed without the strange sign: the Noonwife's miner, the Counter's lamp room, the tavern rumor
+    for (const seed of ['0001-A', '4242-C', '9021-M']) {
+      const n = await page.evaluate(async seed => { const g = RLG._t.G(); let signs = []; return signs; }, seed);
+      const a = await play(seed, 'noon', ''), b = await page.evaluate(() => RG().signs.length);
+      const s3 = await page.evaluate(async () => { const r = RLG._t.G().run, g = RLG._t.G(); const keep = RG().signs.slice();
+        if (!r.boards.posted.includes('counter')) r.boards.posted.push('counter'); await takeJob('counter'); await march('crook'); const job = r.job;
+        for (let c = 1; c < job.chunks.length; c++) { enterChunk(c, 'left'); for (const h of G.M.hot) if (h.id === 'lamp') await hotspot(h); }
+        r.purse += 30; while (r.rumors.bought < r.rumors.order.length && !RG().signs.includes('CR-MONK-SIGN-2') && RG().signs.length < 3) await buyRumor();
+        return { n: RG().signs.length, strange: !!RG().signStrange, den: denFound() }; });
+      if (s3.n < 3 || s3.strange || !s3.den) bad.push(`seed ${seed}: the Signs list reached ${s3.n} (strange sign ${s3.strange}, den shown ${s3.den})`);
+    }
+    // one job by the keys: Severa by day, walked to the loft and climbed with A, the fight by A
+    { const ok = await page.evaluate(async () => { if (RLG.active) RLG._t.quit(); await RLG.newRun('0001-A'); const r = RLG._t.G().run; RLG._t.G().dev = { fast: true };
+        if (!r.boards.posted.includes('owl')) r.boards.posted.push('owl'); await takeJob('owl'); RG().at = 'sallow'; scout('sallow'); run(() => startSite('owl')); return 1; });
+      await page.waitForTimeout(600); await page.evaluate(() => { enterChunk(1, 'left'); G.x = 7; G.y = 4; G.px = 112; G.py = 64; G.dir = 'up'; return 1; });
+      await page.waitForTimeout(300); await page.keyboard.press('z'); await page.waitForTimeout(500);
+      for (let i = 0; i < 400; i++) { const st = await page.evaluate(() => ({ job: !!RLG._t.G().run.job, bt: !!RLG._t.Bt(), menu: !document.getElementById('gmenu').hidden })); if (!st.job) break; await page.keyboard.press('z'); await page.waitForTimeout(40); }
+      if (await page.evaluate(() => !!RLG._t.G().run.job)) bad.push('Severa by the keys did not finish'); }
+    // the bestiary keeps every piece through a forced wipe and a new run
+    { const r = await page.evaluate(async () => { const L0 = JSON.stringify(RL.store.get(RL.key('ledger')).bestiary); RLG._t.G().auto = { menu: () => 0, cmd: () => 0, list: () => 0 }; await wipe(); RLG._t.G().auto = null; await RLG.newRun('0003-C'); return L0 === JSON.stringify(RL.store.get(RL.key('ledger')).bestiary); });
+      if (!r) bad.push('the bestiary changed through a wipe and a new run'); }
+    await page.evaluate(() => { const g = RLG._t.G(); g.auto = null; g.dev = {}; });
+    bad.push(...errors);
+    console.log(`${bad.length ? 'FAIL' : 'ok  '} spec 006 D2: the five jobs on 3 seeds, every ending, the Signs list to 3, a job by the keys, the bestiary through a wipe`);
     bad.forEach(p => console.log('     - ' + p)); failed += bad.length;
     await ctx.close();
   }

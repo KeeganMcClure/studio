@@ -18,6 +18,16 @@ const SCEN = {
   d1: [
     ['Pell: 2 road bandits, then Pell (HP 22, DEX 16, 50%, 1d4+1)', 'pell', "[()=>[RLG._t.foe('bandit'),RLG._t.foe('bandit')],()=>[Object.assign(RLG._t.foe('bandit'),{name:'Pell',lvl:3,hp:22,dex:16,hit:50,dmg:'1d4+1',nerve:'Skittish',target:true})]]", { seq: true, battle: { bounty: true } }],
   ],
+  d2: [
+    ['the Withy Hag: 3 road bandits and the Veteran leader', 'hag', "[()=>[Object.assign(RLT_FOE('bandit'),{quirk:'Veteran',noQuirk:true,name:'The Withy Hag'}),RLT_FOE('bandit'),RLT_FOE('bandit'),RLT_FOE('bandit')]]".replace(/RLT_FOE/g,'RLG._t.foe'), { seq: true }],
+    ['the wool buyer: the felled tree with the client in it (HP 12, 1 in 4 attacks)', 'wool', "[()=>[RLG._t.foe('bandit'),RLG._t.foe('bandit'),RLG._t.foe('bandit')]]", { seq: true, client: true, crit: 'client' }],
+    ['the Noonwife at level 2, careful (the sexton -15% HP, no Question)', 'noonP', "[()=>[{name:'The Noonwife',base:'The Noonwife',kind:'Unnatural',lvl:3,hp:49,dex:16,hit:60,dmg:'1d4+2',sprite:'noonwife',faceless:true,target:true,ai:'noon',horror:{tier:'Disturbing',id:'nw'+Math.random()}}]]", { seq: true, level: 2, battle: { target: true, noQuestion: true, countdown: { label: 'NOON BELL', n: 12 }, mercPre: 'noonMerc' }, crit: 'target' }],
+    ['the Noonwife at level 2, no prep', 'noonN', "[()=>[{name:'The Noonwife',base:'The Noonwife',kind:'Unnatural',lvl:3,hp:58,dex:16,hit:60,dmg:'1d4+2',sprite:'noonwife',faceless:true,target:true,ai:'noon',horror:{tier:'Disturbing',id:'nw'+Math.random()}}]]", { seq: true, level: 2, battle: { target: true, countdown: { label: 'NOON BELL', n: 12 }, mercPre: 'noonMerc' }, crit: 'target' }],
+    ['Severa by day (Stunned, in the rafters)', 'owlD', "[()=>[{name:'Severa',base:'Severa',kind:'Beast',lvl:3,hp:20,dex:18,hit:55,dmg:'1d4+1',sprite:'severa',nerve:'Skittish',ai:'owl',onHurt:true,fits:['Old','Maneater']}]]", { seq: true, battle: { stunFirst: true, rafters: true, setFight: true, mercPre: 'owlMerc' }, crit: 'owl' }],
+    ['Severa by night (she acts first, Silent wing)', 'owlN', "[()=>[{name:'Severa',base:'Severa',kind:'Beast',lvl:3,hp:20,dex:18,hit:55,dmg:'1d4+1',sprite:'severa',nerve:'Skittish',ai:'owl',onHurt:true,fits:['Old','Maneater'],lurker:true,silent:true}]]", { seq: true, battle: { setFight: true, mercPre: 'owlMerc' }, crit: 'owl' }],
+    ['the Counter at level 2, careful (muffled, nest burned -15%)', 'countP', "[()=>[{name:'The Counter',base:'The Counter',kind:'Unnatural',lvl:3,hp:41,dex:18,hit:65,dmg:'1d6+2',sprite:'counter',faceless:true,target:true,ai:'counter',horror:{tier:'Disturbing',id:'ct'+Math.random()}}]]", { seq: true, level: 2, battle: { target: true, stunFirst: true }, crit: 'target' }],
+    ['the Counter at level 2, no prep', 'countN', "[()=>[{name:'The Counter',base:'The Counter',kind:'Unnatural',lvl:3,hp:48,dex:18,hit:65,dmg:'1d6+2',sprite:'counter',faceless:true,target:true,ai:'counter',horror:{tier:'Disturbing',id:'ct'+Math.random()}}]]", { seq: true, level: 2, battle: { target: true }, crit: 'target' }],
+  ],
   c: [
     ['the reeve\'s men or bounty hunters: 2 men-at-arms', 'maa', "()=>[0,1].map(()=>RLG._t.foe('manatarms'))", {}],
   ],
@@ -33,9 +43,10 @@ const SCEN = {
       console.log(`\nPart ${part.toUpperCase()} · ${label}`);
       for (const seed of SEEDS) {
         if (o.seq) {
-          const rows = await page.evaluate(async ([s, mk, o]) => await RLG._t.simSeq(s, eval(mk), 20, o), [seed, mk, o]);
+          const rows = await page.evaluate(async ([s, mk, o]) => { if (o.battle && o.battle.mercPre) o.battle.mercPre = window[o.battle.mercPre] || eval(o.battle.mercPre); return await RLG._t.simSeq(s, eval(mk), 20, o); }, [seed, mk, o]);
           const n = rows.length, ok = rows.filter(r => r.downed <= 1 && !r.dead).length;
-          console.log(`  ${seed}: won ${rows.filter(r => r.won).length}/${n} · runs with at most 1 merc Downed and nobody dead ${ok}/${n} (${Math.round(ok / n * 100)}%) · deaths ${rows.reduce((a, r) => a + r.dead, 0)} · rounds ${(rows.reduce((a, r) => a + r.rounds, 0) / n).toFixed(1)} · SAN lost ${(rows.reduce((a, r) => a + r.san, 0) / n).toFixed(1)}`);
+          if (o.client) { console.log(`  ${seed}: the client lived in ${rows.filter(r => r.clientAlive).length}/${n} runs · won ${rows.filter(r => r.won).length}/${n} · deaths ${rows.reduce((a, r) => a + r.dead, 0)}`); continue; }
+          console.log(`  ${seed}: won ${rows.filter(r => r.won).length}/${n} · Downed per run ${(rows.reduce((a, r) => a + r.downed, 0) / n).toFixed(2)} · runs with at most 1 merc Downed and nobody dead ${ok}/${n} (${Math.round(ok / n * 100)}%) · deaths ${rows.reduce((a, r) => a + r.dead, 0)} · rounds ${(rows.reduce((a, r) => a + r.rounds, 0) / n).toFixed(1)} · SAN lost ${(rows.reduce((a, r) => a + r.san, 0) / n).toFixed(1)}`);
           continue;
         }
         const rows = await page.evaluate(async ([s, mk, o]) => await RLG._t.sim(s, eval(mk), 20, o), [seed, mk, o]);

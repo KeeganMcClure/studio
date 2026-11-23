@@ -320,8 +320,9 @@ async function simSeq(seed,mks,n,o={}){
  if(o.kit)o.kit(party);const base=JSON.parse(JSON.stringify(party)),out=[];
  G.auto={cmd:()=>0,list:(t,rows)=>Math.max(0,rows.findIndex(r=>!r.dis)),menu:items=>Math.max(0,items.indexOf('Leave')),choice:()=>0,yield:o.yieldPick||(()=>0),smart:true};
  for(let i=0;i<n;i++){party=JSON.parse(JSON.stringify(base));G.lead=0;G.run.party=party;G.run.job={id:'sim',sanLost:{},horrors:{}};const downed=new Set();let won=true,rounds=0;
-  for(const mk of mks){if(party.every(m=>m.dead||m.ko))break;const res=await battle(mk(i),Object.assign({},o.battle||{}));party.forEach(m=>{if(m.downs)downed.add(m.id)});rounds+=(G.lastStats||{}).rounds|0;if(res!=='win'){won=false;break}}
-  out.push({won,downed:downed.size,dead:party.filter(m=>m.dead).length,rounds,hp:party.reduce((a,m)=>a+m.hp,0),san:base.reduce((a,m,j)=>a+(m.san-party[j].san),0)})}
+  const client=o.client?{hp:12,mhp:12,alive:true}:null;
+  for(const mk of mks){if(party.every(m=>m.dead||m.ko))break;const res=await battle(mk(i),Object.assign({},o.battle?(typeof o.battle==='function'?o.battle():o.battle):{},client?{client}:{}));party.forEach(m=>{if(m.downs)downed.add(m.id)});rounds+=(G.lastStats||{}).rounds|0;if(res!=='win'){won=false;break}}
+  out.push({clientAlive:client?client.hp>0:null,won,downed:downed.size,dead:party.filter(m=>m.dead).length,rounds,hp:party.reduce((a,m)=>a+m.hp,0),san:base.reduce((a,m,j)=>a+(m.san-party[j].san),0)})}
  G.auto=null;G.run.job=null;return out}
 // Tuning sims (spec 004 onward): the seed's Free Company, fresh each fight, against foes made by mk(), auto-played
 // (Fight, at the first target), with the run's own dice. Returns one row per fight.

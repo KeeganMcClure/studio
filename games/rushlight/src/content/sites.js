@@ -188,7 +188,7 @@ CHUNKS['crook-ditch']={rows:[
   'a....~~~~......',
   'a....~~~~.....a',
   'aa...........aa',
-  'aaaaaaaaaaaaaaa'],spots:{r:[6,1],p:[7,5],F:[7,5]}};
+  'aaaaaaaaaaaaaaa'],spots:{r:[6,1],p:[10,6],F:[10,6]}};
 CHUNKS['crook-street']={rows:[
   'aaaaaaaaaaaaaaa',
   'a.hh.....hh...a',
@@ -234,8 +234,62 @@ CHUNKS['crook-ruin']={rows:[
   'aa...........aa',
   'aaaaaaaaaaaaaaa'],spots:{e:[5,3],c:[12,7]}};
 Object.assign(SITES,{
- hollin:{name:'HOLLIN',tod:'noon',chunks:['hollin-lane','hollin-cottages','hollin-edge','hollin-field'],cache:'ST-CACHE-2'},
+ hollin:{name:'HOLLIN',tod:'noon',edge:'y',chunks:['hollin-lane','hollin-cottages','hollin-edge','hollin-field'],cache:'ST-CACHE-2'},
  sallow:{name:'SALLOW END',tod:'dusk',chunks:['sallow-yards','sallow-church','sallow-cottage'],cache:'ST-CACHE-1'},
- cause:{name:'THE OSIER CAUSEWAY',tod:'night',chunks:[['cause-beds-l','cause-beds-r'],'cause-causeway','cause-boats'],cache:'ST-CACHE-1'},
- crook:{name:'CROOKBACK',tod:'overcast',chunks:['crook-ditch','crook-street','crook-church','crook-bakehouse','crook-ruin'],cache:'ST-CACHE-2'}
+ cause:{name:'THE OSIER CAUSEWAY',tod:'night',edge:'o',chunks:[['cause-beds-l','cause-beds-r'],'cause-causeway','cause-boats'],cache:'ST-CACHE-1'},
+ crook:{name:'CROOKBACK',tod:'overcast',edge:'a',chunks:['crook-ditch','crook-street','crook-church','crook-bakehouse','crook-ruin'],cache:'ST-CACHE-2'}
 });
+// ---- Lowmoor Pit, the Hollow Monk's den (spec 007, 1): the pithead, the miners' row, the reckoning house, the shaft, the gallery ----
+CHUNKS['pit-head']={rows:[
+  'uuuuuuuuuuuuuuu',
+  'u..pp.....m...u',
+  'u..pp..........',
+  '.......u.......',
+  ',,,,,,,,,,,,,,,',
+  '...........u...',
+  'u...u..........',
+  'u.............u',
+  'uu...........uu',
+  'uuuuuuuuuuuuuuu'],spots:{p:[3,3]}};
+CHUNKS['pit-row']={rows:[
+  'uuuuuuuuuuuuuuu',
+  'u.hh.hh.hh.hh.u',
+  'u..............',
+  '...............',
+  ',,,,,,,,,,,,,,,',
+  '...............',
+  'u...L..........',
+  'u.............u',
+  'uu...........uu',
+  'uuuuuuuuuuuuuuu'],spots:{d:[9,2],s:[4,5]}};
+CHUNKS['pit-house']={rows:[
+  'uuuuuuuuuuuuuuu',
+  'u....hhhhh....u',
+  'u....hhhhh.....',
+  '...............',
+  ',,,,,,,,,,,,,,,',
+  '...............',
+  'u..............',
+  'u.............u',
+  'uu...........uu',
+  'uuuuuuuuuuuuuuu'],spots:{b:[7,3],c:[11,3]}};
+CHUNKS['pit-shaft']={rows:[
+  'uuuuuuuuuuuuuuu',
+  'u.............u',
+  'u......SSS.....',
+  '.......SlS.....',
+  ',,,,,,,SlS,,,,,',
+  '.......SSS.....',
+  'u..............',
+  'u.............u',
+  'uu...........uu',
+  'uuuuuuuuuuuuuuu'],spots:{h:[6,4]}};
+CHUNKS['pit-gallery']={rows:[
+  'WWWWWWWWWWWWWWW',
+  'W.............W',
+  'W..~~~~~~~~~..W',
+  'W..~~~~~~~~~..W',
+  'W,,,,,,,,,,,,,W',
+  'W.............W',
+  'WWWWWWWWWWWWWWW'],spots:{F:[7,4]}};
+SITES.pit={name:'LOWMOOR PIT',tod:'night',edge:'u',chunks:['pit-head','pit-row','pit-house','pit-shaft']};

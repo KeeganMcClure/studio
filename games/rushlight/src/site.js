@@ -41,7 +41,7 @@ function enterChunk(i,side){const r=G.run,job=r.job,key=job.chunks[i],C=CHUNKS[k
  // statuses tick on each chunk change (Carried rules, Statuses)
  tickStatuses();applySan()}
 function chunkMap(job,i,key){const C=CHUNKS[key],JS=JOB_SCRIPTS[job.id],h=C.rows.length,w=C.rows[0].length,g=C.rows.map(r=>r.split(''));
- const S=SITES[job.site]||{},M={name:G.site?G.site.name:'',w,h,g,npcs:[],O:{},vv:{},site:true,tod:job.tod||S.tod||'dusk',hot:[],fights:[]};
+ const S=SITES[job.site]||{},M={name:G.site?G.site.name:'',w,h,g,npcs:[],O:{},vv:{},site:true,tod:job.tod||S.tod||'dusk',hot:[],fights:[],edge:S.edge||'T'};
  const spot=k=>C.spots[k];
  // hotspots and fights from the job's script, placed on the chunk's marked spots
  (JS.hotspots?JS.hotspots(key,job):[]).forEach(hs=>{const p=hs.at||spot(hs.spot);if(!p)return;const h_=Object.assign({},hs,{x:p[0],y:p[1]});M.hot.push(h_);
@@ -104,11 +104,14 @@ async function openCache(m,res,job){const W=StudioSeed.load(G.run.streams.world)
  job.caches--;await say('',`Inside: ${got.join(', ')}. Into the pack.`)}
 // a placed fight on the site
 async function siteFight(f,resume){const job=G.run.job;job.started=true;
+ if(f.pre&&!resume&&await f.pre(job))return;
+ if(job.fights[f.id])return;
  const foes=resume?null:f.foes(job);if(f.intro&&!resume)await say('',RLT(f.intro));
  const o=Object.assign({bg:job.tod||SITES[job.site].tod,setFight:true,key:f.id},f.o?f.o(job):{});if(resume)o.resume=resume;
  const res=await battle(foes,o);
  if(res==='lose'){await wipe();return}
  job.fights[f.id]=res;if(f.after)await f.after(job,res,G.lastStats);
+ if(G.run.escort&&G.run.escort.hp<=0&&G.run.escort.alive)await woolDied();
  saveRun()}
 // leaving: any time, by walking off the first chunk's edge; a started, unfinished job then counts as failed
 async function leaveSite(){const r=G.run,job=r.job;
@@ -173,6 +176,17 @@ async function openBestiary(){const L=ledger(),keys=Object.keys(L.bestiary);if(!
   for(const l of out.length?out:['Only its name, so far.'])await say(b.name.toUpperCase(),l)}}
 
 // a job resolved on its site and paid in town (a bounty brought in): the pay screen when the company walks into that town
-async function onTownArrive(k){const r=G.run,job=r.job;if(!job||!job.resolved)return;const c=r.contracts.find(x=>x.id===job.id);if(!c||c.payAt!==k)return;
+async function onTownArrive(k){const r=G.run;
+ if(k==='ebbe'&&r.escort&&await woolArrive())return;
+ if(k==='harrow'){if(r.woolPurse){r.woolPurse=0;await say('','You hand the guild master his skim back. He looks at you differently after that.');await favor('town',1)}
+  if(r.hagLie===1){r.hagLie=2;if(!StudioRoll.luck(0).ok){await say('','The guild has seen salt come over the causeway again. They know what you sold them.');offense('town')}}}
+ const job=r.job;if(!job||!job.resolved)return;const c=r.contracts.find(x=>x.id===job.id);if(!c||c.payAt!==k)return;
  await say('',job.ending==='bound'?'The reeve takes Pell off your hands and signs for him.':'The reeve has the body looked at, then pays.');
  await payScreen(job.id,{fee:job.payWith||1});r.job=null;saveRun()}
+
+// the Contracts page lists the job in progress's prep and the tales sorted so far (spec 006, 4)
+function drawContractsExtra(y){const job=G.run.job;if(!job)return y;
+ if(job.prep&&job.prep.length){pT('PREP',8,y+4,PAL.tallow,8,PXf);y+=16;job.prep.forEach(p=>{pWrap(p,VW-16,13,2).forEach(l=>{pT(l,8,y,PAL.bone,13);y+=11})})}
+ const key={noon:'noonwife',counter:'counter'}[job.id];if(key){const b=ledger().bestiary[key]||{tales:{}};pT('TALES',8,y+4,PAL.tallow,8,PXf);y+=16;
+  (BEAST_TEXT[key].tales||[]).forEach((t,i)=>{const s=b.tales[i+1];pWrap(`${i+1}. ${RLT(t)}${s?' ('+s+')':''}`,VW-16,13,2).forEach(l=>{pT(l,8,y,s?PAL.bone:PAL.ash,13);y+=11})})}
+ return y}
