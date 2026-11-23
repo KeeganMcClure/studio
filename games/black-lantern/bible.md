@@ -110,6 +110,14 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
   Done Nov 21: one copy of each now lives in the studio's `engine/` (`engine/shelf.js`, `engine/dialog.js`), shared with Rushlight, with a sync step that brings in a new version from the source page and a check that fails if either is edited by hand.
 - [x] Big Hat's briefing rework (spec 013): Big Hat drawn from his portrait, large and center in the back room; no corner portrait while he's on screen; two questions from four topics, each an INTEL note and a small edge; the new briefing lines
   Done Nov 22: Big Hat in the back room is now his portrait drawn twice as big, behind the desk, and the old desk sprite is gone. His lines in his own scene show just the name tab. At each briefing you ask two of four questions (or none), and each answer adds an INTEL note to the Case file and a small edge in the case. The briefing has the new lines.
+- [ ] Demo playtest fixes (Keegan's notes, Nov 23): build the rule changes from the playtest. Tick this when all seven are done
+  - [ ] Hide skill options nobody in the party can use, at hotspots, on the map menu's Skills row and in battle (Skills and menus → Using skills; Combat → Basics, Command menu)
+  - [ ] Creator: a bonus pick that would pass 80% stops at 80% (Agents and items → Agent creator, step 3)
+  - [ ] Turn-order column: current round only, each fighter once (Combat → Basics, Turn order)
+  - [ ] Pokémon-style battle backdrops for Still Harvest's town and maze, replacing the darkened map still (Combat → Basics, Backgrounds)
+  - [ ] Wounded enemies: the two damage steps for each Still Harvest enemy, replacing the red dots (Art → Townsfolk and monsters)
+  - [ ] Still Harvest maze: a route to all three victims that skips the Gleaner's clearing, and a go in / not yet choice at its entrance (spec 006, Revision after the demo playtest)
+  - [ ] Creator: pronouns (she, he, they) used by all dialog, and a slim or broad body build for map, battle and portrait sprites, plus pronouns for each Bond, with a save step for old agents and Bonds (Agents and items → Agent creator, steps 4 and 5)
 - [ ] After the Still Harvest playtest: revisit party size (3 vs 4). Weigh tension, skill coverage, fight length on the phone and screen space; switching to 4 means reworking templates, professions, balance and the combat layout
 - [ ] Season readiness (set Nov 22): the design work that lets a full season be built as soon as the demo is approved. In order, since each step unblocks the ones after it; tick this when all six are done
   - [x] Season 1 of 6: write the Demo 6 spec (debrief, bagging or hiding evidence, cover story, skill gains, plus the funeral, Big Hat's send-off line and the memorial list that spec 006 moved to Demo 6). Do it while Demo 5 parts B and C are built
@@ -278,13 +286,14 @@ This is the base palette, meant to work in any case (Rust and Pumpkin made gener
 - Day and night matter: cozy daylight, dusky gold, then dark night lit only by lamps and the lead's lantern (night only; see Maps).
 - Some monsters only come out after dark. How townsfolk change at night is under Townsfolk at night.
 - Below 40 SAN, colors sour toward neon pink and cyan, and the lantern's light radius shrinks.
-- Battles: big hand-drawn enemy sprites over a static background drawn from the map spot where the fight started. Layout (approved Nov 20): head-on, the 3 agents seen from behind, inside the GBA shell with the D-pad shown, turn order in a column at one side so it doesn't cover sprites.
+- Battles: big hand-drawn enemy sprites over a static background of the place where the fight started. Layout (approved Nov 20): head-on, the 3 agents seen from behind, inside the GBA shell with the D-pad shown, turn order in a column at one side so it doesn't cover sprites.
 
 ### Townsfolk and monsters (set Nov 15)
 
 - **Townsfolk:** a fair mix. About 1 in 3 has one weird trait, Earthbound style (huge glasses, a pet crow, a too-wide grin); the rest are normal people, so the weird stays novel instead of annoying. Storybook faces.
 - **Monsters:** no fixed source. Each case's story decides what its monsters are made of, from folk and rural to fully cosmic. Cosmic horror is very stylized, like anime creature design or a scary Pokémon: bold silhouettes, a readable "type," then something wrong.
 - **Monster faces:** decided per monster, to fit the case. This means the sprite's face (eyes, mouth, or none). Monsters that talk also get a 64 × 64 portrait in the dialog box; non-verbal ones get written grunts and groans where it fits, and no portrait.
+- **Wounded enemies (set Nov 23, 2026, after the demo playtest):** an enemy's battle sprite shows its damage in two steps, at half HP and at a quarter, so you can read how it's doing at a glance even before Identify shows numbers. Each step uses big shapes that read on a phone: a slump or tilt in the pose, torn or missing chunks, dark stains or leaking stuffing at least 3 px across, and a duller color on the damaged side. Never a scatter of single red pixels. What breaks fits the monster (straw spills from the Gleaner, a husk splits, a person bleeds). Each case draws both steps for every enemy with its battle art.
 - **Townsfolk at night:** only NPCs touched by the case's weirdness change at night; normal people stay normal. The story decides, and a change is skipped if it would spoil that someone was secretly affected. Treatments: subtle tells on the same sprite (eye glints, stiller poses), separate night sprites, or changed behavior only.
 - **Where it's set:** a case's pitch names its monster theme and its night treatment.
 
@@ -386,7 +395,7 @@ Marrow Creek, Oregon, during the Harvest Lantern Walk.
 2. **Town investigation:** 5 clues, 3 needed to proceed.
 3. **Committee Volunteer** fight.
 4. **Dark corn maze** with roamers in a danger zone, loot and a lore note (no random encounters, per Gameplay loop).
-5. **Victims:** 3 people tied to scarecrow poles who can be cut down.
+5. **Victims:** 3 people tied to scarecrow poles who can be cut down. The maze has a route to all three that never passes the Gleaner's clearing, so you can free them and explore the rest before you choose to face it (Keegan's demo playtest, Nov 23, 2026).
 6. **Boss: The Gleaner**, a figure of harvest straw with a lantern for a head. It gets weaker for each victim rescued.
 7. **Debrief** with Big Hat, a cover-story choice, then a home scene choosing a Bond. The agent's new SAN and disorders save to the roster.
 
@@ -513,6 +522,7 @@ HP and SAN are two health bars: HP heals, SAN mostly doesn't. Combat is purely t
 - **Danger zones:** 0–2 per case, set by the story, day or night. Roamers walk them in plain sight.
 - **Roamers:** each guards something (a clue, a victim, a shortcut, a stash). Fight it, sneak past with a roll, or take another route. Loot drops 20% of the time, always when the drop is story-related.
 - **Fleeing:** roll to flee roamers. Story fights and bosses are committed.
+- **The boss waits for you (set Nov 23, 2026):** a boss fight starts only when you choose to go to it. Every victim, clue, stash and danger zone in the boss's area can be reached without walking through the boss's spot, and the last step in shows a "go in / not yet" choice. In the demo playtest the maze's paths ran through the Gleaner's clearing, which started the fight before you could do everything.
 - **Clues:** the story picks the style. Default is threshold plus bonus (need some to move on; extras weaken the boss, add intel or open debrief options) or clues as keys (specific clues open specific places or dialog), whichever fits the theme.
 - **Deduction:** never a dead end. A wrong answer costs SAN, time or a better ending, never progress. Claude checks every deduction maps to clue IDs before building.
 - **Time:** story beats turn day to night by default; some cases add a clock on purpose.
@@ -663,9 +673,10 @@ Picking a home scene plays a quick cutscene that changes with who the Bond is an
 - **The full creator**, one step per screen, L/R to move between steps:
   1. **Profession:** one of the 18 roles below. It sets 2 strong skills at 50% and 2 backup skills at 30% (40% for Melee, Dodge and Athletics); every other skill starts at its Delta Green base (see Combat numbers).
   2. **Stats:** roll (4d6, drop the lowest, one full reroll allowed) or point buy (72 points, each stat 3–18). Template agents come with their stats already set.
-  3. **Skills:** 8 bonus picks of +20%, cap 80%, into any skill. Weird hobbies live here: a funeral director who boxes, a hockey player who reads tarot.
+  3. **Skills:** 8 bonus picks of +20%, cap 80%, into any skill. A pick that would pass 80% stops at 80%, so a skill that starts at 10, 30, 50 or 70% can still reach 80 (that pick gives only +10; set Nov 23, 2026, after the demo playtest). Weird hobbies live here: a funeral director who boxes, a hockey player who reads tarot.
   4. **Identity:** name, Storybook face built from parts, a one-line backstory.
-  5. **Bonds:** 2 people, each picked from a preset list of types (Partner, Kid, Parent, Sibling, Friend, Ex, Coworker, Mentor) and then named; each starts at CHA. The type decides which home scenes they get (set Nov 19).
+     **Pronouns and body (set Nov 23, 2026, after the demo playtest):** the Identity step also picks pronouns (she, he or they) and a body build (slim or broad). Pronouns change every line that talks about the agent: case dialog, Big Hat, home scenes, arc beats and battle lines. Case text writes them as tokens, never a fixed "he" or "she". The build changes the agent's shape everywhere it's drawn: the map sprite, the battle sprite seen from behind, and the shoulders under the portrait. Face parts, hair and outfits mix freely with any build and any pronouns. Template agents come with both set, and Tweak can change them. Old saved agents open as "they" with the build closest to their look, and the player can change both from Tweak.
+  5. **Bonds:** 2 people, each picked from a preset list of types (Partner, Kid, Parent, Sibling, Friend, Ex, Coworker, Mentor) and then named; each starts at CHA. The type decides which home scenes they get (set Nov 19). Each Bond also gets pronouns (she, he or they), picked with the name, so home scenes and Big Hat's lines talk about them right; New Bond picks them too. Old saved Bonds open as "they" (set Nov 23, 2026).
   6. **Motivations:** pick 2 from the preset list and mark one as Main, which drives the agent's personal arc (see Motivations below).
   7. **Dossier:** review everything, then save to the roster. Big Hat gives the agent their code name here, at the end, once he knows who they are (see Code names below).
 - **Code names (set Nov 23, 2026, after the demo playtest; replaces the two-random-words names like IRON HERON):** one name, like the agents in Keegan's Agency stories (RAINE, MICKEY, JERRY, AHAB). Each is a pop-culture reference, usually tied to the agent's home life: a Bond, their Main motivation, a hobby from their bonus picks, or their backstory. Big Hat hands it over on the Dossier step in one line that hints at the why without spelling it out ("Kid named Marco, hockey on weekends. You're GRETZKY."). The player can take it, ask for another (the next best match), or type their own. Names come from a list kept in the game's strings, each tagged with what it fits (Bond types, motivations, skills, professions); the build writes the list, about 60 names, from TV, film, books, comics, music and sports, never a brand or logo (studio-bible/studio.md, No real brands). Template agents get hand-picked names. Old saved agents keep their names, and Tweak can ask Big Hat for a new one.
@@ -874,14 +885,14 @@ Cut: Art, and Vehicles (Drive, Ride, Heavy Machinery): no stake, so driving happ
 
 ### Using skills (set Nov 18)
 
-- **On the map:** only the lead agent's skills are available. Walk up to a hotspot (a locked shed, a nervous witness, a body) and press A; the lead's usable skill options appear. Options the lead lacks show greyed out with the skill name, so you know to swap leads.
+- **On the map:** only the lead agent's skills are available. Walk up to a hotspot (a locked shed, a nervous witness, a body) and press A; the lead's usable skill options appear. Options the lead lacks show greyed out with the skill name, so you know to swap leads. An option nobody in the party is high enough to use is hidden, not greyed, so the list only shows what this team can do (Keegan's demo playtest, Nov 23, 2026).
 - **Away from hotspots:** a few skills work anywhere from the map menu's Skills row (see Map menu below).
 - **Swapping leads:** anytime from the party menu, except during a fight or cutscene.
 - **Unlocks:** each skill unlocks at least 3 actions or abilities, at 40%, 75% and 90%. An unlock gives you the action; a percentile roll against the skill still decides whether it works. Higher tiers can add perks such as rerolls or a once-per-case auto-success. Creation cap stays 80%, so 90% unlocks are earned in play, through failure growth and the Improve Skill home scene (see Between cases). Skills cap at 99%. Each skill's unlocks are in Skill unlocks below.
 
 ### Skill unlocks (set Nov 18)
 
-Each unlock is a hotspot option, a battle use or a perk; the shape varies per skill. Every skill earns a stake somewhere, not necessarily in battle. Not every skill matters in every case: a case fully supports about 8–10 skills, and the rest show greyed out. Firearms, Melee and Dodge hold a weaker battle move beside each map unlock (see Battle moves in the Combat tab). Most other skills also hold one status move (see Status moves in the Combat tab). Loud actions draw nearby roamers.
+Each unlock is a hotspot option, a battle use or a perk; the shape varies per skill. Every skill earns a stake somewhere, not necessarily in battle. Not every skill matters in every case: a case fully supports about 8–10 skills. At a hotspot, an option a teammate could use shows greyed out; one nobody in the party can use is hidden (set Nov 23). Firearms, Melee and Dodge hold a weaker battle move beside each map unlock (see Battle moves in the Combat tab). Most other skills also hold one status move (see Status moves in the Combat tab). Loud actions draw nearby roamers.
 
 | Skill | 40% | 75% | 90% |
 | --- | --- | --- | --- |
@@ -939,7 +950,7 @@ Press Start on the map to open it. It's the same navy list box as the battle com
 - **Rows:** Party, Skills, Items, Case file, Log, Settings, Save.
 - **Party:** three agent cards stacked, Pokémon-style, each showing HP, SAN, WP and status icons, with the lead marked. Tap a card for Make lead, Dossier or Give item. Open anytime except during a fight or cutscene. Cards stay in seat order and the LEAD tag moves; Give item shows greyed with a one-line reason until Demo 5 brings item slots (set Nov 21, spec 002).
 - **Party card faces (noted Nov 20):** the faces in the approved party menu mockup are too rough and hard to read. Make them clearer when the menu is built; no new mockup needed.
-- **Skills:** the lead's skills usable away from hotspots: First Aid and Medicine, plus Survival's Make camp and Science's Analyze once unlocked. Skills the lead lacks show greyed out with the skill name, as at hotspots.
+- **Skills:** the lead's skills usable away from hotspots: First Aid and Medicine, plus Survival's Make camp and Science's Analyze once unlocked. Skills the lead lacks show greyed out with the skill name, as at hotspots, and skills nobody in the party has are hidden.
 - **Items:** see Item display in the Agents and items tab.
 - **Case file:** a Next line with the current goal at the top, then each clue found with a one-line note, so you never get lost between sittings. A Rules page lists every status, item icon and threat skull.
 - **Log:** rereads the last 30 or so dialog boxes, since clues hide in what people ramble about.
@@ -956,7 +967,7 @@ Small comforts for short phone sittings. None of them change a rule; they save t
 - **Battle cursor memory:** each agent's command menu opens on the last command and target they used.
 - **Odds when targeting:** picking a target shows the agent's to-hit % with every modifier applied (Firearms 50% −20 = 30%) and the weapon's dice.
 - **A prompt:** a small A bubble appears over a usable hotspot when the lead stands next to it. Hidden hotspots stay hidden until found.
-- **Odds on hotspots:** each option shows the lead's chance, like "Force it · Melee 55%"; greyed-out options still name the skill.
+- **Odds on hotspots:** each option shows the lead's chance, like "Force it · Melee 55%"; greyed-out options still name the skill. Options nobody in the party can use are hidden (set Nov 23).
 - **Running:** hold B on the map to run. Walking is the default.
 - **Confirm what sticks:** a "Can't be undone. Sure?" box before permanent choices only: giving up a motivation, hiding evidence from Big Hat, sending an agent on Sabbatical.
 - **Last time:** loading a save opens one box summing up where you were and the Case file's Next goal.
@@ -977,16 +988,16 @@ Small comforts for short phone sittings. None of them change a rule; they save t
 
 - **Layout (decided Nov 15):** head-on, Super Mario RPG spirit. Enemies at the top of the screen facing you; all three agents in a row along the bottom with their backs to the camera. Big animated sprites. The battle plays inside the GBA shell (see Tech), with the agents seen from the waist up (mockup approved Nov 20). Reference: the [Combat mockup canvas](https://claude.ai/artifact/4hpNdAF9Z95xSGEeKuT7zt), "Battle in the GBA shell" artboard; its code is saved in project files as claude/combat-mockup-shell.html.
 - **Party on the field:** all 3 agents fight at once. No reserve slot. Balance is tuned for 3.
-- **Turn order (set Nov 18):** agents and enemies all act in DEX order, highest first; ties go to agents. A column of small faces down the left edge shows the next few turns, so it never covers the sprites (set Nov 20). Search's On guard means enemies never take the first turn.
+- **Turn order (set Nov 18):** agents and enemies all act in DEX order, highest first; ties go to agents. A column of small faces down the left edge shows the turn order, so it never covers the sprites (set Nov 20). It shows the current round only: each fighter once, in the order they act, the one acting now on top. A face drops off once that fighter has acted, and the full order comes back at the next round. Enemies that die or flee leave the column; a Downed agent stays, greyed, since their bleed-out counts their turns (set Nov 23, 2026, after the demo playtest). Search's On guard means enemies never take the first turn.
 - **Hit rolls:** each attack is a percentile roll against the agent's skill. No dice animation; a short result line pops up instead, e.g. FIREARMS 62% · rolled 41 · HIT.
-- **Command menu (set Nov 18):** a one-row box along the bottom in the dialog-box style (navy, cream border) with Fight, Skills, Items and Guard. D-pad or tap. Fight: attack with the equipped weapon, free. Skills: battle unlocks, which cost WP. Items: meds, Antitoxin and the like. Guard: Defend (half damage until your next turn), Brace, Retch, or Flee (roamers only).
+- **Command menu (set Nov 18):** a one-row box along the bottom in the dialog-box style (navy, cream border) with Fight, Skills, Items and Guard. D-pad or tap. Fight: attack with the equipped weapon, free. Skills: battle unlocks, which cost WP. The list shows only moves the acting agent has unlocked; one they have but can't use right now (not enough WP, no fitting target) shows greyed with the reason (set Nov 23). Items: meds, Antitoxin and the like. Guard: Defend (half damage until your next turn), Brace, Retch, or Flee (roamers only).
 - **Move cost (set Nov 18):** special battle moves cost Willpower Points, the same pool used for bracing, so every big move risks the mind later. Plain Fight attacks are free. Costs follow the unlock tier: 40% moves 1 WP, 75% moves 2 WP, 90% moves 3 WP; free perks cost nothing. Healing skills cost WP like any special; items are free. At 0 WP an agent can't use specials or brace, but Fight, Items and Defend still work (set Nov 18).
 - **0 HP (set Nov 18):** the agent is Downed and bleeds out after 3 of their own turns unless Medicine's Revive gets them up; bleeding out is death, for good. If the fight ends first, they survive at 1 HP. Anyone Downed during a fight, even if Revived, rolls for a lasting injury when it ends (see Lasting injuries below).
 - Purely turn-based. No timed hits or real-time inputs.
 - Classic JRPG difficulty: defend, heal and use abilities wisely. The Gleaner fight is the benchmark.
 - **Must-haves for the redesign** (Nov 15 playtest), all met: the turn-order column, enemy health bars, status moves and the Fight floor for agents who can't shoot, WP-costed moves against Attack-spamming, and threat skulls as the risk read.
 - **Statuses** (set Nov 18): the list, map rules and combat notes are under Statuses in the Systems tab; exact numbers are in Combat numbers below.
-- **Backgrounds:** a static image drawn from the map spot where the fight started.
+- **Backgrounds (reworked Nov 23, 2026, after the demo playtest):** a painted battle backdrop of the kind of place the fight started in, Pokémon style, not a darkened copy of the map. Each backdrop is drawn head-on at battle scale, like the enemies: a ground plane the fighters stand on, a horizon, and two or three big landmarks that say where you are (corn walls and a scarecrow pole in the maze, a lamp post and shop fronts on a town street), lit for the time of day and the low-SAN look. A case draws one backdrop per kind of place it fights in (usually 2–3), files them in the Asset Library under the case like its other art, and lists them in its spec's art needs. Generic ones (a plain street, woods) can go to the Shared Shelf with Keegan's OK.
 
 ### Combat numbers (set Nov 19)
 
