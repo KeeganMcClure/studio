@@ -557,7 +557,11 @@ V.identity=()=>{
     r('Extra','acc',ACC.length,v=>ACC[v]),
     r('Outfit','outfitC',8,v=>v<0?'Issue':OUTCN[v],-1),
     nextRow()],
-    pane:`<canvas class="pix face" id="pbig"></canvas><div class="small" style="text-align:center;line-height:1">${esc(profOf(a)?.name||'')}</div>`,
+    pane:`<canvas class="pix face" id="pbig"></canvas><div class="small prof" style="text-align:center;line-height:1">${esc(profOf(a)?.name||'')}</div>`,
+    // spec 022, Part 3: the map sprite and battle back under the face (they follow Build, Skin, Hair and Outfit),
+    // and the whole backstory in a box across the bottom (the row above stays one line; the list scrolls)
+    under:`<div class="bodies" id="bodies"><figure><canvas id="pmap"></canvas>MAP</figure><figure><canvas id="pbat"></canvas>BATTLE</figure></div><div class="small hint">Build shows here</div>`,
+    detail:`<h4>BACKSTORY</h4><p>${a.backstory.trim()?esc(pron(a.backstory,{a})):'<span class="small">One line on who they were before. Up to 120 letters.</span>'}</p>`,
     info:info(whoLine(a),S.tweak?'TWEAK':'NAME · FACE'),foot:'A: TYPE · ◀▶: CHANGE · L/R: STEP'};
 };
 V.bonds=()=>{
@@ -594,7 +598,7 @@ function dossierCard(a){
   const top=Object.keys(SKILLS).map(k=>[k,skillVal(a,k)]).sort((x,y)=>y[1]-x[1]).slice(0,6);
   const feats=STATS.map(k=>pron(feature(k,a.stats[k]),{a})).filter(Boolean);
   const h=t=>`<h3 style="font:8px var(--px);color:var(--scr-hi);margin:7px 0 2px">${t}</h3>`;
-  return`<div class="card"><div class="top"><img class="pix face" src="${portraitURL(a,3)}" width="96" height="96" alt="Agent portrait"><div class="who"><div class="n">${esc(a.name||'Unnamed Agent')}</div><div class="hi">AGENT ${esc(a.code||surname(a))}</div><div>${esc(p.name)}</div><div class="small">${esc(p.team)}</div>${a.cur?`<div class="red">SAN now ${a.cur.san}/${d.SAN}${(Array.isArray(a.cur.dis)?a.cur.dis:[]).length?' · '+esc(a.cur.dis.map(x=>(BLS.DISORDERS[x.k]||{}).name).join(', ')):''}</div>`:''}<span class="stamp">CLEARED</span></div></div>
+  return`<div class="card"><div class="top"><img class="pix face" src="${portraitURL(a,3)}" width="96" height="96" alt="Agent portrait"><div class="who"><div class="n">${esc(a.name||'Unnamed Agent')}</div><div class="hi">AGENT ${esc(String(a.code||'').trim()||'???')}</div><div>${esc(p.name)}</div><div class="small">${esc(p.team)}</div>${a.cur?`<div class="red">SAN now ${a.cur.san}/${d.SAN}${(Array.isArray(a.cur.dis)?a.cur.dis:[]).length?' · '+esc(a.cur.dis.map(x=>(BLS.DISORDERS[x.k]||{}).name).join(', ')):''}</div>`:''}<span class="stamp">CLEARED</span></div></div>
   ${a.backstory?`<div class="small" style="margin-top:5px;color:var(--scr-fg)">${esc(pron(a.backstory,{a}))}</div>`:''}
   <div class="sgrid">${STATS.map(k=>`<span><span class="small">${k}</span> ${a.stats[k]}</span>`).join('')}</div>
   <div class="sgrid" style="grid-template-columns:repeat(4,1fr)"><span><span class="small">HP</span> ${d.HP}</span><span><span class="small">WP</span> ${d.WP}</span><span><span class="small">SAN</span> ${d.SAN}</span><span><span class="small">BP</span> ${d.BP}</span></div>
@@ -683,7 +687,7 @@ function copyCode(a){
 }
 
 // ---------- RENDER ----------
-const list=$('#list'),pane=$('#pane'),body=$('#body'),screen=$('#screen');
+const list=$('#list'),pane=$('#pane'),under=$('#under'),detail=$('#detail'),body=$('#body'),screen=$('#screen');
 function $(s){return document.querySelector(s)}
 let cur=null;
 function selectable(rows){return rows.map((r,i)=>r.static?null:i).filter(i=>i!==null)}
@@ -707,7 +711,9 @@ function render(scroll=true){
   body.classList.toggle('side',!!cur.side);
   list.classList.toggle('bare',!!cur.bare);
   pane.innerHTML=cur.pane||'';pane.hidden=!cur.pane;
-  if(S.step==='identity')drawBig(false);
+  under.innerHTML=cur.under||'';under.hidden=!cur.under;
+  detail.innerHTML=cur.detail||'';detail.hidden=!cur.detail;
+  if(S.step==='identity'){drawBig(false);drawBodies()}else screen.classList.remove('idtight','idtight2')
   if(S.step==='title')drawLantern();
   hatDraw();
   // sanity palette
@@ -721,6 +727,24 @@ function render(scroll=true){
   saveDraft();
 }
 function drawBig(blink){const c=$('#pbig');if(c){drawPortrait(c,S.a,3,blink);c.style.width='96px';c.style.height='96px'}}
+// Identity's body preview (spec 022, Part 3): the agent's map sprite (agent-sprite.js) and battle back (agent-back.js),
+// trimmed to what's drawn and shown at 2x (1x when the column is short), feet on one line
+function drawBodies(){
+  const trim=src=>{const g=src.getContext('2d'),{width:w,height:h}=src,d=g.getImageData(0,0,w,h).data;let x0=w,y0=h,x1=-1,y1=-1;
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(d[(y*w+x)*4+3]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+    return x1<0?null:{src,x:x0,y:y0,w:x1-x0+1,h:y1-y0+1}};
+  const put=(c,t,k)=>{if(!c||!t)return;c.width=t.w;c.height=t.h;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(t.src,t.x,t.y,t.w,t.h,0,0,t.w,t.h);c.style.width=t.w*k+'px';c.style.height=t.h*k+'px'};
+  const cm=$('#pmap'),cb=$('#pbat');if(!cm||!cb||!profOf(S.a))return;
+  const m=typeof BLA!=='undefined'?trim(BLA.sprite(S.a,'down',0,0).c):null,b=typeof BLB!=='undefined'?trim(BLB.back(S.a)):null;
+  // fit, biggest first: 2x with the hint line, 2x without it, then 1x; on short screens (tight) the profession under
+  // the face goes (it's on the line above the list too) and the face box and backstory box pack closer; at 320 x 480
+  // (tight 2) the face keeps only its own frame and BACKSTORY sits at the start of the text
+  const box=$('#bodies'),scr=screen.classList;
+  for(const [k,hint,tight] of [[2,1,0],[2,0,0],[2,0,1],[1,1,0],[1,0,0],[1,0,1],[1,0,2]]){
+    scr.toggle('idtight',tight>0);scr.toggle('idtight2',tight>1);under.classList.toggle('nohint',!hint);put(cm,m,k);put(cb,b,k);
+    if(box.getBoundingClientRect().top>=under.getBoundingClientRect().top-.5)break}}
+// the sprite files load after this one: draw the preview again once they're in
+window.addEventListener('load',()=>{if(S.step==='identity')drawBodies()});
 function drawLantern(){const c=$('#lantern');if(!c)return;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.setTransform(6,0,0,6,0,0);x.clearRect(0,0,16,16);const p=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h)};
   const fl=Math.random()<.5;p(7,0,2,2,'#5d5888');p(5,2,6,1,'#2a2440');p(4,3,8,1,'#3a3460');p(4,4,1,9,'#2a2440');p(11,4,1,9,'#2a2440');p(5,4,6,9,fl?'#ffd166':'#ffbf3f');p(6,6,4,5,fl?'#fff1c2':'#ffe08a');p(7,7,2,3,'#fffaf0');p(4,13,8,1,'#3a3460');p(5,14,6,1,'#2a2440');p(7,4,2,9,'rgba(20,12,30,.18)')}
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1500)}
@@ -767,7 +791,7 @@ list.addEventListener('click',e=>{
   if(!(window.BLG&&BLG.active))render(false);
 });
 list.addEventListener('input',e=>{const t=e.target,b=t.dataset.bind;if(!b)return;
-  if(b==='name')S.a.name=t.value;else if(b==='back')S.a.backstory=t.value;else if(b.startsWith('bond'))S.a.bonds[+b.slice(4)].name=t.value;saveDraft()});
+  if(b==='name')S.a.name=t.value;else if(b==='back'){S.a.backstory=t.value;const d=detail.querySelector("p");if(d){d.textContent=t.value;drawBodies()}}else if(b.startsWith('bond'))S.a.bonds[+b.slice(4)].name=t.value;saveDraft()});
 list.addEventListener('focusout',e=>{if(e.target.tagName==='INPUT')setTimeout(()=>{if(!list.contains(document.activeElement)||document.activeElement.tagName!=='INPUT')render(false)},0)});
 
 // ambient: blink + lantern flicker
