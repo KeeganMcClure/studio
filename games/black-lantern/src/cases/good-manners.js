@@ -134,7 +134,7 @@ const bounceDir=(M,keys,text,dir)=>keys.forEach(k=>M.warps[k]=async()=>{await sa
 
 // ---- MAIN STREET: day and night (44 x 21) ----
 function buildMain(){
- const N=isNight(),M=blank('main','MAIN STREET',44,21,'.',outLight()),F=G.flags;
+ const N=isNight(),M=blank('main','MAIN STREET',44,21,'.',outLight()),F=G.flags;M.alpha=.84;  // a small town at night: dark, but the street still reads
  lay(M,0,0,44,4,'g');block(M,0,0,44,4);put(M,'backlot',0,0,44,4,{walk:1});
  put(M,'elevator',23,0,8,4,{walk:1});
  lay(M,0,8,44,1,',');lay(M,0,9,44,3,'=');lay(M,0,12,44,1,',');
@@ -161,6 +161,7 @@ function buildMain(){
  M.O['3,16']=look(TEXT.office);
  door(M,16,16,'motel',6,7,'up');M.O['18,16']=look(TEXT.room7);
  put(M,'motelsign',21,13,1,1);
+ [[4,18],[13,18]].forEach(([x,y])=>put(M,'lamp',x,y));  // the motel lot's two lamps
  lay(M,1,17,20,1,',');
  put(M,'car',6,19,2,1,{tint:'#5a6a7a'});M.O['6,19']=M.O['7,19']={id:'car',name:'CAR',look:TEXT.car,opts:()=>carOpts()};
  lay(M,21,12,2,9,'_');
@@ -179,7 +180,7 @@ function buildMain(){
 
 // ---- ELM AND THIRD: day and night (32 x 22) ----
 function buildElm(){
- const N=isNight(),M=blank('elm','ELM AND THIRD',32,22,':',outLight());
+ const N=isNight(),M=blank('elm','ELM AND THIRD',32,22,':',outLight());M.alpha=.86;
  lay(M,0,9,32,1,',');lay(M,0,10,32,2,'=');lay(M,0,12,32,1,',');lay(M,13,0,1,22,',');lay(M,16,0,1,22,',');lay(M,14,0,2,22,'=');
  lay(M,0,10,32,2,'=');
  // north side houses, fronts on Elm; the Peck house is watched

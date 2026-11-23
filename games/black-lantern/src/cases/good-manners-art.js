@@ -92,9 +92,10 @@ const STILL={
   K.roof(g,x0,x1,y0+6,rb,'#3e5a5a',T,9,false);K.wall(g,x0,x1,rb,fb,'siding','#d8c8a0',T);F(g,x0,rb,x1-x0,3,'rgba(20,10,20,.3)');
   for(let x=x0+T*.2;x<x1;x+=2*T){F(g,x,rb+2,2,fb-rb-2,'#efe4c8');F(g,x+2,rb+2,1,fb-rb-2,'#9a8a6a')}
   // the office on the left, then the rooms, each with its number plate, a curtained window and an air unit
-  glows.push(K.windowPane(g,x0+.25*T,fb-1.2*T,1.1*T,.7*T,T,false));signOn(g,[x0+4,rb+3,24,8],'OFFICE','#e8dcc0','#2e4a6a');
+  glows.push(K.windowPane(g,x0+.25*T,fb-1.2*T,1.1*T,.7*T,T,false));glows.push([x0+.8*T,fb-.85*T,2*T,.5]);signOn(g,[x0+4,rb+3,24,8],'OFFICE','#e8dcc0','#2e4a6a');
   K.door(g,p.door*T+8,fb-.95*T,fb,'#6a3a2e',T);
-  p.rooms.forEach((rx,i)=>{const cx=rx*T+8;K.door(g,cx,fb-.95*T,fb,i%2?'#3e6a6a':'#4a7a7a',T);F(g,cx-3,fb-1.22*T,7,6,'#e8dcc0');K.signText(g,String(i+1),cx-1,fb-1.22*T+1,'#2a2030');
+  p.rooms.forEach((rx,i)=>{const cx=rx*T+8;F(g,cx-2,fb-1.42*T,5,3,'#ffe9b0');F(g,cx-3,fb-1.42*T-1,7,1,'#5a5a64');glows.push([cx,fb-1.3*T,1.4*T,.5]);  // a porch light over each door
+   K.door(g,cx,fb-.95*T,fb,i%2?'#3e6a6a':'#4a7a7a',T);F(g,cx-3,fb-1.22*T,7,6,'#e8dcc0');K.signText(g,String(i+1),cx-1,fb-1.22*T+1,'#2a2030');
    if(rx+1<p.x+p.w){glows.push(K.windowPane(g,cx+.45*T,fb-1.1*T,.55*T,.45*T,T,true));F(g,cx+.5*T,fb-.55*T,.45*T,.25*T,'#b8b8c0');F(g,cx+.5*T,fb-.55*T,.45*T,1,'#d8d8e0')}});
   shadowBelow(g,x0,x1,fb)},
  house(g,p,M,glows){const{x0,x1,y0,fb,w}=box(p),rb=fb-1.3*T,dr=p.door*T+8;
@@ -492,24 +493,40 @@ const combine={
   R(mid-100,hz+34,200,3,'#24242c');
   c.fillStyle='rgba(255,220,180,.06)';c.fillRect(mid-100,14,200,hz+20);
   R(mid-40,fy-92,80,80,'#3a2a24');R(mid-40,fy-92,80,3,'#5a3e32');for(let y=fy-84;y<fy-12;y+=8)R(mid-36,y,72,1,'#2a1c18');R(mid-46,fy-30,8,30,'#2a1c18');R(mid+38,fy-30,8,30,'#2a1c18')},
+ lift:8,  // he sits up in the cab a little higher than behind the desk, so his face clears the wheel
  front(c,v){const{VW,VH,fy,mid,now}=v,R=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)))};
-  // the dash: a lit top edge, gauges and the yield monitor, the shift lever; below it the cab floor and its rubber mat
-  const db=fy+30;R(0,fy,VW,db-fy,'#2e2e36');R(0,fy,VW,2,'#5a5a64');R(0,fy+2,VW,1,'#14141a');R(0,db-3,VW,3,'#1a1a20');
+  // the dash: a lit top edge, gauges and the yield monitor, the shift lever
+  const db=fy+26;R(0,fy,VW,db-fy,'#2e2e36');R(0,fy,VW,2,'#5a5a64');R(0,fy+2,VW,1,'#14141a');R(0,db-2,VW,2,'#16161c');
   for(let x=mid-100;x<mid+100;x+=5)R(x,fy+5,3,1,'#3a3a44');
-  [[mid-86,fy+15],[mid-66,fy+15]].forEach(([x,y],i)=>{c.fillStyle='#0c0c12';c.beginPath();c.arc(x,y,9,0,6.283);c.fill();c.fillStyle='#24240e';c.beginPath();c.arc(x,y,7.5,0,6.283);c.fill();
+  [[mid-86,fy+14],[mid-66,fy+14]].forEach(([x,y],i)=>{c.fillStyle='#0c0c12';c.beginPath();c.arc(x,y,9,0,6.283);c.fill();c.fillStyle='#24240e';c.beginPath();c.arc(x,y,7.5,0,6.283);c.fill();
    for(let k=0;k<7;k++){const a=-3.6+k*.6;R(x+Math.cos(a)*6,y+Math.sin(a)*6,1,1,'#c8b070')}const an=-2.6+(i?1.1:1.9)+Math.sin(now/1700+i)*.05;for(let k=0;k<6;k++)R(x+Math.cos(an)*k,y+Math.sin(an)*k,1,1,'#ff9a3c');R(x-1,y-1,2,2,'#a8a8b0')});
-  R(mid+52,fy+4,38,24,'#0c0c12');R(mid+54,fy+6,34,20,'#123a24');for(let x=0;x<32;x+=2){const h=4+Math.round(Math.sin(x*.7+now/900)*2+hsh(x,1,351)*7);R(mid+55+x,fy+25-h,1,h,'#5ad08a')}R(mid+54,fy+6,34,1,'#3a7a5a');
-  R(mid+96,fy-18,4,30,'#3a3a42');R(mid+93,fy-25,10,9,'#a8323e');R(mid+94,fy-24,4,3,'#d85a5e');
-  R(0,db,VW,VH-db,'#1c1c22');for(let y=db+4;y<VH;y+=5)R(mid-80,y,160,2,'#24242c');R(mid-80,db,2,VH-db,'#14141a');R(mid+78,db,2,VH-db,'#14141a');
-  R(mid-58,db+8,20,8,'#3a3a42');R(mid-58,db+8,20,1,'#5a5a64');R(mid+30,db+8,26,8,'#3a3a42');R(mid+30,db+8,26,1,'#5a5a64');
-  // the crullers in a paper sack and a styrofoam cup on the dash (he's still Big Hat)
-  R(mid+18,fy-12,24,12,'#c8a87a');R(mid+18,fy-12,24,2,'#a8885a');R(mid+21,fy-15,6,4,'#d9772b');R(mid+29,fy-14,7,3,'#d9772b');R(mid+22,fy-15,4,1,'#f0a860');
-  R(mid+44,fy-11,7,11,'#d8cdb4');R(mid+51,fy-9,2,4,'#d8cdb4');R(mid+45,fy-11,5,1,'#3a2418');
-  // the steering wheel, tilted, in front of his chest, on its column
-  const wx=mid-34,wy=fy-2;R(wx-3,wy,6,db-wy,'#1a1a20');R(wx-1,wy,2,db-wy,'#3a3a42');
-  c.lineWidth=5;c.strokeStyle='#0c0c12';c.beginPath();c.ellipse(wx,wy,30,10,-.1,Math.PI*1.05,Math.PI*1.95);c.stroke();
-  c.lineWidth=3;c.strokeStyle='#3a3a42';c.beginPath();c.ellipse(wx,wy,30,10,-.1,Math.PI*1.05,Math.PI*1.95);c.stroke();
-  c.lineWidth=1;c.strokeStyle='#6a6a74';c.beginPath();c.ellipse(wx,wy-1,30,10,-.1,Math.PI*1.1,Math.PI*1.45);c.stroke();R(wx-4,wy-3,8,4,'#24242c')}
+  R(mid+52,fy+3,38,22,'#0c0c12');R(mid+54,fy+5,34,18,'#123a24');for(let x=0;x<32;x+=2){const h=4+Math.round(Math.sin(x*.7+now/900)*2+hsh(x,1,351)*6);R(mid+55+x,fy+22-h,1,h,'#5ad08a')}R(mid+54,fy+5,34,1,'#3a7a5a');
+  // under the dash: the cab floor and its ribbed mat, the dusk coming in low through the door glass
+  R(0,db,VW,VH-db,'#26262e');
+  R(mid-96,db+4,192,VH-db-4,'#1a1a20');for(let y=db+7;y<VH;y+=4){R(mid-92,y,184,1,'#2c2c34');R(mid-92,y+1,184,1,'#121216')}
+  c.fillStyle='rgba(232,150,74,.13)';c.beginPath();c.moveTo(mid+20,db+4);c.lineTo(mid+96,db+4);c.lineTo(mid+96,VH);c.lineTo(mid-30,VH);c.fill();
+  // the door panel on the left: armrest, chrome handle, a map pocket stuffed with papers, a speaker grille
+  R(0,db,mid-96,VH-db,'#34343e');R(mid-98,db,2,VH-db,'#14141a');R(0,db+8,mid-98,6,'#4a4a56');R(0,db+8,mid-98,1,'#6a6a76');R(0,db+14,mid-98,1,'#1c1c22');
+  R(mid-122,db+18,14,4,'#a8acb4');R(mid-122,db+18,14,1,'#e0e4ea');
+  const pk=db+30;R(4,pk,mid-108,Math.min(22,VH-pk-4),'#24242c');R(4,pk,mid-108,2,'#40404a');
+  R(10,pk-6,16,10,'#e8dcc0');R(11,pk-5,10,1,'#8a7a6a');R(11,pk-3,12,1,'#8a7a6a');R(22,pk-8,14,10,'#c8a060');R(23,pk-6,8,1,'#7a5a2a');R(30,pk-7,4,3,'#a8323e');
+  for(let y=pk+28;y<VH-4;y+=3)for(let x=8;x<mid-112;x+=3)R(x,y,1,1,'#1a1a22');
+  // the steering column and two pedals; the shift lever with its rubber boot and red knob; a cup in its holder
+  const wx=mid-34;R(wx-3,fy-4,6,db-fy+4,'#1a1a20');R(wx-1,fy-4,2,db-fy+4,'#3a3a42');
+  for(const[px,pw]of[[wx-24,12],[wx+10,16]]){R(px,VH-26,pw,12,'#3a3a42');R(px,VH-26,pw,1,'#6a6a74');for(let y=VH-24;y<VH-15;y+=2)R(px+1,y,pw-2,1,'#26262e');R(px+pw/2-1,VH-14,2,14,'#14141a')}
+  const gx=mid+14,gy=db+20;R(gx-9,gy+8,18,8,'#14141a');R(gx-8,gy+6,16,4,'#24242c');R(gx-2,gy-10,4,18,'#5a5a64');R(gx-1,gy-10,1,18,'#8a8a94');R(gx-5,gy-17,10,8,'#a8323e');R(gx-4,gy-16,4,2,'#d85a5e');
+  R(mid+40,db+10,14,12,'#14141a');R(mid+42,db+4,10,14,'#d8cdb4');R(mid+42,db+4,10,1,'#f4efe6');R(mid+44,db+2,2,4,'#e0d8c0');R(mid+42,db+9,10,2,'#c0b49a');
+  // a manila envelope and a crumpled cruller bag on the floor mat
+  R(mid-6,VH-20,30,16,'#c8a060');R(mid-6,VH-20,30,1,'#e0bc80');R(mid-2,VH-16,12,1,'#7a5a2a');R(mid+14,VH-14,6,4,'#a8323e');R(mid+62,VH-18,16,10,'#c8a87a');R(mid+64,VH-19,5,3,'#a8885a');R(mid+71,VH-12,4,2,'#a8885a');
+  // the buddy seat's edge on the right: cracked brown vinyl with a stitched seam
+  R(mid+98,db,VW-mid-98,VH-db,'#4a3228');R(mid+98,db,2,VH-db,'#2a1a14');R(mid+100,db+6,VW,2,'#6a4a3a');for(let y=db+14;y<VH;y+=10)for(let x=mid+104;x<VW;x+=4)R(x,y,2,1,'#2e1e18');
+  // the crullers in a paper sack and a styrofoam cup on the dash, off to his side (he's still Big Hat)
+  R(mid+56,fy-12,24,12,'#c8a87a');R(mid+56,fy-12,24,2,'#a8885a');R(mid+59,fy-15,6,4,'#d9772b');R(mid+67,fy-14,7,3,'#d9772b');R(mid+60,fy-15,4,1,'#f0a860');
+  R(mid-76,fy-11,7,11,'#d8cdb4');R(mid-69,fy-9,2,4,'#d8cdb4');R(mid-75,fy-11,5,1,'#3a2418');
+  // the steering wheel, tilted, low in front of him so his face stays clear above it
+  const wy=fy+6;c.lineWidth=5;c.strokeStyle='#0c0c12';c.beginPath();c.ellipse(wx,wy,30,8,-.1,Math.PI*1.05,Math.PI*1.95);c.stroke();
+  c.lineWidth=3;c.strokeStyle='#3a3a42';c.beginPath();c.ellipse(wx,wy,30,8,-.1,Math.PI*1.05,Math.PI*1.95);c.stroke();
+  c.lineWidth=1;c.strokeStyle='#6a6a74';c.beginPath();c.ellipse(wx,wy-1,30,8,-.1,Math.PI*1.1,Math.PI*1.45);c.stroke();R(wx-4,wy-3,8,4,'#24242c')}
 };
 
 return{paint,props,folk,portraits,fx,combine,lessonGlint,FOLK,PORT,portraitCanvas};

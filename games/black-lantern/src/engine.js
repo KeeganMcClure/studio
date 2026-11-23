@@ -281,7 +281,8 @@ function drawOffice(){
  cx.save();if(sh)cx.translate(rnd(5)-2,rnd(3)-1);
  const r=(x,y,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+dx,y+dy,w,h)},R=(x,y,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x,y,w,h)};
  const place=G.hatPlace,v={VW,VH,dx,dy,fy,mid,now,shout:sh};
- if(place){place.back(cx,v);hatBust(hf,t,fy,mid,sh);place.front(cx,v);cx.restore();if(sh){cx.fillStyle='rgba(170,0,30,.28)';cx.fillRect(0,0,VW,VH)}return}
+ // place.lift: a case's place may stand him a few pixels higher than the desk (his chin, and so the question list, move with him)
+ if(place){const pf=fy-(place.lift|0);G.hatChin=pf-10;place.back(cx,v);hatBust(hf,t,pf,mid,sh);place.front(cx,v);cx.restore();if(sh){cx.fillStyle='rgba(170,0,30,.28)';cx.fillRect(0,0,VW,VH)}return}
  // wall, wainscot and floor, edge to edge
  R(-4,-4,VW+8,VH+8,'#2a2030');for(let x=(dx%12+12)%12;x<VW;x+=12)R(x,0,1,dy+150,'#241a2a');
  R(-4,dy+112,VW+8,3,'#3a2c3c');R(-4,dy+115,VW+8,35,'#221a28');for(let x=(dx+4)%10;x<VW;x+=10)R(x,dy+115,1,35,'#1c1622');
