@@ -1,7 +1,7 @@
 # Art style
 
 House rules for every game. Each game's `bible.md` sets its own look on top: base palette, faces, townsfolk, mood.
-Sources: Black Lantern Art and Rushlight Art (Look, Art across games, Palette), Nov 15–21, 2026.
+Sources: Black Lantern Art and Rushlight Art (Look, Art across games, Palette), Nov 15–21, 2026; Quality bar and Animation from Keegan's Rushlight review, Nov 23, 2026.
 
 ## How art is made
 
@@ -21,6 +21,37 @@ Sources: Black Lantern Art and Rushlight Art (Look, Art across games, Palette), 
 - Scale "Wide": 16 px tiles, characters in a frame of about 14 × 26 px.
 - Portraits: 64 × 64 in the dialog box.
 - Talking: a two-frame mouth flap at 140 ms a frame, in bursts while text types, then a rest.
+
+## Quality bar
+
+Set Nov 23, 2026 from Keegan's Rushlight sprite review (reference: Rushlight's `sprite-upgrade-rough-v2`, six species as portraits, map sprites and battle back views). Every character, creature and portrait meets all of these before it ships.
+
+- **Volume.** Every rounded part (head, muzzle, ears, limbs, body, clothes) is shaded from its shape with one light from the upper left, in a ramp of at least four tones: light, base, shade, deep. No part is a flat fill with one dark stripe.
+- **Texture that follows form.** Fur, feathers, spines and cloth break the silhouette where they would (tufted cheeks and crowns, spiky edges, frayed hems) and clump in the shade.
+- **Selective outline.** The dark outline sits on the shadow side and the bottom. On the lit side the outline is a dark tone of the part's own color, so edges stay crisp without looking traced.
+- **Rim and backing.** Portraits and battle sprites get a soft rim of light on the lit edge. A portrait sits on a lit backing that its outline reads against.
+- **Real gear.** Clothes read as clothes: collars, seams, folds, straps, buckles, quilting. A trade or role shows in what they wear and carry.
+- **Map sprites count too.** At 14 × 26 they still get three tones, separate arms with hands, a belt, and boots with a highlight.
+- **Checked side by side.** A new sprite is shown next to the reference sheet at the same zoom before it's approved. If it looks flatter than its neighbors, it isn't done.
+
+## Animation
+
+Set Nov 23, 2026. Animation is a system, not a per-sprite job, so quality can't drift.
+
+- **One body rig per game.** Every character is built from the same parts (head, body, arms, legs, plus ears, tail or spines) on the same frame. Poses move those parts, so a new species or outfit swaps parts and inherits every animation.
+- **Timing table**, shared by every game:
+
+| Move | Frames | Timing |
+| --- | --- | --- |
+| Walk | 4 beats: step, pass, step, pass (2 drawn steps and the standing pose) | one beat per half tile |
+| Idle | a 2-frame breath | every 2–3 s, 300 ms a frame |
+| Blink | 1 frame, eyes shut | every few seconds, 150 ms |
+| Talk | 2-frame mouth flap | 140 ms a frame, in bursts while text types |
+| Hit (battle) | 3 frames: flinch, hold, recover | 80 ms, 160 ms, 120 ms |
+| Attack (battle) | 3 frames: wind-up, strike, settle | 120 ms, 80 ms, 160 ms |
+
+- **Contact sheet every build.** The build check draws every sprite in every frame, side by side, into one image. Keegan reviews that sheet, not the game, to spot anything off model or missing a frame.
+- **Reference strips.** Each approved character's frames are filed with its drawing code (Asset Library), so a remake starts from them.
 
 ## Color
 
