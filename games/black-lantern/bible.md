@@ -73,7 +73,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
   Done Nov 23: LANTERN 01 pins on the board through a real unlock and, on Dev only, straight from the board's Start button. Its maps all walk by day and night, everyone has a sprite and a talking face, Big Hat briefs from a new place, and its art is on its own Asset Library page.
 - [x] First agency case part B (spec 014): its story, fights, boss and endings, and the unlock scene's lines
   Done Nov 23: the first agency case plays start to finish, with its unlock scene, story, two story fights, boss and all three endings, and the debrief in Big Hat's own place for it.
-- [ ] Tracking part A (spec 018): its maps and art, Fourth Street in snow and the closed club, the tracking lines effect, townsfolk, walkable with stand-in scripts. After Lost Hour
+- [x] Tracking part A (spec 018): its maps and art, Fourth Street in snow and the closed club, the tracking lines effect, townsfolk, walkable with stand-in scripts. After Lost Hour
+  Done Nov 23: Tracking pins on the board. Fourth Street in snow, the pawn shop, the motel rooms, two places across town by bus, the closed club and the finale area all walk by day and night; every door and bus ride goes where it should; everyone has a sprite and a talking face; the tape's tracking lines show in four steps; and Big Hat briefs from a new place.
 - [ ] Tracking part B (spec 018): the secret case file first, then its story, the trail and watching the tape, fights, boss and endings
 - [ ] Dead Air part A (spec 020): its maps and art, Halcott, the station and the cane fields, the broadcast look, townsfolk, walkable with stand-in scripts. After Tracking
 - [ ] Dead Air part B (spec 020): the secret case file first, then its story, the two broadcasts, the fish fry, fights, boss and endings

@@ -6,7 +6,7 @@
 // unlocks (season.js checks the case exists). Big Hat's unlock lines come with each agency case's part B (LANTERN 01's are in, Nov 23, 2026) and the
 // season-end lines with the finale's. Moved here from the retired private repo on Nov 23, 2026 (Keegan's call).
 registerSeason({n:1,
- regular:['still-harvest','good-manners','lot-83','lost-hour'],
+ regular:['still-harvest','good-manners','lot-83','lost-hour','tracking'],
  agency:[{id:'lantern-01',at:2},{id:'lantern-02',at:4},{id:'lantern-03',at:6,finale:true}],
  text:{unlock:{'lantern-01':['Sit.','Not a town this time. This one\'s ours.']},end:[]}
 });
