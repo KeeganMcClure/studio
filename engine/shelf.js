@@ -1061,6 +1061,138 @@ function paneling(g,x0,x1,top,bot,col,T=16){const u=T/16,c=col||P.wood,w=x1-x0;F
   for(let x=x0+6*u;x<x1;x+=6*u)F(g,x,top,u,bot-top,shade(c,-.42));for(let x=x0;x<x1;x+=24*u)F(g,x,top,u,bot-top,shade(c,-.6));
   for(let k=0;k<w/10;k++){const gx=x0+hsh(k,1,392)*w,gy=top+hsh(k,2,392)*(bot-top-6*u);F(g,gx,gy,u,(2+hsh(k,3,392)*4)*u,shade(c,-.2));}
   F(g,x0,top,w,2*u,shade(c,-.5));F(g,x0,bot-3*u,w,3*u,shade(c,-.3));F(g,x0,bot-3*u,w,u,shade(c,.2));}
-return{T,S,SLOTS,PALETTES,use,pal,RGB,hex,rgba,shade,hsh,mk,art,drawChar,charSprite,SAMPLE_AGENTS,LAMP,BENCH,prop,summerGrass,summerTree,dryDirt,heat,sodium,storefront,signBlank,signText,signWidth,WATERTOWER,trafficLight,gasPump,ranchHouse,porch,mailbox,sedan,floor,innerWall,counter,tableChairs,DESK,BED,shelving,stringLights,booth,ferrisWheel,asphalt,paintLine,bugZap,BUGLIGHT,workLight,VAN_SIGN,van,walkway,metalStairs,numberDoor,windowAC,chainLink,chainLinkSide,pool,dumpster,FRIDGE_FRONT,kitchen,ceilingFan,boxes,washer,springGrass,blossomTree,mud,fog,fogReach,rain,twoLane,twoLaneCurve,guardrail,mileMarker,roadSign,stoneWall,stoneWallSide,COINVIEWER,slope,thicket,creek,hospitalBed,MONITOR,MONITOR_SCREEN,monitorLine,waitingChairs,snow,slush,snowbank,icicles,snowfall,cityStreet,BUSSTOP,BUSSTOP_SIGN,neonSign,neonText,neonFlicker,poleSign,barredWindow,hydrant,crtTV,CRT_SCREEN,vcr,vhsTape,paneling,
+/* ===== Dead Air part A pieces (spec 021) ===== DEEP SOUTH, TOWERS AND SMALL BUILDINGS · v1 pieces, added Nov 23, 2026
+   Drawn first for Black Lantern's Dead Air (its spec 021 lists the kits): a sugarcane field (stubble, young cane, tall
+   cane), a live oak with Spanish moss, a bald cypress, a still bayou and its bank with cypress knees and reeds, a house
+   raised on piers, a lattice radio tower with its blinking light, a cinder-block wall, an old radio with a glowing dial,
+   and a desk microphone and small mixing board. No brands or call letters on any piece.
+   Six new palette slots (a game's palette without them falls back as noted): cane (cane-field gold), moss (Spanish moss),
+   bayou (still dark water), beacon (a tower's red light), dial (a radio dial's amber glow), cinder (cinder block). */
+SLOTS.push(["cane","cane-field gold, cane stalks"],["moss","Spanish moss, grey-green"],["bayou","still dark water"],["beacon","tower warning light"],["dial","radio dial glow"],["cinder","cinder block"]);
+Object.assign(PALETTES.blacklantern,{cane:"#c8a850",moss:"#8a9a7a",bayou:"#1e2a2a",beacon:"#ff4a3d",dial:"#ffb347",cinder:"#9a968c"});
+Object.assign(PALETTES.rushlight,{cane:"#b89a52",moss:"#7e8a6e",bayou:"#22302c",beacon:"#d8483a",dial:"#e0a04a",cinder:"#948e82"});
+
+/* ---------- DEEP SOUTH (regional) ---------- */
+// shared-tiles-canefield-v1: a sugarcane field in rows that run left to right. Pixel function like grass().
+// stage: "stubble" (cut stalks in dark rows), "young" (green shoots coming up the rows). Each 16 px tile holds one row:
+// a dark furrow at its top, the raised bed in the middle, so the rows read as paths to walk along.
+// tallCane(w, v) is the standing tall cane, a prop w tiles wide; give it a see-through canopy so it never hides the party.
+function caneField(x,y,T=16,stage="young"){const u=T/16,nx=(x/u)|0,ny=(y/u)|0,ry=ny%16,e=P.earth,cn=slot("cane","straw"),lf=slot("leaf","grass");
+  if(ry<3)return hsh(nx,ny,301)<.12?shade(e,-.2):shade(e,-.38);                                   // the furrow
+  if(ry>13)return[shade(e,-.12),shade(e,-.2)][(hsh(nx,ny,302)*2)|0];
+  const clump=(nx+((ny>>4)*5))%7,n=hsh(nx,ny,303);
+  if(stage==="stubble"){if(clump<2&&ry>5&&ry<11)return ry<7?shade(cn,.25):shade(cn,-.1+n*.2);
+    if(n<.08)return shade(cn,-.3);return[shade(e,.05),e,shade(e,-.06)][(hsh(nx,ny,304)*3)|0];}
+  if(clump<3&&ry>3&&ry<12){const tip=ry<6;return tip?shade(lf,.25):hsh(nx,ny,305)<.3?shade(lf,-.28):lf;}
+  if(clump===3&&ry>8&&ry<12)return shade(cn,-.15);
+  if(n<.06)return shade(lf,-.4);return[shade(e,.04),e,shade(e,-.07)][(hsh(nx,ny,306)*3)|0];}
+function tallCane(w=2,v=0){const W_=w*32;return{size:[W_+8,120,4,0],anchor:[W_/2,116],lights:[],draw({R}){const cn=slot("cane","straw"),lf=slot("leaf","grass"),dl=shade(cn,.2);
+  for(let i=0;i<w*9;i++){const x=1+i*(W_/(w*9))+((hsh(i,v,311)-.5)*3),h=78+hsh(i,v,312)*30,top=116-h,c=i%3===0?shade(cn,-.18):cn;
+    R(x,top,2,h,c,{sh:1});for(let k=top+10;k<116;k+=11)R(x,k,2,1,shade(c,-.4));
+    const lean=(hsh(i,v,313)-.5)*14;for(let j=0;j<3;j++){const ly=top+4+j*9,dir=(i+j)%2?1:-1;
+      for(let s=0;s<9;s++)R(x+dir*s,ly+s*.7+Math.abs(lean)*s/40,2,1,j===0?shade(lf,-.1):s>5?shade(dl,-.1):dl);}}
+  R(0,112,W_+2,4,shade(P.earth,-.3));}};}
+// shared-props-liveoak-v1: a live oak, wider than it is tall, low heavy limbs and grey-green Spanish moss hanging off
+// them. v = 0 (big, about 5 tiles across), 1 (small, about 3). Give it a canopy so it turns see-through over the party.
+function liveOak(v=0){const big=v===0,W_=big?170:110,H_=big?128:100;return{size:[W_,H_,0,0],anchor:[W_/2,H_-4],lights:[],draw({R,C}){const L=shade(slot("leaf","grass"),-.18),t=[shade(L,.22),shade(L,.06),L,shade(L,-.24),shade(L,-.45)],m=slot("moss","stone"),bk=shade(P.wood,-.25),cx=W_/2,base=H_-4;
+  R(cx-7,base-46,14,46,bk,{sh:true});R(cx-12,base-4,24,4,P.woodDark);R(cx-4,base-40,2,26,shade(bk,.18));
+  const limbs=big?[[-1,.9],[1,.85],[-1,.45],[1,.5]]:[[-1,.7],[1,.75]];
+  limbs.forEach(([d,k],i)=>{for(let s=0;s<W_*.42*k;s+=2){const x=cx+d*s,y=base-40-s*.32+Math.pow(s/(W_*.4),2)*14-i*3;R(x-1,y,4,4,shade(bk,i%2?-.1:.05));}});
+  const lobes=[];const n=big?11:7;for(let i=0;i<n;i++){const a=i/(n-1),x=10+a*(W_-20)+((hsh(i,v,321)-.5)*8),y=(big?38:34)-Math.sin(a*Math.PI)*(big?20:14)+((hsh(i,v,322)-.5)*8),r=(big?20:16)+hsh(i,v,323)*8;lobes.push([x,y,r]);}
+  lobes.forEach(([x,y,r])=>C(x+3,y+4,r,t[4]));lobes.forEach(([x,y,r])=>C(x+1,y+2,r,t[3]));lobes.forEach(([x,y,r])=>C(x,y,r-2,t[2]));
+  lobes.forEach(([x,y,r])=>C(x-r*.3,y-r*.35,r*.5,t[1]));lobes.forEach(([x,y,r])=>C(x-r*.4,y-r*.5,r*.2,t[0]));
+  for(let i=0;i<(big?120:70);i++){const an=hsh(i,v,324)*6.283,rd=Math.sqrt(hsh(i,v,325));R(cx+Math.cos(an)*rd*W_*.44,(big?34:30)+Math.sin(an)*rd*22,3,2,hsh(i,v,326)<.5?t[1]:t[3]);}
+  for(let i=0;i<(big?22:13);i++){const x=8+hsh(i,v,327)*(W_-16),y=(big?44:40)+hsh(i,v,328)*14,len=10+hsh(i,v,329)*(big?26:18);
+    for(let k=0;k<len;k+=2){const sw=Math.sin(k*.35+i)*1.5;R(x+sw,y+k,k<len-4?3:2,2,k%6<2?shade(m,.2):k%6<4?m:shade(m,-.25));}}}};}
+// shared-props-cypress-v1: a bald cypress: a flared, buttressed trunk, a tall narrow crown of feathery needles, a little
+// moss. v varies it.
+function cypress(v=0){return{size:[70,150,0,0],anchor:[35,146],lights:[],draw({R,C}){const L=shade(slot("leaf","grass"),-.05),t=[shade(L,.25),L,shade(L,-.25),shade(L,-.45)],bk=shade(P.wood,-.1),m=slot("moss","stone");
+  for(let y=60;y<146;y++){const fl=y>118?Math.pow((y-118)/28,2)*14:0;R(35-5-fl,y,10+fl*2,1,y%5?bk:shade(bk,-.2));R(35+3+fl*.6,y,2+fl*.4,1,shade(bk,-.35));}
+  for(let k=0;k<4;k++)R(28+k*4,120,1,24,shade(bk,.15));
+  for(let i=0;i<16;i++){const y=8+i*7+((hsh(i,v,331)-.5)*4),w=10+Math.sin(i/15*Math.PI)*18+hsh(i,v,332)*6,x=35+((hsh(i,v,333)-.5)*8);
+    C(x+2,y+2,w*.55,t[3]);C(x,y,w*.5,t[2]);C(x-w*.15,y-2,w*.34,t[1]);C(x-w*.25,y-3,w*.12,t[0]);}
+  for(let i=0;i<40;i++){const x=12+hsh(i,v,334)*46,y=6+hsh(i,v,335)*104;R(x,y,2,1,hsh(i,v,336)<.5?t[0]:t[3]);}
+  for(let i=0;i<5;i++){const x=20+hsh(i,v,337)*30,y=50+hsh(i,v,338)*40;for(let k=0;k<12;k+=2)R(x+Math.sin(k*.4)*1.2,y+k,2,2,k%4?m:shade(m,-.25));}}};}
+// shared-tiles-bayouedge-v1: still dark bayou water (bayou: pixel function) and its bank (bayouEdge: drawn along a
+// horizontal edge in pixels, the water below y). The bank has a mud lip, reeds and cypress knees poking up from the water.
+// knees: [x, ...] where knees stand. Returns the knees' spots, for a case's ripple or fog.
+function bayou(x,y,T=16){const u=T/16,nx=(x/u)|0,ny=(y/u)|0,w=slot("bayou","night"),n=hsh(nx,ny,341);
+  if(n<.035)return shade(slot("leaf","grass"),-.2);                                              // duckweed
+  if(ny%5===0&&hsh(nx>>2,ny,342)<.25)return shade(w,.18);                                         // a slow ripple
+  return[w,shade(w,-.12),shade(w,.05)][(hsh(nx>>1,ny>>1,343)*3)|0];}
+function bayouEdge(g,x0,x1,y,T=16,o={}){const u=T/16,e=P.earth,w=slot("bayou","night"),L=slot("leaf","grass"),knees=o.knees||[],out=[];
+  for(let x=x0;x<x1;x+=u){const d=Math.round((Math.sin(x*.07)+Math.sin(x*.19))*u);F(g,x,y-2*u+d,u,3*u,shade(e,-.3));F(g,x,y+u+d,u,u,shade(w,.25));}
+  for(let x=x0+2*u;x<x1;x+=3*u){if(hsh(x,y,344)<.45)continue;const h=(4+hsh(x,y,345)*7)*u;F(g,x,y-h,u,h,hsh(x,y,346)<.5?shade(L,-.15):slot("cane","straw"));if(hsh(x,y,347)<.25)F(g,x-u,y-h-2*u,2*u,3*u,shade(P.woodDark,-.1));}
+  for(const kx of knees){const ky=y+3*u+hsh(kx,y,348)*4*u,h=(5+hsh(kx,y,349)*4)*u;F(g,kx-2*u,ky-h,4*u,h,shade(P.wood,-.15));F(g,kx-2*u,ky-h,u,h,shade(P.wood,.1));F(g,kx-u,ky-h-u,2*u,u,shade(P.wood,-.05));
+    F(g,kx-3*u,ky,6*u,u,shade(w,.3));out.push([kx,ky]);}
+  return out;}
+// shared-tiles-raisedhouse-v1: a house front raised on piers in the 3/4 view: the roof, the wall up on its piers, the dark
+// crawlspace between them, a door with steps down to the ground. x0..x1 wide, rt = roof top, rb = eave, fb = ground line.
+// o: col (wall), roofCol, wall ("siding" | "batten"), door (x of the door's center), pier (pier height, about .9 tile),
+// porch (true: a porch along the front at floor height, with a rail), curtains. Returns {glows, door, floor (y of the floor)}.
+function raisedHouse(g,x0,x1,rt,rb,fb,T=16,o={}){const u=T/16,w=x1-x0,col=o.col||P.cream,ph=o.pier??Math.round(.9*T),fl=fb-ph,dr=o.door??(x0+w*.4),glows=[];
+  F(g,x0,fl,w,ph,shade(P.outline,.04));for(let x=x0+u;x<x1-u;x+=u)if(hsh(x,fl,351)<.2)F(g,x,fl+ph-2*u,u,u,shade(P.earth,-.3));
+  for(let px=x0+u;px<x1-2*u;px+=Math.max(2.2*T,w/Math.max(2,Math.round(w/(2.4*T))))){F(g,px,fl,3*u,ph,shade(P.stoneWarm,-.05));F(g,px,fl,u,ph,shade(P.stoneWarm,.15));F(g,px+2*u,fl,u,ph,shade(P.stoneWarm,-.35));}
+  F(g,x1-4*u,fl,3*u,ph,shade(P.stoneWarm,-.05));F(g,x0,fl,w,2*u,shade(P.woodDark,-.1));
+  roof(g,x0,x1,rt,rb,o.roofCol||P.panel,T,o.seed|0,!!o.chim);
+  wall(g,x0,x1,rb,fl,o.wall||"siding",col,T);F(g,x0,rb,w,2*u,rgba(P.outline,.35));
+  const ww=.62*T,wh=Math.min(.6*T,fl-rb-.45*T);
+  for(let wx=x0+.35*T;wx+ww<x1-.2*T;wx+=1.2*T){if(Math.abs(wx+ww/2-dr)<.7*T)continue;glows.push(windowPane(g,wx,rb+.25*T,ww,wh,T,!!o.curtains));
+    if(o.shutters){F(g,wx-.2*T,rb+.25*T,.16*T,wh,o.shutters);F(g,wx+ww+.04*T,rb+.25*T,.16*T,wh,o.shutters);}}
+  door(g,dr,fl-.9*T,fl,o.doorCol||shade(P.accent,-.15),T);
+  if(o.porch){F(g,x0,fl-u,w,2*u,P.wood);F(g,x0,fl-.45*T,w,u*1.5,P.cream);for(let x=x0;x<x1;x+=3*u){if(Math.abs(x-dr)<.5*T)continue;F(g,x,fl-.45*T,u,.42*T,shade(P.cream,-.12));}
+    for(const px of[x0,x1-2*u])F(g,px,rb,2*u,fl-rb,P.cream);}
+  const n=Math.max(2,Math.round(ph/(.2*T)));for(let i=0;i<n;i++){const sw=.7*T+i*2*u,sy=fl+i*(ph/n);F(g,dr-sw/2,sy,sw,ph/n,i%2?shade(P.wood,-.1):P.wood);F(g,dr-sw/2,sy+ph/n-u,sw,u,shade(P.woodDark,-.2));}
+  F(g,dr-.35*T-n*u-u,fl,u,ph,shade(P.woodDark,-.1));F(g,dr+.35*T+n*u,fl,u,ph,shade(P.woodDark,-.1));
+  return{glows,door:dr,floor:fl};}
+
+/* ---------- TOWERS AND SMALL BUILDINGS ---------- */
+// shared-props-tower-v1: a lattice radio or cell tower, painted in bands (P.accent and P.text). Three pieces:
+// latticeMast(g, cx, top, bot, w, T) draws the open lattice between two heights in pixels (any height, so a map can run it
+// off the top of the screen); TOWER_BASE is its foot (a concrete pier and the base insulator), a prop; towerTop(lit) is
+// the top section with its warning light. beacon(ctx, x, y, now, r) draws the light's slow red blink after the night pass.
+function latticeMast(g,cx,top,bot,w=12,T=16){const u=T/16,hw=w/2,band=Math.round(T*1.4);
+  for(let y=top;y<bot;y+=u){const k=((bot-y)/band)|0,c=k%2?shade(P.text,-.08):P.accent;F(g,cx-hw,y,u,u,c);F(g,cx+hw-u,y,u,u,shade(c,-.3));}
+  for(let y=bot;y>top;y-=w){const k=((bot-y)/band)|0,c=k%2?shade(P.text,-.2):shade(P.accent,-.15);
+    for(let i=0;i<w;i+=u){const yy=y-i;if(yy<top)break;F(g,cx-hw+i,yy,u,u,c);F(g,cx+hw-u-i,yy,u,u,shade(c,-.25));}F(g,cx-hw,y,w,u,shade(c,-.1));}}
+const TOWER_BASE={size:[40,30,0,0],anchor:[20,28],lights:[],draw({R}){const c=P.stone;R(4,16,32,12,shade(c,.15),{sh:8});R(4,16,32,2,shade(c,.35));R(2,26,36,2,shade(c,-.3));
+  R(14,8,12,8,shade(P.panel,.1),{sh:3});R(16,4,8,5,P.cream);for(let y=5;y<9;y+=2)R(16,y,8,1,shade(P.cream,-.25));R(17,0,2,5,P.accent);R(21,0,2,5,shade(P.accent,-.3));}};
+function towerTop(lit=true){return{size:[24,40,0,0],anchor:[12,38],lights:lit?[[12,4,1.6,.55]]:[],draw({R,C}){const b=slot("beacon","accent");
+  for(let y=10;y<38;y+=2){const k=((38-y)/10)|0,c=k%2?shade(P.text,-.08):P.accent;R(6,y,2,2,c);R(16,y,2,2,shade(c,-.3));}
+  for(let y=36;y>12;y-=8){R(6,y,12,1,shade(P.accent,-.2));for(let i=0;i<8;i+=2){R(7+i,y-i,1,1,shade(P.text,-.25));R(16-i,y-i,1,1,shade(P.text,-.4));}}
+  R(4,8,16,3,P.panel);R(11,1,2,8,P.panel);C(12,4,3.2,lit?shade(b,.25):shade(b,-.5));if(lit)C(11,3,1.2,shade(b,.7));}};}
+function beacon(ctx,x,y,now,r=18){const ph=(now%2400)/2400,on=ph<.5?Math.sin(ph/.5*Math.PI):0;if(on<=0)return;const b=slot("beacon","accent");
+  ctx.globalCompositeOperation="lighter";const c=ctx.createRadialGradient(x,y,0,x,y,r);c.addColorStop(0,rgba(b,.85*on));c.addColorStop(.3,rgba(b,.35*on));c.addColorStop(1,rgba(b,0));ctx.fillStyle=c;ctx.fillRect(x-r,y-r,r*2,r*2);
+  ctx.globalCompositeOperation="source-over";ctx.fillStyle=rgba(P.lightTo,on);ctx.fillRect(Math.round(x)-1,Math.round(y)-1,2,2);}
+// shared-tiles-cinderblock-v1: a cinder-block wall in pixels, from top to fb (the ground line). Blocks in running bond,
+// mortar lines, a stain or chip now and then. o: painted (a paint color: the blocks painted over, the mortar still showing
+// through, the paint peeling near the ground), cap (true: a row of solid cap blocks on top).
+function cinderBlock(g,x0,x1,top,fb,T=16,o={}){const u=T/16,c=o.painted||slot("cinder","stone"),bw=8*u,bh=4*u,mo=shade(c,-.35);
+  F(g,x0,top,x1-x0,fb-top,mo);
+  for(let y=top,row=0;y<fb;y+=bh,row++){for(let x=x0-((row%2)*bw/2);x<x1;x+=bw){const xs=Math.max(x,x0),xe=Math.min(x+bw-u,x1),n=hsh(x,y,361),v=[c,shade(c,-.06),shade(c,.05)][(n*3)|0];if(xe<=xs)continue;
+    F(g,xs,y,xe-xs,bh-u,v);F(g,xs,y,xe-xs,u,shade(v,.12));if(!o.painted&&hsh(x,y,362)<.25)F(g,xs+2*u,y+u,u,u,shade(v,-.25));
+    if(o.painted&&y>fb-3*bh&&hsh(x,y,363)<.35)F(g,xs+u,y+u,Math.min(3*u,xe-xs-u),bh-2*u,slot("cinder","stone"));}}
+  if(o.cap){F(g,x0-u,top-2*u,x1-x0+2*u,3*u,shade(c,.15));F(g,x0-u,top-2*u,x1-x0+2*u,u,shade(c,.3));F(g,x0-u,top+u,x1-x0+2*u,u,mo);}
+  for(let x=x0;x<x1;x+=u)if(hsh(x,fb,364)<.3)F(g,x,fb-(1+(hsh(x,fb,365)*3|0))*u,u,u,shade(P.earth,-.1));
+  F(g,x0,top,u,fb-top,P.outline);F(g,x1-u,top,u,fb-top,P.outline);}
+// shared-props-porchradio-v1: an old tabletop radio, no brand: a wood cabinet with a rounded top, a cloth speaker grille,
+// a dial window and two knobs. porchRadio(on): on = the dial glows (and lights a little pool). Draw it at any scale with
+// prop(spec, s): at s = 2 or more it reads as a close-up.
+function porchRadio(on=false){return{size:[40,30,0,0],anchor:[20,28],lights:on?[[29,14,.9,.35]]:[],draw({R,E,C,big}){const w=P.wood,wl=shade(w,.25),wd=shade(w,-.35),d=slot("dial","glass");
+  E(20,9,19,8,w);R(1,9,38,19,w,{sh:6});E(16,6,12,4,wl);R(1,9,6,19,wl);R(1,26,38,2,wd);
+  R(4,10,18,14,shade(P.cloth,-.2));for(let y=11;y<24;y+=2)R(5,y,16,1,shade(P.cloth,-.4));for(let x=7;x<22;x+=4)R(x,10,1,14,shade(w,-.2));
+  R(24,10,12,7,P.outline);R(25,11,10,5,on?d:shade(d,-.6));for(let x=26;x<35;x+=2)R(x,11,1,2,on?shade(d,-.35):shade(d,-.75));R(29,11,1,5,on?P.accent:shade(P.accent,-.5));
+  if(on&&big)R(25,11,10,1,shade(d,.4));C(27,21,2.4,shade(P.stone,-.2));C(33,21,2.4,shade(P.stone,-.2));C(26.5,20.5,.9,shade(P.stone,.3));C(32.5,20.5,.9,shade(P.stone,.3));
+  R(3,28,4,2,wd);R(33,28,4,2,wd);}};}
+// shared-props-mic-v1: a desk microphone on its stand (DESKMIC), and a small mixing board (mixBoard(n, lit): n channels
+// of faders and knobs with two meters; lit = the meters and the board's lamps glow).
+const DESKMIC={size:[20,34,0,0],anchor:[10,32],lights:[],draw({R,E}){const m=shade(P.stone,.2),md=shade(m,-.35);
+  R(3,28,14,4,P.panel,{sh:3});R(3,28,14,1,shade(P.panel,.3));R(9,14,2,14,md);R(6,14,8,2,md);
+  E(10,8,6,8,m);E(9,7,4,6,shade(m,.2));for(let y=2;y<15;y+=2)R(5,y,10,1,md);R(4,7,12,2,shade(P.panel,.2));}};
+function mixBoard(n=6,lit=true){const W_=n*10+12;return{size:[W_,30,0,0],anchor:[W_/2,28],lights:lit?[[W_-8,6,.7,.3]]:[],draw({R,C}){const b=P.panel,bl=shade(b,.25),d=slot("dial","glass");
+  R(0,8,W_,20,b,{sh:6});R(0,8,W_,2,bl);R(0,26,W_,2,shade(b,-.4));
+  for(let i=0;i<n;i++){const x=4+i*10;C(x+3,13,1.8,shade(P.text,-.2));C(x+2.5,12.5,.6,P.text);R(x+2,16,2,9,P.outline);R(x,17+((i*5)%6),6,3,i%3===0?P.accent:shade(P.text,-.1));}
+  R(W_-12,0,10,8,P.outline);R(W_-11,1,4,6,lit?d:shade(d,-.6));R(W_-6,1,4,6,lit?shade(d,-.1):shade(d,-.6));R(W_-9,3,1,4,P.outline);R(W_-4,2,1,5,P.outline);}};}
+return{T,S,SLOTS,PALETTES,use,pal,RGB,hex,rgba,shade,hsh,mk,art,drawChar,charSprite,SAMPLE_AGENTS,LAMP,BENCH,prop,summerGrass,summerTree,dryDirt,heat,sodium,storefront,signBlank,signText,signWidth,WATERTOWER,trafficLight,gasPump,ranchHouse,porch,mailbox,sedan,floor,innerWall,counter,tableChairs,DESK,BED,shelving,stringLights,booth,ferrisWheel,asphalt,paintLine,bugZap,BUGLIGHT,workLight,VAN_SIGN,van,walkway,metalStairs,numberDoor,windowAC,chainLink,chainLinkSide,pool,dumpster,FRIDGE_FRONT,kitchen,ceilingFan,boxes,washer,springGrass,blossomTree,mud,fog,fogReach,rain,twoLane,twoLaneCurve,guardrail,mileMarker,roadSign,stoneWall,stoneWallSide,COINVIEWER,slope,thicket,creek,hospitalBed,MONITOR,MONITOR_SCREEN,monitorLine,waitingChairs,snow,slush,snowbank,icicles,snowfall,cityStreet,BUSSTOP,BUSSTOP_SIGN,neonSign,neonText,neonFlicker,poleSign,barredWindow,hydrant,crtTV,CRT_SCREEN,vcr,vhsTape,paneling,caneField,tallCane,liveOak,cypress,bayou,bayouEdge,raisedHouse,latticeMast,TOWER_BASE,towerTop,beacon,cinderBlock,porchRadio,DESKMIC,mixBoard,
   dirtRoad,boardwalk,stoneSidewalk,grass,paint,F,picketFence,wall,roof,windowPane,door,awning,light,dusk,autumn,rr,shell,dialog};
 })();

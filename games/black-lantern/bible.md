@@ -77,7 +77,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
   Done Nov 23: Tracking pins on the board. Fourth Street in snow, the pawn shop, the motel rooms, two places across town by bus, the closed club and the finale area all walk by day and night; every door and bus ride goes where it should; everyone has a sprite and a talking face; the tape's tracking lines show in four steps; and Big Hat briefs from a new place.
 - [x] Tracking part B (spec 018): the secret case file first, then its story, the trail and watching the tape, fights, boss and endings
   Done Nov 23: Tracking's story is in and the case plays start to finish: the trail, watching the tape, two fights, the club, the boss and three endings, with the debrief in the casino buffet.
-- [ ] Dead Air part A (spec 020): its maps and art, Halcott, the station and the cane fields, the broadcast look, townsfolk, walkable with stand-in scripts. After Tracking
+- [x] Dead Air part A (spec 020): its maps and art, Halcott, the station and the cane fields, the broadcast look, townsfolk, walkable with stand-in scripts. After Tracking
+  Done Nov 23: Dead Air pins on the board. Halcott, the station and the cane fields walk by day and night, the show has its own radio-dial look, everyone has a sprite and a talking face, and Big Hat briefs from a new place.
 - [ ] Dead Air part B (spec 020): the secret case file first, then its story, the two broadcasts, the fish fry, fights, boss and endings
 - [ ] Later agency cases and the finale (spec 015): every agency case after the first, built one at a time in arc order, each in a part A and a part B like the first, ending with the finale and the season end screen. Tick this when the season data file has them all and a Dev playtest runs from New game to Season 2's board
 
