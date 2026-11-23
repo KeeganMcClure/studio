@@ -5,7 +5,7 @@
       "from": "Shared Shelf",
       "url": "https://claude.ai/artifact/Jmv2FBeGHXczqy7juZW8dL",
       "takes": "the page's <script id=\"shelf-src\"> block, unchanged (the Asset Library core page carries the same file as shelf.js)",
-      "version": "pending-lot83-partA",
+      "version": "1795457341-a73a",
       "synced": "2026-11-23",
       "sha256": "0f386e4398942b45d7991a95986449b500271be693c72fea708a3a8d8a030c88"
     },
