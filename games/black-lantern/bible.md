@@ -65,7 +65,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
 - [x] Lot 83 part B (spec 011): the secret case file first, then its story, fights, boss and endings
   Done Nov 23: Lot 83 plays start to finish: its full briefing, clues, a deduction, two story fights, the tented night, the boss and all three endings, with the debrief in Big Hat's cooler.
 - [ ] Bigger agents in battle (spec 023): the agents redrawn at about 48 × 60, the short-screen layout, every profession, hair style and build, the lantern and Downed, then the Asset Library. After Lot 83, so every later case's fights are checked at the new size
-- [ ] Lost Hour part A (spec 016): its maps and art, the ridge road in fog, townsfolk and the Pruetts, walkable with stand-in scripts. After Lot 83
+- [x] Lost Hour part A (spec 016): its maps and art, the ridge road in fog, townsfolk and the Pruetts, walkable with stand-in scripts. After Lot 83
+  Done Nov 23: Lost Hour pins on the board. Cullen Gap, the Pruett house, the diner, the clinic, the ridge road and the woods in fog, and the finale area all walk by day and night, every door and drive goes where it should, everyone has a sprite and a talking face, and Big Hat briefs from a new place.
 - [ ] Lost Hour part B (spec 016): the secret case file first, then its story, the night drive and hypnosis session, fights, boss and endings
 - [ ] First agency case part A (spec 014): the secret case file first, from the arc file; then its maps and art, townsfolk, and the black LANTERN folder on the board, walkable with stand-in scripts. After Lot 83
 - [ ] First agency case part B (spec 014): its story, fights, boss and endings, and the unlock scene's lines
