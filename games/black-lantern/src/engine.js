@@ -178,6 +178,8 @@ const sourFade={};
 const shimFade={};
 const tripping=m=>!!m&&hasSt(m,'high')&&m.high==='shrooms';
 function shimmer(now,h){const k=StudioLight.fade(shimFade,tripping(lead()),now);if(k>0)StudioLight.shimmer(cx,k,now,{h,tint:LOOK.shim})}
+// the Gleaner standing on Still Harvest's map (its spot is hard-coded there); null for any other case
+function mapBossImg(f){const c=caseById(G.case);return c&&c.sprite?c.sprite('gleaner',f):null}
 function drawWorld(){
  const M=G.M,[camx,camy]=cam(),now=performance.now(),art=M.art,L=lead(),night=M.light==='night';
  if(!M.props)M.props=art.props(M);
@@ -204,7 +206,7 @@ function drawWorld(){
   roamLit.push([fx,fy-h/2,20]);
   post.push(()=>{const n=r.skulls||1;for(let i=0;i<n;i++)icoSkull(Math.round(fx-n*4+i*8),Math.round(fy-h-9),PC.cream);
    if(s.st==='alert'||s.st==='chase')pT('!',Math.round(fx+w/2-1),Math.round(fy-h-12),PC.pink,13)})})}
- if(M.boss){const c=caseById(G.case),img=c&&c.sprite&&c.sprite('gleaner',Math.floor(now/400)%2);if(img)spr.push({y:11*16+14,f:()=>cx.drawImage(img,13*16+8-camx-img.width/2,11*16+40-camy-img.height)})}
+ if(M.boss){const img=mapBossImg(Math.floor(now/400)%2);if(img)spr.push({y:11*16+14,f:()=>cx.drawImage(img,13*16+8-camx-img.width/2,11*16+40-camy-img.height)})}
  spr.sort((a,b)=>a.y-b.y).forEach(s=>s.f());
  // light
  const k=StudioLight.fade(sourFade,L.san<LOOK.lowSan,now),glows=[],pools=[];let lanR=0;
@@ -214,7 +216,7 @@ function drawWorld(){
  else if(night){
   const lamp=StudioLight.mix(LOOK.lamp[0],LOOK.lamp[1],k),ring=[[G.px+8-camx,G.py+6-camy,StudioLight.mix(LOOK.lantern[0],LOOK.lantern[1],k)*(G.fs&&G.fs.flareMap===G.map?1.6:1)*(M.lantern||1)]];lanR=ring[0][2];  // M.lantern: a case's map can shrink the lantern (Lost Hour's fog)
   pools.forEach(([x,y])=>ring.push([x,y,lamp]));roamLit.forEach(p=>ring.push(p));  // roamers walk in plain sight
-  if(M.boss)ring.push([13*16+8-camx,11*16-38-camy,LOOK.boss+Math.random()*4]);
+  if(M.boss&&mapBossImg(0))ring.push([13*16+8-camx,11*16-38-camy,LOOK.boss+Math.random()*4]);  // Still Harvest's Gleaner only: other cases draw their own boss
   StudioLight.night(cx,{dark:LOOK.dark,alpha:M.alpha||LOOK.alpha,warm:M.warm||LOOK.warm,pools:ring,glows:glows.map(([x,y,r,a])=>[x,y,r*.7,a*.6])});
  }
  if(art.fx)art.fx(cx,{M,camx,camy,now,night,pools,lantern:lanR,sour:k});  // a case's own light and air (Good Manners: sodium light, heat shimmer)
