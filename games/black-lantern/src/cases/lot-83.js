@@ -113,8 +113,6 @@ const TEXT={
 const fill=(t,o)=>String(t).replace(/\{(n|m|v)\}/g,(x,k)=>o[k]??x);
 async function play(seq,o={}){for(const l of [].concat(seq)){if(Array.isArray(l))await say(l[0],fill(l[1],o));else await say('',fill(l,o))}}
 const said=(l,o)=>play([l],o);
-// A point of no return (studio-bible/play.md): the cursor starts on Not yet, so mashing A can't take it.
-async function askNotYet(text,opts){await say('',text,{keep:true,instant:false});const r=await choose(opts,{cancel:true,inBox:true,sel:opts.length-1});hideTB();return r<0?opts.length-1:r}
 
 // The case board card (spec 011, The card)
 const caseCard={file:3,title:'LOT 83',town:'AUSTIN',place:'PECAN COURT APTS · AUSTIN, TX',
@@ -261,7 +259,7 @@ function buildBay(){const M=blank('bay','STORAGE UNIT 83',9,7,'o','day');block(M
  open(M,4,6);M.warps['4,6']=()=>goTo('storage',17,4,'down');return M}
 
 // ---- THE POOL PUMP ROOM: night 1, the finale area (16 x 9); the boss waits here in part B ----
-async function enterPump(){const r=await askNotYet(TEXT.hatchQ,TEXT.gateIn);if(r===0)await goTo('pump',8,2,'down');else{G.dir='up';await stepBack()}}
+async function enterPump(){const r=await ask('',TEXT.hatchQ,TEXT.gateIn,NOT_YET);if(r===0)await goTo('pump',8,2,'down');else{G.dir='up';await stepBack()}}
 function buildPump(){const M=blank('pump','THE POOL PUMP ROOM',16,9,'o','night');M.alpha=.86;M.warm='#ffcf80';
  block(M,0,0,16,2);block(M,0,0,1,9);block(M,15,0,1,9);block(M,0,8,16,1);put(M,'vault',0,0,16,9,{walk:1});
  put(M,'filter',2,2,2,2);M.O['2,4']=M.O['3,4']=look(TEXT.look.filter);put(M,'pipes',4,0,10,2,{walk:1});M.O['5,2']=look(TEXT.look.pipes);
@@ -281,7 +279,7 @@ async function driveTo(where){await fade(1);await say('',TEXT.driveTo[where]);
  if(where==='storage')goMap('storage',7,10,'up');else goMap('court',8,21,'down');checkpoint();await fade(0)}
 // the stand-in for the story's tenting at dusk: the van, with Go on / Not yet and what closes (studio-bible/play.md)
 async function tentUp(){if(isNight())return;
- const r=await askNotYet(TEXT.tentQ+' '+TEXT.tentClose,TEXT.turnOpts);if(r!==0)return;
+ const r=await ask('',TEXT.tentQ+' '+TEXT.tentClose,TEXT.turnOpts,NOT_YET);if(r!==0)return;
  await fade(1);G.flags.ph=1;await play(TEXT.tented);goMap('court',17,14,'up');banner(TEXT.phase[1]);checkpoint();await fade(0)}
 
 // ================= OPENING (stand-in briefing in the barbecue joint's walk-in cooler) =================

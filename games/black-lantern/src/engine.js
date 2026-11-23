@@ -120,7 +120,12 @@ function posMenu(){if(menuEl.hidden)return;let b=6;const bx=dhost.querySelector(
  if(G.mode==='battle'&&!hud.hidden)b=hud.offsetHeight+8;else if(bx)b=bx.offsetHeight+(tab?tab.offsetHeight:0)+10;menuEl.style.bottom=b+'px'}
 function choose(items,o={}){if(G.cut)G.cut.skip=false;const first=Math.max(0,items.findIndex(it=>!(it&&it.dis)));return new Promise(res=>{menu={items,sel:o.sel??first,res,cancel:o.cancel,title:o.title,desc:o.desc,onSel:o.onSel,inBox:o.inBox};renderMenu()})}
 function closeMenu(v){const m=menu;menu=null;menuEl.hidden=true;StudioMenu.unlock(menuEl);if(m.inBox&&box){box.choices=null;box.dis=null}if(Bt)Bt.hover=-1;m.res(v)}
-async function ask(name,text,opts){await say(name,text,{keep:true,instant:false});const r=await choose(opts,{cancel:true,inBox:true});hideTB();return r<0?opts.length-1:r}
+// ask(name, text, opts, o): a question in the dialog box. o.sel starts the cursor on that row (a negative number counts
+// from the end). A point of no return (studio-bible/play.md) passes NOT_YET, so the cursor starts on its last row, Not
+// yet, and mashing A can't take it. B always answers with the last row.
+const NOT_YET={sel:-1};
+async function ask(name,text,opts,o={}){await say(name,text,{keep:true,instant:false});const s=o.sel==null?undefined:o.sel<0?opts.length+o.sel:o.sel;
+ const r=await choose(opts,{cancel:true,inBox:true,sel:s});hideTB();return r<0?opts.length-1:r}
 function banner(t,ms=2200){ban.textContent=t;ban.hidden=false;clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,ms)}
 function fade(on){fadeEl.style.opacity=on?1:0;return sleep(340)}
 async function run(fn){G.busy=(G.busy||0)+1;try{await fn()}catch(e){console.error(e)}finally{G.busy=Math.max(0,(G.busy||0)-1)}}  // never below 0: a case's ending opens the board, which resets it
@@ -426,7 +431,7 @@ window.addEventListener('resize',()=>{if(G.active)fit()});
 async function gameOver(){
  held=[];G.mode='scene';
  const L=lead();
- await say('',L&&L.san<=0?'Agent {code} walks into the corn, smiling, and does not come back.':'Agent {code} doesn\'t get up. The lantern goes out.');
+ await say('',L&&L.san<=0?caseWord('gameOverSan'):'Agent {code} doesn\'t get up. The lantern goes out.');
  const r=await ask('','The file stays open.',['Retry from checkpoint','Quit to title']);
  if(r===0){await fade(1);restore(G.cp);await fade(0)}else quit();
 }

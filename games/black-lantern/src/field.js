@@ -334,6 +334,8 @@ function talkedOut(n){if(n.out)return !!n.out();return G.fs.talked[n.id]===G.clu
 // backs off and stays put), away (firecrackers: gone for a while). Passed, held and away end at the next area change.
 // Fight it, sneak past with a roll, or go another way. Loud actions within 8 tiles draw it (noise → M.onLoud).
 const RW_=BLS.ROAMW;
+// a shared line a case can word for itself (registerCase({words})); otherwise the case-neutral one in strings.js
+function caseWord(k,def){const c=caseById(G.case),w=c&&c.words;return w&&w[k]!=null?w[k]:def!=null?def:RW_[k]}
 const SP=StudioPatrol;
 function roamSt(r){G.fs.roam=G.fs.roam||{};let s=G.fs.roam[r.id];if(!s||!s.w){s=G.fs.roam[r.id]={w:SP.beat(r.path),st:'patrol',t:0}}return s}
 const roamLive=(r,s=roamSt(r))=>!s.beaten&&!s.away;
@@ -370,7 +372,7 @@ async function roamCaught(r){
  const L=lead(),s=roamSt(r);await say('',fillT(RW_.caught,{e:r.name}),{auto:1000});
  if(skillVal(L.a,'Dodge')>=75){const p=chanceOf(L,'Dodge');const i=await choose([`${SOPT.slipfree.label} · Dodge ${p}%`,RW_.fight],{title:r.name.toUpperCase()});
   if(i===0){const x=SR.pct(p);await say('',resultLine('SLIP FREE · DODGE',x),{auto:1000});
-   if(x.ok){s.st='home';s.t=-90;await say('',fillT(RW_.slipped,{n:L.name,e:r.name}));return}tried(L,'Dodge')}}
+   if(x.ok){s.st='home';s.t=-90;await say('',fillT(caseWord('slipped'),{n:L.name,e:r.name}));return}tried(L,'Dodge')}}
  return roamFight(r)}
 // a roamer fight: Flee works; a win leaves it beaten, a flee sends it home a while, a loss is the usual game over
 async function roamFight(r,o={}){
@@ -394,7 +396,7 @@ async function roamMenu(r){
   {use:'jump',ok:()=>roamFight(r,{onStart:async()=>{const e=Bt.en[0];await bsay(fillT(RW_.jumped,{n:lead().name,e:e.name}),900);await attack(lead(),e,{fight:true})}}),fail:async()=>{await say('',fillT(RW_.spotted,{e:r.name}));return roamFight(r)}},
   {use:'ward',show:()=>(r.tags||[]).includes('unnatural'),ok:()=>hold(RW_.warded),fail:async()=>say('',RW_.wardFail)},
   {item:'salt',label:RW_.salt,show:()=>(r.tags||[]).includes('unnatural'),run:()=>hold(RW_.salted)},
-  {item:'firecrackers',run:async()=>{s.away=1;await say('',fillT(RW_.crackers,{e:r.name}));checkpoint()}},
+  {item:'firecrackers',run:async()=>{s.away=1;await say('',fillT(caseWord('crackers'),{e:r.name}));checkpoint()}},
   {item:'snare',run:async()=>{const i=await choose([RW_.snarePast,RW_.snareFight],{title:'SNARE TRAP'});
    if(i===1)return roamFight(r,{onStart:async()=>{await foeStatus(Bt.en[0],'stun')}});return pass(RW_.snared)}}
  ]};
