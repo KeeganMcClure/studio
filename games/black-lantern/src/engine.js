@@ -396,7 +396,11 @@ function restore(s){const o=JSON.parse(s);G.case=o.case||(CASES[0]&&CASES[0].id)
  fieldRestore(o);G.db=o.db||null;
  // paused mid-debrief (spec 007): back in Big Hat's back room at the step reached; the map stays as it was
  if(G.db){G.map=o.map;G.mode='scene';G.scene='bighat';hud.hidden=true;return}
- G.mode='world';goMap(o.map,o.x,o.y,o.dir,{restore:true});applySan()}
+ G.mode='world';goMap(o.map,o.x,o.y,o.dir,{restore:true});
+ // a saved spot that's now corn or a wall (a map reworked since the save, like the maze in spec 006's revision):
+ // the lead moves to the nearest open tile
+ const M=G.M;if(BLOCK.has(M.g[G.y]&&M.g[G.y][G.x])){const t=StudioMove.nearestOpen(G.x,G.y,M.w,M.h,(x,y)=>!BLOCK.has(M.g[y][x]));if(t)StudioMove.place(G,t[0],t[1],G.dir)}
+ applySan()}
 function enter(){G.active=true;scr.classList.add('gaming');fit();cancelAnimationFrame(raf);clock.reset();raf=requestAnimationFrame(loop)}
 function leave(){G.active=false;PM=null;CB=null;SCR=null;cancelAnimationFrame(raf);scr.classList.remove('gaming','glitch');scr.style.filter='';$('#vig').style.opacity=0;box=null;boxKey='';dhost.replaceChildren();menuEl.hidden=true;hud.hidden=true;if(dlg)clearTimeout(dlg.to);dlg=null;menu=null;Bt=null;held=[]}
 function quit(){checkpoint();leave();B.goto('title');B.render()}

@@ -273,7 +273,11 @@ function optOf(o,L){
  if(o.item){const h=holderOf(o.item);return{label:o.label||itemDef(o.item).name,dis:!h,why:h?itemDef(o.item).desc:`Nobody carries ${itemDef(o.item).name}.`,h}}
  return{label:o.label,why:o.why||''}}
 const optDone=o=>o.once&&G.fs.used['opt:'+o.once];
-function hotOpts(h){return(typeof h.opts==='function'?h.opts():h.opts||[]).filter(o=>!optDone(o)&&(!o.show||o.show()))}
+// a skill option nobody in the party is high enough for is hidden, not greyed (Using skills, Nov 23 playtest);
+// one a teammate has but the lead lacks stays, greyed with the skill name, so you know to swap leads
+const teamHas=(skill,tier)=>live().some(m=>skillVal(m.a,skill)>=tier);
+const optReach=o=>!o.use||!SOPT[o.use]||teamHas(SOPT[o.use].skill,SOPT[o.use].tier);
+function hotOpts(h){return(typeof h.opts==='function'?h.opts():h.opts||[]).filter(o=>!optDone(o)&&(!o.show||o.show())&&optReach(o))}
 async function hotspot(h,key){
  const L=lead(),opts=hotOpts(h),rows=[],acts=[],desc=[];
  if(h.look){rows.push(SKW.look);acts.push(()=>lookAt(h,key));desc.push('')}
@@ -491,11 +495,12 @@ async function pauseMenu(){
  }
 }
 async function settingsMenu(){for(;;){const s=settings();const r=await choose([`${MMW.fast}: ${s.fast?MMW.on:MMW.off}`],{cancel:true,title:MMW.settings,desc:[MMW.fastLine]});if(r<0)return;s.fast=!s.fast;store.set(B.key('settings'),s)}}
-// Map menu → Skills: the lead's skills that work away from hotspots (greyed with the skill name when the lead lacks them)
+// Map menu → Skills: the lead's skills that work away from hotspots (greyed with the skill name when the lead lacks them,
+// hidden when nobody in the party has them)
 async function skillsMenu(){
  for(;;){
   const L=lead(),sv=k=>skillVal(L.a,k),rows=[],desc=[],acts=[];
-  const add=(name,skill,tier,ok,why,fn)=>{const has=sv(skill)>=tier;rows.push({label:has?`${name} · ${skill} ${chanceOf(L,skill)}%`:`${name} · ${skill}`,dis:!has||!ok});
+  const add=(name,skill,tier,ok,why,fn)=>{if(!teamHas(skill,tier))return;const has=sv(skill)>=tier;rows.push({label:has?`${name} · ${skill} ${chanceOf(L,skill)}%`:`${name} · ${skill}`,dis:!has||!ok});
    desc.push(!has?fillT(SKW.lacks,{s:skill,t:tier}):ok?'':why);acts.push(fn)};
   const hurt=live().filter(m=>m.hurt>m.aided&&m.hp<m.mhp);
   add(MMW.patch,'First Aid',40,hurt.length,MMW.patchWhy,patchUp);

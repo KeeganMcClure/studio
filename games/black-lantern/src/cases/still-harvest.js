@@ -144,6 +144,7 @@ const TEXT={
  gateNoForce:'The chain holds. Your shoulder doesn\'t.',
  enter:['Somewhere ahead in the dark, a lantern is moving.','(The maze is dark. Things walk it. Your light shrinks as your SAN drops.)'],
  leaveQ:'Head back out to town?',leaveOpts:['Go back','Stay'],
+ clearQ:'The corn opens onto the clearing. Lantern light, and something tall that hasn\'t moved. Once you step in, there\'s no walking back out.',clearOpts:['Go in','Not yet'],
  // ---- the Sheriff (Local chief), Big Hat's call (Agency call), the clean-up crew (Federal agents) ----
  chief:[['SHERIFF DUNN','Sheriff Dunn. I don\'t care whose badge that is.'],['SHERIFF DUNN','Marrow Creek has a Walk to get through. Folks are going to stop talking to you now.'],'He tips his hat to a scarecrow on the way out. Out of habit, you think.'],
  call:['Your phone buzzes. Unknown number. You know who it is.',['BIG HAT','I am hearin\' about you on the police scanner, {first}.'],['BIG HAT','Don\'t ask for anything next time. You won\'t get it.']],
@@ -361,6 +362,8 @@ async function bounceHome(){await said(TEXT.home);G.dir='up';await stepBack()}
 
 // ---- the corn maze: Demo 4's seeded layout ----
 let MAZE=null;
+// the one way into the Gleaner's clearing, and the tile just outside it, where Not yet steps the lead back to
+const DOOR=[13,14],DOOR_OUT=[13,15];
 function genMaze(){
  const cw=13,chh=11,W=cw*2+1,H=chh*2+1,g=mk(W,H,'C'),r=mulberry(4127),seen=mk(cw,chh,false);
  const st=[[0,5]];seen[5][0]=true;g[11][1]='M';
@@ -378,6 +381,11 @@ function genMaze(){
  const rest=dead.filter(d=>!vict.includes(d));const items=rest.slice(0,5);
  // a roamer's beat: from the tile in front of what it guards, back toward the gate along the shortest way, 5 tiles
  const beatFrom=([x,y])=>{const out=[];let cx_=x,cy=y;for(let k=0;k<6;k++){const nb=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>[cx_+dx,cy+dy]).find(([nx,ny])=>dist[ny]&&dist[ny][nx]===dist[cy][cx_]-1);if(!nb)break;[cx_,cy]=nb;if(inClear(cx_,cy))break;out.push([cx_,cy])}return out};
+ // The boss waits for you (spec 006, Revision after the demo playtest): the clearing is a dead end you walk into on
+ // purpose. Its edge turns to corn, all but one gap on the south side (DOOR), and three hedges open so the rows the
+ // clearing used to join still meet without it. The victims, the loot and the roamers' beats stay where they were.
+ for(let y=8;y<=14;y++)for(let x=10;x<=16;x++)if(x===10||x===16||y===8||y===14)g[y][x]='C';
+ g[DOOR[1]][DOOR[0]]='M';[[2,9],[20,7],[8,10]].forEach(([x,y])=>g[y][x]='M');
  return{W,H,g,vict,items,dist,beatFrom};
 }
 // the three missing, at the three deepest dead ends: victim 0 is the farthest, guarded by the Long Man (a story fight);
@@ -533,9 +541,14 @@ async function enterMaze(){
 }
 
 // ================= MAZE SCRIPTS =================
+// The way into the clearing asks first: go in starts the boss fight (committed), not yet steps the lead back one tile.
+// Anywhere else inside it (only an old save stands there) the fight starts as before.
 async function mazeStep(){
+ if(G.flags.boss)return;
+ if(G.x===DOOR[0]&&G.y===DOOR[1]){held=[];const r=await ask('',TEXT.clearQ,TEXT.clearOpts);if(r===0)return bossIntro();
+  StudioMove.place(G,DOOR_OUT[0],DOOR_OUT[1],'down');return}
  const inClear=G.x>=10&&G.x<=16&&G.y>=8&&G.y<=14;
- if(inClear&&!G.flags.boss){held=[];return bossIntro()}
+ if(inClear){held=[];return bossIntro()}
 }
 async function leaveMaze(){const r=await ask('',TEXT.leaveQ,TEXT.leaveOpts);if(r===0){await fade(1);goMap('town',28,10,'left');await fade(0)}else{G.dir='right';await stepBack()}}
 const ok_=()=>(x,y)=>{const M=G.M;return x>=0&&y>=0&&x<M.w&&y<M.h&&!BLOCK.has(M.g[y][x])};

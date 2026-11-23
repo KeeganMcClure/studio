@@ -489,8 +489,11 @@ function drawBattle(){
   if(!m.gone)cx.drawImage(img,Math.round(cxm-BLB.AX+sx),L.agentY-BLB.AY+dy);
   if(tgt===m||(act&&u&&u.kind==='cmd')){const ay=L.agentY-BLB.H+2+dy+Math.round(Math.sin(t*.2)*2);if(tgt===m){pR(cxm-3,ay,7,2,PC.gold);pR(cxm-2,ay+2,5,2,PC.gold);pR(cxm-1,ay+4,3,2,PC.gold)}}
   if(u&&u.kind==='target'&&u.opts.includes(m))Bt.hits.push({x:cxm-40,y:L.agentY-46,w:80,h:46+L.strip.h,fn:()=>{u.sel=u.opts.indexOf(m);battlePress('a')}})});
- // the turn-order column down the left edge: who acts now (bigger), then the next few
- const faces=[...Bt.queue,...turnOrder(false)].filter(x=>!x.dead&&!x.gone).slice(0,9).map(x=>({img:x.a?headOf(x.a):foeFace(x),foe:!x.a}));
+ // the turn-order column down the left edge (Turn order, Nov 23 playtest): this round only, each fighter once, the one
+ // acting now on top (bigger). A face drops off once that fighter has acted and the full order is back next round.
+ // Enemies that die or flee leave; a Downed agent stays, greyed, since their bleed-out counts their turns.
+ // Before the first round (the intro and any horror) it shows the round about to start.
+ const faces=(Bt.queue.length?Bt.queue:turnOrder(Bt.first)).filter(x=>!x.dead&&!x.gone).map(x=>({img:x.a?headOf(x.a):foeFace(x),foe:!x.a,out:!!(x.a&&x.ko)}));
  SB.turnColumn(cx,BT_THEME,L.col.x,L.col.y,faces,L.agentY-56);
  // damage numbers, then the result line
  Bt.floaties=Bt.floaties.filter(f=>f.t<(fastOn()?30:50));Bt.floaties.forEach(f=>{f.t++;const s=f.txt,w=pW(s,18);pT(s,f.x-w/2+1,f.y-f.t*.5+1,PC.shadowInk||'#120e18',18);pT(s,f.x-w/2,f.y-f.t*.5,f.col,18)});

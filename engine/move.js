@@ -15,6 +15,8 @@
 //   StudioMove.ahead(s)                      [x, y] of the tile the lead faces (A uses it)
 //   StudioMove.walkFrame(s)                  0 standing, 1 or 2 walking
 //   StudioMove.camera(s, mapW, mapH, vw, vh) [x, y]: follows the lead, stops at the map's edges, centers small maps
+//   StudioMove.nearestOpen(x, y, w, h, open)  [x, y] of the nearest tile (steps on the grid, through walls) where
+//                                            open(x, y) is true, or null: a saved spot that's now a wall moves here
 //   StudioMove.fit(box, canvas)              sizes the canvas 240 px wide and as tall as the box's shape allows
 //                                            (130 to 320), crisp pixels; returns {w, h, boxW, boxH}, or null while hidden
 (function () {
@@ -48,6 +50,20 @@
   function ahead(s) { var d = DIRS[s.dir]; return [s.x + d[0], s.y + d[1]]; }
   function walkFrame(s) { return s.mv ? (Math.floor((s.anim || 0) / WALKF) % 2) + 1 : 0; }
 
+  function nearestOpen(x, y, w, h, open) {
+    var seen = {}, q = [[x, y]]; seen[x + ',' + y] = true;
+    while (q.length) {
+      var c = q.shift();
+      if (open(c[0], c[1])) return c;
+      ['up', 'left', 'right', 'down'].forEach(function (k) {
+        var nx = c[0] + DIRS[k][0], ny = c[1] + DIRS[k][1];
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h || seen[nx + ',' + ny]) return;
+        seen[nx + ',' + ny] = true; q.push([nx, ny]);
+      });
+    }
+    return null;
+  }
+
   function camera(s, mapW, mapH, vw, vh) {
     var mw = mapW * TILE, mh = mapH * TILE;
     var x = mw <= vw ? (mw - vw) / 2 : clamp(s.px + 8 - vw / 2, 0, mw - vw);
@@ -64,5 +80,5 @@
     return { w: w, h: h, boxW: r.width, boxH: r.height };
   }
 
-  window.StudioMove = { TILE: TILE, STEPF: STEPF, DIRS: DIRS, place: place, update: update, hold: hold, last: last, ahead: ahead, walkFrame: walkFrame, camera: camera, fit: fit };
+  window.StudioMove = { TILE: TILE, STEPF: STEPF, DIRS: DIRS, place: place, update: update, hold: hold, last: last, ahead: ahead, walkFrame: walkFrame, camera: camera, nearestOpen: nearestOpen, fit: fit };
 })();
