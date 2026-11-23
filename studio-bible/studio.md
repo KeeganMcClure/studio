@@ -21,6 +21,7 @@ The loop for each feature and the bug route are in the README; the Developer's r
 
 - Anything two games could use (combat, dialogue, saves, input, menus) goes in `engine/`, never inside one game.
 - Spoiler wall: work on one game never opens another game's story or case files. Fixing shared code means reading only the code file involved.
+- **Shared rules start here (set Nov 23, 2026).** A new rule about screens, controls, UI, art or saves goes into `studio-bible/` first. A game's `bible.md` then adds only its own colors, contents or a named exception. Only rules about one game's story, theme or systems start in that game's bible. Why: full screen was tried and reversed in both games, and the party menu and the corner-portrait rule each started in one game and moved here later.
 
 ## Roles
 
