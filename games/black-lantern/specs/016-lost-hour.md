@@ -32,7 +32,7 @@ The card's words live in `cases/lost-hour.js`'s text block (`caseCard`), as for 
 
 | Source | Section | What it sets |
 | --- | --- | --- |
-| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in the Project files |
+| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in `games/black-lantern/story/cases/` |
 | `games/black-lantern/bible.md` | Story → Case board; Agency arc | The card; the case joins the season's queue |
 | `games/black-lantern/bible.md` | Story → Your original material | The Classic abduction seed (every name changed) |
 | `games/black-lantern/bible.md` | Overview → Mature content | Heaviest themes on the card; what's shown and what's off screen (the medical exam stays mostly off screen) |
@@ -64,6 +64,7 @@ The card's words live in `cases/lost-hour.js`'s text block (`caseCard`), as for 
 | Clue style | **Threshold plus bonus, as a timeline.** About 6–7 clues, each filling a piece of the missing hours (10 PM to 3:15 AM) on the Case file's timeline. 3 open the way to night 2. Extras weaken the boss, add intel, or open better cover stories and a better ending |
 | Deduction | One deduction before the finale, from the timeline. A wrong answer costs time or a better ending, never progress (Gameplay loop) |
 | Skills it calls on | Medicine, Empathy, Science, Search, Survival, Occult, Persuade, Computers, Forensics, Stealth. Every team template must be able to reach the finale |
+| Hidden hotspot | At least one hidden unnatural hotspot that shows only while the lead is High on Mushrooms (Agents and items → Item list, Mushrooms; set Nov 23, 2026). What it is and what it gives go in the secret case file. The first case built with one also builds the reveal |
 | Motivation moments | 2: one for **Revenge** (changed Nov 23, 2026 from Family, which Lot 83 covers: someone did this to the couple, and the agent who holds Revenge can make it cost them), one for **Duty** |
 | Horrors | About 3–4 Unsettling or Disturbing, 1–2 Severe, 0–1 Shattering, and the Boss, inside the case budget (6–10 net SAN). Kinds: mostly unnatural, plus helplessness. A **phobia subject** fits the case's medical side; the case file names it |
 | The hard choice | The pitch's "hard choice about people who did nothing wrong" is a real choice with a stake, and the endings react to it. The case file sets what it is. Every option has a cost; none is a trap |
@@ -102,7 +103,7 @@ April in the Blue Ridge: new green, redbud and dogwood blossom, wet asphalt and 
 
 ### Part B: story and play (To do: Lost Hour part B)
 
-- **First,** the Developer writes the secret case file, `claude/cases/lost-hour.md`, in the Black Lantern Claude Project files, following this spec: what happened on the ridge road, what the lump is, what the card means, the clue IDs and which piece of the timeline each fills, the hypnosis memories and their costs, the deduction, the hard choice and its options, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags and the phobia subject, and what each ending label means. Every deduction maps to clue IDs.
+- **First,** the Developer writes the secret case file, `games/black-lantern/story/cases/lost-hour.md`, following this spec: what happened on the ridge road, what the lump is, what the card means, the clue IDs and which piece of the timeline each fills, the hypnosis memories and their costs, the deduction, the hard choice and its options, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags and the phobia subject, and what each ending label means. Every deduction maps to clue IDs.
 - **Then** the text block and scripts: the briefing, every scene and line in Keegan's voice, hotspots and their skill options, the timeline on the Case file, the night drive and the hypnosis session, the two story fights, the danger zone and its roamers, the boss and its tuning check, items and the Lantern Box, cover stories, and the debrief's facts and ending label (spec 007).
 - **Arc touches,** if the arc file asks for any, go in quietly and never appear in a commit, the changelog or the bible.
 

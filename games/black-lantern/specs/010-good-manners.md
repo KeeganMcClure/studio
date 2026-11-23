@@ -32,7 +32,7 @@ The card's words live in `cases/good-manners.js`'s text block (`caseCard`), as f
 
 | Source | Section | What it sets |
 | --- | --- | --- |
-| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in the Project files |
+| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in `games/black-lantern/story/cases/` |
 | `games/black-lantern/bible.md` | Story → Case board; Agency arc | The card; the case joins the season's queue |
 | `games/black-lantern/bible.md` | Story → Your original material | The Men in black seed; Flavor: the tinted car, the rural gas station |
 | `games/black-lantern/bible.md` | Overview → Mature content | Heaviest themes on the card; what's shown and what's off screen |
@@ -62,6 +62,7 @@ The card's words live in `cases/good-manners.js`'s text block (`caseCard`), as f
 | Clue style | **Threshold plus bonus.** About 6 clues; 3 open the way to night 2. Extras weaken the boss, add intel, or open better cover stories and a better ending |
 | Deduction | One deduction before night 2. A wrong answer costs time or a better ending, never progress (Gameplay loop) |
 | Skills it calls on | Persuade, Empathy, Bureaucracy, Forensics, Search, Computers, History, Occult, Stealth, Firearms. Every team template must be able to reach night 2 |
+| Hidden hotspot | At least one hidden unnatural hotspot that shows only while the lead is High on Mushrooms (Agents and items → Item list, Mushrooms; set Nov 23, 2026). What it is and what it gives go in the secret case file. The first case built with one also builds the reveal |
 | Motivation moments | 2: one for **Protect the innocent**, one for **Find the truth** |
 | Horrors | About 3 Unsettling or Disturbing, 1–2 Severe, 1 Shattering, and the Boss, inside the case budget (6–10 net SAN). Kinds: mostly unnatural and helplessness. **Liar tags** for Paranoia are common here, since half the town is hiding something small |
 | Overstepping | Many choices overstep, and most are seen (the town talks, the sheriff watches). Each says how public it is. The **extreme case flag** for Local chief arriving as a fight with deputies is **off** |
@@ -99,7 +100,7 @@ Late summer on the plains: dry grass, hot white sky by day, sodium orange and fa
 
 ### Part B: story and play (To do: Good Manners part B)
 
-- **First,** the Developer writes the secret case file, `claude/cases/good-manners.md`, in the Black Lantern Claude Project files, following this spec: what the men are and want, why people die, the clue IDs and what each proves, the deduction, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags, and what each ending label means. Every deduction maps to clue IDs.
+- **First,** the Developer writes the secret case file, `games/black-lantern/story/cases/good-manners.md`, following this spec: what the men are and want, why people die, the clue IDs and what each proves, the deduction, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags, and what each ending label means. Every deduction maps to clue IDs.
 - **Then** the text block and scripts: the briefing, every scene and line in Keegan's voice, hotspots and their skill options, the two story fights, the danger zone and its roamers, the boss and its tuning check, items and the Lantern Box, cover stories, and the debrief's facts and ending label (spec 007).
 - **Arc touches,** if the arc file asks for any, go in quietly and never appear in a commit, the changelog or the bible.
 

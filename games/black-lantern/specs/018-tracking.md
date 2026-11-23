@@ -32,7 +32,7 @@ The card's words live in `cases/tracking.js`'s text block (`caseCard`), as for S
 
 | Source | Section | What it sets |
 | --- | --- | --- |
-| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in the Project files |
+| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in `games/black-lantern/story/cases/` |
 | `games/black-lantern/bible.md` | Story → Case board; Agency arc | The card; the case joins the season's queue |
 | `games/black-lantern/bible.md` | Story → Your original material | The "WE KNOW" tape seed (every name changed) |
 | `games/black-lantern/bible.md` | Overview → Mature content | Heaviest themes on the card; exploitation and self-harm stay off screen |
@@ -64,6 +64,7 @@ The card's words live in `cases/tracking.js`'s text block (`caseCard`), as for S
 | Boss | 3 skulls. At least one case choice weakens it (by kind: what you did with the copies you found, as the case file sets), and a weakness Identify can find. Target 8–12 rounds against a careful party that skipped the weakening choices, 5–8 when it made them all |
 | Deduction | One deduction before the finale, from the trail. A wrong answer costs time or a better ending, never progress (Gameplay loop) |
 | Skills it calls on | Computers, History, Occult, Search, Persuade, Bureaucracy, Empathy, Stealth, Forensics, Athletics. Every team template must be able to reach the finale |
+| Hidden hotspot | At least one hidden unnatural hotspot that shows only while the lead is High on Mushrooms (Agents and items → Item list, Mushrooms; set Nov 23, 2026). What it is and what it gives go in the secret case file. The first case built with one also builds the reveal |
 | Motivation moments | 2: one for **Money** (changed Nov 23, 2026 from Find the truth, which Good Manners covers: everyone on the trail is selling, and the agent who holds Money can take a cut), one for **Redemption** |
 | Horrors | About 3–4 Unsettling or Disturbing (more if the team watches), 1–2 Severe, 0–1 Shattering, and the Boss, inside the case budget (6–10 net SAN) for a team that watches the tape once or twice. Kinds: mostly unnatural and violence (body horror). A **phobia subject** fits the tape; the case file names it |
 | Addiction | The case's people and the tape both lean on Addiction. Any choice that offers a drug or a drink follows Disorders → Addiction and Statuses as written; the case adds no new rule |
@@ -103,7 +104,7 @@ Reno in winter: grey slush and hard snow by day, and by night neon and casino li
 
 ### Part B: story and play (To do: Tracking part B)
 
-- **First,** the Developer writes the secret case file, `claude/cases/tracking.md`, in the Black Lantern Claude Project files, following this spec: what the tape is and what it does, who the dancer is, the chain of hands and the second way to each link, the clue IDs and which place each opens, what watching gives and costs at each copy, what the tracking lines mean, the deduction, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags and the phobia subject, and what each ending label means. Every deduction maps to clue IDs.
+- **First,** the Developer writes the secret case file, `games/black-lantern/story/cases/tracking.md`, following this spec: what the tape is and what it does, who the dancer is, the chain of hands and the second way to each link, the clue IDs and which place each opens, what watching gives and costs at each copy, what the tracking lines mean, the deduction, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags and the phobia subject, and what each ending label means. Every deduction maps to clue IDs.
 - **Then** the text block and scripts: the briefing, every scene and line in Keegan's voice, hotspots and their skill options, the trail, each watch and its clip, the two story fights, the danger zone and its roamers, the boss and its tuning check, items and the Lantern Box, cover stories, and the debrief's facts and ending label (spec 007).
 - **Arc touches,** if the arc file asks for any, go in quietly and never appear in a commit, the changelog or the bible.
 

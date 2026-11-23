@@ -76,6 +76,7 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
 Problems found in playtests. Each line: what happened · where · how to make it happen again. Claude ticks a bug when it's fixed and notes the fix in the Changelog.
 
 - [x] Backspace acts as B, not Select · keyboard, every screen · press Backspace on the map: it backs out instead of cycling the lead. The Bible and CLAUDE.md say Backspace = Select; the game maps Select to Shift. Fixed Nov 21 by spec 001 (studio PR #14): Backspace = Select, Shift stays a second Select key, X stays B.
+- [ ] The Gleaner's head shape starts 1 px above its own sprite box, so one row of the art is lost · battle, the Gleaner · read its sprite code (you can't see it in play). Cosmetic and low; fixing it means redrawing the sprite (logged Nov 23, 2026)
 
 ## Ideas inbox
 
@@ -234,6 +235,33 @@ Generic and seasonal art comes from the cross-game [Shared Shelf](https://claude
 | `shared-props-haybale-v1` | Hay bale (autumn) |
 | `shared-props-autumntree-v1` | Autumn trees (autumn) |
 | `shared-effects-leaves-v1` | Falling leaves and litter (autumn) |
+| `shared-tiles-summergrass-v1` | Summer grass, green and dry (summer) |
+| `shared-props-summertree-v1` | Summer trees (summer) |
+| `shared-tiles-drydirt-v1` | Dry dirt: cracked and gravel (summer) |
+| `shared-effects-heat-v1` | Heat shimmer (summer) |
+| `shared-effects-sodium-v1` | Sodium night light |
+| `shared-tiles-storefront-v1` | Flat-front storefront |
+| `shared-props-signblank-v1` | Sign blank, with a 3 × 5 letter set |
+| `shared-props-watertower-v1` | Water tower |
+| `shared-props-trafficlight-v1` | Traffic light on a wire, blinking |
+| `shared-props-gaspump-v1` | Gas pump |
+| `shared-tiles-ranchhouse-v1` | Ranch house |
+| `shared-tiles-porch-v1` | Porch |
+| `shared-props-mailbox-v1` | Mailbox |
+| `shared-props-sedan-v1` | Sedan, two facings, any color |
+| `shared-tiles-parkinglot-v1` | Parking lot: asphalt with painted lines |
+| `shared-tiles-floor-v1` | Floors: lino, carpet, wood, tile |
+| `shared-tiles-innerwall-v1` | Inner walls: plain, paneled |
+| `shared-props-counter-v1` | Counter |
+| `shared-props-tablechairs-v1` | Table and chairs |
+| `shared-props-desk-v1` | Desk |
+| `shared-props-bed-v1` | Bed |
+| `shared-props-shelf-v1` | Shelving |
+| `shared-props-stringlights-v1` | String lights (fair) |
+| `shared-props-booth-v1` | Game booth (fair) |
+| `shared-props-ferriswheel-v1` | Ferris wheel, still and turning (fair) |
+
+Added Nov 23, 2026 for Good Manners (spec 012): the 25 pieces above from `shared-tiles-summergrass-v1` down, with six new palette slots (leaf, dry, sodium, asphalt, lino, carpet). The Shelf page is at version 1795453242-e9c0, 48 pieces.
 
 Not used: `shared-ui-shell-v1` and `shared-ui-dialog-v1` (Rushlight's). Black Lantern keeps its own GBA shell (Tech, Screen and controls) and Lantern Bust dialog box (Faces and sprites).
 
@@ -319,10 +347,10 @@ Cases start from your DG notes or take them as inspiration (set Nov 19). You sig
 2. **Pitch (Designer).** Pitches go in `games/black-lantern/pitches/`, one file per round, and are public-safe: title, setting, a one-paragraph hook with no twist, the monster theme, the night treatment, its heaviest themes (see Mature content), open or quiet case (see Overstepping), and which seeds it uses. Arc touches never appear here. A round pitches 3 options for one board spot; you pick one per round, on a card in the project.
 3. **You pick one.** Your only sign-off. If a pitch is flagged as too big for 1–2 hours, you also choose: trim it to one case, or split it into Part 1 and Part 2 (Part 2 unlocks after Part 1). Unpicked pitches stay in the round's file and can come back in a later round.
 4. **Case spec (Designer).** A public-safe spec in `specs/`, made from `specs/case-spec-template.md`: the card text, setting and maps by name, the day and night plan, how many story fights and danger zones, threat skulls and how many enemy types, the 8–10 skills it calls on, which motivation types its 1–2 moments aim at, open or quiet, its ending labels, its art needs (Shared Shelf first), and its season slot. Like spec 006, it names no culprit, twist, solution or hidden clue.
-5. **Case file (Developer, secret).** At the start of the story build, the Developer designs the rest in claude/cases/\<case>.md in the Black Lantern Claude Project files, which you don't open: twist, internal logic, clue IDs, the choices that matter, enemy cards, the boss with phases and a weakening choice, and any arc touches. Every deduction must map to clue IDs. It never goes in the repo.
+5. **Case file (Developer, secret).** At the start of the story build, the Developer designs the rest in `games/black-lantern/story/cases/<case>.md` (since Nov 23, 2026; before, the Claude Project files), which you don't open: twist, internal logic, clue IDs, the choices that matter, enemy cards, the boss with phases and a weakening choice, and any arc touches. Every deduction must map to clue IDs. Nothing public quotes it.
 6. **Build in two parts (Developer)**, one session each, like Demo 4 and Demo 5: (A) maps and art, with the case's own art on its own Asset Library page and anything generic proposed to the Shared Shelf only with your OK; (B) story and play, with every line written in your voice (see Voice) in the case's text block, no review before play.
 7. **Ending.** Debrief with Big Hat, a cover-story choice, the home phase, and a saved SAN outcome; the boss and ending react to choices (specs 007 and 008).
-8. **Check and ship.** Boss tuning check, `npm run check` at all three sizes, and the playtest checklist. The case joins the season's queue in the season data file (spec 009). You play it first on Dev; what you find goes to Bugs or the Ideas inbox. The Designer runs a rules check against its spec (`studio-bible/rules-checks.md`), and it reaches Release when you say so.
+8. **Check and ship.** Boss tuning check, `npm run check` at all three sizes, and the playtest checklist. The case joins the season's queue in the season data file (spec 009). You play it first on Dev; what you find goes to Bugs or the Ideas inbox. The Designer runs a rules check against its spec (`studio-bible/rules-checks.md`), and it reaches Release when you say so. Release keeps the last finished build until a case's part B is done, so a part A stand-in case never ships to Release (Keegan, Nov 23, 2026).
 
 **Agency cases** skip steps 2 and 3: they come from the secret arc file, so no pitch is shown. Their case spec is a public frame (set Nov 22, spec 014): the card style, the case's size limits, the boss rules and the build steps, with no place, title or cast. The Developer writes the case file (step 5) at the start of part A, since the place, maps and art come from it, and public text names the case only by its LANTERN number.
 
@@ -708,7 +736,7 @@ Every Shared item in one place. Kit-only items are in the Starting kit table.
 | Uppers | Drug | High; clears Exhausted, +1d4 WP; Exhausted again when it wears off | Set by the case |
 | Strong painkillers | Drug | High; heal 1d6 HP; Bleeding does no damage while High | Set by the case |
 | Coke | Drug | High; +20% to Persuade and Melee; −1d4 WP when it wears off | Set by the case |
-| Mushrooms | Drug | High; hidden unnatural hotspots show and the screen shimmers (only while the lead is High, set Nov 23, 2026); SAN rolls get harder | Set by the case |
+| Mushrooms | Drug | High; hidden unnatural hotspots show and the screen shimmers (only while the lead is High, set Nov 23, 2026); every case from Good Manners on has at least one hidden hotspot (set Nov 23, 2026); SAN rolls get harder | Set by the case |
 | Frag grenade | Throwable | 1 use, thrown with Athletics: damage to every enemy; Loud | LB · Req +0% |
 | Flashbang | Throwable | 1 use, thrown with Athletics: every human enemy is Stunned; Loud | LB · Req +0% |
 | Molotov | Throwable | 1 use, thrown with Athletics: damage to one enemy; things that burn take double | LB · Req +0% |
@@ -919,6 +947,7 @@ Small comforts for short phone sittings. None of them change a rule; they save t
 - **Must-haves for the redesign** (Nov 15 playtest), all met: the turn-order column, enemy health bars, status moves and the Fight floor for agents who can't shoot, WP-costed moves against Attack-spamming, and threat skulls as the risk read.
 - **Statuses** (set Nov 18): the list, map rules and combat notes are under Statuses in the Systems tab; exact numbers are in Combat numbers below.
 - **Backgrounds (reworked Nov 23, 2026, after the demo playtest):** a painted battle backdrop of the kind of place the fight started in, Pokémon style, not a darkened copy of the map. Each backdrop is drawn head-on at battle scale, like the enemies: a ground plane the fighters stand on, a horizon, and two or three big landmarks that say where you are (corn walls and a scarecrow pole in the maze, a lamp post and shop fronts on a town street), lit for the time of day and the low-SAN look. A case draws one backdrop per kind of place it fights in (usually 2–3), files them in the Asset Library under the case like its other art, and lists them in its spec's art needs. Generic ones (a plain street, woods) can go to the Shared Shelf with Keegan's OK.
+- **Tall enemies on short screens (set Nov 23, 2026, from a bug fix):** when the screen is short, a tall enemy (like the 128 px Gleaner) stands lower, its feet behind the agents' heads, so nothing is ever cut off. Its HP bar, name, tags and target arrow then draw over the agents.
 
 ### Combat numbers (set Nov 19)
 
@@ -1060,8 +1089,7 @@ The game plays on an iPhone SE inside a Game Boy Advance-style shell. Since the 
 - One artifact, split into parts (since Nov 21). The parts live in the studio repo (KeeganMcClure/studio) under `games/black-lantern/src/` and are built in Claude Code, which bundles them into one HTML file for the artifact; the CLAUDE.md files there carry these rules (since Nov 21). No outside assets except Google Fonts: Press Start 2P (headings, UI) and VT323 (body text). All art is drawn in code on canvas; there is no sound or music.
 - The parts, loaded in this order (updated Nov 22): `index.html` (the page and Black Lantern's shell colors), then the studio's shared `engine/studio.js`, `engine/shell.js`, `engine/input.js`, `engine/move.js`, `engine/clock.js` and `engine/party.js` (the site's Dev/Release saves, the shell layout, buttons and keyboard, map walking, the 60-ticks-a-second clock, and the party card list; shared with Rushlight, spec 001 and later), `strings.js` (the shared strings block, `window.BLS`), `creator.js` (agent creator and portraits, and where button presses go, `window.BL`), `engine/shelf.js` (the Shared Shelf script), `agent-sprite.js` (agent map sprites, `window.BLA`), `engine/dialog.js` (the Lantern Bust box, `window.BLD`), `engine.js` (map, dialog, sanity, battle, Big Hat scenes, saves, pause, input, `window.BLG`), `field.js` (hotspots, items, statuses, roamers and loot on the map), `battle.js` and `agent-back.js` (the battle and the agents seen from behind), with the shared `engine/battle.js` and `engine/patrol.js`, `party-menu.js` (the Party screen and Dossier, spec 002), `engine/nearest.js` (moves a cursor to the nearest thing in a direction) and `case-board.js` (the case board, spec 004), then one file per case in `cases/` (Still Harvest: `cases/still-harvest.js`). `engine/shelf.js` and `engine/dialog.js` are the one shared copy of each, synced unchanged from the Shared Shelf and the Asset Library, never edited by hand. A chat reads only the parts its task touches. A new case is a new file in `cases/`, added as a script line at the end of `index.html`; each case file supplies its maps, enemies, scripts, a `caseOpening` briefing and a `caseCard` (file number, title, town, place line, two-line hook, pin color), and ends with `registerCase`, which puts it on the case board.
 - Agents on the map (since Nov 21): the Shared Shelf's method v1 and person v1 are the pieces in use. The engine calls `BLA.draw` for the lead; since Demo 4 (spec 005, Nov 22) the townsfolk have their own map sprites and talking portraits, and the old `drawChar` look is gone.
-- **Agency cases stay out of the public repo (set Nov 23, 2026, from the pre-season review).** Every agency case's file (`lantern-nn.js`, its text block and its art), the agency entries in each season data file (ids, unlock counts, which one is the finale) and the season-end lines live in the private `KeeganMcClure/black-lantern` repo, under `agency/`. The studio repo holds only the regular cases, the season data's regular-case list and the public frames (specs 014 and 015). When Black Lantern is built for Dev or Release, the build pulls the private files in and bundles them into the page with everything else; it fails loudly if they can't be reached rather than shipping a season without its agency cases. How the build reads the private repo (a deploy key or a repository secret) is the Developer's call, and no key or token is ever committed. The built page is still public to play, as every case is; the rule keeps the story out of the readable repo, its history and its PRs. `npm run check` runs with the private files when they're there and with the Dev test season when they aren't.
-- **Secret authoring files (set Nov 23, 2026).** The agency arc (`claude/SPOILERS-agency-arc.md`), the personal arcs (`claude/arcs-season-1.md`) and the home scenes (`claude/home-scenes.md`) live in the private `KeeganMcClure/black-lantern` repo under `claude/`, next to `agency/`. Those copies are the master; never in the studio repo. The Dev and Release deploys read `agency/` with a read-only token saved as the studio repo secret `BL_PRIVATE_TOKEN`, never committed. The Developer also keeps its private checklist there, `claude/dev-notes.md`. **Paused (Nov 23, 2026):** the deploy's private checkout is built (it bundles `agency/*.js` and stops a Dev or Release build if they're missing) but switched off until the token can reach the private repo, so for now Dev and Release go out without agency data and "fails loudly" above doesn't hold yet. No agency case is built, so nothing is lost. When Keegan fixes the token, the Developer switches the checkout back on and removes this note.
+- **Agency cases and secret files live in the studio repo (set Nov 23, 2026, Keegan's call; replaces the private-repo rule from earlier that day).** Agency cases are built like any case: `cases/lantern-nn.js` with its text block and art, and its entry (id, unlock count, finale) and the season-end lines in `seasons/season-1.js`. The secret authoring files (the agency arc `SPOILERS-agency-arc.md`, the personal arcs `arcs-season-1.md`, the home scenes `home-scenes.md`, each case's secret case file in `cases/<case>.md`, and the Developer's checklist `dev-notes.md`) live in `games/black-lantern/story/`. No private repo, token or deploy secret is needed: the old private repo `KeeganMcClure/black-lantern` is retired (it holds a `RETIRED.md`), the deploy no longer reads it and the build bundles no private files. Keegan doesn't read the repo or its PRs; the spoiler rule is about what Keegan is shown, so this bible, the specs, the changelog, the To do, pitches, commit messages, PR text and chat still never quote or summarize them.
 - Cases are data plus small async functions: `say`, `ask`, `choose`, `battle`, `sanCheck`, `clue`, `checkpoint`.
 - **Where text lives (set Nov 20).** All in-game text stays in the game file, with no separate text store or Sheet, so case writing stays a surprise. Once the file is split, each case part opens with its own text block (dialog, case text, its pools of lines), and menus, items and names share one strings block. Item and menu wording is designed in Agents and items and Skills and menus, then copied in at build time.
 - Edit the existing file, never rewrite from scratch. After each change: syntax check, playtest the changed part, copy any newly drawn art into the Asset Library (see Art, Save every asset), run npm run check, commit and push, then publish the bundled file to the same artifact with a dated label (Build YYYY-MM-DD), and add a Changelog line. Milestone builds also go to Drive (see Process, Backups).

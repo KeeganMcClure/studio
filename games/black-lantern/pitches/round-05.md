@@ -2,7 +2,7 @@
 
 Written 2026-11-23 by the Game Designer (Story → Adding a new case, step 2). Three options for the last board spot in Keegan's season 1 plan. Keegan picks one; the other two stay here and can come back in a later season.
 
-**Picked: C · Dead Air** (Keegan, Nov 23). Larkspur and Due Date stay available for a later season.
+**Picked: C · Dead Air** (Keegan, Nov 23). Due Date stays available for a later season. Larkspur is held back for the agency arc, like the Missing agent seed (Designer, Nov 23, 2026), so later rounds don't pitch it again.
 
 Season 1 so far: Still Harvest (autumn, Oregon), Good Manners (summer, Kansas, open), Lot 83 (summer, Austin, quiet), Lost Hour (spring, Virginia, quiet), Tracking (winter, Reno, quiet). Round 4's two unpicked pitches, Larkspur and Due Date, come back here unchanged, beside one new pitch, Dead Air.
 
@@ -56,4 +56,4 @@ Public-safe: no twist, no culprit, no solution, no arc touches. Every name is or
 - **Overlap to weigh:** **B** shares a medical side with Lost Hour. **C** shares a "media you shouldn't listen to" feel with Tracking, but it's an open case in a small town that talks, so it plays more like Good Manners.
 - **Art cost (Season readiness, step 6):** **A** is the cheapest: an autumn small town, most of today's Shared Shelf, with a Victorian house, a church and interiors as the new pieces. **B** needs a desert winter kit (adobe walls, mesa, lantern bags, a trailer park). **C** needs a Southern kit (cane fields, a bayou edge, live oaks with moss) and a radio station with its tower; its spring grass and houses come from kits already listed.
 - **Length:** B and C fit one case. A is flagged above.
-- **After this round:** this is the last pick for Keegan's season 1 plan. The Developer still checks the secret arc file when each agency case is built and says only if more regular cases are needed; if so, the two unpicked pitches here are first in line.
+- **After this round:** this is the last pick for Keegan's season 1 plan. The Developer still checks the secret arc file when each agency case is built and says only if more regular cases are needed; if so, Due Date is first in line (Larkspur is held back for the agency arc).

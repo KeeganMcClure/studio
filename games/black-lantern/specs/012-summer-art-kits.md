@@ -88,7 +88,7 @@ Two-story apartment blocks and motels share most of this, so it serves a lot of 
 | `shared-props-windowac-v1` | Window AC unit | Lot 83 A |
 | `shared-tiles-chainlink-v1` | Chain-link fence and gate | Lot 83 A |
 | `shared-tiles-pool-v1` | Small pool, full and empty versions | Lot 83 A |
-| `shared-tiles-parkinglot-v1` | Asphalt with painted lines | Lot 83 A |
+| `shared-tiles-parkinglot-v1` | Asphalt with painted lines | Good Manners A (drawn early for its Main Street, Nov 23, 2026); Lot 83 shares it |
 | `shared-props-dumpster-v1` | Dumpster | Lot 83 A |
 
 ### 6. Interiors

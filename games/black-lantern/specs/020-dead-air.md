@@ -32,7 +32,7 @@ The card's words live in `cases/dead-air.js`'s text block (`caseCard`), as for S
 
 | Source | Section | What it sets |
 | --- | --- | --- |
-| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in the Project files |
+| `games/black-lantern/bible.md` | Story → Adding a new case | The pipeline; the case spec is public-safe; the secret case file is the Developer's, in `games/black-lantern/story/cases/` |
 | `games/black-lantern/bible.md` | Story → Case board; Agency arc | The card; the case joins the season's queue |
 | `games/black-lantern/bible.md` | Story → Your original material | Flavor: the sketchy rural gas station. No seed; an original case |
 | `games/black-lantern/bible.md` | Overview → Mature content | Heaviest themes on the card; the old crime stays off screen |
@@ -66,6 +66,7 @@ The card's words live in `cases/dead-air.js`'s text block (`caseCard`), as for S
 | Clue style | **Threshold plus bonus.** About 6–7 clues; 3 open the way to night 2. Extras weaken the boss, add intel, or open better cover stories and a better ending |
 | Deduction | One deduction before the finale. A wrong answer costs time or a better ending, never progress (Gameplay loop) |
 | Skills it calls on | Persuade, Empathy, Computers, Craft, History, Bureaucracy, Search, Survival, Occult, Forensics. Every team template must be able to reach the finale |
+| Hidden hotspot | At least one hidden unnatural hotspot that shows only while the lead is High on Mushrooms (Agents and items → Item list, Mushrooms; set Nov 23, 2026). What it is and what it gives go in the secret case file. The first case built with one also builds the reveal |
 | Motivation moments | 2: one for **Protect the innocent**, one for **Faith** |
 | Horrors | About 3–4 Unsettling or Disturbing, 1–2 Severe, 0–1 Shattering, and the Boss, inside the case budget (6–10 net SAN). Kinds: mostly unnatural, plus helplessness. A **phobia subject** fits the voice; the case file names it |
 | Overstepping | Many choices overstep, and most are seen: the town talks and the sheriff watches. Each says how public it is. Pulling every radio in town, or a scene at the fish fry, marks it fast. In the cane fields at night, most choices are unseen. The **extreme case flag** for Local chief arriving as a fight with deputies is **off** |
@@ -105,7 +106,7 @@ Early March in south Louisiana: green coming back, wet ground, cane stubble and 
 
 ### Part B: story and play (To do: Dead Air part B)
 
-- **First,** the Developer writes the secret case file, `claude/cases/dead-air.md`, in the Black Lantern Claude Project files, following this spec: who the host and callers are, why these names, what happened to the missing and at KHLT in 1979, each broadcast's calls and which are clues or horrors, what tracing, recording and calling in give and cost, the fish fry's outcomes, the clue IDs and what each proves, the deduction, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags and the phobia subject, and what each ending label means. Every deduction maps to clue IDs.
+- **First,** the Developer writes the secret case file, `games/black-lantern/story/cases/dead-air.md`, following this spec: who the host and callers are, why these names, what happened to the missing and at KHLT in 1979, each broadcast's calls and which are clues or horrors, what tracing, recording and calling in give and cost, the fish fry's outcomes, the clue IDs and what each proves, the deduction, the choices that matter, overstepping marks and how public each is, enemy cards, the boss's phases and weakening choice, the motivation moments, horror tags and the phobia subject, and what each ending label means. Every deduction maps to clue IDs.
 - **Then** the text block and scripts: the briefing, every scene and line in Keegan's voice, hotspots and their skill options, both broadcasts, the fish fry, the two story fights, the danger zone and its roamers, the boss and its tuning check, items and the Lantern Box, cover stories, and the debrief's facts and ending label (spec 007).
 - **Arc touches,** if the arc file asks for any, go in quietly and never appear in a commit, the changelog or the bible.
 

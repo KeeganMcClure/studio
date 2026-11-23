@@ -66,9 +66,9 @@ This depends on the Season flow build (spec 009), since the card, the unlock and
 
 ### Part A: the case file, maps and art (To do: First agency case part A)
 
-- **First,** the Developer writes the secret case file, `claude/cases/lantern-01.md`, in the Black Lantern private files, from the arc file and this frame. For an agency case this comes at the start of part A, not part B, because the maps come from it. It fills in every right-hand cell of the table above, plus the clue IDs and what each proves, the choices that matter, enemy cards and the boss.
+- **First,** the Developer writes the secret case file, `games/black-lantern/story/cases/lantern-01.md`, from the arc file and this frame. For an agency case this comes at the start of part A, not part B, because the maps come from it. It fills in every right-hand cell of the table above, plus the clue IDs and what each proves, the choices that matter, enemy cards and the boss.
 - **Can it be reached?** The Developer checks the regular cases that will exist when it ships (Still Harvest, Good Manners, Lot 83) against its unlock count. If they aren't enough, the Developer tells Keegan only "the first agency case needs more regular cases before it can unlock", with no number, so the next pitch round can be planned.
-- A new `lantern-01.js` with its `caseCard` and `registerCase`, and its entry in the season data as an agency case (spec 009, step 1). Both go in the private `KeeganMcClure/black-lantern` repo under `agency/`, never in the studio repo; the build pulls them in (Tech → File and code, Agency cases stay out of the public repo). (Changed Nov 23, 2026: this line used to put the file in the studio repo's `cases/`.)
+- A new `cases/lantern-01.js` with its `caseCard` and `registerCase`, and its entry in `seasons/season-1.js` as an agency case (spec 009, step 1), in the studio repo like any case (Tech → File and code; set Nov 23, 2026, after a few hours in a private repo).
 - Every map, drawn in the 3/4 view at Wide scale, with day and night versions and the low-SAN look below 40 (spec 005).
 - Every townsperson or character with a map sprite and a 64 × 64 portrait if they talk.
 - Stand-in scripts so each map walks and every door goes where it should, with a placeholder briefing and unlock scene.
