@@ -157,6 +157,14 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 .screen.glitch #gcv{animation:jit 2.7s steps(1) infinite}
 .gbox{position:absolute;background:rgba(13,19,34,.94);border:2px solid #ebe5c8;box-shadow:0 0 0 2px #0d1322;border-radius:3px;color:#ebe5c8;font:19px/1.08 var(--vt);padding:5px 8px;box-sizing:border-box}
 /* Lantern Bust dialog box (dialog.js). Text keeps its 2 px unit; the portrait is drawn at the map's pixel size (--pu = 64 map px, set by the engine). */
+/* Big Hat's code-name box over the Dossier (creator.js, spec 022): the same Lantern Bust box, over a dimmed screen */
+#cdlg{position:absolute;inset:0;z-index:6;background:rgba(5,4,10,.45)}
+#cdlg[hidden]{display:none}
+#cdlg .bld{cursor:pointer}
+#cdlg .bld-t{white-space:pre-line}
+#cdlg .bld-bust canvas{width:var(--pu,128px);height:var(--pu,128px)}
+#cdlg .bld-tab{left:calc(var(--pu,128px) + var(--u) * 5);max-width:calc(100% - var(--pu,128px) - var(--u) * 7)}
+#cdlg .bld-c li{cursor:pointer}
 #gdlg{position:absolute;inset:0;pointer-events:none}
 #gdlg .bld{pointer-events:auto;cursor:pointer}
 #gdlg .bld-t{white-space:pre-line}

@@ -30,7 +30,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
     Done Nov 23: once you've seen a briefing or cutscene, a B SKIP tab shows on the box and B skips the rest of it, even after a reload or a game over. Questions and choices still play.
   - [x] Mushrooms' screen shimmer while High on them (Agents and items → Item list)
     Done Nov 23: while the lead is High on Mushrooms the map shimmers, and in a fight the backdrop does too. Text, cards and sprites stay still and readable.
-- [ ] Demo playtest fixes (Keegan's notes, Nov 23): build the rule changes from the playtest. Tick this when all eight are done
+- [x] Demo playtest fixes (Keegan's notes, Nov 23): build the rule changes from the playtest. Tick this when all eight are done
+  Done Nov 23: all eight playtest fixes are built.
   - [x] Hide skill options nobody in the party can use, at hotspots, on the map menu's Skills row and in battle (Skills and menus → Using skills; Combat → Basics, Command menu)
     Done Nov 23: skill options nobody in the party is high enough for are hidden at hotspots and on the map menu's Skills list; ones a teammate has still show greyed. Battle already showed only the acting agent's moves.
   - [x] Creator: a bonus pick that would pass 80% stops at 80% (Agents and items → Agent creator, step 3)
@@ -45,7 +46,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
     Done Nov 23: the maze now has a route to all three victims, the loot, the page and the danger zone that never enters the Gleaner's clearing, and stepping into the clearing asks Go in / Not yet.
   - [x] Creator: pronouns (she, he, they) (spec 022) used by all dialog, and a slim or broad body build for map, battle and portrait sprites, plus pronouns for each Bond, with a save step for old agents and Bonds (Agents and items → Agent creator, steps 4 and 5)
     Done Nov 23: the creator picks she, he or they and a slim or broad build that shows on the face, map and battle sprites; Bonds get pronouns too; every line about an agent or Bond follows them, and old agents open as they with the broad build.
-  - [ ] Creator: one-word pop-culture code names (spec 022) that Big Hat gives on the Dossier step, from a tagged list of about 60, with new template names (Agents and items → Agent creator, Code names)
+  - [x] Creator: one-word pop-culture code names (spec 022) that Big Hat gives on the Dossier step, from a tagged list of about 60, with new template names (Agents and items → Agent creator, Code names)
+    Done Nov 23: Big Hat gives a one-word pop-culture code name on the Dossier in his dialog box, with Take it, Another or Type my own; template agents have new hand-picked names, and old agents keep theirs until they ask.
 - [ ] Home phase part C (spec 008): enough home scenes for a season, with the played list kept in the season save. Before the season flow
 - [ ] Season flow (spec 009): the season data file, the board for a full season, agency case unlocks, the finale, the season's end and the next season. After the home phase
 - [ ] Good Manners part A (spec 010): its maps and art, townsfolk and the two men, walkable with stand-in scripts. After the season flow
