@@ -291,6 +291,8 @@ Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
 | --- | --- |
 | `01-combat-compare-rough-v1` | Rough, Nov 21: fighting on the map (picked) beside a separate battle screen (not picked). Placeholder colors. |
 | `02-baseline-san-rough-v2` | Rough, Nov 21: the same night at normal SAN, a color-drain option (not picked) and phantoms (picked). The phantoms panel is the baseline frame. |
+| `03-cover-options-rough-v1` | Rough, Nov 22: three cover options (Vacancy, Boarded window, First light). Keegan picked Boarded window. |
+| `03-cover-b-rough-v2` | Rough, Nov 22: Boarded window redrawn so the hand reads, as a dark silhouette in a wide gap between boards. For review. |
 
 ## Tech
 
