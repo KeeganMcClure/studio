@@ -50,22 +50,10 @@ jobs:
         with:
           ref: release
           path: release
-      # Black Lantern's agency cases live in the private KeeganMcClure/black-lantern repo (its bible, Tech → File and
-      # code). BL_PRIVATE_TOKEN is a read-only token for that repo, saved as a secret in this repo's settings; it is
-      # never written into any file. The game's build stops if these files are missing.
-      - name: Check out Black Lantern's private agency files
-        uses: actions/checkout@v4
-        with:
-          repository: KeeganMcClure/black-lantern
-          token: ${{ secrets.BL_PRIVATE_TOKEN }}
-          path: private/black-lantern
-          sparse-checkout: agency
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Build the site
-        env:
-          BL_PRIVATE_DIR: ${{ github.workspace }}/private/black-lantern/agency
         run: |
           # The build id names both branches, so a release alone also counts as a new build on the phone
           BUILD="$(date -u +%Y-%m-%d)-$(git -C main rev-parse --short HEAD)"

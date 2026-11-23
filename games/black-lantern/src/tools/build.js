@@ -35,7 +35,9 @@ html = html.replace(/<link rel="stylesheet" href="([^":]+)">/g, (_, href) => {
 const privDir = process.env.BL_PRIVATE_DIR || path.join(root, '..', '..', '..', '..', 'black-lantern', 'agency');
 const privFiles = fs.existsSync(privDir) ? fs.readdirSync(privDir).filter(f => f.endsWith('.js')).sort((a, b) =>
   (/^season-/.test(b) - /^season-/.test(a)) || a.localeCompare(b, 'en', { numeric: true })) : [];
-if (process.env.STUDIO_CHANNEL && !privFiles.some(f => /^season-/.test(f)))
+// Paused Nov 23, 2026: the deploy doesn't check out the private repo yet (its token can't reach it), so the hard stop
+// only applies when the deploy names the folder (BL_PRIVATE_DIR). Restoring the checkout step in pages.yml turns it back on.
+if (process.env.STUDIO_CHANNEL && process.env.BL_PRIVATE_DIR && !privFiles.some(f => /^season-/.test(f)))
   throw new Error(`Black Lantern's private agency files can't be reached (looked in ${privDir}). ` +
     'The deploy checks them out from KeeganMcClure/black-lantern with the BL_PRIVATE_TOKEN secret; see .github/workflows/pages.yml.');
 const marker = /<!-- agency:[^>]*-->\n?/;
