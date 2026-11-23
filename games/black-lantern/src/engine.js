@@ -280,7 +280,8 @@ function drawOffice(){
  G.hatChin=fy-10;  // the question list stops above his chin (drawBox)
  cx.save();if(sh)cx.translate(rnd(5)-2,rnd(3)-1);
  const r=(x,y,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+dx,y+dy,w,h)},R=(x,y,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x,y,w,h)};
- const place=G.hatPlace,v={VW,VH,dx,dy,fy,mid,now,shout:sh};
+ // the debrief plays in the case's own briefing place (Cast, Big Hat, Backdrop; Nov 23, 2026): a case's registerCase({place})
+ const place=G.hatPlace||(G.db?casePlace():null),v={VW,VH,dx,dy,fy,mid,now,shout:sh};
  // place.lift: a case's place may stand him a few pixels higher than the desk (his chin, and so the question list, move with him)
  if(place){const pf=fy-(place.lift|0);G.hatChin=pf-10;place.back(cx,v);hatBust(hf,t,pf,mid,sh);place.front(cx,v);cx.restore();if(sh){cx.fillStyle='rgba(170,0,30,.28)';cx.fillRect(0,0,VW,VH)}return}
  // wall, wainscot and floor, edge to edge
@@ -413,6 +414,7 @@ async function shout(text){G.shout=performance.now()+750;G.shoutPor=true;try{ret
 // o.place: a case's own briefing place (Cast, Big Hat, Backdrop: a new place each case; spec 010 is the first), drawn in the
 // back room's layout: {back(ctx, v), front(ctx, v)} paint behind his bust and in front of it (where the desk would be).
 // Without it (Still Harvest, every debrief) he's in the donut shop's back room.
+const casePlace=()=>{const c=caseById(G.case);return c&&c.place||null};  // a case with no place (Still Harvest) keeps the donut shop
 async function bigHatScene(fn,o={}){await fade(1);G.mode='scene';G.scene='bighat';G.hatPlace=o.place||null;await fade(0);await sleep(400);try{await fn()}finally{await fade(1);G.scene=null;G.hatPlace=null}}
 function drawScene(){if(G.scene==='bighat'){drawOffice();if(G.db)dbCard();return}if(G.scene==='funeral')return drawFuneral();if(G.scene==='home')return drawHome();cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+rnd(20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
 // Logic runs at 60 ticks a second on any screen (engine/clock.js); frames with no tick due are skipped.

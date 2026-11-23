@@ -181,7 +181,9 @@ async function checkBoard(page, name, save, inCase, from) {
     await page.evaluate(() => BLG._t.finish()); await pause(700);
     s = await season();
     if (!await board()) problems.push('finishing a case did not open the case board');
-    if (!s || s.cases['still-harvest'].state !== 'closed' || s.closed !== before + 1) problems.push(`after a finish Still Harvest should be closed with CLOSED ${before + 1}`);
+    // the case the checkpoint is in (Still Harvest, or a later case's test save such as Good Manners')
+    let cid = 'still-harvest'; try { cid = JSON.parse(JSON.parse(save.keys['bl.game'])).case || cid; } catch (e) {}
+    if (!s || !s.cases[cid] || s.cases[cid].state !== 'closed' || s.closed !== before + 1) problems.push(`after a finish ${cid} should be closed with CLOSED ${before + 1}`);
     await page.screenshot({ path: path.join(__dirname, '..', 'dist', `check-board-closed-${tag}.png`) });
     await page.keyboard.press('x'); await pause(300);
     if (await board() || await page.evaluate(() => BL.S.step) !== 'title') problems.push('B on the board after a finish did not go to the title');

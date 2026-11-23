@@ -196,7 +196,7 @@ async function hurtFoe(e,d,src){
  e.hp=Math.max(0,e.hp-d);e.flash=16;e.shk=10;floatOn(e,fillT(BL_.dmgFloat,{h:d}));if(src)e.lastHit=src;
  if(e.hp<=0&&!e.dead){e.dead=true;if(e.grapBy){e.grapBy.grap=null;e.grapBy=null}await bsay(fillT(BL_.eDie,{e:e.name,d:e.die||'falls'}),1000);return}
  // a boss's second phase (stand-in until Part C designs the Gleaner's phases)
- if(e.phase2&&Bt.phase===1&&e.hp<=e.mhp*(e.phase2.at||.5)){Bt.phase=2;e.ph2=true;await bsay(e.phase2.line||fillT(BL_.phase,{e:e.name}),1800)}}
+ if(e.phase2&&Bt.phase===1&&e.hp<=e.mhp*(e.phase2.at||.5)){Bt.phase=2;e.ph2=true;await bsay(e.phase2.line||fillT(BL_.phase,{e:e.name}),1800);if(e.phase2.on)await e.phase2.on(e)}}  // on: the case's own change (a heal)
 // damage to an agent: Defend halves (round down), body armor takes 1 off, the frying pan blocks the first hit while Defending
 async function hurtAgent(m,d,src,o={}){
  // Not on my watch (an arc perk, spec 008): once per fight, an ally takes the hit that would Down this agent, at half damage
@@ -220,8 +220,10 @@ async function snapTurn(m){
 // ================= SKILLS: battle moves, status moves and the other skills in battle =================
 const hasMove=(m,mv)=>skillVal(m.a,mv.skill)>=mv.tier;
 const costOf=(m,mv)=>mv.key==='burst'&&m.w.key==='smg'?1:mv.wp;
+// asHuman: moves and items that need a human that also work on this enemy (Good Manners' Graduate answers a badge)
+const asHuman=(e,k)=>(e.tags||[]).includes('human')||(e.asHuman||[]).includes(k);
 function foeOk(m,mv,e){const tg=e.tags||[];
- if(mv.human&&!tg.includes('human'))return false;if(mv.living&&!tg.includes('living'))return false;if(mv.hurt&&e.hp>=e.mhp)return false;
+ if(mv.human&&!asHuman(e,mv.key))return false;if(mv.living&&!tg.includes('living'))return false;if(mv.hurt&&e.hp>=e.mhp)return false;
  if(mv.bound&&!(tg.includes('unnatural')&&((G.fs.identBy||{})[e.t]||[]).includes(m.a.id)))return false;
  if(mv.records&&!(e.records&&e.records()))return false;return true}
 function allyOk(mv,x){if(mv.t==='downed')return x.ko&&!x.dead;if(x.ko||x.out)return false;
@@ -347,7 +349,7 @@ async function battleItem(m,it){
   if(k==='roadflare'){const t=await uiTarget(m,{foes:true,info:e=>e.name});if(!t)return false;if(!await throwIt(m,{k}))return true;if((t.tags||[]).includes('lightshy'))await foeStatus(t,'shaken');else await bsay(fillT(BL_.resist,{e:t.name}),800);return true}
   if(!await throwIt(m,{k,loud:d.loud}))return true;
   if(k==='frag'){await bsay('The grenade goes off.',700);for(const e of aliveFoes())await hurtFoe(e,roll(1,6),m);return true}
-  if(k==='flashbang'){const hs=aliveFoes().filter(e=>(e.tags||[]).includes('human'));if(!hs.length)await bsay('A white bang. Nothing here cares.',900);for(const e of hs)await foeStatus(e,'stun');return true}
+  if(k==='flashbang'){const hs=aliveFoes().filter(e=>asHuman(e,'flashbang'));if(!hs.length)await bsay('A white bang. Nothing here cares.',900);for(const e of hs)await foeStatus(e,'stun');return true}
   if(k==='smoke'){Bt.smoke=2;await bsay('Smoke rolls over everything. Enemies −20% to hit.',1000);return true}}
  switch(k){
   case'bearspray':{const t=await uiTarget(m,{foes:true,info:e=>e.name});if(!t)return false;if((t.tags||[]).includes('beast'))await foeStatus(t,'stun');else await bsay(fillT(BL_.resist,{e:t.name}),800);return true}
@@ -384,6 +386,8 @@ async function foeTurn(e){
   if(a.ok&&(!b.ok||a.r>b.r)){g.grap=null;e.grapBy=null;await bsay(fillT(BL_.breakFree,{e:e.name}),900)}else{await bsay(fillT(BL_.pinned,{e:e.name}),900);return}}}
  const pool=[];(e.moves||[['hit',1]]).forEach(([k,w])=>{const ww=w+(e.ph2&&e.phase2&&e.phase2.moves&&e.phase2.moves[k]||0);for(let i=0;i<ww;i++)pool.push(k)});
  const mv=pick(pool);
+ // a case's own move (e.acts[key]: Good Manners' Mimic): the enemy card plays it
+ if(e.acts&&e.acts[mv]){await e.acts[mv](e);return}
  if(mv==='san'){await bsay(e.sanText||'',1400);await horror({spec:e.sanHit||['0','1'],label:e.sanLabel||'The words get inside',kind:'unnatural'});return}
  if(mv==='all'){await bsay(e.allText||'',1100);for(const m of targetsOf(e,true))await foeHits(e,m,e.allDmg||'1d3');return}
  const t=pickTarget(e);if(!t){await bsay(fillT(BL_.eFumble,{e:e.name}),800);return}
@@ -413,7 +417,7 @@ async function foeHits(e,t,dmgS,o={}){
 
 // ================= THE END OF A FIGHT =================
 async function endBattle(res){
- const boss=Bt.boss,roamer=Bt.roamer;Bt.ui=null;Bt.active=null;
+ const boss=Bt.boss,roamer=Bt.roamer;Bt.ui=null;Bt.active=null;G.fs.lastLoud=Bt.loud?1:0;  // was anything Loud used (a case's crowd can see it)
  if(res==='win')await bsay(BL_.win,900);
  const dead=party.filter(m=>m.dead),hurt=party.filter(m=>m.wasDowned&&!m.dead&&!m.out&&!m.gone);
  party.forEach(m=>{if(m.ko&&!m.dead){m.ko=false;m.hp=Math.max(1,m.hp)}m.stun=0;m.defend=m.slip=m.drawFire=m.vanish=m.vanishHit=m.tripwire=false;m.grap=null;m.braceB=false;if(m.bcur)delete m.bcur.foe;

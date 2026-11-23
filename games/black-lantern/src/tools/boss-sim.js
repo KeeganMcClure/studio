@@ -35,6 +35,23 @@ const BOSSES = {
     ],
     setup: s => { G.rescued = s.rescued; G.flags.deduce = s.names ? 'wrong' : 'right'; G.flags.cider = s.cider ? 1 : 0; delete G.flags.fourthSeen; },
   },
+  // Good Manners (spec 010 part B): its weakening choices are Tanner kept (−8 HP, no Mimic), the copybook taken (no class
+  // laugh in phase 1) or read aloud (also −8 HP and no phase-2 heal), and Voss tearing up his copy (−6 HP). The lesson
+  // on the curb makes Identify free. "all" makes every choice.
+  graduate: {
+    case: 'good-manners',
+    entry: 'gmBoss',  // good-manners.js: bossFight without the ending
+    scenarios: [
+      { label: 'none' },
+      { label: 'kept', kept: 1 },
+      { label: 'book taken', book: 'taken' },
+      { label: 'book aloud', book: 'aloud' },
+      { label: 'kept, aloud', kept: 1, book: 'aloud' },
+      { label: 'all', kept: 1, book: 'aloud', torn: 1, lesson: 1 },
+    ],
+    setup: s => { const F = G.flags; F.ph = 3; F.kept = s.kept ? 1 : 0; F.book = s.book || null; F.voss = s.torn ? 'torn' : null;
+      G.clues = G.clues.filter(c => c.id !== 'lesson'); if (s.lesson) G.clues.push({ id: 'lesson', text: '' }); G.fs.ident = []; goMap('under', 10, 5, 'up'); },
+  },
 };
 
 const args = process.argv.slice(2);
@@ -210,6 +227,7 @@ function summarize(recs) {
   await row('New game'); await page.waitForTimeout(150);
   await row(TEAM); await page.waitForTimeout(150);
   await page.keyboard.press('Enter'); await page.waitForTimeout(300);  // Start on Your team: the case board
+  await page.evaluate(id => { const i = boardTargets(boardLayout()).findIndex(t => t.id === id); if (i >= 0) CB.sel = i; }, BOSS.case);  // the boss's case card
   for (let i = 0; i < 400 && !await page.evaluate(() => !!localStorage.getItem('bl.game')); i++) { await page.keyboard.press('z'); await page.waitForTimeout(50); }
   const cp = await page.evaluate(() => localStorage.getItem('bl.game'));
   if (!cp) throw new Error('No checkpoint: the team never reached the case');

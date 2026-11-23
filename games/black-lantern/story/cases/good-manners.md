@@ -94,7 +94,7 @@ Each mark says how public it is. Toft watching makes most of them **seen**.
 | --- | --- | --- |
 | Force room 7's door | Seen (the clerk, the street) | 1 step |
 | Search the black car without Toft | Seen if day (Orvel), quiet at night | 1 step by day |
-| Pull a gun on the men on Main Street | Seen | 1 step |
+| Pull a gun on the men (Elm and Third, or the fair by day) | Seen | 1 step |
 | Take the bodies' hands off for prints at the morgue | Quiet (Abernathy says nothing) | none |
 | Break into the co-op office | Quiet at night, seen by day | 1 by day |
 | Fire in the fairground crowd (night 2) | Seen | 1 step |
@@ -123,12 +123,12 @@ Local chief here: Toft takes the badge talk off the table for the rest of the da
 
 | Horror | Tier | Kind | Tags |
 | --- | --- | --- | --- |
-| The men turn their heads at the same time, Main Street, day 1 | Unsettling | unnatural | |
-| The dead's smiles in the morgue drawers | Disturbing | helplessness | |
+| The men turn their heads at the same time, Elm and Third, day 1 | Unsettling | unnatural | |
+| The dead's smiles in the morgue drawers | Unsettling | helplessness | gore (Hardened skips it) |
 | The copybook page: Hal's signature 300 times | Disturbing | unnatural | liar (Cal, Jolene, Voss are liars: Paranoia triggers) |
 | One of them takes off its glasses (night 1) | Severe | unnatural | |
 | The hidden lesson in the air (Mushrooms) | Unsettling | unnatural | |
-| Tanner laughing in their voice on the Ferris wheel | Severe | helplessness | |
+| Tanner laughing in their voice on the Ferris wheel | Severe | helplessness | lead only (a map moment) |
 | The schoolroom, show-and-tell of the dead | Shattering | unnatural | all |
 | The Graduate | Boss | unnatural | known after Identify |
 
@@ -168,3 +168,60 @@ Local chief here: Toft takes the badge talk off the table for the rest of the da
   - **The two men** — "Nobody's got a picture. Every photo of 'em came back blurry, and every one blurred the same way." Edge: the black car shows on the Case file's Next line from the start.
   - **The dead** — "Coroner's in Plainview. She called it natural three times and didn't believe it once." Edge: +10% Forensics at the morgue.
   - **The fair** — "Last week of the county fair. Everybody in that town'll be in one place on Saturday night. So will they." Edge: the fairground's map shows the Lantern Box marked on night 2.
+
+## Part B build notes (Developer, Nov 23, 2026)
+
+What part B settled while building. Where these and the sections above differ, these win.
+
+### Turning the day (points of no return)
+
+All three turns happen at the motel bed in room 6, each a Go on / Not yet with the cursor on Not yet:
+
+| Turn | Needs | Line naming what closes |
+| --- | --- | --- |
+| Day 1 → night 1 | Checked in with Toft | The morgue and the diner close for the night, and the Pecks go in. |
+| Night 1 → day 2 | nothing | Tonight's stakeout and the co-op's night men are tonight only. |
+| Day 2 → night 2 | 3 town clues and the deduction | The county morgue closes for good, and so does the fair by day. |
+
+The gate under the grandstand is a plain walk in and out. The boss waits at the front of the schoolroom: talking to the men, or stepping onto the two tiles in front of them, asks Go in / Not yet. The desk, the show-and-tell table and the chalkboard's ends are reachable without crossing that spot.
+
+### The soft clock (`late`)
+
+Each of these adds 1 to `late`: the drive to the county seat for records, the room 7 stakeout on night 1, and the wrong deduction (federal). On night 2, getting Tanner down from the wheel is free (Jolene calls him) when the deduction was right or the lesson was seen, and `late` is under 2. Otherwise it takes a roll: Climb and jump (Athletics), Talk your way in (Persuade) or Calm (Empathy), each once. Never a dead end: failing them all only loses `kept`.
+
+### Clue routes (so every team template reaches 3)
+
+- `dead`: the drawers (Examine, Forensics; Sweep, Search through the effects bags) or Abernathy (Talk your way in, Persuade). The intel "The dead" adds +10 Forensics here.
+- `watch`: Tanner tells you himself, no roll (kids notice first). Jolene's Read or Calm adds her side.
+- `room7`: room 7's door: the register (Paper trail), the clerk's key (Credentials), slipping in behind the maid's cart (Sneak), the cash roll, or Force it / Shoot it open (overstep, seen / public).
+- `car`: Examine (Forensics), run the plates (Crack it, Computers), pop the hood (Fix it, Craft: there's no engine), Sweep (Search; overstep, seen by day) or Force the trunk (Melee; overstep, seen by day).
+- `roll`: the sheriff's cabinet (Paper trail), the co-op by day (Crack it on its wifi; or Force it, seen), the co-op office at night once the night men are dealt with (Sweep, quiet), or the county seat (Dig records or Paper trail; costs time).
+- `deal`: Voss, day 1 at the co-op or day 2 at the fair, once you hold `roll` or `room7`: Lean on them, Calm, Identify ("name what he signed") or the pocket recorder (Tanner's laugh). Choosing Voss at the deduction makes him clam up: −20 on these.
+- `lesson`: the hidden curb (Mushrooms). Counts toward the threshold.
+
+Town clues for the threshold: `dead`, `watch`, `room7`, `car`, `roll`, `lesson`. The deduction's right answer needs `watch` plus `room7` or `lesson`.
+
+### Fights and the boss, as built
+
+- Night men stand in front of the co-op door on night 1. Lean on them or the cash roll ends it; Fight starts it. Either way they say Voss pays them, and the co-op office opens (quiet).
+- The Understudies come out of the Grissom house the first time you walk onto Elm on night 1, after the glasses scene.
+- Ushers: three on the fairground on night 2, guarding Tanner at the wheel, the Lantern Box in the barn hayloft, and Voss at the grandstand steps.
+- The Graduate's numbers are in the case code and the bible's tuning table (tools/boss-sim.js); this file keeps only the shape: phase 1 polite (Mimic unless `kept`, the class roll unless the book was taken), phase 2 at half (heals unless the book was read aloud; more class roll). Weakness: light (road flare Shakens it, a flashbang Stuns it, and Flash the badge Stuns it, because a badge asks a polite question it has to answer).
+- Fire in the crowd: a Loud weapon or throwable in a fight on the fairground on night 2 is a public overstep.
+
+### Items, as built
+
+- Case-only: the copybook (unnatural, Evidence, the page), Hal's harmonica (ordinary, Tool: in battle, anything that learned a laugh stops to listen, Stunned a round), Rhonda's coffee (ordinary, Drink: +1d4+1 WP). Fair tea is the shared Mushrooms item.
+- If the book was never taken, it falls out of the Graduate when it's unmade, so the page always reaches Big Hat.
+
+### Cover stories
+
+- Paper it (Bureaucracy): a generator venting under the bleachers.
+- Sell it (Persuade): two grifters in rented suits working old folks; +20 with `deal` (Voss backs it).
+- Weak (Luck): heat stroke. Camera (Persuade +20, if the men were photographed): blurry photos, a UFO crank. Clean books: natural causes, three times.
+
+### Endings, as built
+
+- `clean`: the Graduate unmade, `kept`, no agent lost this case, overstepping below Agency call.
+- `costly`: the Graduate unmade any other way.
+- `worst`: the Federal agents' shutdown.
