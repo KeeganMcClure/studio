@@ -278,7 +278,7 @@ This is the base palette, meant to work in any case (Rust and Pumpkin made gener
 - Day and night matter: cozy daylight, dusky gold, then dark night lit only by lamps and the lead's lantern (night only; see Maps).
 - Some monsters only come out after dark. How townsfolk change at night is under Townsfolk at night.
 - Below 40 SAN, colors sour toward neon pink and cyan, and the lantern's light radius shrinks.
-- Battles: big hand-drawn enemy sprites over a static background drawn from the map spot where the fight started. Layout (approved Nov 20): head-on, the 3 agents seen from behind, inside the GBA shell with the D-pad shown, turn order in a column at one side so it doesn't cover sprites.
+- Battles: big hand-drawn enemy sprites over a static background of the place where the fight started. Layout (approved Nov 20): head-on, the 3 agents seen from behind, inside the GBA shell with the D-pad shown, turn order in a column at one side so it doesn't cover sprites.
 
 ### Townsfolk and monsters (set Nov 15)
 
@@ -985,7 +985,7 @@ Small comforts for short phone sittings. None of them change a rule; they save t
 - Classic JRPG difficulty: defend, heal and use abilities wisely. The Gleaner fight is the benchmark.
 - **Must-haves for the redesign** (Nov 15 playtest), all met: the turn-order column, enemy health bars, status moves and the Fight floor for agents who can't shoot, WP-costed moves against Attack-spamming, and threat skulls as the risk read.
 - **Statuses** (set Nov 18): the list, map rules and combat notes are under Statuses in the Systems tab; exact numbers are in Combat numbers below.
-- **Backgrounds:** a static image drawn from the map spot where the fight started.
+- **Backgrounds (reworked Nov 23, 2026, after the demo playtest):** a painted battle backdrop of the kind of place the fight started in, Pokémon style, not a darkened copy of the map. Each backdrop is drawn head-on at battle scale, like the enemies: a ground plane the fighters stand on, a horizon, and two or three big landmarks that say where you are (corn walls and a scarecrow pole in the maze, a lamp post and shop fronts on a town street), lit for the time of day and the low-SAN look. A case draws one backdrop per kind of place it fights in (usually 2–3), files them in the Asset Library under the case like its other art, and lists them in its spec's art needs. Generic ones (a plain street, woods) can go to the Shared Shelf with Keegan's OK.
 
 ### Combat numbers (set Nov 19)
 
