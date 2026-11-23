@@ -45,6 +45,7 @@ Set Nov 23, 2026, after Black Lantern's intro was built without any spec coverin
 - Each game's `bible.md` keeps a **Screens** section: one row per screen the player can see, in play order from the title to game over (title, intro, creator, map, menus, battle, endings and so on).
 - Each row names the spec that covers it. A screen with no spec is a gap: the Designer writes or extends a spec before it's built, and the Developer asks before building a screen that isn't on the list.
 - A spec that adds a screen adds its row in the same PR.
+- Each row also names its look mockup (set Nov 23, 2026). A screen with a layout of its own needs a mockup Keegan approved before it's built. A screen that reuses an approved layout (one more card list on the same menu surface) names that mockup. A game adds the Mockup column the next time its Screens list changes; Life After adds it first.
 
 ## Design Inbox
 

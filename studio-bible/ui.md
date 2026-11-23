@@ -1,7 +1,7 @@
 # UI
 
 House rules for every game. Each game's `bible.md` sets its own colors and menu contents.
-Sources: Black Lantern Art (Faces and sprites, Light and mood) and Rushlight Art (Town street, Battle), Nov 15–21, 2026; Screen craft from Keegan's Rushlight playtest, Nov 23, 2026.
+Sources: Black Lantern Art (Faces and sprites, Light and mood) and Rushlight Art (Town street, Battle), Nov 15–21, 2026; Screen craft from Keegan's Rushlight playtest and Rushlight spec 008, Nov 23, 2026.
 
 ## Dialog box ("Lantern Bust" layout)
 
@@ -23,6 +23,10 @@ Set Nov 23, 2026 from Keegan's Rushlight playtest, written from what Black Lante
 - **Room to breathe.** Boxes keep a gap between them, and a description gets its own box sized to its text. No box is mostly empty while the list above it is squeezed.
 - **Portraits stand out.** A portrait sits on a lit or lighter backing that its dark outline reads against, never on a backing as dark as the outline.
 - **Strips and HUDs fit.** The map HUD is a framed card. A strip that won't fit in one line at 320 × 480 splits into two lines or moves part of its contents to the card, rather than squeezing or cutting words.
+- **The HUD shows who and where** (set Nov 23, 2026, from Rushlight spec 008). The map HUD holds the lead's face, a 2× portrait on its backing that shows their mood or state, beside their bars, plus where and when you are. It can be one framed card or two (lead and place). The camera sits so the HUD never covers rooftops or anything you need to read.
+- **Color is never the only label** (set Nov 23, 2026). Every bar or meter has an icon or a short label next to it, so it reads without knowing the colors.
+- **Each game has a menu surface** (set Nov 23, 2026, from Rushlight spec 008). A game's bible names what its menus are drawn on, a material from its world (Rushlight: aged parchment with an ink border and a wax-seal cursor). Plain flat boxes are not a surface. Text on it uses the surface's ink color, and any texture the shell lays over the screen fades over it so it doesn't read as ruled lines.
+- **Big picks go in two steps** (set Nov 23, 2026, from Rushlight spec 008, as Black Lantern already does). When one pick brings a lot of detail with it (a company and its three mercs, a template and a whole character), you pick from short cards first, then see the result on its own screen. A list and its detailed result are never squeezed onto one screen.
 
 ## Menus
 
