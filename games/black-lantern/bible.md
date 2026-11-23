@@ -952,7 +952,7 @@ Simulator check (`tools/boss-sim.js` plays the game's real battle code; 1000 fig
 | Plain | 0 | 86% | |
 | Plain | 3 | 97% | |
 
-Deducing right (no names) makes it a little harder (careful, 0 saved: 86%), because the names turns do no HP damage. Every later boss is added to the simulator as one entry and checked against this table.
+Deducing right (no names) makes it a little harder (careful, 0 saved: 86%), because the names turns do no HP damage. Every later boss is added to the simulator as one entry and checked against this table. **Can lose (set Nov 23, 2026):** skipping the case's choices counts as "can lose" when it raises a careful team's losses clearly above the all-choices fight, as the Gleaner's do (about 2% with all three saved, 8% with none at full strength, 26% with none arriving worn). A boss doesn't have to beat a careful team that skipped the choices most of the time.
 
 Older check, before the tune (Nov 19, plain attacks only): Paper Trail beat the old 60 HP Gleaner about 1 in 4 with none saved and 2 in 3 with all three, and a finale boss at 75 HP was a coin flip for a Field Team. Rerun these on the simulator when the finale is tuned.
 
