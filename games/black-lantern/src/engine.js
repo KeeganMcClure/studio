@@ -207,17 +207,17 @@ function drawWorld(){
  if(M.boss){const c=caseById(G.case),img=c&&c.sprite&&c.sprite('gleaner',Math.floor(now/400)%2);if(img)spr.push({y:11*16+14,f:()=>cx.drawImage(img,13*16+8-camx-img.width/2,11*16+40-camy-img.height)})}
  spr.sort((a,b)=>a.y-b.y).forEach(s=>s.f());
  // light
- const k=StudioLight.fade(sourFade,L.san<LOOK.lowSan,now),glows=[],pools=[];
+ const k=StudioLight.fade(sourFade,L.san<LOOK.lowSan,now),glows=[],pools=[];let lanR=0;
  st.glows.forEach(([x,y,r,a])=>glows.push([x-camx,y-camy,r,a]));
  M.props.forEach(p=>p.lights.forEach(([x,y,r,a,pool])=>(pool?pools:glows).push([x-camx,y-camy,r,a])));
  if(M.light==='dusk')SHELF.dusk(cx,glows.concat(pools),now);
  else if(night){
-  const lamp=StudioLight.mix(LOOK.lamp[0],LOOK.lamp[1],k),ring=[[G.px+8-camx,G.py+6-camy,StudioLight.mix(LOOK.lantern[0],LOOK.lantern[1],k)*(G.fs&&G.fs.flareMap===G.map?1.6:1)]];
+  const lamp=StudioLight.mix(LOOK.lamp[0],LOOK.lamp[1],k),ring=[[G.px+8-camx,G.py+6-camy,StudioLight.mix(LOOK.lantern[0],LOOK.lantern[1],k)*(G.fs&&G.fs.flareMap===G.map?1.6:1)*(M.lantern||1)]];lanR=ring[0][2];  // M.lantern: a case's map can shrink the lantern (Lost Hour's fog)
   pools.forEach(([x,y])=>ring.push([x,y,lamp]));roamLit.forEach(p=>ring.push(p));  // roamers walk in plain sight
   if(M.boss)ring.push([13*16+8-camx,11*16-38-camy,LOOK.boss+Math.random()*4]);
   StudioLight.night(cx,{dark:LOOK.dark,alpha:M.alpha||LOOK.alpha,warm:M.warm||LOOK.warm,pools:ring,glows:glows.map(([x,y,r,a])=>[x,y,r*.7,a*.6])});
  }
- if(art.fx)art.fx(cx,{M,camx,camy,now,night,pools});  // a case's own light and air (Good Manners: sodium light, heat shimmer)
+ if(art.fx)art.fx(cx,{M,camx,camy,now,night,pools,lantern:lanR,sour:k});  // a case's own light and air (Good Manners: sodium light, heat shimmer)
  if(k>0)StudioLight.sour(cx,k,{pink:LOOK.pink,cyan:LOOK.cyan});
  shimmer(now);
  hiddenGlints(camx,camy,now);  // hidden unnatural hotspots, while the lead is High on Mushrooms (field.js)
