@@ -35,7 +35,7 @@ async function runDebrief(){
  const D=G.db;if(!D)return;
  G.mode='scene';if(G.scene!=='funeral')G.scene=D.step>=7?'home':'bighat';hud.hidden=true;
  if(D.step===1){await sleep(300);await dbTalk();D.step=2;checkpoint()}
- if(D.step===2){if(G.fs.recruit&&G.fs.recruit.length)await offerRecruit({ask:DBW.recruit,late:true});D.step=3;checkpoint()}
+ if(D.step===2){if(G.fs.recruit&&G.fs.recruit.length)await offerRecruit({ask:caseWord('recruit',DBW.recruit),late:true});D.step=3;checkpoint()}
  if(D.step===3)await dbItems();
  if(D.step===4)await dbCover();
  if(D.step===5)await dbGains();

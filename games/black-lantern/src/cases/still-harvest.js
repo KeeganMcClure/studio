@@ -548,7 +548,7 @@ async function enterMaze(){
 // Anywhere else inside it (only an old save stands there) the fight starts as before.
 async function mazeStep(){
  if(G.flags.boss)return;
- if(G.x===DOOR[0]&&G.y===DOOR[1]){held=[];const r=await ask('',TEXT.clearQ,TEXT.clearOpts);if(r===0)return bossIntro();
+ if(G.x===DOOR[0]&&G.y===DOOR[1]){held=[];const r=await ask('',TEXT.clearQ,TEXT.clearOpts,NOT_YET);if(r===0)return bossIntro();
   StudioMove.place(G,DOOR_OUT[0],DOOR_OUT[1],'down');return}
  const inClear=G.x>=10&&G.x<=16&&G.y>=8&&G.y<=14;
  if(inClear){held=[];return bossIntro()}
@@ -678,4 +678,7 @@ const TILEDESC=TEXT.tiles;
 registerCase({id:'still-harvest',card:caseCard,opening:caseOpening,intel:TEXT.intel,portraits:name=>SHA.portraits[name]||(name==='THE GLEANER'?SHB.portrait:null),
  enemies:EN,sprite:(k,f,w)=>SHB.sprite(k,f,w),spriteSize:k=>SHB.size(k),items:CASE_ITEMS,next:caseNext,quiet:false,loot:LOOT,onArea,
  backdrop:(p,o)=>SHB.backdrop(p,o),  // battle backdrops for the town street and the maze (cases/still-harvest-battle-art.js)
+ // its own wording for the shared lines that say where you are (field.js caseWord)
+ words:{slipped:'{n} twists free. The {e} loses you in the corn.',crackers:'Firecrackers pop and spit. The {e} goes crashing off into the corn after them.',
+  recruit:'Big Hat sets a folder on the desk. "Lost one in the corn. Replacement\'s outside. Pick."',gameOverSan:'Agent {code} walks into the corn, smiling, and does not come back.'},
  debrief:DEBRIEF_DATA,label:endingLabel,facts:endingFacts});

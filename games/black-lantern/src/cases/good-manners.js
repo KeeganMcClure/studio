@@ -332,8 +332,6 @@ const TEXT={
 const fill=(t,o)=>String(t).replace(/\{(n|m|v|t)\}/g,(x,k)=>o[k]??x);
 async function play(seq,o={}){for(const l of [].concat(seq)){if(Array.isArray(l))await say(l[0],fill(l[1],o));else await say('',fill(l,o))}}
 const said=(l,o)=>play([l],o);
-// A point of no return (studio-bible/play.md): the choice's cursor starts on its last row, Not yet
-async function askNo(name,text,opts){await say(name,text,{keep:true,instant:false});const r=await choose(opts,{cancel:true,inBox:true,sel:opts.length-1});hideTB();return r<0?opts.length-1:r}
 
 // The case board card (spec 010, The card)
 const caseCard={file:2,title:'GOOD MANNERS',town:'ODESSA FLATS',place:'COUNTY FAIR · ODESSA FLATS, KS',
@@ -627,7 +625,7 @@ async function turnDay(){const p=ph(),F=G.flags;if(p>=3){await said(TEXT.restDon
  if(p===0&&!F.checkin){await said(TEXT.turnToft);return}
  if(p===2&&townClues()<3){await said(TEXT.turnClues,{n:townClues()});return}
  if(p===2&&!F.deduce){await said(TEXT.turnDeduce);return}
- const r=await askNo('',TEXT.turnQ[p]+' '+TEXT.turnClose[p],TEXT.turnOpts);if(r!==0)return;
+ const r=await ask('',TEXT.turnQ[p]+' '+TEXT.turnClose[p],TEXT.turnOpts,NOT_YET);if(r!==0)return;
  await fade(1);F.ph=p+1;await play(TEXT.rested[p]);await rest(1);goMap('motel',3,6,'down');banner(TEXT.phase[p+1]);checkpoint();await fade(0);
  if(F.ph===1)await trigger('night')}
 
@@ -837,7 +835,7 @@ function deskOpts(){const F=G.flags;if(F.book)return readOpts();return[
 // The boss waits for you (Gameplay loop; play.md): Go in / Not yet, cursor on Not yet
 async function bossAsk(){const F=G.flags;if(F.boss)return;
  if(!F.menUnder){F.menUnder=1;await play(TEXT.menUnder)}
- const r=await askNo('',TEXT.bookQ,TEXT.bossOpts);
+ const r=await ask('',TEXT.bookQ,TEXT.bossOpts,NOT_YET);
  if(r===0)return bossFight();
  if(G.y===3)StudioMove.place(G,G.x,5,'down')}
 // The Graduate (Bosses; Combat numbers; tuned Nov 23, 2026 with tools/boss-sim.js). 64 HP; −8 if Tanner was kept,
