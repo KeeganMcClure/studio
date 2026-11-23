@@ -117,7 +117,7 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
   - [ ] Pokémon-style battle backdrops for Still Harvest's town and maze, replacing the darkened map still (Combat → Basics, Backgrounds)
   - [ ] Wounded enemies: the two damage steps for each Still Harvest enemy, replacing the red dots (Art → Townsfolk and monsters)
   - [ ] Still Harvest maze: a route to all three victims that skips the Gleaner's clearing, and a go in / not yet choice at its entrance (spec 006, Revision after the demo playtest)
-  - [ ] Creator: pronouns (she, he, they) used by all dialog, and a slim or broad body build for map, battle and portrait sprites, with a save step for old agents (Agents and items → Agent creator, step 4)
+  - [ ] Creator: pronouns (she, he, they) used by all dialog, and a slim or broad body build for map, battle and portrait sprites, plus pronouns for each Bond, with a save step for old agents and Bonds (Agents and items → Agent creator, steps 4 and 5)
 - [ ] After the Still Harvest playtest: revisit party size (3 vs 4). Weigh tension, skill coverage, fight length on the phone and screen space; switching to 4 means reworking templates, professions, balance and the combat layout
 - [ ] Season readiness (set Nov 22): the design work that lets a full season be built as soon as the demo is approved. In order, since each step unblocks the ones after it; tick this when all six are done
   - [x] Season 1 of 6: write the Demo 6 spec (debrief, bagging or hiding evidence, cover story, skill gains, plus the funeral, Big Hat's send-off line and the memorial list that spec 006 moved to Demo 6). Do it while Demo 5 parts B and C are built
