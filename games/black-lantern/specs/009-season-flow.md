@@ -51,6 +51,7 @@ From the changelog and specs 004, 007 and 008, once they're built:
 ### 1. The season data file
 
 - A new part, `seasons/season-1.js`, loaded before the case files. It holds: the season number; the regular case ids; each agency case's id and the number of closed regular cases that unlocks it; which agency case is the finale; and the season-end text block.
+- The agency half (each agency case's id, its unlock count, which one is the finale) and the season-end text block don't sit in this public file. They live in the private repo and the build merges them in (bible, Tech → File and code, Agency cases stay out of the public repo; set Nov 23, 2026). `season-1.js` in the studio repo holds the season number and the regular cases only.
 - The board reads the season's cases from it. A case file that's loaded but not listed in the current season doesn't pin (so a later season's case can ship early without showing).
 - Still Harvest is listed in Season 1 as a regular case. Whether the demo case counts toward Season 1's unlocks is the arc file's call.
 

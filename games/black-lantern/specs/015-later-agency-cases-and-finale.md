@@ -29,6 +29,7 @@ Each one is built exactly as spec 014 says, with `01` read as its own number:
 
 - The same frame table (card, unlock, briefing, length, fights, danger zones, boss, clues, skills, motivation moments, horrors, open or quiet, cover stories, endings, loot, arc touches), the same art rules, and its own Asset Library page titled `LANTERN nn` that opens with a spoiler line.
 - The same two parts, one session each: **part A** starts with the secret case file `claude/cases/lantern-nn.md` in the Black Lantern private files, then maps, art and stand-in scripts; **part B** is story and play.
+- The same home: each case file and its season data entry go in the private repo under `agency/`, never the studio repo (bible, Tech → File and code).
 - The same Dev-only shortcut, extended so it can pin any built LANTERN case. It never ships to Release.
 - The same reach check: before part A, the Developer checks the regular cases that will exist when it ships against its unlock count, and reports only "LANTERN nn needs more regular cases before it can unlock".
 - **One at a time, in arc order.** Each agency case is built after the one before it ships. Since the board shows only one open agency case at a time (spec 009, step 3), that's also the order you play them.
