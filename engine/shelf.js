@@ -575,6 +575,177 @@ function asphalt(x,y,T=16){const u=T/16,nx=(x/u)|0,ny=(y/u)|0,a=slot("asphalt","
   if(n<.05)return shade(a,.18);if(n>.985)return shade(P.stone,.1);if(hsh(nx>>3,ny>>3,202)<.12&&hsh(nx,ny,203)<.5)return shade(a,-.18);return[a,shade(a,-.05),shade(a,.05)][(hsh(nx,ny,204)*3)|0];}
 function paintLine(g,x,y,w,h,dashed=false,col){const c=col||P.light;if(!dashed){F(g,x,y,w,h,c);return;}const horiz=w>=h,L=horiz?w:h;for(let i=0;i<L;i+=12)horiz?F(g,x+i,y,Math.min(7,L-i),h,c):F(g,x,y+i,w,Math.min(7,L-i),c);}
 
-return{T,S,SLOTS,PALETTES,use,pal,RGB,hex,rgba,shade,hsh,mk,art,drawChar,charSprite,SAMPLE_AGENTS,LAMP,BENCH,prop,summerGrass,summerTree,dryDirt,heat,sodium,storefront,signBlank,signText,signWidth,WATERTOWER,trafficLight,gasPump,ranchHouse,porch,mailbox,sedan,floor,innerWall,counter,tableChairs,DESK,BED,shelving,stringLights,booth,ferrisWheel,asphalt,paintLine,
+
+/* ===== APARTMENTS, NIGHT LIGHT, HOUSES AND CARS, INTERIORS · more v1 pieces, added Nov 23, 2026 =====
+   Drawn first for Black Lantern's Lot 83 (its spec 012 lists the kits): a two-story apartment block's walkway, stairs,
+   numbered doors, window units, chain-link and pool, a work van and work light, the bug-light glow, and more rooms.
+   Two new palette slots (a game's palette without them falls back as noted): zap (bug-light purple), pooltile (pool tile). */
+SLOTS.push(["zap","bug-light purple"],["pooltile","pool tile"]);
+Object.assign(PALETTES.blacklantern,{zap:"#a070ff",pooltile:"#3fa8a0"});
+Object.assign(PALETTES.rushlight,{zap:"#8a6ac8",pooltile:"#4a8a80"});
+
+/* ---------- NIGHT LIGHT ---------- */
+// shared-effects-bugzap-v1: bug-light purple glow over porches and walkways, after the night darkness is drawn.
+// pools: [[x, y, r], ...] in canvas pixels. The glow buzzes, and now and then the zapper sparks. BUGLIGHT is the fixture.
+function bugZap(ctx,pools,now=0){const Z=slot("zap","glow");
+  ctx.globalCompositeOperation="lighter";
+  pools.forEach(([x,y,r],i)=>{const f=.85+.15*Math.sin(now/53+i*1.7)*Math.sin(now/131+i),c=ctx.createRadialGradient(x,y,0,x,y,r);
+    c.addColorStop(0,rgba(Z,.36*f));c.addColorStop(.45,rgba(Z,.15*f));c.addColorStop(1,rgba(Z,0));ctx.fillStyle=c;ctx.fillRect(x-r,y-r,r*2,r*2);
+    if(hsh(i,(now/160)|0,211)<.05){ctx.fillStyle=rgba(P.lightTo,.95);ctx.fillRect(Math.round(x)-1,Math.round(y)-1,3,2);ctx.fillRect(Math.round(x),Math.round(y)-3,1,6);}});
+  ctx.globalCompositeOperation="source-over";}
+const BUGLIGHT={size:[14,24,0,0],anchor:[7,22],lights:[[7,13,1.2,.25]],draw({R}){const Z=slot("zap","glow");
+  R(6,0,2,5,P.panel);R(2,5,10,2,P.panel);R(3,7,8,12,shade(Z,.25));R(3,7,8,2,shade(Z,.55));for(let x=3;x<11;x+=2)R(x,7,1,12,shade(P.panel,.1));R(2,19,10,2,P.panel);R(5,21,4,2,P.panel);}};
+// shared-props-worklight-v1: a work light on a tripod, two halogen heads. workLight(on): on = lit, with its pool of light.
+function workLight(on=true){return{size:[30,66,0,0],anchor:[15,64],lights:on?[[15,8,3.2,.6]]:[],draw({R}){const m=P.panel,y=P.light;
+  for(let i=0;i<13;i++){R(14-i*.95,38+i*2,2,2,shade(m,.15));R(15+i*.95,38+i*2,2,2,shade(m,-.15));}
+  R(14,14,2,48,shade(P.stone,.1),{sh:1});R(13,36,4,3,m);R(5,13,20,2,m);R(14,11,2,3,m);
+  for(const x of[2,16]){R(x,1,12,12,m,{sh:3});R(x,1,12,1,shade(m,.3));R(x+1,2,10,9,on?shade(y,.35):shade(P.stone,-.25));if(on)R(x+1,2,10,3,shade(y,.75));
+    for(let k=x+2;k<x+11;k+=3)R(k,2,1,9,on?shade(y,-.05):shade(m,.1));}
+  R(6,62,18,2,shade(m,-.2));R(20,40,1,24,shade(P.accent,-.2));R(19,62,6,2,shade(P.accent,-.3));}};}
+
+/* ---------- HOUSES AND CARS ---------- */
+// shared-props-van-v1: a work van, blank sides (the case paints the company), 2 facings like the sedan: "side" (nose left)
+// and "front". col: a palette slot name or a hex color. The side's blank panel, in design pixels, is VAN_SIGN [x, y, w, h].
+const VAN_SIGN=[40,10,70,20];
+function van(face="side",col="cream"){const B_=col[0]==="#"?col:(P[col]||P.cream),bd=shade(B_,-.35),bl=shade(B_,.3),gl=shade(P.stone,.35),gd=shade(gl,-.25);
+  if(face==="front")return{size:[56,66,0,6],anchor:[28,62],lights:[],draw({R}){
+    R(2,54,52,5,rgba(P.outline,.4));R(4,0,48,22,B_,{sh:8});R(4,0,48,3,bl);R(8,6,40,14,gl);R(8,6,40,4,shade(gl,.3));R(8,16,40,4,gd);
+    R(2,22,52,26,B_,{sh:9});R(2,22,52,3,bl);R(6,30,10,6,P.light);R(40,30,10,6,P.light);R(18,32,20,8,bd);for(let x=19;x<37;x+=3)R(x,33,1,6,P.outline);
+    R(0,44,56,5,shade(P.stone,.2));R(4,49,9,11,P.outline);R(43,49,9,11,P.outline);R(-2,24,4,5,bd);R(54,24,4,5,bd);}};
+  return{size:[126,62,4,6],anchor:[62,56],lights:[],draw({R}){
+    R(2,50,120,4,rgba(P.outline,.4));
+    R(34,0,86,40,B_,{sh:10});R(34,0,86,3,bl);R(118,2,2,38,bd);                       // the box
+    R(6,8,30,32,B_);R(6,8,30,2,bl);R(10,10,22,13,gl);R(10,10,22,3,shade(gl,.4));R(10,19,22,4,gd);R(32,8,3,32,bd);  // the cab
+    R(0,22,10,18,B_,{sh:3});R(0,22,10,2,bl);R(-2,26,4,6,P.light);R(0,34,10,2,bd);
+    R(38,4,1,36,shade(B_,-.18));R(92,4,1,36,shade(B_,-.18));R(88,18,3,8,P.panel);R(26,24,6,2,bd);   // door seams, handles
+    R(114,6,5,9,shade(P.accent,-.05));R(114,6,5,2,shade(P.accent,.3));R(64,-4,28,4,P.panel);R(64,-4,28,1,shade(P.panel,.3));  // taillight, roof rack
+    R(-3,38,128,4,shade(P.stone,.15));
+    for(const x of[12,94]){R(x-2,34,24,5,bd);R(x,36,20,16,P.outline);R(x+6,41,8,8,shade(P.stone,.1));R(x+9,44,2,2,P.panel);}}};}
+
+/* ---------- APARTMENTS ---------- */
+// shared-tiles-walkway-v1: a second-floor open walkway in the 3/4 view, in pixels. top = the walkway floor's top (it is
+// one tile deep, so people walk on it), fb = the ground line its posts stand on. o: post (tiles between posts, 3),
+// rail (rail color, P.panel), gaps ([[x0, x1], ...] in pixels where the rail opens for stairs).
+function walkway(g,x0,x1,top,fb,T=16,o={}){const u=T/16,w=x1-x0,c=shade(P.stone,.2),lip=top+T,rc=o.rail||P.panel,gaps=o.gaps||[];
+  const inGap=x=>gaps.some(([a,b])=>x>=a&&x<b);
+  F(g,x0,top,w,T,c);for(let y=top+4*u;y<lip;y+=5*u)F(g,x0,y,w,u,shade(c,-.06));
+  for(let x=x0;x<x1;x+=2*u)if(hsh(x,top,221)<.14)F(g,x,top+2*u+((hsh(x,1,222)*(T-4*u))|0),2*u,u,shade(c,-.15));
+  for(let x=x0+7*u;x<x1;x+=23*u)F(g,x,top+u,u,T-2*u,shade(c,-.1));                    // slab joints
+  F(g,x0,top,w,2*u,rgba(P.outline,.3));                                                 // where it meets the upper wall
+  F(g,x0,lip,w,3*u,shade(c,-.22));F(g,x0,lip,w,u,shade(c,.18));F(g,x0,lip+3*u,w,5*u,rgba(P.outline,.32));  // slab edge, its shadow below
+  const step=(o.post||3)*T;for(let x=x0+.4*T;x<x1;x+=step){F(g,x,lip+3*u,2*u,fb-lip-3*u,shade(rc,.2));F(g,x+2*u,lip+3*u,u,fb-lip-3*u,shade(rc,-.25));F(g,x-u,fb-2*u,4*u,2*u,shade(rc,-.1));}
+  const rt=lip-.6*T;
+  for(let x=x0;x<x1;x+=3*u)if(!inGap(x))F(g,x,rt,u,lip-rt,shade(rc,.05));
+  for(let x=x0;x<x1;x++)if(!inGap(x)){F(g,x,rt-u,1,2*u,shade(rc,.28));F(g,x,rt+u,1,u,shade(rc,-.3));F(g,x,lip-2*u,1,u,shade(rc,-.1));}
+  return{lip,rail:rt};}
+// shared-tiles-metalstairs-v1: outdoor metal stairs running up the screen, from the ground line fb to the walkway at top.
+// x0 is the flight's left edge; o: w (width in pixels, one tile), col (the stringers, P.panel).
+function metalStairs(g,x0,top,fb,T=16,o={}){const u=T/16,w=o.w||T,m=o.col||P.panel,ml=shade(m,.3),md=shade(m,-.3),tr=shade(P.stone,.12);
+  F(g,x0+u,top,w-2*u,fb-top,rgba(P.outline,.55));
+  for(let y=top+u;y<fb-u;y+=4*u){F(g,x0+2*u,y,w-4*u,2*u,tr);F(g,x0+2*u,y,w-4*u,u,shade(tr,.25));for(let x=x0+3*u+((y/(4*u))%2)*u;x<x0+w-3*u;x+=3*u)F(g,x,y+u,u,u,shade(tr,-.15));F(g,x0+2*u,y+2*u,w-4*u,u,md);}
+  F(g,x0,top,2*u,fb-top,m);F(g,x0,top,u,fb-top,ml);F(g,x0+w-2*u,top,2*u,fb-top,md);
+  for(const[rx,c]of[[x0,ml],[x0+w-u,m]]){F(g,rx,top-.55*T,u,fb-top,c);for(let y=top;y<fb;y+=.75*T)F(g,rx,y-.55*T,u,.55*T,shade(c,-.15));}
+  F(g,x0-u,fb-u,w+2*u,2*u,shade(P.stoneWarm,-.2));F(g,x0-u,top-.55*T,2*u,u,ml);F(g,x0+w-u,top-.55*T,2*u,u,m);}
+// shared-tiles-numberdoor-v1: an apartment or motel door with a number plate, a peephole and a porch light.
+// Like door(): centered on cx, top dy, bottom fb. o: plate (plate color, P.brass), lamp (false: no light), lit (false: the
+// light is off). Returns the porch light's glow, or null.
+function numberDoor(g,cx,dy,fb,col,num,T=16,o={}){const u=T/16;door(g,cx,dy,fb,col,T);
+  const s=String(num),pl=o.plate||P.brass,pw=signWidth(s)+4*u,px=Math.round(cx-pw/2),py=Math.round(dy+.2*T);
+  F(g,px,py,pw,7*u,shade(pl,-.35));F(g,px+u,py,pw-2*u,6*u,pl);F(g,px+u,py,pw-2*u,u,shade(pl,.3));signText(g,s,px+2*u,py+u,P.outline);
+  F(g,cx-u/2,dy+.62*T,u,u,P.outline);
+  if(o.lamp===false)return null;const lx=Math.round(cx+.55*T);F(g,lx-u,dy-.05*T,4*u,4*u,P.panel);F(g,lx,dy-.05*T+u,2*u,2*u,o.lit===false?shade(P.light,-.55):shade(P.light,.4));
+  return o.lit===false?null:[lx+u,dy+2*u,1.1*T,.4];}
+// shared-props-windowac-v1: a window AC unit, drawn onto a wall in pixels with its top left at (x, y), about 0.8 x 0.5
+// tiles. o: on (false: the power light is out), drip (true: a rust stain runs down the wall under it).
+function windowAC(g,x,y,T=16,o={}){const u=T/16,w=Math.round(.82*T),h=Math.round(.5*T),c=shade(P.stone,.34),cd=shade(c,-.32);
+  if(o.drip){F(g,x+w*.3,y+h+2*u,2*u,.45*T,rgba(P.woodDark,.35));F(g,x+w*.3,y+h+2*u,u,.6*T,rgba(P.woodDark,.25));}
+  F(g,x-u,y-u,w+2*u,h+3*u,P.outline);F(g,x,y,w,h,c);F(g,x,y,w,u,shade(c,.28));F(g,x+w-2*u,y,2*u,h,cd);
+  for(let k=y+2*u;k<y+h-u;k+=2*u)F(g,x+2*u,k,Math.round(w*.55),u,cd);F(g,x+Math.round(w*.68),y+2*u,Math.round(w*.2),h-4*u,shade(c,-.12));
+  F(g,x+Math.round(w*.72),y+3*u,u,u,o.on===false?cd:P.accent);F(g,x+u,y+h,w-2*u,2*u,shade(P.panel,.1));}
+// shared-tiles-chainlink-v1: a chain-link fence along the screen, in pixels: top = its top rail, o.h its height (0.85
+// tiles). o: post (tiles between posts, 2), gate ([x0, x1] in pixels), open (the gate stands open), col (the mesh).
+// chainLinkSide(g, x, y0, y1) is the same fence running up the screen, seen end-on.
+function chainLink(g,x0,x1,top,T=16,o={}){const u=T/16,h=Math.round(o.h||.85*T),fb=top+h,m=o.col||shade(P.stone,.32),md=shade(m,-.35),gt=o.gate;
+  for(let y=top+u;y<fb;y+=u)for(let x=x0;x<x1;x+=u){if(gt&&o.open&&x>=gt[0]&&x<gt[1])continue;const i=Math.round((x-x0)/u),j=Math.round((y-top)/u);
+    if((i+j)%4===0||((i-j)%4+4)%4===0)F(g,x,y,u,u,hsh(x,y,231)<.6?m:md);}
+  F(g,x0,top,x1-x0,u,shade(m,.25));F(g,x0,top+u,x1-x0,u,md);F(g,x0,fb-u,x1-x0,u,md);
+  for(let x=x0;x<x1-2*u;x+=(o.post||2)*T){F(g,x,top-u,2*u,h+u,shade(P.panel,.25));F(g,x+u,top-u,u,h+u,P.panel);}
+  F(g,x1-2*u,top-u,2*u,h+u,shade(P.panel,.25));
+  if(gt){F(g,gt[0],top-u,2*u,h+u,P.panel);F(g,gt[1]-2*u,top-u,2*u,h+u,P.panel);if(!o.open){F(g,gt[0],top+h/2,gt[1]-gt[0],u,md);F(g,gt[1]-5*u,top+h/2-u,3*u,3*u,P.brass);}}
+  return fb;}
+function chainLinkSide(g,x,y0,y1,T=16,o={}){const u=T/16,h=Math.round(o.h||.85*T),m=o.col||shade(P.stone,.32),md=shade(m,-.35);
+  for(let y=y0-h;y<y1;y+=u)if(((y/u)|0)%2===0)F(g,x,y,u,u,m);else F(g,x+u,y,u,u,md);
+  F(g,x-u,y0-h,u,y1-y0+h,shade(m,.2));for(let y=y0;y<=y1;y+=(o.post||2)*T){F(g,x-u,y-h-u,3*u,h+u,shade(P.panel,.25));F(g,x+u,y-h-u,u,h+u,P.panel);}}
+// shared-tiles-pool-v1: a small pool in the 3/4 view, in pixels, its water (or floor) from (x0, y0) to (x1, y1): coping
+// around it, a tile band on the far wall, and the water, or with o.empty the dry plaster floor (stains, cracks, leaves, a
+// drain in the deep end). o: deep ("left" or "right", "right"), ladder (x of a ladder on the far wall), steps (true: steps
+// at the shallow end). Returns {floor: the y where the far wall meets the floor, deep: [x0, x1] of the deep end}.
+function pool(g,x0,y0,x1,y1,T=16,o={}){const u=T/16,w=x1-x0,h=y1-y0,t=slot("pooltile","glass"),cp=shade(P.cream,.12),pl=shade(P.text,-.2),wallH=Math.round(.75*T);
+  const dr=o.deep!=="left",dx0=dr?x0+w*.62:x0,dx1=dr?x1:x0+w*.38,fl=y0+wallH;
+  F(g,x0-3*u,y0-3*u,w+6*u,h+6*u,cp);for(let x=x0-3*u;x<x1+3*u;x+=6*u){F(g,x,y0-3*u,u,3*u,shade(cp,-.22));F(g,x,y1,u,3*u,shade(cp,-.22));}
+  for(let y=y0;y<y1;y+=6*u){F(g,x0-3*u,y,3*u,u,shade(cp,-.22));F(g,x1,y,3*u,u,shade(cp,-.22));}
+  F(g,x0-3*u,y0-3*u,w+6*u,u,shade(cp,.22));F(g,x0-3*u,y1+2*u,w+6*u,u,shade(cp,-.4));
+  if(!o.empty){for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x+=u){const deep=x>=dx0&&x<dx1,b=deep?shade(t,-.18):t,r=Math.sin(x*.21+y*.5)+Math.sin(x*.07-y*.31);
+      F(g,x,y,u,1,r>1.5?shade(b,.35):r<-1.4?shade(b,-.12):b);}
+    for(let x=x0;x<x1;x+=4*u)F(g,x,y0,4*u,3*u,((x-x0)/(4*u))%2?shade(t,.15):shade(t,-.1));F(g,x0,y0+3*u,w,u,rgba(P.lightTo,.35));}
+  else{
+    F(g,x0,fl,w,y1-fl,pl);
+    for(let y=fl;y<y1;y++){const k=(y-fl)/(y1-fl);F(g,dx0,y,dx1-dx0,1,shade(pl,-.12-.18*k));}
+    for(let y=fl;y<y1;y+=u)for(let x=x0;x<x1;x+=u){const n=hsh(x,y,241);if(n<.03)F(g,x,y,u,u,shade(pl,-.25));else if(n>.985)F(g,x,y,u,u,shade(pl,.15));}
+    for(let i=0;i<5;i++){let cx=x0+hsh(i,1,242)*w,cy=fl+hsh(i,2,242)*(y1-fl);for(let k=0;k<18;k++){F(g,cx,cy,u,u,shade(pl,-.45));cx+=(hsh(i,k,243)-.3)*3*u;cy+=(hsh(i,k,244)-.5)*2*u;if(cy<fl||cy>=y1)break;}}
+    for(let i=0;i<7;i++)F(g,x0+hsh(i,3,245)*w,fl+3*u+hsh(i,4,245)*(y1-fl-4*u),2*u,u,[shade(P.wood,.1),slot("dry","straw"),shade(P.earth,.1)][i%3]);
+    F(g,dx0,fl,u,y1-fl,shade(pl,-.32));for(let y=fl;y<y1;y+=3*u)F(g,dx0-2*u,y,2*u,u,shade(pl,-.18));
+    const sx=(dx0+dx1)/2,sy=y1-.4*T;F(g,sx-3*u,sy-2*u,6*u,4*u,shade(P.stone,-.3));for(let k=0;k<3;k++)F(g,sx-2*u,sy-u+k*u,4*u,u/2,P.outline);
+    F(g,x0,y1-3*u,w,3*u,rgba(P.outline,.12));}
+  // the far wall's tile band and plaster, the side walls' edges
+  if(o.empty){F(g,x0,y0,w,wallH,shade(pl,-.08));F(g,x0,fl-u,w,u,shade(pl,-.35));for(let y=y0+4*u;y<fl-u;y+=u)if(hsh(x0,y,246)<.5)F(g,x0+hsh(y,1,247)*w,y,3*u,u,shade(pl,-.15));}
+  for(let x=x0;x<x1;x+=4*u)F(g,x,y0,4*u,4*u,((x-x0)/(4*u))%2?t:shade(t,-.2));F(g,x0,y0+4*u,w,u,shade(t,-.45));
+  F(g,x0,y0,2*u,h,rgba(P.outline,.28));F(g,x1-2*u,y0,2*u,h,rgba(P.lightTo,.12));
+  if(o.ladder!=null){const lx=o.ladder;for(const k of[0,5*u]){F(g,lx+k,y0-5*u,u,wallH+5*u,shade(P.stone,.4));F(g,lx+k,y0-6*u,u,u,shade(P.stone,.55));}for(let y=y0+2*u;y<fl;y+=3*u)F(g,lx,y,6*u,u,shade(P.stone,.25));}
+  if(o.steps){const sx=dr?x0+2*u:x1-.9*T;for(let i=0;i<3;i++){F(g,sx,fl+i*3*u,.85*T,2*u,shade(pl,.12-i*.05));F(g,sx,fl+i*3*u+2*u,.85*T,u,shade(pl,-.3));}}
+  return{floor:fl,deep:[dx0,dx1]};}
+// shared-props-dumpster-v1: a dumpster. open = the lid up with trash showing. col: its paint (P.leaf, or P.grass).
+function dumpster(open=false,col){return{size:[68,52,0,10],anchor:[34,48],lights:[],draw({R}){const c=col||slot("leaf","grass"),cd=shade(c,-.35),cl=shade(c,.25);
+  R(2,40,64,6,rgba(P.outline,.35));R(4,12,60,30,c,{sh:12});R(4,12,60,3,cl);for(let x=12;x<58;x+=10)R(x,16,2,22,cd);R(2,38,64,4,cd);
+  R(6,42,6,6,P.outline);R(56,42,6,6,P.outline);R(0,18,4,4,cd);R(64,18,4,4,cd);R(24,24,20,6,shade(c,-.15));R(25,25,18,1,shade(P.text,-.2));
+  if(open){R(2,-8,64,6,shade(c,-.15));R(2,-8,64,2,cl);R(6,4,56,9,P.outline);R(10,2,12,7,P.text);R(10,2,12,1,shade(P.text,.2));R(26,5,8,5,shade(P.wood,.25));R(38,1,12,8,shade(P.cream,-.15));R(52,4,6,6,shade(P.accent,-.2));}
+  else{R(2,6,64,8,shade(c,-.08),{sh:10});R(2,6,64,2,cl);R(14,10,6,2,cd);R(48,10,6,2,cd);}}};}
+
+/* ---------- INTERIORS ---------- */
+// shared-props-kitchen-v1: kitchen pieces in the 3/4 view: kitchen("fridge"), kitchen("stove"), kitchen("sink").
+// The fridge's door front, in design pixels, is FRIDGE_FRONT [x, y, w, h] (for magnets and drawings the case adds).
+const FRIDGE_FRONT=[4,30,24,30];
+function kitchen(kind="fridge"){const wt=shade(P.text,-.06),wd=shade(wt,-.3);
+  if(kind==="stove")return{size:[34,48,0,0],anchor:[17,46],lights:[],draw({R,E}){
+    R(1,10,32,36,wt,{sh:6});R(1,8,32,4,shade(wt,.15));R(1,4,32,4,shade(P.panel,.2));for(let x=5;x<31;x+=6)R(x,5,3,2,P.text);
+    for(const[x,y]of[[9,10],[25,10]]){E(x,y,5,2,P.outline);E(x,y,3,1,shade(P.panel,.2));}R(4,18,26,20,shade(wt,-.1));R(6,20,22,10,P.outline);R(7,21,20,3,shade(P.panel,.3));R(6,33,22,2,P.panel);R(1,44,32,2,wd);}};
+  if(kind==="sink")return{size:[40,46,0,0],anchor:[20,44],lights:[],draw({R}){const cab=P.wood;
+    R(0,14,40,30,cab,{sh:6});R(2,18,17,22,shade(cab,-.12));R(21,18,17,22,shade(cab,-.12));R(16,26,2,4,P.brass);R(22,26,2,4,P.brass);
+    R(0,10,40,5,shade(P.text,-.15));R(0,10,40,1,shade(P.text,.15));R(8,11,24,3,shade(P.stone,-.15));R(18,2,3,9,shade(P.stone,.35));R(18,2,8,2,shade(P.stone,.35));R(25,3,2,3,shade(P.stone,.2));R(0,42,40,2,shade(cab,-.4));}};
+  return{size:[32,66,0,0],anchor:[16,64],lights:[],draw({R}){
+    R(2,0,28,64,wt,{sh:6});R(2,0,28,2,shade(wt,.2));R(2,26,28,2,wd);R(24,6,2,14,shade(P.stone,.15));R(24,32,2,18,shade(P.stone,.15));R(3,2,2,60,shade(wt,.12));R(2,62,28,2,P.outline);}};}
+// shared-props-ceilingfan-v1: a ceiling fan seen from above, drawn straight onto the scene at its hub (cx, cy), canvas
+// pixels; r = blade length. frame 0 or 1 (swap them every 100 ms or so for a turning fan); still = no blur.
+function ceilingFan(ctx,cx,cy,r=13,frame=0,still=false){const px=(x,y,c,w=1,h=1)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h);},a0=frame?Math.PI/4:0,bl=P.wood,bd=shade(bl,-.35);
+  if(!still){ctx.fillStyle=rgba(P.outline,.12);ctx.beginPath();ctx.ellipse(cx,cy,r+1,(r+1)*.55,0,0,6.283);ctx.fill();}
+  for(let k=0;k<4;k++){const a=a0+k*Math.PI/2;for(let i=3;i<=r;i++){const x=cx+Math.cos(a)*i,y=cy+Math.sin(a)*i*.55,wd=i<5?1:2;px(x-wd/2,y-wd/2,P.outline,wd+1,wd+1);}
+    for(let i=3;i<=r-1;i++){const x=cx+Math.cos(a)*i,y=cy+Math.sin(a)*i*.55;px(x-.5,y-.5,i>r*.6?bd:bl,i<5?1:2,i<5?1:2);}}
+  px(cx-2,cy-2,P.outline,5,4);px(cx-1,cy-1,shade(P.brass,-.1),3,2);px(cx-1,cy-1,shade(P.brass,.3),1,1);px(cx,cy+2,P.outline,1,4);}
+// shared-props-boxes-v1: cardboard boxes, taped. v = 0 (one box), 1 (two stacked), 2 (a stack of three, the top one open).
+// col: the cardboard (a warm tan when left out).
+function boxes(v=0,col){return{size:[40,50,0,0],anchor:[20,48],lights:[],draw({R}){const c=col||shade(P.straw,-.18),cd=shade(c,-.3),cl=shade(c,.2),tp=shade(P.cream,.15);
+  const box=(x,y,w,h,open)=>{R(x,y,w,h,c,{sh:Math.round(w*.3)});R(x,y,w,2,cl);R(x+w/2-1,y,2,h*.45,tp);R(x,y+h-2,w,2,cd);R(x+3,y+h*.55,w*.35,h*.2,shade(P.text,-.15));
+    if(open){R(x-3,y-4,w*.45,4,cl);R(x+w*.6,y-5,w*.45,5,c);R(x+2,y,w-4,3,P.outline);}};
+  if(v===0)box(4,26,32,22);
+  else if(v===1){box(2,28,34,20);box(6,10,26,18);}
+  else{box(2,30,36,18);box(4,14,30,16);box(9,0,22,14,true);}}};}
+// shared-props-washer-v1: a coin washer (kind "washer", top-loading) or dryer ("dryer", round window). on = running:
+// the dryer's drum shows clothes and its window glows a little.
+function washer(kind="washer",on=false){return{size:[34,48,0,0],anchor:[17,46],lights:on&&kind==="dryer"?[[17,28,.8,.25]]:[],draw({R,E,C}){const wt=shade(P.text,-.05),wd=shade(wt,-.3);
+  R(1,6,32,40,wt,{sh:6});R(1,4,32,4,shade(wt,.12));R(1,2,32,3,shade(P.stone,.15));R(4,3,10,1,P.outline);R(24,2,6,3,shade(P.stone,-.1));R(25,3,4,1,P.brass);
+  if(kind==="dryer"){E(16,26,10,10,P.outline);E(16,26,8,8,on?shade(P.glass,-.15):shade(P.stone,-.4));if(on){C(13,29,3,P.cloth);C(19,24,3,P.accent);C(17,30,2,P.cream);}E(13,23,3,2,rgba(P.lightTo,.5));}
+  else{R(4,10,26,4,wd);R(5,11,24,2,shade(wt,.1));R(6,18,22,22,shade(wt,-.06));R(14,20,6,2,P.outline);}
+  R(1,44,32,2,P.outline);}};}
+return{T,S,SLOTS,PALETTES,use,pal,RGB,hex,rgba,shade,hsh,mk,art,drawChar,charSprite,SAMPLE_AGENTS,LAMP,BENCH,prop,summerGrass,summerTree,dryDirt,heat,sodium,storefront,signBlank,signText,signWidth,WATERTOWER,trafficLight,gasPump,ranchHouse,porch,mailbox,sedan,floor,innerWall,counter,tableChairs,DESK,BED,shelving,stringLights,booth,ferrisWheel,asphalt,paintLine,bugZap,BUGLIGHT,workLight,VAN_SIGN,van,walkway,metalStairs,numberDoor,windowAC,chainLink,chainLinkSide,pool,dumpster,FRIDGE_FRONT,kitchen,ceilingFan,boxes,washer,
   dirtRoad,boardwalk,stoneSidewalk,grass,paint,F,picketFence,wall,roof,windowPane,door,awning,light,dusk,autumn,rr,shell,dialog};
 })();
