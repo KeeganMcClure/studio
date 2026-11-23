@@ -118,7 +118,8 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
   - [ ] Wounded enemies: the two damage steps for each Still Harvest enemy, replacing the red dots (Art → Townsfolk and monsters)
   - [ ] Still Harvest maze: a route to all three victims that skips the Gleaner's clearing, and a go in / not yet choice at its entrance (spec 006, Revision after the demo playtest)
   - [ ] Creator: pronouns (she, he, they) used by all dialog, and a slim or broad body build for map, battle and portrait sprites, plus pronouns for each Bond, with a save step for old agents and Bonds (Agents and items → Agent creator, steps 4 and 5)
-- [ ] After the Still Harvest playtest: revisit party size (3 vs 4). Weigh tension, skill coverage, fight length on the phone and screen space; switching to 4 means reworking templates, professions, balance and the combat layout
+- [x] After the Still Harvest playtest: revisit party size (3 vs 4). Weigh tension, skill coverage, fight length on the phone and screen space; switching to 4 means reworking templates, professions, balance and the combat layout
+  Done Nov 23: after the demo playtest, Keegan kept the party at 3. Nothing changes.
 - [ ] Season readiness (set Nov 22): the design work that lets a full season be built as soon as the demo is approved. In order, since each step unblocks the ones after it; tick this when all six are done
   - [x] Season 1 of 6: write the Demo 6 spec (debrief, bagging or hiding evidence, cover story, skill gains, plus the funeral, Big Hat's send-off line and the memorial list that spec 006 moved to Demo 6). Do it while Demo 5 parts B and C are built
     Done Nov 22: spec 007 (`specs/007-debrief-and-case-gains.md`), built from the approved debrief mockup.
@@ -209,7 +210,7 @@ Black Lantern is a turn-based party JRPG with a cosmic-horror heart, played on a
 
 1. **Familiar places that turn horrifying.** Small towns or big cities that are a little off, then dread that escalates. Quirky charm and dark humor first. Tone: grim with gallows humor.
 2. **Two health bars: HP and SAN.** HP is the body and heals; SAN is the mind and mostly doesn't. Breaking Points give lasting disorders. Skills, abilities and agent traits can soften or prevent SAN loss, so it never drops like a rock.
-3. **A party you build together.** You make a team of 3 agents whose builds work together, or start from a ready-made team template. Party size stays at 3 (confirmed Nov 19) and gets revisited after the Still Harvest vertical-slice playtest. The party carries over between cases. A dead or broken agent is gone for good and a recruit takes their place. Game over only if the whole team falls.
+3. **A party you build together.** You make a team of 3 agents whose builds work together, or start from a ready-made team template. Party size stays at 3 (confirmed Nov 19, and again after the demo playtest on Nov 23, 2026). The party carries over between cases. A dead or broken agent is gone for good and a recruit takes their place. Game over only if the whole team falls.
 4. **Investigation first; fights are rare and dangerous.** Talk, find clues, choose, then fight. Choices matter in the boss fight and the debrief. See Gameplay loop in Systems.
 5. **Classic JRPG difficulty.** Fair, with real tension. The demo's Gleaner boss fight is the benchmark: about that hard, not identical.
 6. **The screen is part of the horror.** Once the lead agent drops below 40 SAN, colors shift, glitch and whisper.
