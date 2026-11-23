@@ -288,7 +288,7 @@ function buildKhlt(){const N=isNight(),M=blank('khlt','KHLT 1340',36,26,'u');M.a
  lay(M,17,14,19,12,'s');lay(M,0,14,8,12,'s');
  [[0,2,2],[33,0,3],[18,0,2],[0,22,3],[30,18,3]].forEach(([x,y,w])=>{put(M,'tallcane',x,y,w,1);lookAll(M,row(x,y,w),TEXT.look.tall)});
  lay(M,26,0,1,3,'d');
- if(N)M.warps['26,0']=()=>goTo('cane',20,28,'up');else bounceDir(M,['26,0'],TEXT.rowsDay,'down');
+ if(ph()===3)M.warps['26,0']=()=>goTo('cane',20,28,'up');else bounceDir(M,['26,0'],TEXT.rowsDay,'down');
  bounceDir(M,['8,25','9,25','10,25'],TEXT.hwy,'up');
  return M}
 function buildBooth(){const M=room('booth','KHLT · BROADCAST BOOTH',13,8,'c',{alpha:.82});
