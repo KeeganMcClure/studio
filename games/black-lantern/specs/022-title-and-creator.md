@@ -77,6 +77,8 @@ Mockup: [`022-identity-codename-mockup.png`](022-identity-codename-mockup.png) (
 3. **Dossier, code name:** until a code name is taken, the card reads `AGENT ???` (not the surname).
 4. **Dossier, Big Hat's box:** the Dossier behind the box dims more (about 80% dark, not 45%) and the box is solid, so no Dossier text shows through it.
 
+As built (Nov 23, 2026): the mockup's "Build shows here" hint shows only when there's room; on an iPhone SE it's left off so the sprites stay at double size. At 320 × 480 the face drops its outer frame, and the Dossier dims to 85%.
+
 Checks: side by side with the mockup at 375 × 667 and at 320 × 480, nothing cut off (on short screens the list scrolls; the backstory box and the sprites stay). No save change.
 
 ## Must stay true
