@@ -215,7 +215,7 @@ function drawWorld(){
  M.props.forEach(p=>p.lights.forEach(([x,y,r,a,pool])=>(pool?pools:glows).push([x-camx,y-camy,r,a])));
  if(M.light==='dusk')SHELF.dusk(cx,glows.concat(pools),now);
  else if(night){
-  const lamp=StudioLight.mix(LOOK.lamp[0],LOOK.lamp[1],k),ring=[[G.px+8-camx,G.py+6-camy,StudioLight.mix(LOOK.lantern[0],LOOK.lantern[1],k)*(G.fs&&G.fs.flareMap===G.map?1.6:1)*(M.lantern||1)]];lanR=ring[0][2];  // M.lantern: a case's map can shrink the lantern (Lost Hour's fog)
+  const lamp=StudioLight.mix(LOOK.lamp[0],LOOK.lamp[1],k),ring=[[G.px+8-camx,G.py+6-camy,StudioLight.mix(LOOK.lantern[0],LOOK.lantern[1],k)*(G.fs&&G.fs.flareMap===G.map?1.6:1)*(M.lantern||1)*(M.lanternK||1)]];lanR=ring[0][2];  // M.lantern: a case's map can shrink the lantern (Lost Hour's fog)
   pools.forEach(([x,y])=>ring.push([x,y,lamp]));roamLit.forEach(p=>ring.push(p));  // roamers walk in plain sight
   if(M.boss&&mapBossImg(0))ring.push([13*16+8-camx,11*16-38-camy,LOOK.boss+Math.random()*4]);  // Still Harvest's Gleaner only: other cases draw their own boss
   StudioLight.night(cx,{dark:LOOK.dark,alpha:M.alpha||LOOK.alpha,warm:M.warm||LOOK.warm,pools:ring,glows:glows.map(([x,y,r,a])=>[x,y,r*.7,a*.6])});

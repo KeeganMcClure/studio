@@ -183,7 +183,9 @@ async function checkBoard(page, name, save, inCase, from) {
     if (!await board()) problems.push('finishing a case did not open the case board');
     // the case the checkpoint is in (Still Harvest, or a later case's test save such as Good Manners')
     let cid = 'still-harvest'; try { cid = JSON.parse(JSON.parse(save.keys['bl.game'])).case || cid; } catch (e) {}
-    if (!s || !s.cases[cid] || s.cases[cid].state !== 'closed' || s.closed !== before + 1) problems.push(`after a finish ${cid} should be closed with CLOSED ${before + 1}`);
+    // an agency case (spec 009, step 3) closes without raising CLOSED
+    const want = s && (s.agency || []).some(a => a.id === cid) ? before : before + 1;
+    if (!s || !s.cases[cid] || s.cases[cid].state !== 'closed' || s.closed !== want) problems.push(`after a finish ${cid} should be closed with CLOSED ${want}`);
     await page.screenshot({ path: path.join(__dirname, '..', 'dist', `check-board-closed-${tag}.png`) });
     await page.keyboard.press('x'); await pause(300);
     if (await board() || await page.evaluate(() => BL.S.step) !== 'title') problems.push('B on the board after a finish did not go to the title');
@@ -191,7 +193,7 @@ async function checkBoard(page, name, save, inCase, from) {
     await page.evaluate(() => { if (window.BLG && BLG.active) BLG.input('b'); }); await pause(200);
   }
   // New game: asks first when the season has a closed case, then starts Season 1 over and keeps the roster
-  const closed = ((await season()) || {}).closed || 0;
+  const sv = (await season()) || {}, closed = Math.max(sv.closed || 0, Object.values(sv.cases || {}).filter(e => e && e.state === 'closed').length);  // a closed agency case counts as progress too
   await page.locator('#list .row', { hasText: 'New game' }).click(); await pause(200);
   const step = await page.evaluate(() => BL.S.step);
   if ((closed > 0 || (((await season()) || {}).season | 0) > 1) && step !== 'confirm') problems.push('New game with a closed case (or past Season 1) did not ask first');
