@@ -45,7 +45,7 @@ const write = (name, note, keys) => {
   await play('test-a');
   if (!await page.evaluate(() => !!openAgency(loadSeason()))) throw new Error('the stand-in agency case did not unlock');
   write('agency', 'The Dev test season: one stand-in regular case closed and the stand-in agency case unlocked on the board, from the build of ' + label, await dump());
-  await play('test-b'); await play('test-l1'); await play('test-l2');
+  await play('test-b'); await play(await page.evaluate(() => SEASONS.test.agency[0].id)); await play('test-l2');
   if (!await page.evaluate(() => !!(CB && CB.end))) throw new Error('no season end screen after the stand-in finale');
   write('season-end', 'The Dev test season: the stand-in finale closed, at the season end screen, from the build of ' + label, await dump());
   await page.evaluate(() => boardPress('a')); await page.waitForTimeout(400);

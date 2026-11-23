@@ -48,7 +48,7 @@ async function introSteps(){
  const due=agencyDue(s);
  if(due){if(!s.agency.some(a=>a.id===due))s.agency.push({id:due,played:false});const c=caseById(due);
   if(!s.cases[due])s.cases[due]={file:c.card.file,state:'open',ending:null};store.set(seasonKey(),s);
-  const d=seasonDef(s.season),lines=(d&&d.text&&d.text.unlock&&d.text.unlock[due])||[];
+  const d=seasonDef(s.season),lines=(d&&d.text&&d.text.unlock&&d.text.unlock[due])||c.unlock||[];  // the case's own stand-in lines until the season data has them
   await sleep(300);if(!CB)return;for(const l of [].concat(lines))await say('BIG HAT',l);
   s=loadSeason();const x=s.agency.find(a=>a.id===due);if(x)x.played=true;store.set(seasonKey(),s);
   if(!CB)return;CB.thud={t0:performance.now()};const t=boardTargets(boardLayout());CB.sel=Math.max(0,t.findIndex(x=>x.id===due))}
@@ -67,3 +67,12 @@ function nextSeason(){
  store.set(B.key('roster'),R);
  const s2=loadSeason();fillSlots(s2);store.set(seasonKey(),s2);
 }
+// Dev only (spec 014, Playing it on Dev): Start on the board opens a small Dev menu that pins the season's next built
+// agency case straight away, through its real unlock scene and thud. Release builds never reach it (Studio.channel).
+async function devPinAgency(){
+ if(!CB||CB.busy||!(window.Studio&&Studio.channel==='dev'))return;
+ const s=loadSeason(),a=agencyDefs(s).find(a=>!(s.agency||[]).some(x=>x.id===a.id)&&caseById(a.id)),W=BLS.BOARD;
+ if(!a||openAgency(s)){B.toast(W.devNone);return}
+ const c=caseById(a.id),name=`${W.lantern} ${String(c.card.file).padStart(2,'0')}`;
+ const r=await ask('',W.devQ,[fillT(W.devPin,{n:name}),W.devClose]);if(r!==0||!CB)return;
+ s.agency.push({id:a.id,played:false});store.set(seasonKey(),s);await boardIntro()}

@@ -83,6 +83,7 @@ function boardPress(k){
  if(CB.files){filesPress(k);return}
  if(CB.end){if(k==='a'&&!CB.busy){CB.end=null;nextSeason();CB.sel=0}return}  // the season end screen: A begins the next season
  if(CB.busy&&k!=='b')return;  // the board's own scene is playing (season.js); B still leaves
+ if(k==='start'&&window.Studio&&Studio.channel==='dev'){run(devPinAgency);return}  // Dev only: pin the next agency case (season.js)
  const L=boardLayout(),t=boardTargets(L),rects=t.map(x=>x.r);
  if(k==='up'||k==='down'||k==='left'||k==='right'){CB.sel=StudioNearest.step(rects,CB.sel,k);return}
  const x=t[CB.sel];

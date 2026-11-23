@@ -18,6 +18,6 @@
  stand('test-c',card(93,'STAND-IN C','TESTVILLE','#d9772b'));
  stand('test-l1',card(1,'STAND-IN AGENCY','RECORDS','#7a1a18'));
  stand('test-l2',card(2,'STAND-IN FINALE','RECORDS','#7a1a18'));
- registerSeason({id:'test',n:1,regular:['test-a','test-b','test-c'],agency:[{id:'test-l1',at:1},{id:'test-l2',at:2,finale:true}],
+ registerSeason({id:'test',n:1,regular:['test-a','test-b','test-c'],agency:[{id:caseById('lantern-01')?'lantern-01':'test-l1',at:1},{id:'test-l2',at:2,finale:true}],  // a built first agency case stands in for test-l1, so its real unlock can be tried (spec 014)
   text:{unlock:{'test-l1':['Test agency case. It pins on now.'],'test-l2':['Test finale. It pins on now.']},end:['Test season over.']}});
 })();

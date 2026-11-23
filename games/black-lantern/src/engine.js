@@ -25,7 +25,8 @@ const BLOCK=new Set('TCB#DLlPHFSVKkYyNpGWIOX'.split(''));
 // ================= HELPERS =================
 // {code} and {first} are the lead's, and so are {first.they}, {code.their}...; any pronoun token still left over
 // (a person nobody named) reads as they (Agent creator, Pronouns and body)
-const fmt=t=>BLS.pron(BLS.pron(t,k=>k==='first'||k==='code'?lead().a:undefined),()=>'they').replace(/\{code\}/g,lead().a.code||((lead().a.name||'').split(' ').pop()||'?').toUpperCase()).replace(/\{first\}/g,lead().name);
+// with no party yet (a line on the board after a reload: an agency unlock, the Dev menu) there's no lead to name
+const fmt=t=>!lead()?BLS.pron(String(t),()=>'they'):BLS.pron(BLS.pron(t,k=>k==='first'||k==='code'?lead().a:undefined),()=>'they').replace(/\{code\}/g,lead().a.code||((lead().a.name||'').split(' ').pop()||'?').toUpperCase()).replace(/\{first\}/g,lead().name);
 // Weapon from the profession (Bible: Starting kit; dice from Combat numbers); STR bonus for melee (field.js strBonus).
 function weaponFor(a){const p=profOf(a),W=B.WEAP[(p&&p.weapon)||'handgun']||B.WEAP.handgun;
  return{name:W.name,skill:clamp(skillVal(a,W.skill)+(W.hit||0),5,99),dmg:W.dmg,bonus:(W.plus||0)+(W.melee||W.thrown?strBonus(a.stats.STR):0),verb:W.verb}}
