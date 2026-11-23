@@ -110,12 +110,13 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
   Done Nov 21: one copy of each now lives in the studio's `engine/` (`engine/shelf.js`, `engine/dialog.js`), shared with Rushlight, with a sync step that brings in a new version from the source page and a check that fails if either is edited by hand.
 - [x] Big Hat's briefing rework (spec 013): Big Hat drawn from his portrait, large and center in the back room; no corner portrait while he's on screen; two questions from four topics, each an INTEL note and a small edge; the new briefing lines
   Done Nov 22: Big Hat in the back room is now his portrait drawn twice as big, behind the desk, and the old desk sprite is gone. His lines in his own scene show just the name tab. At each briefing you ask two of four questions (or none), and each answer adds an INTEL note to the Case file and a small edge in the case. The briefing has the new lines.
-- [ ] Demo playtest fixes (Keegan's notes, Nov 23): build the rule changes from the playtest. Tick this when all five are done
+- [ ] Demo playtest fixes (Keegan's notes, Nov 23): build the rule changes from the playtest. Tick this when all six are done
   - [ ] Hide skill options nobody in the party can use, at hotspots, on the map menu's Skills row and in battle (Skills and menus → Using skills; Combat → Basics, Command menu)
   - [ ] Creator: a bonus pick that would pass 80% stops at 80% (Agents and items → Agent creator, step 3)
   - [ ] Turn-order column: current round only, each fighter once (Combat → Basics, Turn order)
   - [ ] Pokémon-style battle backdrops for Still Harvest's town and maze, replacing the darkened map still (Combat → Basics, Backgrounds)
   - [ ] Wounded enemies: the two damage steps for each Still Harvest enemy, replacing the red dots (Art → Townsfolk and monsters)
+  - [ ] Still Harvest maze: a route to all three victims that skips the Gleaner's clearing, and a go in / not yet choice at its entrance (spec 006, Revision after the demo playtest)
 - [ ] After the Still Harvest playtest: revisit party size (3 vs 4). Weigh tension, skill coverage, fight length on the phone and screen space; switching to 4 means reworking templates, professions, balance and the combat layout
 - [ ] Season readiness (set Nov 22): the design work that lets a full season be built as soon as the demo is approved. In order, since each step unblocks the ones after it; tick this when all six are done
   - [x] Season 1 of 6: write the Demo 6 spec (debrief, bagging or hiding evidence, cover story, skill gains, plus the funeral, Big Hat's send-off line and the memorial list that spec 006 moved to Demo 6). Do it while Demo 5 parts B and C are built
