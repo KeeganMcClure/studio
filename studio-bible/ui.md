@@ -1,7 +1,7 @@
 # UI
 
 House rules for every game. Each game's `bible.md` sets its own colors and menu contents.
-Sources: Black Lantern Art (Faces and sprites, Light and mood) and Rushlight Art (Town street, Battle), Nov 15–21, 2026.
+Sources: Black Lantern Art (Faces and sprites, Light and mood) and Rushlight Art (Town street, Battle), Nov 15–21, 2026; Screen craft from Keegan's Rushlight playtest, Nov 23, 2026.
 
 ## Dialog box ("Lantern Bust" layout)
 
@@ -12,6 +12,17 @@ Sources: Black Lantern Art (Faces and sprites, Light and mood) and Rushlight Art
 - Short lines, typewriter effect. A ▼ marks advance.
 - Questions show their choices inside the box, under the question line, with a cursor. Tapping a choice also works, and a long list scrolls inside the box.
 - Each game paints the box in its own palette.
+
+## Screen craft
+
+Set Nov 23, 2026 from Keegan's Rushlight playtest, written from what Black Lantern's screens already do. These are minimums: each game's bible picks its own colors and can add more.
+
+- **Readable text.** Dialog, descriptions and anything you read for meaning use the game's main text color. The dim color is only for labels, hints and the key help line at the bottom.
+- **No cut-off names.** A person's, trade's, place's, job's or item's name always shows in full. Shorten the label or wrap to a second line instead of ending it in "…". Only long flavor text may be cut, and then its full text is one press away.
+- **Rows with detail are cards.** A row that carries more than a name and one value is a boxed card: a title line, a subtitle line, the portrait at 2× when it has one, and its actions as buttons on the card. Plain one-line rows are for short pick lists, like the map menu or a question's choices.
+- **Room to breathe.** Boxes keep a gap between them, and a description gets its own box sized to its text. No box is mostly empty while the list above it is squeezed.
+- **Portraits stand out.** A portrait sits on a lit or lighter backing that its dark outline reads against, never on a backing as dark as the outline.
+- **Strips and HUDs fit.** The map HUD is a framed card. A strip that won't fit in one line at 320 × 480 splits into two lines or moves part of its contents to the card, rather than squeezing or cutting words.
 
 ## Menus
 
