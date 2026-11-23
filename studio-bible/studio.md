@@ -37,6 +37,14 @@ The loop for each feature and the bug route are in the README; the Developer's r
 - The Designer changes bibles and specs only through GitHub pull requests, one per change. Keegan merges. Never straight to `main`.
 - Mockups are made by the Designer. Final sprites follow `art-style.md` and go in the game's `assets/` folder as drawing code, so nothing gets redrawn.
 
+## Screen list
+
+Set Nov 23, 2026, after Black Lantern's intro was built without any spec covering it.
+
+- Each game's `bible.md` keeps a **Screens** section: one row per screen the player can see, in play order from the title to game over (title, intro, creator, map, menus, battle, endings and so on).
+- Each row names the spec that covers it. A screen with no spec is a gap: the Designer writes or extends a spec before it's built, and the Developer asks before building a screen that isn't on the list.
+- A spec that adds a screen adds its row in the same PR.
+
 ## Design Inbox
 
 - Keegan writes changes and comments in the [Design Inbox](https://claude.ai/artifact/7rVc59Lu79KGHHmQ4bVY7H) doc.
