@@ -299,7 +299,7 @@ Marrow Creek, Oregon, during the Harvest Lantern Walk.
 2. **Town investigation:** 5 clues, 3 needed to proceed.
 3. **Committee Volunteer** fight.
 4. **Dark corn maze** with roamers in a danger zone, loot and a lore note (no random encounters, per Gameplay loop).
-5. **Victims:** 3 people tied to scarecrow poles who can be cut down. The maze has a route to all three that never passes the Gleaner's clearing, so you can free them and explore the rest before you choose to face it (Keegan's demo playtest, Nov 23, 2026).
+5. **Victims:** 3 people tied to scarecrow poles who can be cut down. The maze has a route to all three that never passes the Gleaner's clearing, so you can free them and explore the rest before you choose to face it (Keegan's demo playtest, Nov 23, 2026). The clearing is a dead end with one way in and a 5 × 5 open middle (was 7 × 7; its edge became the hedge that closes it off, kept Nov 23, 2026).
 6. **Boss: The Gleaner**, a figure of harvest straw with a lantern for a head. It gets weaker for each victim rescued.
 7. **Debrief** with Big Hat, a cover-story choice, then a home scene choosing a Bond. The agent's new SAN and disorders save to the roster.
 
@@ -702,7 +702,7 @@ Every Shared item in one place. Kit-only items are in the Starting kit table.
 | Uppers | Drug | High; clears Exhausted, +1d4 WP; Exhausted again when it wears off | Set by the case |
 | Strong painkillers | Drug | High; heal 1d6 HP; Bleeding does no damage while High | Set by the case |
 | Coke | Drug | High; +20% to Persuade and Melee; −1d4 WP when it wears off | Set by the case |
-| Mushrooms | Drug | High; hidden unnatural hotspots show and the screen shimmers; SAN rolls get harder | Set by the case |
+| Mushrooms | Drug | High; hidden unnatural hotspots show and the screen shimmers (only while the lead is High, set Nov 23, 2026); SAN rolls get harder | Set by the case |
 | Frag grenade | Throwable | 1 use, thrown with Athletics: damage to every enemy; Loud | LB · Req +0% |
 | Flashbang | Throwable | 1 use, thrown with Athletics: every human enemy is Stunned; Loud | LB · Req +0% |
 | Molotov | Throwable | 1 use, thrown with Athletics: damage to one enemy; things that burn take double | LB · Req +0% |
@@ -877,7 +877,7 @@ Press Start on the map to open it. It's the same navy list box as the battle com
 Small comforts for short phone sittings. None of them change a rule; they save taps and keep you from getting lost.
 
 - **Finish the box:** the first tap (or A) shows the whole box at once; the next one moves on.
-- **Skip replays:** after a game over the case reopens, and briefings and cutscenes you've already seen can be skipped with B.
+- **Skip replays:** after a game over, Retry goes back to the last checkpoint (set Nov 23, 2026), and briefings and cutscenes you've already seen can be skipped with B. B skips only the current part and stops at each question or menu, so Big Hat's questions, requisition, SAN rolls and choices always play (set Nov 23, 2026).
 - **Battle cursor memory:** each agent's command menu opens on the last command and target they used.
 - **Odds when targeting:** picking a target shows the agent's to-hit % with every modifier applied (Firearms 50% −20 = 30%) and the weapon's dice.
 - **A prompt:** a small A bubble appears over a usable hotspot when the lead stands next to it. Hidden hotspots stay hidden until found.
@@ -925,7 +925,7 @@ The dice and numbers the code uses. Every weapon rolls its own dice, at the same
 - **Fumbles (Delta Green, set Nov 20):** a roll of 100, or doubles that miss (11, 22 … 99), is a fumble. In a fight a fumble is just a miss with a bad-luck line (the gun jams, the swing goes wide); any WP is still spent, with no other penalty. Outside fights, each scene says what its fumble does. Enemies crit and fumble by the same rules, so an enemy crit does double damage.
 - **Skill bases (Delta Green, set Nov 19):** Melee 30%, Dodge 30%, Athletics 30%, Firearms 20%, Search 20%, Persuade 20%, every other skill 10%. Professions and the 8 bonus picks build on these.
 - **Fight floor (set Nov 19):** a plain Fight attack never rolls under 30%, so every agent can chip in. Special moves use the real skill.
-- **Weakening choices:** each takes 10–15% off a boss's HP, at most 40% in all. The rebuilt Gleaner: 60 HP, −8 per rescued victim (36 with all three saved).
+- **Weakening choices:** each takes 10–15% off a boss's HP, at most 40% in all. The tuned Gleaner (Nov 23, 2026): 65 HP, −8 per rescued victim (41 with all three saved, 37% off).
 - **Fight totals:** roamer fights 10–18 enemy HP in all; story fights 20–35.
 - **Damage over time:** Bleeding and Poisoned take 1 HP a turn from agents, 2 from enemies (bigger bodies, bigger HP).
 - **Armor and Defend:** body armor takes 1 off each hit (a hit can drop to 0). Defend halves damage, rounded down.
@@ -940,7 +940,21 @@ The dice and numbers the code uses. Every weapon rolls its own dice, at the same
 | Boss | 55–65 | 50–65 | 3–6 (1d4+2); area attacks 1–3 each |
 | Season finale boss | 70–80 | 55–65 | 3–6 (1d4+2); area attacks 1–3 each |
 
-Simulator check (plain attacks and meds only, no special moves, so real odds run higher): a Field Team beats the rebuilt Gleaner about 8 times in 10 with no victims saved (about 11 rounds, about one agent Downed) and almost always with all three saved. Paper Trail wins about 1 in 4 with none saved and 2 in 3 with all three. A finale at 75 HP is a coin flip for a Field Team.
+**The Gleaner, tuned (Nov 23, 2026), the bar for every later boss** (Combat → Bosses, Tuning check). 65 HP, −8 per victim saved. 60% to hit in phase 1 and 65% in phase 2; hit 1d4+2, sweep 1d3 to each agent. Phase 1 moves: sickle 5, sweep 2, names 1 (out of 8). Phase 2 starts at half HP and adds two sickle strikes and one sweep for each victim still on a pole, plus one names if the names are still live.
+
+Simulator check (`tools/boss-sim.js` plays the game's real battle code; 1000 fights each, Field Team at full strength; "careful" heals, Slips, braces and uses Aimed shot and Spot weak point; "plain" uses Fight and meds only):
+
+| Party | Victims saved | Wins | Notes |
+| --- | --- | --- | --- |
+| Careful | 0 | 92% | about 9.5 rounds, 0.4 Downed on average, 98% of wins with at most 1 Downed |
+| Careful, arriving worn (−3 HP, −4 WP each) | 0 | 74% | |
+| Careful | 3 | 98% | about 6 rounds, every win with at most 1 Downed |
+| Plain | 0 | 86% | |
+| Plain | 3 | 97% | |
+
+Deducing right (no names) makes it a little harder (careful, 0 saved: 86%), because the names turns do no HP damage. Every later boss is added to the simulator as one entry and checked against this table. **Can lose (set Nov 23, 2026):** skipping the case's choices counts as "can lose" when it raises a careful team's losses clearly above the all-choices fight, as the Gleaner's do (about 2% with all three saved, 8% with none at full strength, 26% with none arriving worn). A boss doesn't have to beat a careful team that skipped the choices most of the time.
+
+Older check, before the tune (Nov 19, plain attacks only): Paper Trail beat the old 60 HP Gleaner about 1 in 4 with none saved and 2 in 3 with all three, and a finale boss at 75 HP was a coin flip for a Field Team. Rerun these on the simulator when the finale is tuned.
 
 ### Battle moves (set Nov 18)
 
@@ -1041,6 +1055,7 @@ The game plays on an iPhone SE inside a Game Boy Advance-style shell. Since the 
 - The parts, loaded in this order (updated Nov 22): `index.html` (the page and Black Lantern's shell colors), then the studio's shared `engine/studio.js`, `engine/shell.js`, `engine/input.js`, `engine/move.js`, `engine/clock.js` and `engine/party.js` (the site's Dev/Release saves, the shell layout, buttons and keyboard, map walking, the 60-ticks-a-second clock, and the party card list; shared with Rushlight, spec 001 and later), `strings.js` (the shared strings block, `window.BLS`), `creator.js` (agent creator and portraits, and where button presses go, `window.BL`), `engine/shelf.js` (the Shared Shelf script), `agent-sprite.js` (agent map sprites, `window.BLA`), `engine/dialog.js` (the Lantern Bust box, `window.BLD`), `engine.js` (map, dialog, sanity, battle, Big Hat scenes, saves, pause, input, `window.BLG`), `field.js` (hotspots, items, statuses, roamers and loot on the map), `battle.js` and `agent-back.js` (the battle and the agents seen from behind), with the shared `engine/battle.js` and `engine/patrol.js`, `party-menu.js` (the Party screen and Dossier, spec 002), `engine/nearest.js` (moves a cursor to the nearest thing in a direction) and `case-board.js` (the case board, spec 004), then one file per case in `cases/` (Still Harvest: `cases/still-harvest.js`). `engine/shelf.js` and `engine/dialog.js` are the one shared copy of each, synced unchanged from the Shared Shelf and the Asset Library, never edited by hand. A chat reads only the parts its task touches. A new case is a new file in `cases/`, added as a script line at the end of `index.html`; each case file supplies its maps, enemies, scripts, a `caseOpening` briefing and a `caseCard` (file number, title, town, place line, two-line hook, pin color), and ends with `registerCase`, which puts it on the case board.
 - Agents on the map (since Nov 21): the Shared Shelf's method v1 and person v1 are the pieces in use. The engine calls `BLA.draw` for the lead; since Demo 4 (spec 005, Nov 22) the townsfolk have their own map sprites and talking portraits, and the old `drawChar` look is gone.
 - **Agency cases stay out of the public repo (set Nov 23, 2026, from the pre-season review).** Every agency case's file (`lantern-nn.js`, its text block and its art), the agency entries in each season data file (ids, unlock counts, which one is the finale) and the season-end lines live in the private `KeeganMcClure/black-lantern` repo, under `agency/`. The studio repo holds only the regular cases, the season data's regular-case list and the public frames (specs 014 and 015). When Black Lantern is built for Dev or Release, the build pulls the private files in and bundles them into the page with everything else; it fails loudly if they can't be reached rather than shipping a season without its agency cases. How the build reads the private repo (a deploy key or a repository secret) is the Developer's call, and no key or token is ever committed. The built page is still public to play, as every case is; the rule keeps the story out of the readable repo, its history and its PRs. `npm run check` runs with the private files when they're there and with the Dev test season when they aren't.
+- **Secret authoring files (set Nov 23, 2026).** The agency arc (`claude/SPOILERS-agency-arc.md`), the personal arcs (`claude/arcs-season-1.md`) and the home scenes (`claude/home-scenes.md`) live in the private `KeeganMcClure/black-lantern` repo under `claude/`, next to `agency/`. Those copies are the master; never in the studio repo. The Dev and Release deploys read `agency/` with a read-only token saved as the studio repo secret `BL_PRIVATE_TOKEN`, never committed.
 - Cases are data plus small async functions: `say`, `ask`, `choose`, `battle`, `sanCheck`, `clue`, `checkpoint`.
 - **Where text lives (set Nov 20).** All in-game text stays in the game file, with no separate text store or Sheet, so case writing stays a surprise. Once the file is split, each case part opens with its own text block (dialog, case text, its pools of lines), and menus, items and names share one strings block. Item and menu wording is designed in Agents and items and Skills and menus, then copied in at build time.
 - Edit the existing file, never rewrite from scratch. After each change: syntax check, playtest the changed part, copy any newly drawn art into the Asset Library (see Art, Save every asset), run npm run check, commit and push, then publish the bundled file to the same artifact with a dated label (Build YYYY-MM-DD), and add a Changelog line. Milestone builds also go to Drive (see Process, Backups).
