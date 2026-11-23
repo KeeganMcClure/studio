@@ -2,7 +2,8 @@
 // The home phase (spec 008, part A; approved home phase mockup). After the debrief's funeral or goodbye and before the
 // case board: Sabbatical cards for agents away, anyone coming back, Bonds that broke, personal arc beats that are due,
 // then each agent in seat order picks ONE home scene. Scenes play in the Lantern Bust box over a home backdrop with the
-// Bond's face; a result card shows the roll and what changed. Every finished step saves (G.db.home in the checkpoint).
+// Bond's face; a result card shows the roll and what changed. Every finished step saves (G.db.home in the checkpoint;
+// the scenes played this season are in bl.season.played, see poolPick).
 // Loaded after debrief.js as a plain script, sharing the engine, field.js (horror, breakingPoint, offerRecruit, bondNow,
 // bondFold) and the party menu's drawing helpers. Screen words: strings.js (HOMEW). Scene and arc lines: the text block below.
 
@@ -13,39 +14,121 @@
 // Pronouns are tokens for the person in a key, never a fixed he or she: {B.they} {B.them} {B.their} {B.themself}, capitalized
 // at a sentence start ({B.They}), and {B:sing|plural} for a verb ({B:doesn't|don't}). See BLS.pron in strings.js.
 const HT={
- // Fulfill Responsibilities: the scene by Bond type and mood (before the roll), then the outcome box by mood
+ // Every pool below (a list of scenes) picks without repeats for the season (poolPick, spec 008 part C).
+ // Fulfill Responsibilities: scenes by Bond type and mood (before the roll; at least 3 each), the Bond's one last scene
+ // at Broken, then the outcome box by mood
  fr:{
-  partner:{close:['The kitchen smells like garlic and somebody trying.',['B','You\'re home. You smell like a campfire and a hospital.'],['A','Long week.'],['B','Don\'t want to know. Sit. I made the thing.'],'The thing is lasagna. It\'s still frozen in the middle. Nobody mentions it.'],
-   strained:['{B} is on the couch with the TV on mute.',['B','Your phone was off for six days.'],['A','Work.'],['B','Work. Right. Pest control.'],'You eat on opposite ends of the couch. A cooking show nobody\'s watching wins.'],
-   fraying:['There\'s a suitcase by the door. It isn\'t yours.',['B','I\'m not leaving. I just like knowing it\'s packed.'],['A','That\'s insane.'],['B','You came home with somebody else\'s blood in your hair. Twice, babe.'],'You sleep on the couch. The suitcase watches you all night.'],
+  partner:{
+   close:[
+    ['The kitchen smells like garlic and somebody trying.',['B','You\'re home. You smell like a campfire and a hospital.'],['A','Long week.'],['B','Don\'t want to know. Sit. I made the thing.'],'The thing is lasagna. It\'s still frozen in the middle. Nobody mentions it.'],
+    ['{B} is asleep on the couch. The TV is asking if anyone\'s still watching.',['B','Mm. You\'re back. Did you eat?'],['A','Gas station burrito.'],['B','That\'s not eating. That\'s a dare.'],'{B} makes you a grilled cheese at midnight, half asleep, and burns one side.','You eat the burnt side. That\'s the deal.'],
+    ['A list on the fridge: GUTTERS. DISPOSAL. CALL YOUR MOTHER.',['B','Pick one. I did the other two while you were gone.'],['A','Which two?'],['B','Wouldn\'t you like to know.'],'You clean the gutters. Something up there made a nest out of your old work shirt.','You leave it. It worked hard for that.']],
+   strained:[
+    ['{B} is on the couch with the TV on mute.',['B','Your phone was off for six days.'],['A','Work.'],['B','Work. Right. Pest control.'],'You eat on opposite ends of the couch. A cooking show nobody\'s watching wins.'],
+    ['{B} is doing the dishes. Loudly.',['B','The car smells like wet dog and a fire. We don\'t have a dog.'],['A','Work thing.'],['B','Your work things have a smell now. That\'s new.'],'You dry. {B} washes. Nobody says anything until the forks.'],
+    [['B','Your mother called here. Twice. I said you were on a fishing trip.'],['A','I don\'t fish.'],['B','I know. She knows. Everybody knows but the fish.'],'Dinner is takeout, eaten out of the containers.','Nobody gets plates down. Plates would mean staying.']],
+   fraying:[
+    ['There\'s a suitcase by the door. It isn\'t yours.',['B','I\'m not leaving. I just like knowing it\'s packed.'],['A','That\'s insane.'],['B','You came home with somebody else\'s blood in your hair. Twice, babe.'],'You sleep on the couch. The suitcase watches you all night.'],
+    ['You come in the back way. {B} is at the kitchen table in the dark.',['B','I heard the truck an hour ago. You sat out there an hour.'],['A','I was finishing a call.'],['B','Your phone was on the counter. It\'s still on the counter.'],'{B} goes to bed. You sit in the dark kitchen until the fridge stops humming. Then a while after.'],
+    ['{B} has started sleeping with the hall light on.',['B','You talk in your sleep now. Did you know that?'],['A','What do I say?'],['B','Numbers. And "don\'t open it." Over and over. Real polite.'],'You don\'t sleep. You lie there being polite to nobody.']],
    broken:['The house is quieter than a house should be.','The good knives are gone. The dog is gone. The suitcase is gone.','On the fridge, under the pizza magnet: "Don\'t call. I mean it this time."','You don\'t call. You\'ll think about that magnet a lot, later.']},
-  kid:{close:['{B} has been at the front window since lunch.',['B','Did you catch any bad guys?'],['A','A couple.'],['B','Were they REAL bad or regular bad?'],['A','Regular. Mostly.'],'You get dragged out back to meet a worm named Kevin. Kevin is the most important thing that happened all week.'],
-   strained:['{B} doesn\'t look up from the tablet.',['A','Hey, bud. I\'m back.'],['B','Okay.'],'You missed the recital. There\'s a video. {B} says you don\'t have to watch it.','You watch it four times in the truck.'],
-   fraying:['{B}\'s door has a new sign. KEEP OUT. The OUT is underlined twice.',['A','Brought you a snow globe. It\'s got a little lighthouse in it.'],'A long quiet.',['B','Why do you always smell like that when you come back?'],'You don\'t have an answer. You leave the snow globe on the carpet.'],
+  kid:{
+   close:[
+    ['{B} has been at the front window since lunch.',['B','Did you catch any bad guys?'],['A','A couple.'],['B','Were they REAL bad or regular bad?'],['A','Regular. Mostly.'],'You get dragged out back to meet a worm named Kevin. Kevin is the most important thing that happened all week.'],
+    ['{B} has built a fort out of every couch cushion in the house.',['B','Password.'],['A','Uh. Pizza?'],['B','That was last week\'s. But okay.'],'Inside: a flashlight, three crackers, and a crayon monster taped to the wall.',['B','That\'s so the real ones think it\'s taken.']],
+    ['{B} lost a tooth while you were gone and saved it in a sandwich bag to show you.',['B','The tooth fairy gave me a dollar. A WHOLE dollar.'],['A','Inflation.'],['B','What\'s inflation?'],'You explain it with a pile of cereal. By the end, {B} has eaten the economy.']],
+   strained:[
+    ['{B} doesn\'t look up from the tablet.',['A','Hey, bud. I\'m back.'],['B','Okay.'],'You missed the recital. There\'s a video. {B} says you don\'t have to watch it.','You watch it four times in the truck.'],
+    ['{B} is at the kitchen table doing homework you don\'t understand.',['A','Need help?'],['B','You weren\'t here for the part where they explained it.'],'Fair. You sit there anyway, pretending to read the fractions.','At bedtime {B} says "night" to the doorframe near you. Close enough.'],
+    ['The science fair was Thursday. {B}\'s volcano got an honorable mention.',['B','Everybody gets honorable mention.'],['A','Show me how it goes off.'],'A shrug. Then a long time in the yard, getting the baking soda just right.','It foams all over the grass. {B} almost smiles at you. Almost counts.']],
+   fraying:[
+    ['{B}\'s door has a new sign. KEEP OUT. The OUT is underlined twice.',['A','Brought you a snow globe. It\'s got a little lighthouse in it.'],'A long quiet.',['B','Why do you always smell like that when you come back?'],'You don\'t have an answer. You leave the snow globe on the carpet.'],
+    ['{B} has started checking the locks. Every door. Twice.',['A','Who taught you that?'],['B','You did. You do it every time you come home.'],'You didn\'t know you did that.','You stand in the hall with your hand on the deadbolt for a long time.'],
+    ['{B}\'s teacher sent a drawing home. Your house, with a black car out front.',['B','That\'s the man who sits outside when you\'re gone.'],['A','What man?'],['B','He waves. I don\'t wave back. You said don\'t.'],'You never said that. You check the street. Nobody.','You check it again at three.']],
    broken:['The family lawyer has a fern and a bowl of mints nobody eats.','"Supervised visits," she says. "Considering the... gaps."','The drawing {B} made of you is still in your wallet. You\'re tall in it. You\'re smiling.','You have a gun for a hand.']},
-  parent:{close:['{B}\'s house still has the plastic on the good couch.',['B','You\'re thin. Are they feeding you at that job?'],['A','There\'s a donut shop.'],['B','A donut is not a meal. Sit. I\'ll heat up the roast.'],'There\'s always a roast. You\'ve never once seen it start out raw.'],
-   strained:[['B','Your cousin Danny got promoted. Regional.'],['A','Good for Danny.'],['B','I\'m just saying. Danny calls his mother.'],'You fix the garbage disposal. It\'s the only thing in this house you\'re allowed to fix.'],
-   fraying:[['B','Saw a fire on the news. Out in the sticks somewhere. Was that you?'],['A','No.'],['B','You said "no" just like you did at fifteen. With my keys in your pocket.'],'Dinner is the sound of forks. The hall clock ticks like it\'s counting something.'],
+  parent:{
+   close:[
+    ['{B}\'s house still has the plastic on the good couch.',['B','You\'re thin. Are they feeding you at that job?'],['A','There\'s a donut shop.'],['B','A donut is not a meal. Sit. I\'ll heat up the roast.'],'There\'s always a roast. You\'ve never once seen it start out raw.'],
+    ['{B} has the photo albums out on the kitchen table. Again.',['B','Look at that haircut. I let you leave the house like that.'],['A','You cut it.'],['B','I did not. Your aunt did. With the good scissors.'],'You flip past a hundred pictures of a kid who didn\'t know anything yet. Lucky kid.'],
+    [['B','The old truck in the garage needs driving or the battery dies.'],['B','Take it to the hardware store. Get me the thing.'],['A','What thing?'],['B','You\'ll know it when you see it.'],'You don\'t. You buy three things.','{B} needed the second one. You\'re still a good kid.']],
+   strained:[
+    [['B','Your cousin Danny got promoted. Regional.'],['A','Good for Danny.'],['B','I\'m just saying. Danny calls his mother.'],'You fix the garbage disposal. It\'s the only thing in this house you\'re allowed to fix.'],
+    [['B','Mrs. Patel\'s boy came by. He fixed the gutters. He\'s a dentist now.'],['A','Good for him.'],['B','I\'m only saying. A dentist comes when he says he\'ll come.'],'You eat the pie. It\'s still the best pie.','You hate that it\'s still the best pie.'],
+    ['{B} has the news on loud. A trailer fire, two counties over.',['B','Lot of fires lately. Lot of gas leaks.'],['A','Old pipes.'],['B','Mm-hm. Old pipes.'],'{B} sends you home with leftovers and doesn\'t ask for the container back.','In this family, that\'s a warning.']],
+   fraying:[
+    [['B','Saw a fire on the news. Out in the sticks somewhere. Was that you?'],['A','No.'],['B','You said "no" just like you did at fifteen. With my keys in your pocket.'],'Dinner is the sound of forks. The hall clock ticks like it\'s counting something.'],
+    ['{B} doesn\'t get up when you come in.',['B','I had the dream again. The one where you call, and it isn\'t you.'],['A','It\'s me.'],['B','That\'s what it says too.'],'You eat standing up at the counter. {B} watches you the whole time, like a test you could still fail.'],
+    ['{B} has moved your old room into the garage. Boxes. Trophies. The bed.',['B','I needed the space.'],['A','For what?'],['B','For not walking past it.'],'You drive home with one box. It\'s all participation ribbons. You keep every one.']],
    broken:['Your birthday card comes back. RETURN TO SENDER, in {B}\'s handwriting.','Inside, under your note, one line: "I raised a liar. I\'m done raising."','You keep the card. You throw out the envelope. Then you dig the envelope back out.']},
-  sibling:{close:[['B','Look who crawled out. You look like hell, dipshit.'],['A','Missed you too.'],['B','Beer\'s in the fridge. Don\'t drink the green ones, those are my roommate\'s.'],'You drink the green ones. The roommate can file a complaint.'],
-   strained:[['B','Mom keeps asking what you do. I keep saying "something in insurance."'],['A','That\'s close.'],['B','Is it? Is it close?'],'You split a pizza and fight about who got the bigger half. It\'s the only fight either of you is willing to have.'],
-   fraying:[['B','I bailed you out twice. Once with money, once with Mom.'],['A','I know.'],['B','I don\'t think you do. I think you think it\'s a joke.'],'It is a little bit a joke. You don\'t say that. For once in your life, you read the room.'],
+  sibling:{
+   close:[
+    [['B','Look who crawled out. You look like hell, dipshit.'],['A','Missed you too.'],['B','Beer\'s in the fridge. Don\'t drink the green ones, those are my roommate\'s.'],'You drink the green ones. The roommate can file a complaint.'],
+    [['B','You\'re late. I ate your half of the wings.'],['A','You owe me wings.'],['B','I owe you nothing. I owe you a punch. Sit.'],'You watch the game at {B}\'s place. Neither of you likes either team.','You yell anyway. It\'s genetic.'],
+    ['{B} needs help moving a couch. "Needs help" means watching {B} not lift it.',['B','Pivot. PIVOT.'],['A','I am pivoting.'],'The couch is stuck in the stairwell for two hours. You both lie on the landing and laugh until something rips.','It\'s the couch. Mostly the couch.']],
+   strained:[
+    [['B','Mom keeps asking what you do. I keep saying "something in insurance."'],['A','That\'s close.'],['B','Is it? Is it close?'],'You split a pizza and fight about who got the bigger half. It\'s the only fight either of you is willing to have.'],
+    [['B','Mom wants a family photo for the Christmas card. Matching sweaters.'],['A','Hard pass.'],['B','You don\'t get a pass. You get the green one. I\'m wearing the red.'],'You hold still for the timer. {B}\'s elbow is in your ribs the whole ten seconds.','In the photo, you look almost related.'],
+    [['B','You missed Grandma\'s birthday. She asked about you like you were dead.'],['A','I sent a card.'],['B','You sent a card with nothing written in it.'],'You did. You remember holding the pen.','You don\'t remember why you stopped.']],
+   fraying:[
+    [['B','I bailed you out twice. Once with money, once with Mom.'],['A','I know.'],['B','I don\'t think you do. I think you think it\'s a joke.'],'It is a little bit a joke. You don\'t say that. For once in your life, you read the room.'],
+    ['{B} meets you in the parking lot. Not inside. The parking lot.',['B','I\'ve got people in there I like. I don\'t know what you bring home anymore.'],['A','Nothing. I bring nothing.'],'Under the lot lights, your shadow catches up a half second late.','{B} doesn\'t notice. You do.'],
+    [['B','I told Mom you were dead. As a joke. She didn\'t laugh.'],['A','That\'s not a joke.'],['B','Yeah, well. Neither are you, lately.'],'You share a cigarette behind the garage like you\'re fifteen. Nobody coughs. Nobody says sorry.']],
    broken:['{B} blocked your number. Then your other number. Then the burner.','You find out about the wedding from a cousin\'s Instagram.','Nice barn. Fairy lights. Your name isn\'t on any of the little table cards.']},
-  friend:{close:[['B','The prodigal shithead returns.'],'{B}\'s garage: two lawn chairs, a mini fridge, a dartboard with one dart.',['B','Don\'t tell me where you were. Tell me something stupid instead.'],['A','A guy tried to bite me. Full mouth.'],['B','See? That\'s a good week.']],
-   strained:[['B','Trivia\'s gone to hell without you. We came in eleventh. Out of eleven.'],['A','Sorry.'],['B','"Quiz Khalifa" was your name. We can\'t even change it. It\'s laminated.'],'You promise to come next Thursday. You both know the odds.'],
-   fraying:[['B','You flinched when I hugged you. You know that?'],['A','Long drive.'],['B','You\'ve been on a long drive for two years.'],'The beer goes warm. Neither of you opens the second one.'],
+  friend:{
+   close:[
+    [['B','The prodigal shithead returns.'],'{B}\'s garage: two lawn chairs, a mini fridge, a dartboard with one dart.',['B','Don\'t tell me where you were. Tell me something stupid instead.'],['A','A guy tried to bite me. Full mouth.'],['B','See? That\'s a good week.']],
+    ['{B} picks you up in a truck that shouldn\'t pass inspection.',['B','Wing night. Don\'t argue. You look like you need forty wings.'],['A','I need maybe twenty.'],['B','Forty. Ten are for your soul.'],'Around wing thirty you laugh so hard the waitress brings water nobody asked for.'],
+    [['B','I fixed the boat.'],['A','You don\'t have a boat.'],['B','I have a boat now. It was forty bucks and a guy\'s divorce.'],'The boat sinks about two feet from the dock. You both stand in the lake in your jeans.','Best forty bucks anybody ever spent.']],
+   strained:[
+    [['B','Trivia\'s gone to hell without you. We came in eleventh. Out of eleven.'],['A','Sorry.'],['B','"Quiz Khalifa" was your name. We can\'t even change it. It\'s laminated.'],'You promise to come next Thursday. You both know the odds.'],
+    [['B','You owe me eighty bucks and a birthday.'],['A','I\'ll get you the eighty.'],['B','The birthday was the good part. I turned forty at a bowling alley with my cousin.'],'You bowl one game. You both suck. It helps about eighty bucks\' worth.'],
+    ['{B} texts "u up" at 1 a.m. You are. You\'re always up now.',['B','Remember the lake? We said every summer.'],['A','We went.'],['B','Once.'],'You make a plan for June. You both type it into your phones, like that makes it real.']],
+   fraying:[
+    [['B','You flinched when I hugged you. You know that?'],['A','Long drive.'],['B','You\'ve been on a long drive for two years.'],'The beer goes warm. Neither of you opens the second one.'],
+    ['{B} still has your spare key. {B} gives it back without being asked.',['B','Just in case. You know.'],['A','In case what?'],['B','In case I come over and it isn\'t you that answers.'],'You put the key back on your ring. It\'s heavier than one key.'],
+    [['B','My dog won\'t come in the room when you\'re here. That dog loves the mailman.'],['A','Dogs get weird.'],['B','He\'s been under the porch since you pulled in.'],'You leave early.','On your way down the drive, you hear the dog go back inside.']],
    broken:['{B}\'s number goes to a recording. This number is no longer in service.','A box shows up months later. Your hoodie. A DVD you lent in 2014. A photo of you two at the lake, cut neatly in half.','You keep your half. You were laughing in it. You can\'t remember at what.']},
-  ex:{close:[['B','You look awful. It\'s kind of comforting.'],['A','Thanks.'],['B','Sit. Not there, that\'s the cat\'s spot. The cat outranks you. Always did.'],'You two were terrible at being together and great at this.'],
-   strained:[['B','I\'m not doing this because I miss you. I\'m doing this because you still have my good pan.'],['A','I\'ll bring the pan.'],['B','You said that in March.'],'You stay for coffee. It\'s exactly as bad as you remember. That helps, somehow.'],
-   fraying:[['B','You only show up when you need something. I\'m not a gas station.'],['A','I don\'t need anything.'],['B','Then why are your hands shaking?'],'You leave before the coffee\'s done. You leave the pan on the porch.'],
+  ex:{
+   close:[
+    [['B','You look awful. It\'s kind of comforting.'],['A','Thanks.'],['B','Sit. Not there, that\'s the cat\'s spot. The cat outranks you. Always did.'],'You two were terrible at being together and great at this.'],
+    [['B','I found your old hoodie. I\'m keeping it. Possession is nine-tenths.'],['A','That\'s my lucky hoodie.'],['B','Clearly not. Look at you.'],'You split a pizza on the porch steps. You both still hate the same topping.','Some things last.'],
+    ['{B} calls because the smoke alarm won\'t stop chirping, and you\'re "tall."',['A','I\'m not that tall.'],['B','You\'re taller than the ladder I don\'t own.'],'You change the battery. {B} hands you a beer for it, the same kind as ten years ago.','Neither of you mentions that.']],
+   strained:[
+    [['B','I\'m not doing this because I miss you. I\'m doing this because you still have my good pan.'],['A','I\'ll bring the pan.'],['B','You said that in March.'],'You stay for coffee. It\'s exactly as bad as you remember. That helps, somehow.'],
+    [['B','My mother still asks about you. I tell her you joined a cult.'],['A','That\'s not fair.'],['B','You vanish for weeks and come back weird. Pick a better word.'],'You don\'t have one. You fix the porch step instead.','It\'s the step you broke.'],
+    ['{B} is at your door with a box of your stuff from three years ago.',['B','I\'m moving. Didn\'t want to throw out your life without asking.'],['A','You could have.'],['B','I know.'],'You stand there holding the box. Neither of you shuts the door first.']],
+   fraying:[
+    [['B','You only show up when you need something. I\'m not a gas station.'],['A','I don\'t need anything.'],['B','Then why are your hands shaking?'],'You leave before the coffee\'s done. You leave the pan on the porch.'],
+    [['B','You called me at three in the morning. Didn\'t say anything. Just breathing.'],['A','I didn\'t call you.'],['B','It was your number. I checked.'],'You check your phone. No call.','You both decide not to talk about whose phone is lying.'],
+    [['B','I\'m seeing someone. A nice someone. Who comes home on time.'],['A','Good. I mean it.'],['B','Then quit driving past my house.'],'You haven\'t been driving past. You check the odometer on the way home.','It\'s high.']],
    broken:['New locks. New car in the driveway.','A new person waves at you from the kitchen window, friendly and confused.','The cat\'s in the window too. The cat doesn\'t wave.']},
-  coworker:{close:[['B','Where were you? I covered your shift. Told Gary you had "a family thing out of state."'],['A','That\'s weirdly accurate.'],['B','I\'m a gifted liar. Breakroom. They got the good donuts.'],'The breakroom microwave smells like twelve years of fish. It\'s the best thing you\'ve smelled all week.'],
-   strained:[['B','HR wants to talk about your "unexplained absences." Plural.'],['A','Great.'],['B','I said you were caring for a sick aunt. Do you have an aunt?'],['A','Somewhere.'],'You eat lunch at your desks together. It\'s the only meeting you both show up for.'],
-   fraying:[['B','People here think you\'re doing crimes. I keep saying no.'],['B','I\'m running out of no\'s.'],'Your desk plant is dead. {B} stopped watering it a while ago.'],
+  coworker:{
+   close:[
+    [['B','Where were you? I covered your shift. Told Gary you had "a family thing out of state."'],['A','That\'s weirdly accurate.'],['B','I\'m a gifted liar. Breakroom. They got the good donuts.'],'The breakroom microwave smells like twelve years of fish. It\'s the best thing you\'ve smelled all week.'],
+    [['B','Gary\'s retiring. There\'s a sheet cake. We\'re stealing the corner pieces.'],['A','All four?'],['B','All four. I\'ve been training for this.'],'You eat sheet cake in the supply closet with {B}.','It\'s the most normal you\'ve felt in a month.'],
+    ['{B} kept your desk like you never left. Plant alive. Mug washed.',['B','I told everybody you had jury duty. Long trial. Very sad.'],['A','What was the trial?'],['B','Murder. You voted guilty. Remember that, people will ask.'],'Somebody does ask. You say guilty. It comes out easier than it should.']],
+   strained:[
+    [['B','HR wants to talk about your "unexplained absences." Plural.'],['A','Great.'],['B','I said you were caring for a sick aunt. Do you have an aunt?'],['A','Somewhere.'],'You eat lunch at your desks together. It\'s the only meeting you both show up for.'],
+    [['B','You missed the safety training. Again. They made me sign for you.'],['A','Thanks.'],['B','I forged your name. You have weird handwriting. All lowercase and angry.'],'You split a bag of vending machine pretzels.','It\'s a peace treaty. A small one.'],
+    ['{B} is eating lunch alone in the break room. There\'s a seat. You take it.',['B','Somebody keyed my car. You seem like you\'d know who does that kind of thing.'],['A','What kind of thing?'],['B','I don\'t know. You looked at the parking lot weird when you came in.'],'You did. Something was standing by the dumpster. You eat your sandwich and don\'t look again.']],
+   fraying:[
+    [['B','People here think you\'re doing crimes. I keep saying no.'],['B','I\'m running out of no\'s.'],'Your desk plant is dead. {B} stopped watering it a while ago.'],
+    [['B','Your mail\'s piling up on your desk. Somebody keeps sending you seed catalogs.'],['A','I don\'t garden.'],['B','Every one\'s got the same page folded down.'],'You throw them out. {B} watches you do it like you threw out a person.'],
+    ['{B} won\'t ride the elevator with you anymore. Takes the stairs. Six floors.',['B','It\'s cardio.'],['A','It\'s six floors.'],['B','It\'s cardio.'],'You ride up alone. The elevator stops on four. Nobody gets on.','The doors stay open a long time.']],
    broken:['Your badge doesn\'t open the front door anymore.','{B} sees you through the glass, points at the security guard and mouths: sorry.','Then goes back into the meeting. Somebody else is in your chair.']},
-  mentor:{close:[['B','Sit down before you fall down.'],'{B}\'s porch has a coffee can for butts and a view of nothing.',['B','You did the job. You came home. Everything else is weather.'],'That\'s all the advice you get. It\'s enough.'],
-   strained:[['B','I didn\'t teach you to hide things from me.'],['A','You taught me to hide things from everybody.'],['B','...Huh. Guess I did.'],'You play cards. {B} cheats. You let it slide.'],
-   fraying:[['B','I\'ve buried people who had your look. Don\'t make me buy another suit.'],['A','I\'m fine.'],['B','That\'s what they said. Word for word.'],'The porch light flickers. {B} doesn\'t get up to fix it.'],
+  mentor:{
+   close:[
+    [['B','Sit down before you fall down.'],'{B}\'s porch has a coffee can for butts and a view of nothing.',['B','You did the job. You came home. Everything else is weather.'],'That\'s all the advice you get. It\'s enough.'],
+    ['{B} is fixing a lawnmower that\'s been dead since the nineties.',['B','Hand me the nine-sixteenths.'],['A','Which one is that?'],['B','The one that isn\'t in your hand.'],'Two hours later it starts. {B} shuts it right off. "Proved my point."','What point, you never find out.'],
+    [['B','You eat yet? No. Sit.'],'{B} makes eggs the one way {B} knows. Black pepper like a crime scene.',['B','Tell me one thing you did right.'],['A','I came home.'],['B','That\'s the only one that counts. Eat.']]],
+   strained:[
+    [['B','I didn\'t teach you to hide things from me.'],['A','You taught me to hide things from everybody.'],['B','...Huh. Guess I did.'],'You play cards. {B} cheats. You let it slide.'],
+    [['B','You quit calling on Sundays.'],['A','Sundays got busy.'],['B','Sunday\'s the one day God took off. You\'re busier than God now?'],'You play checkers. {B} wins every game and calls you "kid" every time.','You\'ll take it.'],
+    ['There\'s a second coffee mug on {B}\'s porch rail. Somebody new.',['B','Don\'t look at me like that. You left.'],['A','I didn\'t leave. I got a job.'],['B','Same thing, from this porch.'],'You drink out of the new kid\'s mug. It\'s petty. It feels great.']],
+   fraying:[
+    [['B','I\'ve buried people who had your look. Don\'t make me buy another suit.'],['A','I\'m fine.'],['B','That\'s what they said. Word for word.'],'The porch light flickers. {B} doesn\'t get up to fix it.'],
+    [['B','You\'re holding that coffee with both hands. Like it\'s cold out.'],['A','It is cold out.'],['B','It\'s July.'],'{B} brings you a blanket and doesn\'t ask.','That\'s worse than asking.'],
+    ['{B} answers the door with the chain on.',['B','Say something only you would know.'],['A','You cheat at cards.'],'The chain comes off. Both of your hands are shaking.','Neither of you brings up the chain.']],
    broken:['{B}\'s porch is empty. The coffee can is gone.','A neighbor says {B} moved to Arizona. No forwarding address. Left you one thing: a deck of cards with the aces missing.','You never did figure out how {B} cheated.']}
  },
  frOut:{
@@ -53,16 +136,46 @@ const HT={
   strained:{ok:'At the door, {B} says "Drive safe." It isn\'t nothing.',crit:'{B} laughs at one of your jokes. A real one, with the snort.',fumble:'You laugh at the wrong moment. You don\'t explain why.'},
   fraying:{ok:'At the door, {B} almost says something. Almost is a start.',crit:'{B} walks you to the car. Neither of you mentions it.',fumble:'You call {B} by a dead man\'s name. You don\'t know where it came from.'},
   fail:'Nothing breaks. Nothing heals. You drive home with the windows down.'},
- nature:[['The lake is flat. A heron stands in it like it\'s waiting for a bus.','You catch nothing all day. Perfect.'],['The campground has one other tent.','The guy in it eats cold beans from the can and nods at you like a coworker.'],
-  ['You drive until the gas station signs stop.','At the last one, the hot dog roller is empty and turning anyway.'],['The trail sign says 2.1 miles. It\'s a lie.','Everyone on the trail knows it\'s a lie. You love them all a little.'],
-  ['Six hours in the deer blind. A doe walks out, looks right at you,','and decides you aren\'t worth it. Fair.'],['The beach in November is yours and a man with a metal detector.','He finds a quarter. He holds it up like a medal.']],
+ nature:[
+  ['The lake is flat. A heron stands in it like it\'s waiting for a bus.','You catch nothing all day. Perfect.'],
+  ['The campground has one other tent.','The guy in it eats cold beans from the can and nods at you like a coworker.'],
+  ['You drive until the gas station signs stop.','At the last one, the hot dog roller is empty and turning anyway.'],
+  ['The trail sign says 2.1 miles. It\'s a lie.','Everyone on the trail knows it\'s a lie. You love them all a little.'],
+  ['Six hours in the deer blind. A doe walks out, looks right at you,','and decides you aren\'t worth it. Fair.'],
+  ['The beach in November is yours and a man with a metal detector.','He finds a quarter. He holds it up like a medal.'],
+  ['The fire tower is closed for the season. You climb it anyway.','From the top, the whole county looks like a model train set. Nobody\'s hurt in it.'],
+  ['A cabin with no signal and a guestbook. Every entry says "so peaceful!"','Except one from 1987: "don\'t go in the shed."','You don\'t go in the shed.'],
+  ['A creek, a folding chair, and a cooler you never open.','A dragonfly lands on your knee and stays all afternoon. You hold still. You\'ve held still for worse reasons.']],
  natureCost:['{B} texts: "u alive?"','You\'ll answer tomorrow.'],
  natureOut:{ok:'Something in your chest unclenches a notch.',crit:'You sleep eleven hours in the truck. No dreams. None.',fail:'The quiet is just quiet. You\'ll take it.',fumble:['Past the treeline, something is standing very still.','It\'s a stump. You\'re ninety percent sure it\'s a stump.']},
- pursue:{'Protect the innocent':['You volunteer at the animal shelter.','A three-legged pit bull named Biscuit picks you. You don\'t get a say.'],'Find the truth':['You spread the old files across the motel bed. Red string.','You bought red string. You\'re that person now.'],
-  'Family':['You call everybody in your phone saved as family.','Uncle Ray talks about his gutters for forty minutes. You let him.'],'Faith':['Wednesday church is you, a lady with a walker, and the pastor rehearsing to empty pews.','He\'s on draft three of the joke. It still doesn\'t land. You laugh anyway.'],
-  'Revenge':['The notebook used to be a grocery list. Now it\'s names.','You add one. You cross out none. You feel better than you should.'],'Duty':['You go to the range on your own dime and put two hundred rounds into paper men.','The paper men never get back up. It\'s restful.'],
-  'Curiosity':['Three days in a used bookstore that smells like cat and basement.','You buy one book, about bees. It\'s about bees. Probably.'],'Money':['You count the hazard pay twice. Same both times.','Still not enough. But money doesn\'t ask what you did for it.'],
-  'Redemption':['You mow the lawn of the widow down the street. She doesn\'t know why.','You don\'t tell her. You\'ll never tell her.']},
+ pursue:{
+  'Protect the innocent':[
+   ['You volunteer at the animal shelter.','A three-legged pit bull named Biscuit picks you. You don\'t get a say.'],
+   ['The crossing guard is out sick. You work her corner. Nobody asked.','Forty kids, one stop sign, zero incidents. Best shift you\'ve had all year.']],
+  'Find the truth':[
+   ['You spread the old files across the motel bed. Red string.','You bought red string. You\'re that person now.'],
+   ['You file a records request for something nobody remembers losing.','The clerk says six weeks. You say you\'ll wait. You will.']],
+  Family:[
+   ['You call everybody in your phone saved as family.','Uncle Ray talks about his gutters for forty minutes. You let him.'],
+   ['You drive four hours to a birthday for a cousin\'s kid you\'ve never met.','The kid knows you anyway. "You\'re the one on the fridge." Apparently you\'re on a fridge.']],
+  Faith:[
+   ['Wednesday church is you, a lady with a walker, and the pastor rehearsing to empty pews.','He\'s on draft three of the joke. It still doesn\'t land. You laugh anyway.'],
+   ['You sit in the back of a church you don\'t belong to. The choir is six people, and one of them is very sure.','You don\'t sing. You hum. Nobody throws you out.']],
+  Revenge:[
+   ['The notebook used to be a grocery list. Now it\'s names.','You add one. You cross out none. You feel better than you should.'],
+   ['You park across from an office with the wrong name on the door, and wait.','Nobody comes out. You drive home lighter anyway. Waiting is a kind of plan.']],
+  Duty:[
+   ['You go to the range on your own dime and put two hundred rounds into paper men.','The paper men never get back up. It\'s restful.'],
+   ['You clean every weapon you own at the kitchen table. Then you clean them again.','Oil, rag, the radio low. Somebody has to be ready. Might as well be you.']],
+  Curiosity:[
+   ['Three days in a used bookstore that smells like cat and basement.','You buy one book, about bees. It\'s about bees. Probably.'],
+   ['A free lecture at the community college: "Lights in the Sky, 1952 to Now."','Nine people show. Seven are old men with binders. You fit right in.']],
+  Money:[
+   ['You count the hazard pay twice. Same both times.','Still not enough. But money doesn\'t ask what you did for it.'],
+   ['You sell everything in the garage that doesn\'t have a memory on it.','Three hundred and ten dollars and a lot of empty floor. Floor is underrated.']],
+  Redemption:[
+   ['You mow the lawn of the widow down the street. She doesn\'t know why.','You don\'t tell her. You\'ll never tell her.'],
+   ['You give blood. The nurse says you have great veins.','First nice thing anybody\'s said about your insides in a while.']]},
  pursueOut:{ok:'It\'s small. It holds.',crit:'For one afternoon, the reason is enough.',fail:'You go through the motions. The motions are something.'},
  newMot:['You lie awake making a list of reasons to get up. The old one\'s gone.','You write a new one on the back of a pizza coupon.'],
  newMain:'Somewhere, a story you were in the middle of just stops. You don\'t miss it yet.',
@@ -77,22 +190,56 @@ const HT={
   ex:['You run into {B} at Costco. Ten years.','Neither of you has changed your food court order.'],
   coworker:['{B} is the new hire at your cover job.',['B','You never take vacation, huh? Oh. You\'re one of those.'],'You don\'t know what that means. You like it anyway.'],
   mentor:['{B} runs the boxing gym two blocks over. Sixty-something, cauliflower ears.',['B','You hold your hands like somebody who\'s been hit. Come back Tuesday.']]},
- therOpen:['The waiting room has a fish tank with one fish in it.','The fish has seen things.'],
- therParty:['{T} sets up two lawn chairs in the motel parking lot.',['T','My office. Fifty-minute hour. I\'m billing Big Hat.']],
- therSan:[['THERAPIST','So. What brings you in?'],['A','Can\'t sleep.'],'It\'s true. It just isn\'t the whole truth. It isn\'t even most of it.'],
+ therOpen:[
+  ['The waiting room has a fish tank with one fish in it.','The fish has seen things.'],
+  ['The waiting room has a white noise machine. It sounds like rain on a tent.','You like it more than you should. You know exactly which tent.'],
+  ['The receptionist has a bowl of mints and the face of somebody who\'s read your file.','Nobody\'s read your file. Probably. You take two mints.']],
+ therParty:[
+  ['{T} sets up two lawn chairs in the motel parking lot.',['T','My office. Fifty-minute hour. I\'m billing Big Hat.']],
+  ['{T} holds the session in the van with the side door open. Crickets.',['T','No couch. You get the cooler. Same rates.']],
+  ['{T} finds an empty booth at the back of a truck stop diner.',['T','Coffee\'s bottomless. So\'s this hour, if you need it.']]],
+ therSan:[
+  [['THERAPIST','So. What brings you in?'],['A','Can\'t sleep.'],'It\'s true. It just isn\'t the whole truth. It isn\'t even most of it.'],
+  [['THERAPIST','Let\'s try something. Tell me about a normal day.'],['A','Define normal.'],'The therapist writes something down. You\'d give a lot to read it.'],
+  [['THERAPIST','One to ten. How are you sleeping?'],['A','Is zero on the scale?'],'It isn\'t. You say four. Four is a lie that sounds like a person.']],
  therOut:{ok:'You say one true thing out loud. The room doesn\'t catch fire.',crit:'You cry in the parking lot after. Good crying. The kind with a sandwich after.',fail:'Fifty minutes about your childhood dog. Nice dog, though.',fumble:'You say too much. You watch the pen stop moving.'},
- therDis:[['You learn the thing\'s real name. It isn\'t a monster name.','It\'s a word from a pamphlet. That helps more than it should.'],['Homework is a worksheet with a cartoon brain on it.','You fill it out at a red light.'],
-  ['You notice it\'s gone the way you notice a headache\'s gone:','late, and a little suspicious about it.']],
- skill:{'Firearms':'The range officer says you shoot like you\'re mad at the paper. You are.','Melee':'A seventeen-year-old at the boxing gym puts you on your back twice, then offers you a protein bar.',
-  'Dodge':'Salsa class. The instructor says you move like someone avoiding something. Correct.','Search':'A thousand-piece lighthouse puzzle. The last piece was under the cat.',
-  'Forensics':'Night class in crime scene work. You correct the instructor once. You don\'t explain how you know.','Occult':'A library book on folk magic. Somebody underlined all the wrong parts, in pencil, hard.',
-  'History':'The county archive\'s microfiche machine is older than you and in better shape.','Science':'You dust off the old chemistry set. The landlord asks about the smell. "Candles," you say.',
-  'Empathy':'You sit in a diner and guess what every customer is sad about. You\'re right about the trucker. Wrong about the clown.','Persuade':'You sell a used couch online for more than you paid for it new.',
-  'Bureaucracy':'You fight a parking ticket for three days and win. The clerk shakes your hand.','Athletics':'You run every morning. Day four, a dog runs with you. Day five, the dog wins.',
-  'Stealth':'You practice crossing the apartment without a creak. You get it down to one board. The one board is personal.','Survival':'You go camping with a knife and a tarp. You come back with the tarp.',
-  'First Aid':'Weekend CPR class. The dummy\'s name is Annie. You save Annie eleven times.','Medicine':'A pharmacology textbook in the bathtub. You learn what\'s in your own medicine cabinet. Some of it goes in the trash.',
-  'Computers':'You build a PC from three garage sales\' worth of parts. It boots first try. You don\'t trust it.','Craft':'You rebuild a mower engine on the kitchen table. Nobody can eat at the table now. Worth it.'},
- train:['{B} asks why you\'re learning that, all of a sudden.','"Work," you say. Second time this year.'],
+ // Therapy on a disorder: one pool per session, first, second and third (the cure; its last line is the card's line)
+ therDis:[
+  [
+   ['You learn the thing\'s real name. It isn\'t a monster name.','It\'s a word from a pamphlet. That helps more than it should.'],
+   ['You and the therapist draw a chart of when it hits. It looks like a weather map.','Storms over the kitchen. Clear skies in the truck. Huh.'],
+   ['The therapist asks what it says when it talks. You didn\'t know it talked.','Then you hear it. It sounds like you, only tired.']],
+  [
+   ['Homework is a worksheet with a cartoon brain on it.','You fill it out at a red light.'],
+   ['Homework is a jar. Every bad night, a bean goes in.','By Sunday the jar has nine beans. Last month you\'d have needed a bigger jar.'],
+   ['You practice the breathing thing in the checkout line.','The guy behind you is doing it too. You nod at each other like veterans.']],
+  [
+   ['You notice it\'s gone the way you notice a headache\'s gone:','late, and a little suspicious about it.'],
+   ['One night it knocks and you don\'t answer.','It goes away. It\'s allowed to come back. Tonight it doesn\'t.'],
+   ['The therapist asks how the week was. You say "fine," and it\'s true.','Neither of you trusts it. Both of you take it.']]],
+ skill:{
+  Firearms:['The range officer says you shoot like you\'re mad at the paper. You are.','A Saturday at the gravel pit with a box of cans. The cans lose.','An old-timer at the range fixes your grip without a word, then goes back to his crossword.'],
+  Melee:['A seventeen-year-old at the boxing gym puts you on your back twice, then offers you a protein bar.','Self-defense at the rec center. Your partner is a retired librarian. She is terrifying.','You hit the heavy bag till your knuckles split. The bag doesn\'t learn anything. You do.'],
+  Dodge:['Salsa class. The instructor says you move like someone avoiding something. Correct.','Adult dodgeball league. You\'re undefeated, and nobody will carpool with you.','Racquetball with a dentist who plays like it\'s personal. You get out of the way a lot. That\'s the lesson.'],
+  Search:['A thousand-piece lighthouse puzzle. The last piece was under the cat.','You find your keys, three lost remotes and a cat toy from two apartments ago.','An estate sale. You go through every drawer. In the last one, a glass eye. You leave it. It watches you go.'],
+  Forensics:['Night class in crime scene work. You correct the instructor once. You don\'t explain how you know.','You lift prints off your own coffee mug for practice. Somebody else\'s are on it too.','A true crime show gets the blood spatter wrong. You yell at the TV for an hour.'],
+  Occult:['A library book on folk magic. Somebody underlined all the wrong parts, in pencil, hard.','A used bookstore with a back room and no sign. The owner charges a dollar to look.','You learn eleven ways to ward a doorway. The landlord asks you to stop drawing on the doorway.'],
+  History:['The county archive\'s microfiche machine is older than you and in better shape.','All nine hundred pages of a county history. The town\'s been "rebuilt after the fire" four times.','The historical society meets in a church basement. Lemon bars, and grudges back to 1880.'],
+  Science:['You dust off the old chemistry set. The landlord asks about the smell. "Candles," you say.','Night chem at the community college. Your lab partner is nineteen and better at it. You buy the coffee.','You grow mold in jars on the windowsill to see what it does. It does a lot.'],
+  Empathy:['You sit in a diner and guess what every customer is sad about. You\'re right about the trucker. Wrong about the clown.','You volunteer on a crisis line. Most calls are lonely, not dangerous. You learn to hear which.','You spend a week actually listening when people talk. Exhausting. Everybody\'s carrying something.'],
+  Persuade:['You sell a used couch online for more than you paid for it new.','You talk your way into a sold-out show and out of a parking ticket the same night.','Garage sale haggling. You get a lamp down to a quarter, and the guy thanks you.'],
+  Bureaucracy:['You fight a parking ticket for three days and win. The clerk shakes your hand.','You renew your license on the first try. The clerk asks if you\'ve done this before. In a sense.','You read the county code for fun. It\'s illegal to own more than four ferrets here. Now you know.'],
+  Athletics:['You run every morning. Day four, a dog runs with you. Day five, the dog wins.','Laps at the public pool until the lifeguard asks if you\'re okay.','Pickup basketball with teenagers. They call you "unc." You score twice. "Unc" sticks.'],
+  Stealth:['You practice crossing the apartment without a creak. You get it down to one board. The one board is personal.','You sneak up on your own cat. It takes four days. The cat is impressed, briefly.','You walk home through backyards for a week. You learn which dogs are all talk.'],
+  Survival:['You go camping with a knife and a tarp. You come back with the tarp.','A weekend eating only what you can find. Mostly granola bars somebody dropped. Still counts.','You learn to start a fire with a battery and a gum wrapper. Your smoke alarm learns with you.'],
+  'First Aid':['Weekend CPR class. The dummy\'s name is Annie. You save Annie eleven times.','You restock the trunk kit and practice tourniquets on a pillow. The pillow makes it.','You splint your own finger after a door thing. The urgent care nurse says, "Huh. Nice."'],
+  Medicine:['A pharmacology textbook in the bathtub. You learn what\'s in your own medicine cabinet. Some of it goes in the trash.','You shadow a night nurse for a weekend. She has a joke for every kind of wound. You steal them all.','You memorize a pill reference book. At the pharmacy you start correcting labels in your head.'],
+  Computers:['You build a PC from three garage sales\' worth of parts. It boots first try. You don\'t trust it.','You learn to code from a library book. Your first program says HELLO. You don\'t say it back.','You fix a dead laptop for a neighbor. The last thing on the screen is a search for your address.'],
+  Craft:['You rebuild a mower engine on the kitchen table. Nobody can eat at the table now. Worth it.','You build a birdhouse. It\'s crooked. A bird moves in anyway. Low standards, good bird.','You fix the shed lock with parts from three other locks. Now it opens for nobody. Perfect.']},
+ train:[
+  ['{B} asks why you\'re learning that, all of a sudden.','"Work," you say. Second time this year.'],
+  ['{B} covers the bills while you take the class. Doesn\'t say a word about it.','You find the receipt anyway. It goes in your wallet, with the other things you owe.'],
+  ['{B} quizzes you from your notes over dinner and gets every answer wrong on purpose.','You pass anyway. {B} takes the credit. That\'s fair.']],
  sabIn:[['BIG HAT','You\'re benched. Doctor says rest. I say rest. Don\'t argue with two doctors.'],'The facility is an old lake resort. The fence is new. The paddle boats are chained up.'],
  sabEach:['A nurse brings pudding at three every afternoon.','You start to love three o\'clock.'],
  sabCure:'One morning you realize you slept with the light off.',
@@ -258,13 +405,24 @@ async function hPlay(seq,m,o={}){
  for(const l of [].concat(seq||[])){
   if(Array.isArray(l)){const who=l[0]==='A'?m.name:l[0]==='B'?fo.B:l[0]==='T'?fo.T:l[0]==='X'?fo.X:l[0];await say(String(who).toUpperCase(),fillT(l[1],fo))}
   else await say('',fillT(l,fo),{as:m.name.toUpperCase()})}}
-// picks one of a scene's n variants that hasn't played yet in this home phase (for any agent), so two agents never
-// see the same one while another is left (Nov 23 playtest); among those, it skips any in avoid (an agent's own history)
-// when it can. The phase's list lives in the home checkpoint (G.db.home.seen; missing in older saves means none yet).
-function freshVariant(kind,n,avoid=[]){
- const H=G.db&&G.db.home,seen=H?((H.seen=H.seen||{})[kind]=H.seen[kind]||[]):[],all=[...Array(n).keys()];
- const tries=[all.filter(i=>!seen.includes(i)&&!avoid.includes(i)),all.filter(i=>!seen.includes(i)),all.filter(i=>!avoid.includes(i)),all];
- const v=pick(tries.find(t=>t.length));if(!seen.includes(v))seen.push(v);return v}
+// Picks from a pool don't repeat (spec 008 part C; studio-bible/play.md). Each pool remembers what it played for the
+// season, in bl.season.played under '<pool>|<whose memory>': per Bond (Fulfill Responsibilities), the whole party (Back
+// to Nature, no owner) or per agent (the rest). A pick takes a scene that memory hasn't played; once all have, it starts
+// over, never with the one that just played. Among those, it skips any another agent drew from the same pool this break
+// (bl.season.playedNow), so two agents don't see the same scene side by side while another is left. A new season
+// starts with neither (freshSeason). Returns the scene and its number.
+const agentKey=a=>String(a&&(a.id||a.name)||'?');
+const bondKey=(a,b)=>agentKey(a)+'/'+b.rel+'/'+b.name;
+function poolPick(pool,owner,list){
+ list=[].concat(list==null?[]:list);const n=list.length;if(n<2)return{i:0,s:list[0]};
+ const s=loadSeason(),P=s.played,key=owner?pool+'|'+owner:pool,ok=i=>Number.isInteger(i)&&i>=0&&i<n;
+ let seen=(Array.isArray(P[key])?P[key]:[]).filter(ok);const last=seen.length?seen[seen.length-1]:-1;
+ if(new Set(seen).size>=n)seen=[];  // all played: start over
+ const brk=`${G.case||''}#${s.closed|0}`,N=s.playedNow[pool]&&s.playedNow[pool].c===brk&&Array.isArray(s.playedNow[pool].i)?s.playedNow[pool]:{c:brk,i:[]};
+ const all=[...Array(n).keys()],fresh=i=>!seen.includes(i)&&i!==last;
+ const i=pick([all.filter(i=>fresh(i)&&!N.i.includes(i)),all.filter(fresh),all.filter(i=>i!==last)].find(t=>t.length));
+ seen.push(i);P[key]=seen;N.i.push(i);s.playedNow[pool]=N;store.set(seasonKey(),s);
+ return{i,s:list[i]}}
 // SAN changes at home: gains never above the agent's starting SAN; losses can set off a Breaking Point
 function sanUp(m,n){const b=m.san;m.san=Math.min(m.msan,m.san+n);return[b,m.san]}
 async function sanDown(m,n){const b=m.san;m.san=Math.max(0,m.san-n);
@@ -433,7 +591,7 @@ function moodChange(b,before,cha){const m0=moodOf(before,cha),m1=moodOf(b.score|
 async function actFR(m,r){
  const x0=await pickBond(m,false,r);if(!x0)return false;const b=x0.b,cha=chaOf(m.a),before=b.score|0,mood=moodOf(before,cha);
  castFor(m);setBg(HTYPE(b.rel),mood!=='close');const o={B:b.name,bond:b};
- await hPlay((HT.fr[HTYPE(b.rel)]||HT.fr.friend)[mood],m,o);
+ const T=HT.fr[HTYPE(b.rel)]?HTYPE(b.rel):'friend';await hPlay(poolPick(`fr.${T}.${mood}`,bondKey(m.a,b),HT.fr[T][mood]).s,m,o);
  const p=clamp(m.san,1,99),x=SR.pct(p),rows=[sanRow(x,p)];
  if(x.ok){const g=roll(1,6);b.score=Math.min(cha,before+g);rows.push({l:fillT(HW.bondUp,{b:b.name,x:before,y:b.score}),chip:StudioChip.die(6,g)});
   if(x.crit){const [s0,s1]=sanUp(m,1);rows.push({l:fillT(HW.sanUp,{a:s0,b:s1}),chip:'+1'})}}
@@ -442,9 +600,8 @@ async function actFR(m,r){
  await result(m,r.name,rows,line,Object.assign(o,{mood:moodChange(b,before,cha)}));return true}
 async function actNature(m,r){
  const x0=await pickBond(m,true,r);if(!x0)return false;const b=x0.b,cha=chaOf(m.a),before=b.score|0;
- castFor(m);setBg('nature');const a=m.a;a.nat=Array.isArray(a.nat)&&a.nat.length<HT.nature.length?a.nat:[];
- const vi=freshVariant('nature',HT.nature.length,a.nat);if(a.nat.includes(vi))a.nat=[];a.nat.push(vi);
- b.score=before-1;await hPlay(HT.nature[vi],m);await hPlay(HT.natureCost,m,{B:b.name});
+ castFor(m);setBg('nature');
+ b.score=before-1;await hPlay(poolPick('nature','',HT.nature).s,m);await hPlay(HT.natureCost,m,{B:b.name});
  const p=clamp(m.san,1,99),x=SR.pct(p),rows=[{l:fillT(HW.bondUp,{b:b.name,x:before,y:b.score}),chip:'−1'},sanRow(x,p)];
  if(x.ok){const g=x.crit?4:roll(1,4),[s0,s1]=sanUp(m,g);rows.push({l:fillT(HW.sanUp,{a:s0,b:s1}),chip:x.crit?'+4':StudioChip.die(4,g)})}
  else if(x.fumble){const g=roll(1,4),[s0,s1]=await sanDown(m,g);rows.push({l:fillT(HW.sanUp,{a:s0,b:s1}),chip:StudioChip.die(4,g)})}
@@ -454,7 +611,7 @@ async function actMot(m,r){
  const opts=mots.map(k=>({label:fillT(HW.pursue,{m:k}),k:'p',m:k}));
  if(mots.length<2)opts.push({label:HW.replace,k:'r'});if(mots.length)opts.push({label:HW.swap,k:'s'});
  const c=await choose(opts,{cancel:true,title:HW.motT});if(c<0)return false;const o=opts[c];castFor(m);setBg(BLHA.motPlace(o.m||mots[a.main|0]),true);
- if(o.k==='p'){await hPlay(HT.pursue[o.m]||HT.pursue.Duty,m);const p=clamp(m.san,1,99),x=SR.pct(p),rows=[sanRow(x,p)];
+ if(o.k==='p'){const pm=HT.pursue[o.m]?o.m:'Duty';await hPlay(poolPick('pursue.'+pm,agentKey(a),HT.pursue[pm]).s,m);const p=clamp(m.san,1,99),x=SR.pct(p),rows=[sanRow(x,p)];
   if(x.ok){const g=x.crit?2:roll(1,2),[s0,s1]=sanUp(m,g);rows.push({l:fillT(HW.sanUp,{a:s0,b:s1}),chip:x.crit?'+2':StudioChip.die(2,g)})}
   const O=HT.pursueOut;await result(m,r.name,rows,x.ok?(x.crit?O.crit:O.ok):O.fail);return true}
  let which=-1;
@@ -469,7 +626,7 @@ async function actMot(m,r){
  if(wasMain||(a.arc&&a.arc.m!==mots[a.main])){if(a.arc&&a.arc.beat<3&&a.arc.m!==mots[a.main])await hPlay(HT.newMain,m);a.arc={m:mots[a.main],beat:0,ch:[],base:a.sc|0}}
  await result(m,r.name,[{l:`${HW.newMot}: ${free[n]}`,chip:'✓'}],`[${free[n]}]`);return true}
 async function actUse(m,r){
- castFor(m);setBg('use',true);const a=m.a;await hPlay(HT.use[freshVariant('use',HT.use.length)],m);
+ castFor(m);setBg('use',true);const a=m.a;await hPlay(poolPick('use',agentKey(a),HT.use).s,m);
  const bs=bondsOf(a).filter(x=>x.s>0),x=bs.length?pick(bs):null,rows=[];
  if(x){const before=x.b.score|0,g=roll(1,4);x.b.score=Math.max(0,before-g);await hPlay(HT.useCost,m,{B:x.b.name});rows.push({l:fillT(HW.bondUp,{b:x.b.name,x:before,y:x.b.score}),chip:StudioChip.die(4,g)})}
  const [s0,s1]=await sanDown(m,1);rows.push({l:fillT(HW.sanUp,{a:s0,b:s1}),chip:'−1'});a.noWD=1;
@@ -485,25 +642,25 @@ async function actBond(m,r){
 async function actTherapy(m,r){
  const a=m.a,ds=m.dis||[],opts=[{label:HW.therSan}].concat(ds.map(d=>({label:fillT(HW.therDis,{d:BLS.DISORDERS[d.k].name,k:((a.ther||{})[d.k]|0)+1})})));
  const c=await choose(opts,{cancel:true,title:HW.therT});if(c<0)return false;const T=therapistFor(m);castFor(m);setBg('therapy');
- await hPlay(T?HT.therParty:HT.therOpen,m,{T:T?T.name:''});
- if(c===0){await hPlay(HT.therSan,m);const ps=clamp(m.san,1,99),pe=T?chanceOf(T,'Empathy'):0,useT=pe>ps,p=useT?pe:ps,x=SR.pct(p),rows=[sanRow(x,p,useT?T.name:null)];
+ await hPlay(poolPick(T?'therParty':'therOpen',agentKey(a),T?HT.therParty:HT.therOpen).s,m,{T:T?T.name:''});
+ if(c===0){await hPlay(poolPick('therSan',agentKey(a),HT.therSan).s,m);const ps=clamp(m.san,1,99),pe=T?chanceOf(T,'Empathy'):0,useT=pe>ps,p=useT?pe:ps,x=SR.pct(p),rows=[sanRow(x,p,useT?T.name:null)];
   if(x.ok){const g=x.crit?4:roll(1,4),[s0,s1]=sanUp(m,g);rows.push({l:fillT(HW.sanUp,{a:s0,b:s1}),chip:x.crit?'+4':StudioChip.die(4,g)})}
   else if(x.fumble)a.noReq=1;  // Big Hat refuses this agent's requisition at the next briefing
   const O=HT.therOut;await result(m,r.name,rows,O[outKey(x)]);return true}
  const d=ds[c-1];a.ther=a.ther||{};a.ther[d.k]=(a.ther[d.k]|0)+1;const k=a.ther[d.k],nm=BLS.DISORDERS[d.k].name;
- await hPlay(HT.therDis[Math.min(2,k-1)],m,{D:nm});
+ const st=Math.min(2,k-1),ds1=poolPick('therDis'+st,agentKey(a),HT.therDis[st]).s;await hPlay(ds1,m,{D:nm});
  if(k>=3){m.dis=ds.filter(x=>x!==d);delete a.ther[d.k];await result(m,r.name,[{l:fillT(HW.cured,{d:nm}),chip:'3/3'}],`[${nm} cured]`);return true}
- await result(m,r.name,[{l:nm,chip:`${k} of 3`}],HT.therDis[k-1].slice(-1)[0]);return true}
+ await result(m,r.name,[{l:nm,chip:`${k} of 3`}],[].concat(ds1).slice(-1)[0],{D:nm});return true}
 async function actSkill(m,r){
  const a=m.a,ks=Object.keys(B.SKILLS),c=await choose(ks.map(k=>`${k} · ${skillVal(a,k)}%`),{cancel:true,title:HW.skillT});if(c<0)return false;
- const k=ks[c];castFor(m);setBg(BLHA.skillPlace(k));await hPlay(HT.skill[k]||'',m,{SKILL:k});
+ const k=ks[c];castFor(m);setBg(BLHA.skillPlace(k));await hPlay(poolPick('skill.'+k,agentKey(a),HT.skill[k]||'').s||'',m,{SKILL:k});
  const old=skillVal(a,k),g=roll(1,6),up=Math.max(0,Math.min(g,99-old));a.grow=a.grow||{};a.grow[k]=(a.grow[k]||0)+up;const nw=skillVal(a,k),t=[40,75,90].findIndex(t=>old<t&&nw>=t);
  const rows=[{l:fillT(HW.skillUp,{k,x:old,y:nw}),chip:StudioChip.die(6,g)}];if(t>=0)rows.push({l:fillT(BLS.DEBRIEF.newUnlock,{u:BLS.UNLOCKS[k][t].toUpperCase()}),star:1});
  await result(m,r.name,rows,`[${k} +${up}%]`);return true}
 async function actTrain(m,r){
  const a=m.a,ks=Object.keys(B.SKILLS).filter(k=>skillVal(a,k)<=10),c=await choose(ks,{cancel:true,title:HW.trainT});if(c<0)return false;
  const x0=await pickBond(m,true,r);if(!x0)return false;const b=x0.b,cha=chaOf(a),before=b.score|0,k=ks[c];
- castFor(m);setBg(BLHA.skillPlace(k));await hPlay(HT.skill[k]||'',m);await hPlay(HT.train,m,{B:b.name});
+ castFor(m);setBg(BLHA.skillPlace(k));await hPlay(poolPick('skill.'+k,agentKey(a),HT.skill[k]||'').s||'',m,{SKILL:k});await hPlay(poolPick('train',agentKey(a),HT.train).s,m,{B:b.name});
  const old=skillVal(a,k);a.grow=a.grow||{};a.grow[k]=(a.grow[k]||0)+(30-old);b.score=before-1;
  await result(m,r.name,[{l:fillT(HW.skillUp,{k,x:old,y:skillVal(a,k)}),chip:'30%'},{l:fillT(HW.bondUp,{b:b.name,x:before,y:b.score}),chip:'−1'}],`[${k} now 30%, ${b.name} −1]`,{mood:moodChange(b,before,cha)});return true}
 // Sabbatical: 1–3 cases, Can't be undone, then the recruit takes the seat and the agent waits in the roster

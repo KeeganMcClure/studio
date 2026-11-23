@@ -59,7 +59,7 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
 // in order, bringing old saves forward before anything reads them. Before upgrading, the old
 // saves are copied to bl.backup. Rules: never change an old step; a new save shape gets a new
 // step and SAVE_V goes up by one. Saves from before numbering count as version 0.
-const SAVE_V=12;
+const SAVE_V=13;
 const fillAgent=a=>{if(!a||typeof a!=='object'||Array.isArray(a))return null;const d=newAgent();
   const o=Object.assign(d,a);o.look=Object.assign(newAgent().look,a.look||{});o.stats=Object.assign(newAgent().stats,a.stats||{});
   if(!o.picks||typeof o.picks!=='object')o.picks={};if(!Array.isArray(o.bonds))o.bonds=[];if(!Array.isArray(o.motives))o.motives=[];return o};
@@ -231,6 +231,23 @@ const UPGRADES={
     if(g!==null){try{const o=JSON.parse(g);if(!o||!Array.isArray(o.party)||!o.party.length)throw 0;
         o.party.forEach(m=>{if(m&&m.a)fixA(m.a)});store.set(K('game'),JSON.stringify(o))}
       catch(e){localStorage.setItem(K('broken'),localStorage.getItem(K('game')));localStorage.removeItem(K('game'))}}
+  },
+  // 12 → 13 (Nov 23, spec 008 part C, enough home scenes for a season): the home scenes already played move from the
+  // home checkpoint (bl.game's db.home.seen, kept for one home phase) to bl.season.played, kept for the season. Back to
+  // Nature's list (and each party agent's own a.nat) becomes the party's; Use's becomes each party agent's own. Scene
+  // numbers stay valid: the new scenes were added after the old ones. A save with no season keeps none.
+  13(){
+    const s=store.get(K('season'),null),g=store.get(K('game'),null);let seen=null,party=[];
+    if(g!==null){try{const o=JSON.parse(g);if(o&&typeof o==='object'){party=Array.isArray(o.party)?o.party:[];
+        const H=o.db&&o.db.home;if(H&&typeof H==='object'&&H.seen){seen=H.seen;delete H.seen;store.set(K('game'),JSON.stringify(o))}}}
+      catch(e){}}  // an unreadable checkpoint is set aside by the game itself, as before
+    if(!s||typeof s!=='object'||Array.isArray(s))return;
+    const P=s.played&&typeof s.played==='object'&&!Array.isArray(s.played)?s.played:{};
+    const nums=x=>(Array.isArray(x)?x:[]).filter(i=>Number.isInteger(i)&&i>=0);
+    const nat=[...new Set([...nums(P.nature),...nums(seen&&seen.nature),...party.flatMap(m=>nums(m&&m.a&&m.a.nat))])];if(nat.length)P.nature=nat;
+    const use=nums(seen&&seen.use);if(use.length)party.forEach(m=>{const a=m&&m.a;if(a)P['use|'+String(a.id||a.name||'?')]=use.slice()});
+    s.played=P;if(!s.playedNow||typeof s.playedNow!=='object'||Array.isArray(s.playedNow))s.playedNow={};
+    store.set(K('season'),s);
   }
 };
 function upgradeSaves(){
