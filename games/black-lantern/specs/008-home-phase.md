@@ -26,8 +26,8 @@ Two things in the mockup are not to copy:
 
 The repo is public (`studio-bible/studio.md`, One repo). This spec gives only flow and rules.
 
-- **Every home scene's lines** (per choice, per Bond type, per mood, including each Bond's last scene when it breaks) are written in `claude/home-scenes.md` in the Black Lantern Claude Project files (Systems → Home scenes). The Developer reads it at build time and copies only the lines into the game files.
-- **The personal arcs** (each motivation's three beats, the two choices, both endings, and what each signature perk does) are in `claude/arcs-season-1.md` (Systems → Personal arcs). The Developer copies the beats' lines and the perks' effects into game data. Perk names and effects never appear in this spec, the bible, the changelog or a commit message.
+- **Every home scene's lines** (per choice, per Bond type, per mood, including each Bond's last scene when it breaks) are written in `claude/home-scenes.md` in the private `KeeganMcClure/black-lantern` repo (since Nov 23, 2026; Systems → Home scenes). The Developer reads it at build time and copies only the lines into the game files.
+- **The personal arcs** (each motivation's three beats, the two choices, both endings, and what each signature perk does) are in `claude/arcs-season-1.md` in the same private repo (Systems → Personal arcs). The Developer copies the beats' lines and the perks' effects into game data. Perk names and effects never appear in this spec, the bible, the changelog or a commit message.
 - **Where the lines ship:** a new `home.js` text block for home scenes and arcs, following Tech → Where text lives (all in-game text stays in the game files). It's generic to every case, so it doesn't go in a case file.
 - Changelog entries and commit messages describe what was built in mechanical terms only ("Fulfill Responsibilities plays a Parent scene in three moods").
 
@@ -139,7 +139,7 @@ Today each choice has one scene per Bond type and mood (Back to Nature has six v
 
 | Pool | Size | Memory |
 | --- | --- | --- |
-| Fulfill Responsibilities | At least **3 scenes** for each Bond type and mood (8 types × Close, Strained, Fraying), plus each Bond's one last scene at Broken | Per Bond, for the season |
+| Fulfill Responsibilities | At least **7 scenes** for each Bond type at Close and **3** at Strained and Fraying (8 types), plus each Bond's one last scene at Broken. Close went from 3 to 7 on Nov 23, 2026, so an agent who visits the same Close Bond every break of a 7-break season never sees a repeat | Per Bond, for the season |
 | Back to Nature | At least **9** vignettes | Whole party, for the season |
 | Personal Motivation (Pursue) | At least **2** per motivation | Per agent, for the season |
 | Therapy | At least **3** for SAN and **3** for a disorder | Per agent, for the season |
@@ -148,7 +148,7 @@ Today each choice has one scene per Bond type and mood (Back to Nature has six v
 
 - A pick takes a scene from its pool that hasn't played yet for that memory. Once all of them have played, it starts over, never repeating the one that just played.
 - **The memory lasts the season and goes in the save:** the list of played scenes moves from the home checkpoint to `bl.season` (one save step). A new season clears it.
-- The scenes are written by the Developer in claude/home-scenes.md (Project files, never the repo), as today, in Keegan's voice (Voice). The sizes above are minimums; more is welcome.
+- The scenes are written by the Developer in `claude/home-scenes.md` in the private black-lantern repo (never the public studio repo; that copy is the master), as today, in Keegan's voice (Voice). The sizes above are minimums; more is welcome.
 - If a season runs longer than these pools can cover, the Developer says so, and the Designer raises the sizes here.
 
 ### Saves (Tech → Saving; `studio-bible/saves.md`)

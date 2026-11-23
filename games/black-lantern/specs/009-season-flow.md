@@ -14,7 +14,7 @@ Rough picture for the board question: [`009-season-board-rough-v1.png`](009-seas
 
 ## Where the story lives (spoiler wall)
 
-- **The season's numbers** (how many regular cases, each agency case's unlock count, which one is the finale) come from `claude/SPOILERS-agency-arc.md` in the Black Lantern Claude Project files. The Developer copies only those numbers and case ids into a season data file (`seasons/season-1.js`) at build time. They never go in the bible, this spec, the changelog or a commit message (Tech → Saving). Commit messages say "season 1 data", not what it holds.
+- **The season's numbers** (how many regular cases, each agency case's unlock count, which one is the finale) come from `claude/SPOILERS-agency-arc.md` in the private `KeeganMcClure/black-lantern` repo (since Nov 23, 2026). The Developer copies only those numbers and case ids into a season data file (`seasons/season-1.js`) at build time. They never go in the bible, this spec, the changelog or a commit message (Tech → Saving). Commit messages say "season 1 data", not what it holds.
 - **Agency cases themselves** are cases like any other: each is pitched, specced and built through the case pipeline (Season readiness, step 5), with its story in its secret case file. Their cards' public text (title, place line, hook) is teaser-only, as for every card.
 - **The season-end lines** (Big Hat's words on the end screen) come from the arc file, copied into the season data file's text block.
 

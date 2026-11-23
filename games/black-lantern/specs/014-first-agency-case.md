@@ -22,7 +22,7 @@ Keegan picked this split on Nov 22, 2026: a frame spec here, with the Developer 
 | Length | 1–2 hours, one case | Whether it breaks the pattern on purpose (Gameplay loop allows it), kept inside 2 hours |
 | Fights | 2–3 story fights plus a boss, no random encounters (Gameplay loop) | Which ones, human or unnatural, their skulls |
 | Danger zones | 0–2, every roamer guards something | Where, how many roamers |
-| Boss | Threat 3; at least one case choice that weakens it and a weakness Identify can find; 8–12 rounds; the tuning check (Combat → Bosses) | Phases, the weakening choice |
+| Boss | Threat 3; at least one case choice that weakens it and a weakness Identify can find; 8–12 rounds when the choices were skipped, 5–8 when all were made; the tuning check (Combat → Bosses) | Phases, the weakening choice |
 | Clues | Threshold plus bonus or clues as keys; one deduction that never dead-ends; every deduction maps to clue IDs | The clues, the deduction |
 | Skills | 8–10 skills, chosen so every team template can reach the end | Which skills |
 | Motivation moments | 1–2 (Systems → Motivations) | Which motivation types |

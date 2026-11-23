@@ -21,7 +21,7 @@ What you'll feel in play: you lead with the agent whose skills fit the moment, y
 The studio repo is public, and case content in it is readable by anyone (`studio-bible/studio.md`, One repo). So this spec gives only structure and mechanics: beats, clue types, kinds of choices, endings by label. It names no culprit, twist, solution or hidden clue.
 
 - **The case design** (twist, internal logic, clue IDs and what each proves, the choices that matter, the 8–10 skills it supports, its 1–2 motivation moments, enemy cards, the boss's phases and weakening choice, and which endings exist) goes in **`claude/cases/still-harvest.md` in the Black Lantern Claude Project files**, as Story → Adding a new case, step 4 says. Keegan doesn't open it. The Developer writes it there at the start of Part C if it isn't there yet, reads it at build time, and never copies it into this repo. Still Harvest was approved long ago, so there is no pitch step (step 3).
-- **Arc touches:** the agency arc file (`claude/SPOILERS-agency-arc.md`, Project files) may add small touches to the case. They never appear in this spec, the changelog, the bible or a commit message (Story → Agency arc).
+- **Arc touches:** the agency arc file (`claude/SPOILERS-agency-arc.md`, private `KeeganMcClure/black-lantern` repo) may add small touches to the case. They never appear in this spec, the changelog, the bible or a commit message (Story → Agency arc).
 - **The lines themselves** ship in `cases/still-harvest.js`, the case's text block, because all in-game text lives in the game files (Tech → Where text lives). That's expected. Changelog entries and commit messages describe what was built in mechanical terms only ("the town has a second story fight"), never what it reveals.
 
 ## Bible sections this spec relies on
@@ -206,7 +206,7 @@ Still Harvest rewritten under the new rules, from its private case file.
 - **2–3 placed story fights plus the boss.** The Volunteer stays a story fight unless the case file changes it.
 - **0–2 danger zones**, likely in the maze. Roamers walk them in plain sight with threat skulls showing, each guarding something (a clue, a victim, a shortcut, a stash). Fight, sneak past with a roll, or go around. Loud actions nearby draw them. Loot drops 20% of the time from the case's loot table of 4–6 items, always when the drop is story-related.
 - Fight sizes and lengths by the Combat numbers: roamer fights 10–18 enemy HP in all (2–3 rounds), story fights 20–35 (3–5 rounds).
-- **The Gleaner**, rebuilt: 60 HP, −8 per rescued victim (36 with all three), boss-tier attack and damage, at least one weakness Identify can find, phases from the case file, 8–12 rounds against a careful party. Other weakening choices allowed up to 40% off in all.
+- **The Gleaner**, rebuilt: 60 HP, −8 per rescued victim (36 with all three), boss-tier attack and damage, at least one weakness Identify can find, phases from the case file, 8–12 rounds against a careful party that saved nobody, 5–8 with all three saved (Combat → Bosses, Nov 23, 2026). Other weakening choices allowed up to 40% off in all.
 - **Boss tuning check** before Part C ships (Bosses): run the Gleaner against a mid-level team template; a careful party wins with at most one agent Downed, a party that skipped the case's choices can lose. Put the numbers in the changelog.
 
 **C5. Choices, branches and the clock** (Systems → Gameplay loop; Skills and menus → Overstepping)
