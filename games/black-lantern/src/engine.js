@@ -161,8 +161,14 @@ function cam(){return StudioMove.camera(G,G.M.w,G.M.h,VW,VH)}
 // Below 40 SAN on the lead, the picture sours toward SAN pink and cyan, fading over half a second, and at night the lantern's
 // circle is a third smaller and the lamps' a little smaller (the approved night and low-SAN mockup). The light pass is the
 // studio's engine/light.js. The lead card, the NIGHT tag and the A bubble go on top and never sour.
-const LOOK={dark:'#0a0812',alpha:.9,warm:'#d6a43a',pink:'#ff4fa3',cyan:'#3ff0e8',lowSan:40,lantern:[62,40],lamp:[34,26],boss:46};
+const LOOK={dark:'#0a0812',alpha:.9,warm:'#d6a43a',pink:'#ff4fa3',cyan:'#3ff0e8',lowSan:40,lantern:[62,40],lamp:[34,26],boss:46,shim:['#9b7bff','#5fe0b0']};
 const sourFade={};
+// Mushrooms (Item list): while the lead is High on them the picture shimmers (engine/light.js), easing in and out like
+// the sour look. It goes on before the trail dots, the lead card and the A bubble, so those hold still; in battle it sways
+// only the backdrop (battle.js). The dialog box and menus sit over the canvas and are never touched.
+const shimFade={};
+const tripping=m=>!!m&&hasSt(m,'high')&&m.high==='shrooms';
+function shimmer(now,h){const k=StudioLight.fade(shimFade,tripping(lead()),now);if(k>0)StudioLight.shimmer(cx,k,now,{h,tint:LOOK.shim})}
 function drawWorld(){
  const M=G.M,[camx,camy]=cam(),now=performance.now(),art=M.art,L=lead(),night=M.light==='night';
  if(!M.props)M.props=art.props(M);
@@ -203,6 +209,7 @@ function drawWorld(){
   StudioLight.night(cx,{dark:LOOK.dark,alpha:LOOK.alpha,warm:LOOK.warm,pools:ring,glows:glows.map(([x,y,r,a])=>[x,y,r*.7,a*.6])});
  }
  if(k>0)StudioLight.sour(cx,k,{pink:LOOK.pink,cyan:LOOK.cyan});
+ shimmer(now);
  post.forEach(f=>f());
  drawMapHud(camx,camy,night);
 }

@@ -481,6 +481,7 @@ function drawBattle(){
  cx.imageSmoothingEnabled=false;const bd=battleBackdrop(L);
  if(bd)cx.drawImage(bd,0,0);
  else{cx.drawImage(Bt.bg,0,0,VW,L.scene.h,0,0,VW,L.scene.h);pR(0,0,VW,L.scene.h,'rgba(14,10,26,.68)');pR(0,L.scene.h-30,VW,30,'rgba(14,10,26,.35)')}
+ shimmer(performance.now(),L.scene.h);  // the lead High on Mushrooms: the backdrop sways, sprites and numbers hold still (engine.js)
  pR(0,L.scene.h,VW,VH-L.scene.h,PC.deep);
  // enemies, facing you
  const tgt=u&&u.kind==='target'?u.opts[u.sel]:null;
