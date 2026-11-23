@@ -378,6 +378,7 @@ async function roamFight(r,o={}){
  if(res==='lose')return gameOver();
  if(res==='win'){s.beaten=1;checkpoint();if(r.won)await r.won()}
  else{s.st='home';s.t=-120;s.w.x=s.w.path[s.w.path.length-1][0];s.w.y=s.w.path[s.w.path.length-1][1];s.w.i=s.w.path.length-1}
+ if(r.after)await r.after(res);  // the case's own after-fight check, won or fled (Good Manners: a crowd saw it)
  return res}
 // the roamer ahead (A on it), or next to the lead (an item used from the menu)
 function roamNear(){const [tx,ty]=StudioMove.ahead(G);return roamAt(tx,ty)||roamers().find(r=>{const s=roamSt(r);return roamLive(r,s)&&near(s)})}

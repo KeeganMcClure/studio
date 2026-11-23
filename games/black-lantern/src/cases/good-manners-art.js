@@ -316,7 +316,10 @@ const FOLK={
  fairgoer:{look:{skin:4,hair:4,hairC:0,acc:0},top:'#e0a030',pants:'#4a4038',shoes:'#e8e4d8',iris:'#3a2418',mouth:'smile',
   body:(A_,ty)=>{const{R}=A_;R(2,ty+12,2,6,'#c87a3a');R(24,ty+12,2,6,'#c87a3a');R(2,ty+18,2,4,'#e8dcc0');R(24,ty+18,2,4,'#e8dcc0')}},
  fairgoer2:{look:{skin:3,hair:6,hairC:1,acc:0},top:'#3e8ad0',pants:'#3a3446',shoes:'#e8e4d8',s:.42,iris:'#3a2418',mouth:'open',cheeks:1},
- fairgoer3:{look:{skin:2,hair:3,hairC:5,acc:3},top:'#6a8a4a',pants:'#4a4038',shoes:'#3a2a1e',iris:'#3a2418',mouth:'flat',cap:'#a8323e'}
+ fairgoer3:{look:{skin:2,hair:3,hairC:5,acc:3},top:'#6a8a4a',pants:'#4a4038',shoes:'#3a2a1e',iris:'#3a2418',mouth:'flat',cap:'#a8323e'},
+ // part B: the co-op's two night men (night 1), work jackets and feed caps with the patch picked off
+ nightman:{look:{skin:1,hair:3,hairC:2,acc:0},top:'#a8783a',pants:'#3b4a6b',shoes:'#3a2a1e',iris:'#4a6a8a',mouth:'flat',cap:'#c0392b'},
+ nightman2:{look:{skin:3,hair:1,hairC:0,acc:3},top:'#7a6a4a',pants:'#3a3446',shoes:'#3a2a1e',iris:'#3a2418',mouth:'flat',cap:'#3e5a8a',capBack:1}
 };
 // hats and hair the template lacks: a feed cap (forward or backwards), Voss's straw hat, Roe's fedora, Rhonda's beehive
 function topper(Ad,F_,dir){const{R,C}=Ad;
