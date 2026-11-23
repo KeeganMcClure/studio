@@ -6,6 +6,7 @@
 //                    back on the board with the party saved (bl.party seats)
 // Then (not saved) the party plays the case again; the case closing counts down the Sabbatical, the BACK FROM SABBATICAL
 // screen asks who keeps the seat, and the agent comes back. It fails if any step doesn't happen.
+// Since spec 008 part C it also checks that the home scene played went into the season save (bl.season.played).
 // Usage: node tools/build.js && node tools/capture-home-saves.js <label>   (e.g. 2026-11-22-home)
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -45,6 +46,9 @@ const write = (name, note, keys) => {
   await wait(() => SCR && SCR.kind === 'home' && SCR.v === 'list' && SCR.i === 1);
   let keys = await dump(), g = JSON.parse(JSON.parse(keys['bl.game']));
   if (!g.db || g.db.step !== 7 || !g.db.home || g.db.home.i !== 1) throw new Error('no checkpoint paused at the second agent\'s home pick');
+  // since spec 008 part C the scenes played go in the season save, not the checkpoint
+  const played = JSON.parse(keys['bl.season']).played || {};
+  if (!Object.keys(played).some(k => k.startsWith('fr.'))) throw new Error('the scene played is not in bl.season.played');
   write('mid-home', 'Still Harvest closed, arc beats played and the first agent\'s home scene done; paused at the second agent\'s pick (debrief step 7), from the build of ' + label, keys);
   await pickHome('skill');
   await page.evaluate(() => { window.__pick = 0; }); await pickHome('sab');  // 1 case, then Yes, then the first recruit
