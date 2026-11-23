@@ -24,7 +24,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
 - [ ] Leftovers from the demo build (found in the pre-season review, Nov 23): two things the bible asks for that were never built
   - [x] B skips a briefing or cutscene you've already seen (Skills and menus → Quality of life, Skip replays; spec 006)
     Done Nov 23: once you've seen a briefing or cutscene, a B SKIP tab shows on the box and B skips the rest of it, even after a reload or a game over. Questions and choices still play.
-  - [ ] Mushrooms' screen shimmer while High on them (Agents and items → Item list)
+  - [x] Mushrooms' screen shimmer while High on them (Agents and items → Item list)
+    Done Nov 23: while the lead is High on Mushrooms the map shimmers, and in a fight the backdrop does too. Text, cards and sprites stay still and readable.
 - [ ] Demo playtest fixes (Keegan's notes, Nov 23): build the rule changes from the playtest. Tick this when all eight are done
   - [x] Hide skill options nobody in the party can use, at hotspots, on the map menu's Skills row and in battle (Skills and menus → Using skills; Combat → Basics, Command menu)
     Done Nov 23: skill options nobody in the party is high enough for are hidden at hotspots and on the map menu's Skills list; ones a teammate has still show greyed. Battle already showed only the acting agent's moves.
