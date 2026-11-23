@@ -253,11 +253,12 @@ const EN={
  // only if overstepping reaches Federal agents: a very hard human story fight (killing a person costs SAN as usual)
  fed:{name:'Clean-up agent',tier:'ordinary',hp:11,dex:12,hit:55,dmg:'1d4+1',skulls:3,tags:['human','living'],resist:[],weak:'human',weakLine:'Human. A flashbang or a badge will stop him for a second.',
   moves:[['hit',1]],verb:'fires at',die:'goes down and stays down',face:[10,2,20]},
- // the boss: 60 HP, −8 per rescued victim (36 with all three); its moves and second phase are set per run in bossFight()
- gleaner:{name:'The Gleaner',tier:'boss',boss:true,hp:60,dex:11,hit:55,dmg:'1d4+2',allDmg:'1d3',skulls:3,tags:['unnatural','burns'],resist:['stun2','poison','bleed'],weak:'fire',
+ // the boss (tuned Nov 23 with tools/boss-sim.js): 65 HP, −8 per rescued victim (41 with all three); its moves and second
+ // phase are set per run in bossIntro()
+ gleaner:{name:'The Gleaner',tier:'boss',boss:true,hp:65,cut:8,dex:11,hit:60,dmg:'1d4+2',allDmg:'1d3',skulls:3,tags:['unnatural','burns'],resist:['stun2','poison','bleed'],weak:'fire',
   weakLine:'Every harvest this town gave it. Dry as kindling. It can\'t be stunned two turns running.',glow:true,face:[34,2,32],
   records:()=>G.clues.some(c=>c.id==='lore'),
-  moves:[['hit',4],['all',2],['san',2]],verb:'reaps',allText:'The Gleaner sweeps its sickles through the corn!',sanText:TEXT.bossNames,sanHit:['1','1d4'],die:'goes out',
+  moves:[['hit',5],['all',2],['san',1]],verb:'reaps',allText:'The Gleaner sweeps its sickles through the corn!',sanText:TEXT.bossNames,sanHit:['1','1d4'],die:'goes out',
   phase2:{at:.5,hit:5,moves:{all:1},line:TEXT.bossPhase},
   horror:{tier:'boss',kind:'unnatural',subj:'the Gleaner',known:true}}
 };
@@ -580,9 +581,10 @@ async function cutDown(i){
  const V=VICTIMS[i],F=G.flags;if(!F['seen_'+V.id])await victimLook(i);if(!party.length)return;
  F['saved_'+V.id]=1;G.rescued=(G.rescued||0)+1;await said(V.free);await say(V.name.toUpperCase(),V.line);await said(TEXT.limp,{n:V.name.split(' ')[0]});G.M=buildMaze();checkpoint()
 }
-// the boss (Bosses; Combat numbers): 60 HP −8 per victim cut down. Phase 1, the Reaping: sickles, sweeps, and the names
-// if the fourth likeness was finished (1/1d4, or 1/1d6 after the cider). Phase 2 at half HP, the Gleaning: +5% to hit,
-// one more sweep for each victim still on a pole, one more names if they're live.
+// the boss (Bosses; Combat numbers; tuned Nov 23 with tools/boss-sim.js): 65 HP −8 per victim cut down. Phase 1, the
+// Reaping: 60% to hit; sickles (weight 5), sweeps (2), and the names (1) if the fourth likeness was finished (1/1d4, or
+// 1/1d6 after the cider). Phase 2 at half HP, the Gleaning: +5% to hit (65%), two more sickle strikes and one more sweep
+// for each victim still on a pole, one more names if they're live.
 async function bossIntro(){
  const F=G.flags;F.bossSeen=1;
  const names=F.deduce!=='right';
@@ -593,10 +595,10 @@ async function bossIntro(){
   await said(left?TEXT.bossLeft:TEXT.bossNone,{n:left,m:left+1});if(!names)await said(TEXT.bossNoFourth)});
  checkpoint();
  const E=EN.gleaner;
- E.moves=[['hit',4],['all',2]].concat(names?[['san',2]]:[]);
+ E.moves=[['hit',5],['all',2]].concat(names?[['san',1]]:[]);
  E.sanHit=F.cider?['1','1d6']:['1','1d4'];
- E.phase2={at:.5,hit:5,moves:{all:left,san:names?1:0},line:left?TEXT.bossPhaseGlean:TEXT.bossPhase};
- const hp=60-8*(G.rescued||0);
+ E.phase2={at:.5,hit:5,moves:{hit:2*left,all:left,san:names?1:0},line:left?TEXT.bossPhaseGlean:TEXT.bossPhase};
+ const hp=E.hp-E.cut*(G.rescued||0);
  const r=await battle(['gleaner'],{boss:true,hp,intro:TEXT.bossIntro,onStart:async()=>{if(G.rescued)await say('',fill(TEXT.bossThin,{v:G.rescued===1?'one victim':G.rescued+' victims'}),{auto:1500})}});
  if(r==='lose')return gameOver();
  F.boss=1;await ending();

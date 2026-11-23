@@ -13,13 +13,16 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
 
 Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026), so this list shows only what's left.
 
-- [ ] Demo revamp under the new rules and art: creator, case board, Pokémon-style party menu, end-of-case improvement, branching paths. Split Nov 21 into the six items below, one Claude Code session each, in order; tick this when all six are done
-- [ ] Demo 5 of 6: Still Harvest rebuild, story and play: its text block, branching paths, and fewer but harder fights under the new combat rules. Split Nov 22 into the three parts below (spec 006), one Claude Code session each, in order; tick this when all three are done
+- [x] Demo revamp under the new rules and art: creator, case board, Pokémon-style party menu, end-of-case improvement, branching paths. Split Nov 21 into the six items below, one Claude Code session each, in order; tick this when all six are done
+  Done Nov 23: all six demo items are built.
+- [x] Demo 5 of 6: Still Harvest rebuild, story and play: its text block, branching paths, and fewer but harder fights under the new combat rules. Split Nov 22 into the three parts below (spec 006), one Claude Code session each, in order; tick this when all three are done
+  Done Nov 23: all three parts are built, the last being the Gleaner's tuning check.
   - [x] Demo 5 part A: field rules. Each agent's own kit and items, skills at hotspots, statuses on the map, SAN by the bible, the full map menu
     Done Nov 22: each agent carries their own kit and items with a shared backpack, A on a hotspot shows the lead's skill options with their odds, statuses tick as you walk, SAN follows the bible's rules, and Start opens the full seven-row map menu. Still Harvest keeps its old story and plays start to finish.
   - [x] Demo 5 part B: combat under the Combat tab, in the approved head-on layout, with battle art for the case's enemies
     Done Nov 22: fights use the head-on layout from the combat mockup, with the turn-order column, HP bars, the one-row Fight · Skills · Items · Guard box and result lines. Every battle move, status move, item and weapon works by the Combat tab; Downed agents bleed out after 3 turns, lasting injuries roll after the fight, and each enemy has big battle art. The case's enemies are stand-ins at the bible's tiers (the Gleaner at 60 HP, −8 per victim) until Part C.
-  - [ ] Demo 5 part C: the story. Its text block, branching paths, fewer but harder fights, and the Gleaner at the bible's numbers
+  - [x] Demo 5 part C: the story. Its text block, branching paths, fewer but harder fights, and the Gleaner at the bible's numbers
+    Done Nov 23: the Gleaner is tuned a touch harder (65 HP, −8 per victim, 60% to hit, 65% in phase 2), and a new boss simulator shows a careful Field Team that saves all three still wins almost always with at most one agent Downed, while skipping the victims can now cost the fight.
     Left (Nov 23): only the Gleaner's boss tuning check. Do it next, before any new case's part B, because every later boss is tuned against the Gleaner (Combat → Bosses, Tuning check). Keegan's read from the demo playtest: it played OK, maybe a touch harder would be good, with a strong team mix. So tune it a touch harder for a careful Field Team, inside the Boss tier (55–65 HP, Combat numbers): still a win with at most one agent Downed, and a team that skipped the victims can lose.
 - [x] Leftovers from the demo build (found in the pre-season review, Nov 23): two things the bible asks for that were never built
   Done Nov 23: both leftovers are built: B skips a seen briefing or cutscene, and Mushrooms make the screen shimmer.
