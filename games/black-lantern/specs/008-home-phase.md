@@ -133,6 +133,24 @@ If Demo 5 or 6 built any of this differently, the changelog wins; note the diffe
 - **Arc beats** play over the backdrop of the Bond their beat names, or a place, as the arcs file says.
 - Check the Shared Shelf first for anything generic (furniture, windows, a fridge); propose new generic pieces to the Shelf only with Keegan's OK (CLAUDE.md, Shared Shelf). Black Lantern-only art goes on the Asset Library's core page under a new Home section, not a case page.
 
+### Part C: enough scenes for a season (To do: Home phase part C; added Nov 23, 2026)
+
+Today each choice has one scene per Bond type and mood (Back to Nature has six vignettes, Use three), so across a season an agent who keeps seeing the same Bond sees the same scene again and again. `studio-bible/play.md`, Picks from a pool don't repeat, asks the spec to size each pool and say how long the memory lasts.
+
+| Pool | Size | Memory |
+| --- | --- | --- |
+| Fulfill Responsibilities | At least **3 scenes** for each Bond type and mood (8 types × Close, Strained, Fraying), plus each Bond's one last scene at Broken | Per Bond, for the season |
+| Back to Nature | At least **9** vignettes | Whole party, for the season |
+| Personal Motivation (Pursue) | At least **2** per motivation | Per agent, for the season |
+| Therapy | At least **3** for SAN and **3** for a disorder | Per agent, for the season |
+| Improve Skill, Special Training | At least **3** each | Per agent, for the season |
+| Use | At least **3** | Per agent, for the season |
+
+- A pick takes a scene from its pool that hasn't played yet for that memory. Once all of them have played, it starts over, never repeating the one that just played.
+- **The memory lasts the season and goes in the save:** the list of played scenes moves from the home checkpoint to `bl.season` (one save step). A new season clears it.
+- The scenes are written by the Developer in claude/home-scenes.md (Project files, never the repo), as today, in Keegan's voice (Voice). The sizes above are minimums; more is welcome.
+- If a season runs longer than these pools can cover, the Developer says so, and the Designer raises the sizes here.
+
 ### Saves (Tech → Saving; `studio-bible/saves.md`)
 
 - Part A adds one upgrade step, version + 1. Add test saves: one mid-home-phase, one with an agent on Sabbatical.

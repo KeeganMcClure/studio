@@ -140,6 +140,7 @@ One item per chat, top to bottom. Sorted cheapest first: paper and doc work come
 - [x] Home phase part B (spec 008): the home backdrops for each Bond type and place, and older faces for parents and mentors
 
   Done Nov 22 (spec 008): every home scene now plays in its own drawn place: a room for each of the eight Bond types, and the woods, a church pew, a cemetery bench, a motel room, a therapist's office, a firing range, a library, a parked car and a psych ward hallway for the choices with no Bond, each with a night version. Parents and Mentors have lines and reading glasses, Kids have a smaller kid face, and a Bond's last scene and the arc beats have their own look.
+- [ ] Home phase part C (spec 008): enough home scenes for a season, with the played list kept in the season save. Before the season flow
 - [ ] Season flow (spec 009): the season data file, the board for a full season, agency case unlocks, the finale, the season's end and the next season. After the home phase
 - [ ] Good Manners part A (spec 010): its maps and art, townsfolk and the two men, walkable with stand-in scripts. After the season flow
 - [ ] Good Manners part B (spec 010): the secret case file first, then its story, fights, boss and endings
@@ -674,6 +675,8 @@ Statuses are short-term conditions that end within a case. Map and combat rules 
 Picking a home scene plays a quick cutscene that changes with who the Bond is and the Bond score. For example, a spouse at a high score: a hug and a little heart; at a low score: your agent yelling at them. Bonds appear as NPCs in these scenes. The options come from Delta Green and get tweaked or trimmed by the no-mechanics-for-mechanics'-sake rule. Claude writes every home-scene cutscene without review (set Nov 19), kept in claude/home-scenes.md, which you don't open.
 
 **Bond moods (set Nov 19).** A Bond's score sets the mood of its home scenes: **Close** (two-thirds of CHA or more), **Strained** (one-third up to two-thirds), **Fraying** (below one-third). At 0 the Bond is **Broken**: one last scene plays, then that person is gone and the slot stays empty until New Bond fills it.
+
+**No repeats (set Nov 23, 2026):** each choice draws from a pool of scenes that doesn't repeat until all of it has played, remembered for the season; the pool sizes are in spec 008, Part C (`studio-bible/play.md`).
 
 **One choice per agent.** Between cases, each agent picks exactly one home scene option from the table below, never several. Within an option that offers an "or" (like Personal Motivation), the agent also does only one of them.
 
