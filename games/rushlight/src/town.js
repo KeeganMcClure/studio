@@ -237,7 +237,7 @@ async function dropJob(id){const r=G.run,B_=r.boards,J=JOBS[id];r.contracts=r.co
  const g=RG();g.seals=(g.seals||[]).filter(s=>r.contracts.some(c=>JOBS[c.id].site===s));saveRun()}
 // the Contracts page (R on the map): taken jobs with their Next lines, A to drop one; then the Signs list
 let CP_SEL=0;
-function drawContractsExtra(y){return y}
+function drawContractsExtra(){}
 function contractsPress(k){const cs=G.run.contracts.filter(c=>!c.done);if(!cs.length)return;
  if(k==='up')CP_SEL=(CP_SEL+cs.length-1)%cs.length;else if(k==='down')CP_SEL=(CP_SEL+1)%cs.length;
  else if(k==='a'||k==='select'){const c=cs[CP_SEL];MAPV.page=null;run(async()=>{const x=await choose([`Keep ${c.title}`,`Drop ${c.title}`],{cancel:true,title:'CONTRACT'});if(x===1)await dropJob(c.id)})}}
@@ -266,7 +266,7 @@ async function giverPlace(gk){const r=G.run,gv=r.givers[gk],G_=GIVERS[gk],k=G_.t
 async function hireCorner(k){const r=G.run;
  for(;;){const pool=r.hires[k]||[],open=party.filter(m=>!m.dead).length<3;
   if(!pool.length){await say('','Nobody here is looking for work.');return}
-  const rows=pool.map(m=>({label:`${m.name} · ${m.sp} · ${m.trade} · L${m.lvl} · ${m.fee} gr`}));rows.push({label:'Leave'});
+  const rows=pool.map(m=>({label:`${m.name} · ${m.sp} · ${m.trade} · L${m.lvl} · ${m.fee} gr`,face:{sp:m.sp,look:m.look},name:m.name,sub:`${m.trade} · ${m.sp}`,right:`L${m.lvl} · ${m.fee} gr`}));rows.push({label:'Leave'});
   const c=await choose(rows,{cancel:true,title:open?'MERCS FOR HIRE':'MERCS FOR HIRE · NO SEAT OPEN'});if(c<0||c>=pool.length)return;
   const m=pool[c],E=best('Empathy');
   const card=`${m.name}, ${m.sp}, ${m.trade}. ${Object.keys(m.sk).sort((a,b)=>m.sk[b]-m.sk[a]).slice(0,3).map(s=>s+' '+m.sk[s]).join(', ')}. Main: ${m.mot[m.main]}. Kin: ${m.kin.name}, ${m.kin.type.toLowerCase()}. ${m.back}${m.readDone&&m.weak?' Weak-willed: they won\'t stay hungry long.':''}`;

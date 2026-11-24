@@ -139,12 +139,12 @@ function ask(q,yes,no,labels){S.confirm={q,yes,no,labels:labels||['Yes','No'],ba
 
 V.title=()=>({rows:[
  ST(`<canvas class="lantern pix" id="lantern" width="96" height="96" style="border:0;background:transparent"></canvas><div class="logo">RUSHLIGHT<small>THE WITHY MARCH</small></div>`),
+ ...(runSaved()?[R_(`Continue · ${esc(runSaved().company&&runSaved().company.name||'the company')}, day ${runSaved().day|0}`,{cls:'lwrap',a:()=>window.RLG&&RLG.resume()})]:[]),
  R_('New run',{a:newRun}),
- ...(runSaved()?[R_('Continue',{cls:'go',val:esc(runSaved().seed),a:()=>window.RLG&&RLG.resume()})]:[]),
  ...(ledgerHas()?[R_('Ledger',{a:()=>{S.ledgerOpen={company:0,from:'title'};goto('ledger')}})]:[]),
- R_('Import',{a:()=>{S.importIn='';S.importBad=false;goto('import')}}),
+ R_('Import a save',{a:()=>{S.importIn='';S.importBad=false;goto('import')}}),
  ...(window.Studio&&Studio.fromShelf?[R_('Game shelf',{val:'◀',a:()=>Studio.toShelf()})]:[]),
- ST(`<div class="small hint" style="text-align:center;margin-top:6px">Keyboard: arrows · Z = A · X = B · Q/W = L/R · Enter = Start</div>`)],foot:'A: SELECT'});
+ ST(`<div class="hint" style="text-align:center;margin-top:6px;color:#e6dcc4">Keyboard: arrows · Z = A · X = B · Q/W = L/R · Enter = Start</div>`)],foot:'A: SELECT'});
 function newRun(){
  const d=store.get(K('draft'),null);
  const fresh=()=>{if(runSaved())ask('This ends the run you have. The ledger stays.',()=>{abandonRun();toSeed()},()=>goto('title'),['End it','Keep it']);else toSeed()};
@@ -168,46 +168,55 @@ function startPick(seed){S.draft=freshDraft(seed);S.ed=null;S.review=0;pickTempl
 // ---- Pick a company (Mockup 6, rushlight-mockups-company-v1) ----
 const topSkills=c=>{const s=skillsOf(c);return Object.keys(s).sort((a,b)=>s[b]-s[a]||(a<b?-1:1)).slice(0,3).map(k=>`${k} ${s[k]}`).join(' · ')};
 const face=(c,px)=>`<canvas class="face" data-sp="${c.sp}" data-look="${c.look.shade}${c.look.mark}${c.look.neck}" width="${px}" height="${px}"></canvas>`;
-function seatCard(i){const d=S.draft,c=d.seats[i],tr=c&&tradeOf(c.trade),on=S.sel.company===seatRow(i),pop=S.pop&&S.pop.seat===i;
- if(!c)return `<div class="seat empty">EMPTY SEAT ${i+1}<span>A: make a merc</span></div>`;
- const acts=['KEEP','REROLL','TWEAK','REBUILD'];
- return `<div class="seat ${on?'on':''} ${d.kept[i]?'kept':''}">${face(c,40)}<div class="si"><div><b>${esc((c.name||'?').toUpperCase())}</b> <span>${esc(SPECIES[c.sp].name.toLowerCase())} · ${esc(tr.name.toLowerCase())}</span>${d.kept[i]?' <i>✓</i>':''}</div>
-  <div>${esc(topSkills(c))}</div><div class="dim">Main: ${esc(c.mot[c.main])} · kin: ${esc(c.kin.name)}, ${esc(c.kin.type.toLowerCase())}</div><div class="bk">${esc(backText(c))}</div>
-  ${pop?`<div class="acts">${acts.map((a,k)=>`<em class="${S.pop.sel===k?'on':''}" data-act="pop${k}">${a}</em>`).join('')}</div>`:''}</div></div>`}
-const seatRow=i=>8+i;
-V.company=()=>{const d=S.draft,tp=TEMPLATES.find(t=>t.id===d.tpl)||TEMPLATES[0],ready=d.seats.every(Boolean);
- // each company on one card: its name, then its three trades in full under it (bug batch, Nov 24: both were cut)
- const rows=TEMPLATES.map((t,i)=>R_(`<b class="${t.id===d.tpl?'hi':'nm'}">${esc(t.name)}</b><div class="sub">${t.trades.length?t.trades.map(x=>tradeOf(x).name).join(' · '):'Full creator, any trades'}</div>`,{cls:'tpl two',a:()=>{if(t.id!==d.tpl||t.id!=='blank')pickTemplate(i)}}));
- rows.push(ST(`<div class="small">${esc(T(tp.line))}</div>`));
- [0,1,2].forEach(i=>rows.push(R_(seatCard(i),{cls:'seatrow',a:()=>seatA(i),left:S.pop&&S.pop.seat===i?()=>{S.pop.sel=(S.pop.sel+3)%4}:null,right:S.pop&&S.pop.seat===i?()=>{S.pop.sel=(S.pop.sel+1)%4}:null,pop:k=>{S.pop={seat:i,sel:k};seatA(i)}})));
- rows.push(R_(`START ▸ sign them on`,{cls:ready?'go':'dim',val:'30 gr · 9 rations',a:()=>{if(ready){S.review=0;goto('review')}}}));
- return {rows,foot:'A: PICK · B: BACK',seed:d.seed,back:()=>{if(S.pop){S.pop=null;return}goto('title')}}};
-function seatA(i){const d=S.draft,c=d.seats[i];
+// Pick a company in two steps (spec 008, 8C; mockup 35, "Looks great"; ui, Screen craft: big picks go in two steps).
+// Step 1: one card per company, its name in caps with its tag, its three trades in full under it; the CO- line of the company
+// under the cursor in its own box. Step 2: the three seats, each a card with the face at 2×, the name, trade · species and the
+// three highest skills, and Keep, Reroll, Tweak and Rebuild as buttons. Up and Down move between seats, Left and Right between
+// buttons, A presses. Everything else of spec 003 part 3 holds: rolling, rerolls, the Blank company, the Muster roll.
+const tagOf=t=>T(t.line.replace('CO-','CO-TAG-'));
+V.company=()=>{const d=S.draft,at=TEMPLATES[S.sel.company]||TEMPLATES.find(t=>t.id===d.tpl)||TEMPLATES[0];
+ const rows=TEMPLATES.map((t,i)=>R_(`<div class="t1"><span>${esc(t.name.toUpperCase())}</span><i>${esc(tagOf(t))}</i></div><div class="t2">${t.trades.length?t.trades.map(x=>esc(tradeOf(x).name)).join(' · '):'Make all three yourself, any trades.'}</div>`,
+  {cls:'pc'+(t.id==='blank'?' blank':''),a:()=>{if(t.id!==d.tpl)pickTemplate(i);S.sel.seats=0;goto('seats')}}));
+ rows.push(ST(`<div class="desc">${esc(T(at.line))}</div>`));
+ return {rows,foot:'A: PICK · B: BACK',seed:d.seed,back:()=>goto('title')}};
+const SEAT_BTN=['KEEP','REROLL','TWEAK','REBUILD'];
+function seatCard(i){const d=S.draft,c=d.seats[i],on=S.sel.seats===i,b=(S.seatBtn||[])[i]|0;
+ if(!c)return `<div class="seat2 empty"><b class="nm">EMPTY SEAT ${i+1}</b><span>A: make a merc</span></div>`;
+ const tr=tradeOf(c.trade);
+ return `<div class="seat2">${face(c,52)}<div class="si"><div class="nm">${esc((c.name||'?').toUpperCase())}${d.kept[i]?' <i class="tick">✓</i>':''}</div>
+  <div class="k">${esc(tr.name)} · ${esc(SPECIES[c.sp].name.toLowerCase())}</div><div class="ln">${esc(topSkills(c))}</div></div></div>
+  <div class="btns">${SEAT_BTN.map((a,k)=>`<b class="${on&&b===k?'on':''}" data-act="pop${k}">${a}</b>`).join('')}</div>`}
+V.seats=()=>{const d=S.draft,tp=TEMPLATES.find(t=>t.id===d.tpl)||TEMPLATES[0],ready=d.seats.every(Boolean);S.seatBtn=S.seatBtn||[0,0,0];
+ const rows=[0,1,2].map(i=>R_(seatCard(i),{cls:'seatrow',a:()=>seatA(i,S.seatBtn[i]),left:()=>{S.seatBtn[i]=(S.seatBtn[i]+3)%4},right:()=>{S.seatBtn[i]=(S.seatBtn[i]+1)%4},pop:k=>{S.seatBtn[i]=k;seatA(i,k)}}));
+ rows.push(ST('<div class="hint">Kin, motivations and backstory: Tweak, or the Merc card.</div>'));
+ rows.push(R_('START ▸ SIGN THEM ON',{cls:'start '+(ready?'go':'dim'),val:'30 gr · 9 rations',a:()=>{if(ready){S.review=0;goto('review')}}}));
+ return {rows,title:tp.name.toUpperCase(),foot:'A: CHOOSE · ◀▶ BUTTON · B: COMPANIES',seed:d.seed,back:()=>goto('company')}};
+function seatA(i,k){const d=S.draft,c=d.seats[i];
  if(!c){openCreator(i,null);return}
- if(!S.pop||S.pop.seat!==i){S.pop={seat:i,sel:0};return}
- const k=S.pop.sel;S.pop=null;
  if(k===0)d.kept[i]=true;
  else if(k===1)reroll(i);
  else if(k===2){S.ed={seat:i,c:JSON.parse(JSON.stringify(c)),tweak:true};goto('tweak')}
  else openCreator(i,c);
 }
 // ---- Tweak: name, species, face, backstory, kin name, motivations ----
-V.tweak=()=>{const c=S.ed.c,tr=tradeOf(c.trade);return {rows:[
+// Tweak (spec 008, 8C; mockup 42): the merc's card on top (2× face, name, trade · species, the species' size and gift), then one
+// row per choice with its label in full, the backstory in its own card with a Roll button, and DONE at the bottom
+V.tweak=()=>{const c=S.ed.c,tr=tradeOf(c.trade),sp=SPECIES[c.sp];return {rows:[
+ ST(`<div class="mcard">${face(c,64)}<div><div class="nm">${esc((c.name||'?').toUpperCase())}</div><div class="k">${esc(tr.name)} · ${esc(sp.name.toLowerCase())}</div><div class="d">${esc(sp.size)} · ${esc(sp.trait)}: ${esc(speciesLine(c.sp))}</div></div></div>`),
  R_('Name',{input:{bind:'name',value:c.name,ph:'Name',max:14}}),
- R_('Species',{val:esc(SPECIES[c.sp].name),left:()=>cycleSp(c,-1),right:()=>cycleSp(c,1),a:()=>cycleSp(c,1)}),
+ R_('Species',{val:esc(sp.name),left:()=>cycleSp(c,-1),right:()=>cycleSp(c,1),a:()=>cycleSp(c,1)}),
  ...faceRows(c),
- R_('Backstory',{val:'<span class="small">roll</span>',a:()=>{c.backT=null;c.back=c.back===`BK-${tr.bk}-1`?`BK-${tr.bk}-2`:`BK-${tr.bk}-1`}}),
- ST(`<div class="small">${esc(backText(c))}</div>`),
- R_('Kin name',{input:{bind:'kin',value:c.kin.name,ph:'Kin name',max:14}}),
- R_('Motivations',{val:esc(c.mot.join(', ')),a:()=>{S.ed.from='tweak';goto('motives')}}),
- R_('Done ▶',{cls:'go',a:()=>{const d=S.draft;freeNames(d.seats[S.ed.seat],d.used);d.used.push(c.name,c.kin.name);d.seats[S.ed.seat]=c;d.kept[S.ed.seat]=false;S.ed=null;goto('company')}})],
- pane:`<div class="mpane">${face(c,64)}<div class="small">${esc(SPECIES[c.sp].size)} · ${esc(SPECIES[c.sp].trait)}</div><div class="small">${esc(speciesLine(c.sp))}</div></div>`,side:true,foot:'◀ ▶ CHANGE · B: CANCEL',back:()=>{S.ed=null;goto('company')}}};
+ R_('Kin',{input:{bind:'kin',value:c.kin.name,ph:'Kin name',max:14},cls:'kinrow'}),
+ R_('Motivations',{val:esc(c.mot.map((m,i)=>i===c.main?m+' (Main)':m).join(', ')),cls:'lwrap',a:()=>{S.ed.from='tweak';goto('motives')}}),
+ R_(`<div class="bkh"><span class="t">BACKSTORY</span><b class="btn">ROLL</b></div><div class="bk">${esc(backText(c))}</div>`,{cls:'bkrow',a:()=>{c.backT=null;c.back=c.back===`BK-${tr.bk}-1`?`BK-${tr.bk}-2`:`BK-${tr.bk}-1`}}),
+ R_('DONE ▸',{cls:'go start',a:()=>{const d=S.draft;freeNames(d.seats[S.ed.seat],d.used);d.used.push(c.name,c.kin.name);d.seats[S.ed.seat]=c;d.kept[S.ed.seat]=false;S.ed=null;goto('seats')}})],
+ title:'TWEAK · SEAT '+(S.ed.seat+1),foot:'◀ ▶ CHANGE · B: CANCEL',back:()=>{S.ed=null;goto('seats')}}};
 const speciesLine=k=>{const S2=SPECIES[k];return `${S2.up} +2, ${S2.down} −2. ${S2.tdesc}`};
 function cycleSp(c,d){c.sp=ORDER[(ORDER.indexOf(c.sp)+d+ORDER.length)%ORDER.length]}
-function faceRows(c){const L=c.look,cy=(k,n,d)=>{L[k]=(L[k]+d+n)%n};
- return [R_('Coat',{val:['lighter','middle','darker'][L.shade],left:()=>cy('shade',3,-1),right:()=>cy('shade',3,1),a:()=>cy('shade',3,1)}),
-  R_('Mark',{val:['none','scar','torn ear','grey muzzle'][L.mark],left:()=>cy('mark',4,-1),right:()=>cy('mark',4,1),a:()=>cy('mark',4,1)}),
-  R_('Neckwear',{val:['none','kerchief','hood'][L.neck],left:()=>cy('neck',3,-1),right:()=>cy('neck',3,1),a:()=>cy('neck',3,1)})]}
+function faceRows(c){const L=c.look,cy=(k,n,d)=>{L[k]=(L[k]+d+n)%n},ar=v=>v;
+ return [R_('Coat',{val:ar(['Lighter','Middle','Darker'][L.shade]),left:()=>cy('shade',3,-1),right:()=>cy('shade',3,1),a:()=>cy('shade',3,1)}),
+  R_('Mark',{val:ar(['None','Scar','Torn ear','Grey muzzle'][L.mark]),left:()=>cy('mark',4,-1),right:()=>cy('mark',4,1),a:()=>cy('mark',4,1)}),
+  R_('Neckwear',{val:ar(['None','Kerchief','Hood'][L.neck]),left:()=>cy('neck',3,-1),right:()=>cy('neck',3,1),a:()=>cy('neck',3,1)})]}
 
 // ---- The full creator: 7 steps, L/R between them ----
 const CSTEPS=['trade','stats','skills','identity','kin','motives','muster'];
@@ -216,7 +225,7 @@ function openCreator(seat,c){const d=S.draft;
  S.ed={seat,c:nc,lock:!!c};goto(c?'stats':'trade')}
 const picksLeft=c=>8-Object.values(c.picks).reduce((a,b)=>a+b,0);
 const buyLeft=c=>72-STATS.reduce((t,k)=>t+(c.base[k]|0),0);
-function cStep(d){const i=CSTEPS.indexOf(S.step),j=i+d;if(j<0){if(S.ed.lock||!S.ed.c.trade){S.ed=null;goto('company')}else goto('trade');return}
+function cStep(d){const i=CSTEPS.indexOf(S.step),j=i+d;if(j<0){if(S.ed.lock||!S.ed.c.trade){S.ed=null;goto('seats')}else goto('trade');return}
  if(j>=CSTEPS.length)return;const why=stepWhy(S.step);if(d>0&&why){toast(why);return}if(S.ed.lock&&CSTEPS[j]==='trade')return;goto(CSTEPS[j])}
 function stepWhy(st){const c=S.ed.c;if(st==='trade'&&!c.trade)return'PICK A TRADE';if(st==='stats'&&(!c.base||c.method==='buy'&&buyLeft(c)!==0))return c.base?'SPEND EXACTLY 72 POINTS':'ROLL OR BUY STATS';
  if(st==='identity'&&!c.name.trim())return'NAME THEM';if(st==='kin'&&!c.kin.name.trim())return'NAME THE KIN';if(st==='motives'&&c.mot.length!==2)return'PICK 2 MOTIVATIONS';return''}
@@ -273,12 +282,12 @@ function musterHTML(m,seed){const g=m.gear,it=x=>x?ITEMS[x.id].name:'—';
 V.muster=()=>{const c=S.ed.c,why=['trade','stats','identity','kin','motives'].map(stepWhy).find(Boolean);
  return {rows:[why?ST(`<span class="red">${why}</span>`):ST(musterHTML(build(c),S.draft.seed)),
   R_('Sign on ▶',{cls:why?'dim':'go',a:()=>{if(why)return;const d=S.draft,old=d.seats[S.ed.seat];if(old&&old.name!==c.name)freeNames(old,d.used);
-   [c.name,c.kin.name].forEach(n=>{if(!d.used.includes(n))d.used.push(n)});c.done=true;d.seats[S.ed.seat]=c;d.kept[S.ed.seat]=true;S.ed=null;goto('company')}})],foot:stepFoot,step:7}};
+   [c.name,c.kin.name].forEach(n=>{if(!d.used.includes(n))d.used.push(n)});c.done=true;d.seats[S.ed.seat]=c;d.kept[S.ed.seat]=true;S.ed=null;goto('seats')}})],foot:stepFoot,step:7}};
 // START: the Muster roll for the whole company, one page each, L/R to flip; Sign them on starts the run
 V.review=()=>{const d=S.draft,i=S.review,m=build(d.seats[i]);
  return {rows:[ST(`<div class="small hint">Page ${i+1} of 3 · L/R to flip</div>`+musterHTML(m,d.seed)),
   ...(d.tpl==='blank'?[R_('Company name',{input:{bind:'cname',value:d.name||'',ph:'Name your company',max:22}})]:[]),
-  R_('Sign them on ▶',{cls:'go',a:signOn})],foot:'L/R: FLIP · A: SIGN · B: BACK',back:()=>goto('company')}};
+  R_('Sign them on ▶',{cls:'go',a:signOn})],foot:'L/R: FLIP · A: SIGN · B: BACK',back:()=>goto('seats')}};
 // Sign them on: the run begins (spec 003, 7 and 10)
 function signOn(){const d=S.draft,n=seedNum(d.seed),st=streams(n),tp=TEMPLATES.find(t=>t.id===d.tpl);
  st.muster=d.mpos;
@@ -291,10 +300,15 @@ function signOn(){const d=S.draft,n=seedNum(d.seed),st=streams(n),tp=TEMPLATES.f
 // the death screen (spec 007, 6): DS-WIPE, the company, the seed, the day and where they fell, each merc's line, the score
 const scoreOf=c=>(c.contracts|0)+3*(c.great|0);
 const lineOf=l=>window.lineText?lineText(l):l.name;
+// the death screen (spec 008, 8C; mockup 44): the company's name with STRUCK FROM THE ROLL stamped in Blood, where and on what day;
+// every merc greyed, with how each one ended (their faces while the game still has them: the ledger stores no faces); contracts
+// done, great creatures killed and regions crossed; what they learned stays in the bestiary. A goes on to the ledger.
+const liveFace=name=>{const p=window.RLG&&RLG._t&&RLG._t.party?RLG._t.party().find(m=>m.name===name):null;return p?`<canvas class="face grey" data-sp="${p.sp}" data-look="${p.look.shade}${p.look.mark}${p.look.neck}" width="30" height="30"></canvas>`:`<span class="noface"></span>`};
 V.death=()=>{const L=store.get(K('ledger'),null)||newLedger(),c=L.companies[0];if(!c)return V.title();
- return {rows:[ST(`<div class="muster"><div class="red">${esc(T('DS-WIPE'))}</div><b>${esc(c.name)}</b><div class="small">Seed ${esc(c.seed)} · day ${c.days} · fell at ${esc(c.where||'')}</div>
-  ${c.mercs.map(l=>`<div class="bk">${esc(lineOf(l))}</div>`).join('')}<div>Contracts done ${c.contracts} · great creatures killed ${c.great} · days ${c.days}</div></div>`),
-  R_('To the ledger ▶',{cls:'go',a:()=>{S.ledgerOpen={company:0,from:'death'};goto('ledger')}})],foot:'A: THE LEDGER',back:()=>{S.ledgerOpen={company:0,from:'death'};goto('ledger')}}};
+ return {rows:[ST(`<div class="parch dcard"><div class="nm">${esc(c.name.toUpperCase())}</div><div class="stamp2">STRUCK FROM THE ROLL</div><div class="d">${esc(c.where||'the road')} · day ${c.days}</div><div class="it">${esc(T('DS-WIPE'))}</div></div>`),
+  ST(`<div class="parch droll">${c.mercs.map(l=>`<div class="dm">${liveFace(l.name)}<div>${esc(lineOf(l))}</div></div>`).join('')}</div>`),
+  ST(`<div class="parch droll"><div class="kvr"><span>Contracts done</span><b>${c.contracts}</b></div><div class="kvr"><span>Great creatures killed</span><b>${c.great}</b></div><div class="kvr"><span>Regions crossed</span><b>${c.regions|0}</b></div><div class="it">What they learned stays in the bestiary.</div></div>`),
+  R_('To the ledger ▶',{cls:'go',a:()=>{S.ledgerOpen={company:0,from:'death'};goto('ledger')}})],title:'NOBODY GETS UP',seed:c.seed,foot:'A: TO THE LEDGER',back:()=>{S.ledgerOpen={company:0,from:'death'};goto('ledger')}}};
 // the ledger screen: one row per company, newest first; the best so far marked with the Tallow dot; A opens its page
 V.ledger=()=>{const L=store.get(K('ledger'),null)||newLedger(),cs=L.companies||[];const best=cs.reduce((b,c,i)=>b<0||scoreOf(c)>scoreOf(cs[b])||scoreOf(c)===scoreOf(cs[b])&&(c.days|0)>(cs[b].days|0)?i:b,-1);
  const END={wipe:'wiped',abandoned:'abandoned',end:'the slice\'s end',current:'serving'};
@@ -317,10 +331,10 @@ function render(scroll=true){
  if(!V[S.step])S.step='title';
  cur=V[S.step]();
  const s=fixSel(cur.rows);
- $('#hTitle').textContent=(STEPNAME[S.step]||({death:'THE DEAD',ledger:'THE LEDGER',ledgerco:'A COMPANY'})[S.step]||'');
+ $('#hTitle').textContent=cur.title||(STEPNAME[S.step]||({death:'THE DEAD',ledger:'THE LEDGER',ledgerco:'A COMPANY'})[S.step]||'');
  $('#hStep').textContent=cur.seed?'SEED '+cur.seed:cur.step?`${cur.step}/7`:S.draft&&S.step!=='title'&&S.step!=='seed'?'SEED '+S.draft.seed:'';
- list.innerHTML=cur.rows.map((r,i)=>r.static?`<div class="static">${r.static}</div>`:
-  `<div class="row ${i===s?'on':''} ${r.cls||''}" data-i="${i}"><span class="cur">▶</span>${r.input?`<input data-bind="${r.input.bind}" value="${esc(r.input.value)}" placeholder="${esc(r.input.ph)}" maxlength="${r.input.max||28}" autocomplete="off" spellcheck="false">`:`<span class="lab">${r.label}</span>`}<span class="val">${r.left?'<b data-act="left">◀</b>':''}${r.val??''}${r.right?'<b data-act="right">▶</b>':''}</span></div>`).join('');
+ list.innerHTML=cur.rows.map((r,i)=>r.static?`<div class="static">${r.static.replace(/class="(desc|mcard|muster)\b/,'class="parch $1')}</div>`:
+  `<div class="row parch ${i===s?'on':''} ${r.cls||''}" data-i="${i}"><span class="cur">▶</span>${r.input?`${r.label?`<span class="lab" style="flex:none;width:86px">${r.label}</span>`:''}<input data-bind="${r.input.bind}" value="${esc(r.input.value)}" placeholder="${esc(r.input.ph)}" maxlength="${r.input.max||28}" autocomplete="off" spellcheck="false">`:`<span class="lab">${r.label}</span>`}<span class="val">${r.left?'<b data-act="left">◀</b>':''}${r.val??''}${r.right?'<b data-act="right">▶</b>':''}</span></div>`).join('');
  body.classList.toggle('side',!!cur.side);
  pane.innerHTML=cur.pane||'';
  document.querySelectorAll('#screen canvas.face').forEach(c=>{const L=c.dataset.look,x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(RLSP.portrait(c.dataset.sp,{shade:+L[0],mark:+L[1],neck:+L[2]}),0,0,64,64,0,0,c.width,c.height)});

@@ -100,10 +100,7 @@ payScreen=async function(id,o={}){await _payD(id,o);const r=G.run;if(!r.bodies)r
 const _churchRowsE=churchRowsE,_churchActE=churchActE;
 churchRowsE=k=>[...churchRowsBury(),..._churchRowsE(k)];
 churchActE=async(k,i)=>{const n=(G.run.bodies||[]).length;if(i<n)return bury(i,k);return _churchActE(k,i-n)};
-// the Contracts page: the dead, with a Bury row while a church is in reach
-const _drawCE=drawContractsExtra;
-drawContractsExtra=function(y){y=_drawCE(y);const b=G.run.bodies||[];if(!b.length)return y;pT('THE DEAD',8,y+4,PAL.tallow,8,PXf);y+=16;
- b.forEach(x=>{pT(`${x.name} · bury by the end of the next job${G.town?' · at the church':''}`,8,y,PAL.bone,13);y+=12});return y};
+// the Contracts page lists the dead in their own card (region.js drawContracts, spec 008 8C)
 
 // ================= THE LEDGER =================
 // one entry per company, newest first: name, seed, how far, how it ended, and one line per merc who served

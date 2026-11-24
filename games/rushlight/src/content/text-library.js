@@ -1,4 +1,4 @@
-// Rushlight Text Library (https://claude.ai/artifact/QNKtwsJvEkAtTDnn4LDSNA), copied 2026-11-22, revision 18. Every row Approved.
+// Rushlight Text Library (https://claude.ai/artifact/QNKtwsJvEkAtTDnn4LDSNA), copied 2026-11-22, revision 18, plus the seven CO-TAG rows (revision 20, Draft until Keegan approves them).
 // Game code reads lines by ID through RLT(id). Don't edit here: change the Sheet, then copy again.
 window.RL_TEXT={
  "CR-NOON-DESC":{p:"creature.desc",t:"A tall shape in white in the harvest fields at noon.",c:"Contract card and first sighting",s:"Approved"},
@@ -508,6 +508,13 @@ window.RL_TEXT={
  "NM-BEAST-18":{p:"name.beast",t:"Placida",c:"Beasts and mounts",s:"Approved"},
  "NM-BEAST-19":{p:"name.beast",t:"Celsa",c:"Beasts and mounts",s:"Approved"},
  "NM-BEAST-20":{p:"name.beast",t:"Pulchra",c:"Beasts and mounts",s:"Approved"},
+ "CO-TAG-FREE":{p:"company.tag",t:"Balanced",c:"Pick a company, step 1: Free Company card tag",s:"Draft"},
+ "CO-TAG-HUNT":{p:"company.tag",t:"Trail+ Talk−",c:"Pick a company, step 1: Hunting Party card tag",s:"Draft"},
+ "CO-TAG-THIEF":{p:"company.tag",t:"People+ Unnatural−",c:"Pick a company, step 1: Thief-takers card tag",s:"Draft"},
+ "CO-TAG-HEDGE":{p:"company.tag",t:"Occult+ Long fights−",c:"Pick a company, step 1: Hedge Folk card tag",s:"Draft"},
+ "CO-TAG-POWDER":{p:"company.tag",t:"Fights+ No healer",c:"Pick a company, step 1: Powder and Steel card tag",s:"Draft"},
+ "CO-TAG-CAMP":{p:"company.tag",t:"Mending+ No fighters",c:"Pick a company, step 1: Camp Followers card tag",s:"Draft"},
+ "CO-TAG-BLANK":{p:"company.tag",t:"Custom",c:"Pick a company, step 1: Blank company card tag",s:"Draft"},
  "CO-FREE":{p:"company.line",t:"Holds a line, shoots and patches wounds. Nobody reads letters, and nobody knows the unnatural.",c:"Pick a company: Free Company",s:"Approved"},
  "CO-HUNT":{p:"company.line",t:"Good on the trail and against beasts and worse. Poor at talk, and nobody reads.",c:"Pick a company: Hunting Party",s:"Approved"},
  "CO-THIEF":{p:"company.line",t:"Good with people, bounties and paper. Weak against anything unnatural.",c:"Pick a company: Thief-takers",s:"Approved"},

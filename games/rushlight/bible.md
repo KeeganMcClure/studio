@@ -116,7 +116,8 @@ One item per chat, in order, biggest open decisions first. Claude ticks the item
     Done Nov 24: the six species, folk front views and all nine creatures redrawn to the Quality bar and filed in the Asset Library; the battle screen at the new sizes with a backdrop for each kind of place; the shared animation rig; the contact sheet in every check.
   - [x] 8B Streets, sites and the HUD cards
     Done Nov 24: both streets, every site, the den and the region map lit and dressed to the look mockups, with the lead and place HUD cards and the camera raised on the street.
-  - [ ] 8C Menus: parchment panels and Pick a company in two steps
+  - [x] 8C Menus: parchment panels and Pick a company in two steps
+    Done Nov 24: every menu outside battle on aged parchment with the wax-seal cursor, Pick a company in two steps, and the last screens redone to their mockups.
   - [ ] 8D The check against Screen craft and the Quality bar
 
 ### Bugs

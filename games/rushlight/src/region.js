@@ -185,18 +185,41 @@ function drawRoadCard(){const g=RG(),r=G.run,y=VH-54,c=MAPV.cur,p=P_[c];StudioHU
  const ev=`${rt.days} event roll${rt.days>1?'s':''}`;pT(ev,VW-8-pW(ev,14),y+19,PAL.bone,14);
  pT('Threat ???',8,y+34,'#c8bea8',14);pT('A: go',VW-8-pW('A: go',14),y+34,PAL.tallow,14);
 }
-function drawKey(){pR(0,0,VW,VH,'rgba(28,24,20,.7)');const w=200,h=168,x=(VW-w)/2,y=Math.max(8,(VH-h)/2);pBox(x,y,w,h,PAL.soot,PAL.bone,2);pT('KEY',x+8,y+4,PAL.tallow,8,PXf);
- const rows=[['town','Town'],['hamlet','Hamlet'],['site','Wild site'],['den','Den']];rows.forEach(([k,l],i)=>{const yy=y+26+i*18;pR(x+10,yy-4,24,16,PARCH);glyph(k,x+22,yy+4);pT(l,x+42,yy-2,PAL.bone,14)});
- let yy=y+26+4*18;[['main','Main road'],['side','Side road']].forEach(([k,l])=>{cx.strokeStyle=PAL.bone;cx.lineWidth=k==='main'?2:1;cx.setLineDash(k==='main'?[]:[3,3]);cx.beginPath();cx.moveTo(x+10,yy+4);cx.lineTo(x+34,yy+4);cx.stroke();cx.setLineDash([]);pT(l,x+42,yy-2,PAL.bone,14);yy+=16});
- pT('?',x+18,yy-3,PAL.bone,16);pT('Not yet known',x+42,yy-2,PAL.bone,14);yy+=16;claws(x+16,yy);pT('Roamer met here',x+42,yy-2,PAL.bone,14);yy+=16;
- cx.drawImage(RLSP.coin(lead().sp),x+14,yy-4);pT('The company (the lead)',x+42,yy-2,PAL.bone,14);pT('L or B: close',x+8,y+h-16,PAL.ash,13)}
-function drawContracts(){pR(0,0,VW,VH,PAL.peat);pBox(4,4,VW-8,18,PAL.soot,PAL.bone);pT('CONTRACTS',9,9,PAL.tallow,8,PXf);let y=28;
- const cs=(G.run.contracts||[]).filter(c=>!c.done);if(!cs.length){pT(RW.noContracts,8,y,PAL.bone,15);y+=18}
- else cs.forEach((c,i)=>{if(typeof CP_SEL!=='undefined'&&i===CP_SEL%cs.length)pR(4,y-1,3,12,PAL.tallow);const tl=pWrap(c.title,VW-16,15,9);tl.forEach((l,k)=>pT(l,8,y+k*13,PAL.bone,15));let ny=y+tl.length*13;pWrap('NEXT: '+(c.next||''),VW-16,13,9).forEach(l=>{pT(l,8,ny,PAL.bone,13);ny+=11});y=ny+8});
- pT(RW.signs,8,y+4,PAL.tallow,8,PXf);y+=18;const sg=RG().signs;if(!sg.length){pT(RW.noSigns,8,y,PAL.bone,15);y+=14}
- sg.forEach(id=>{pWrap(RLT(id),VW-16,14,3).forEach(l=>{pT(l,8,y,PAL.bone,14);y+=12});y+=3});
- if(typeof drawContractsExtra==='function')y=drawContractsExtra(y);
- pT(cs.length?'A: keep or drop · R or B: back':'R or B: back',8,VH-16,PAL.ash,13)}
+// the map Key (spec 008, 8C; mockup 44): a parchment card over the dimmed chart that uses the chart's own pictures; every row fits
+function drawKey(){pR(0,0,VW,VH,'rgba(28,24,20,.7)');
+ const rows=[['town','Town'],['hamlet','Hamlet'],['site','Wild site'],['den','Den'],['main','Main road, a stroke per day'],['side','Side road'],['denroad','Road to a den'],['route','The way you\'ve picked'],['?','Not yet known'],['claws','Roamer met here'],['seal','A contract here'],['coin','The company (the lead)']];
+ const rh=Math.max(13,Math.min(17,Math.floor((VH-48)/rows.length))),w=Math.min(VW-8,206),h=26+rows.length*rh+16,x=(VW-w)/2,y=Math.max(4,(VH-h)/2);
+ StudioParch.panel(cx,x,y,w,h,PT_);pT('THE KEY',x+8,y+6,IK.rust,8,PXf);const sub='The Withy March';pT(sub,x+w-8-pW(sub,13),y+3,IK.dim,13);
+ rows.forEach(([k,l],i)=>{const yy=y+22+i*rh,ix=x+24,iy=yy+rh/2;
+  if(['town','hamlet','site','den'].includes(k))glyph(k,ix,iy+2,k==='site'?'camp':null);
+  else if(k==='main'){pR(ix-14,iy-2,28,4,INK);pR(ix-14,iy-1,28,2,'#e8dcc0');pR(ix-1,iy-5,2,10,INK)}
+  else if(k==='side'||k==='denroad')for(let q=-14;q<14;q+=7)pR(ix+q,iy-1,4,2,k==='side'?INK:'#5e1a18');
+  else if(k==='route')for(let q=-12;q<14;q+=6){pR(ix+q-1,iy-2,4,4,INK);pR(ix+q,iy-1,2,2,'#d9b45a')}
+  else if(k==='?')pT('?',ix-3,iy-9,INKL,16);
+  else if(k==='claws')claws(ix-4,iy-4);
+  else if(k==='seal'){cx.fillStyle='#5e1a18';cx.beginPath();cx.arc(ix,iy,5,0,7);cx.fill();cx.fillStyle='#9a4528';cx.beginPath();cx.arc(ix-1,iy-1,3.5,0,7);cx.fill()}
+  else if(k==='coin'){const c=RLSP.coin(lead().sp);cx.drawImage(c,ix-7,iy-9)}
+  pT(l,x+46,yy+(rh-15)/2,IK.peat,pSize(l,w-54,[15,14,13,12])||12)});
+ pT('L or B: close',x+(w-pW('L or B: close',13))/2,y+h-15,IK.dim,13)}
+// the Contracts page (spec 008, 8C; mockup 44): one parchment card per contract (its title, the pay, where with days and food, who it's
+// for and the kind of job, what's known, whose motivation it touches), then Signs and The dead as their own cards
+function drawContracts(){pR(0,0,VW,VH,PAL.peat);let y=frameTop('CONTRACTS',`DAY ${G.run.day}`)+2;
+ const cs=(G.run.contracts||[]).filter(c=>!c.done),bot=frameFoot(cs.length?'A: KEEP OR DROP · R OR B: BACK':'R OR B: BACK'),g=RG(),r=G.run;
+ const card=(lines,title,on,right)=>{const h=(title?14:4)+lines.length*12+8;if(y+h>bot)return false;parch(4,y,VW-8,h,on);let yy=y+3;
+  if(title){const tz=pSize(title,VW-(on?32:14)-(right?pW(right,15)+10:0),[8,7],PXf);if(tz)pT(title,on?22:10,yy+(8-tz)/2+1,IK.peat,tz,PXf);else pT(title,on?22:10,yy-2,IK.peat,14);if(right)pT(right,VW-10-pW(right,15),yy-3,IK.rust,15);yy+=14}
+  lines.forEach(([t,c,it])=>{cx.font=(it?'italic ':'')+VTf(14);cx.fillStyle=c||IK.soot;cx.textBaseline='top';cx.fillText(t,on&&!title?22:10,yy);yy+=12});y+=h+4;return true};
+ const wrap=(t,c,it)=>pWrap(t,VW-22,14,4).map(l=>[l,c,it]);
+ if(!cs.length)card(wrap(RW.noContracts,IK.soot));
+ cs.forEach((c,i)=>{const J=(typeof JOBS!=='undefined'&&JOBS[c.id])||{},on=typeof CP_SEL!=='undefined'&&i===CP_SEL%cs.length,L=[];
+  if(J.site&&P_[J.site]){const rt=g.at===J.site?null:route(g.at,J.site);L.push(...wrap(rt?`Where: ${P_[J.site].name} · ${rt.days} day${rt.days>1?'s':''} · food ${rationsNeed(rt.days)} of ${r.rations}`:`Where: ${P_[J.site].name}`))}
+  if(J.kind){const gv=J.by==='giver'&&r.givers&&r.givers[J.giver];L.push(...wrap(`For: ${gv?gv.name+', the '+GIVERS[J.giver].title:J.by==='none'?'nobody':'the notice board'} · a ${J.kind}`))}
+  const mt=(J.tags||[]).map(t=>{const who=party.filter(m=>!m.dead&&(m.mot||[]).includes(t)).map(m=>m.name);return who.length?`${who.join(', ')} (${t})`:''}).filter(Boolean);if(mt.length)L.push(...wrap('Moment: '+mt.join(' · '),IK.moss));
+  L.push(...wrap('Next: '+(c.next||''),IK.peat));
+  card(L,c.title,on,c.pay?c.pay+' gr':'')});
+ const sg=g.signs||[];card(sg.length?sg.flatMap(id=>wrap(RLT(id),IK.soot,true)):wrap(RW.noSigns,IK.dim),RW.signs.toUpperCase());
+ const bodies=r.bodies||[];if(bodies.length)card(bodies.flatMap(b=>wrap(`${b.name} · bury by the end of the next job${G.town?' · at the church':''}`)),'THE DEAD');
+ if(typeof drawContractsExtra==='function')drawContractsExtra(card,wrap);
+}
 
 // ================= MAP INPUT =================
 function regionPress(k){
