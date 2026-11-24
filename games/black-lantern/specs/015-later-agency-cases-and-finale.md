@@ -1,6 +1,6 @@
 # Spec 015: the later agency cases and the season finale
 
-Status: proposed, waiting for Keegan's merge · Written 2026-11-22 by the Game Designer · Game: Black Lantern · To do: Later agency cases and the finale
+Status: approved (studio PR #112), ready to build · Written 2026-11-22 by the Game Designer · Game: Black Lantern · To do: Later agency cases and the finale
 
 ## In plain words
 

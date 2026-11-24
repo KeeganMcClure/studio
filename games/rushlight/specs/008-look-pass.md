@@ -1,6 +1,6 @@
 # Spec 008: Look pass
 
-Status: draft for Keegan's review · Written 2026-11-23 by the Game Designer · Game: Rushlight · To do: Look pass
+Status: approved (studio PR #166), ready to build · Written 2026-11-23 by the Game Designer · Game: Rushlight · To do: Look pass
 
 ## In plain words
 

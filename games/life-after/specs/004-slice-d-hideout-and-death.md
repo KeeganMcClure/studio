@@ -1,6 +1,6 @@
 # Spec 004: Slice part D, the hideout and the end
 
-Status: draft for Keegan's review · Written 2026-11-23 by the Game Designer · Game: Life After · To do: Spec 001, Part D
+Status: approved (studio PR #134), ready to build · Written 2026-11-23 by the Game Designer · Game: Life After · To do: Spec 001, Part D
 
 ## In plain words
 

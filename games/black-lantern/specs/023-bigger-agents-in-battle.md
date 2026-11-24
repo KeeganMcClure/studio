@@ -1,6 +1,6 @@
 # Spec 023: bigger agents in battle
 
-Status: proposed, waiting for Keegan's merge · Written 2026-11-23 by the Game Designer · Game: Black Lantern · To do: Bigger agents in battle (spec 023)
+Status: approved (studio PR #187), ready to build · Written 2026-11-23 by the Game Designer · Game: Black Lantern · To do: Bigger agents in battle (spec 023)
 
 ## In plain words
 

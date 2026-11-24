@@ -1,6 +1,6 @@
 # Spec 003: Slice part C, survival and fights
 
-Status: draft for Keegan's review · Written 2026-11-23 by the Game Designer · Game: Life After · To do: Spec 001, Part C
+Status: approved (studio PR #134), ready to build · Written 2026-11-23 by the Game Designer · Game: Life After · To do: Spec 001, Part C
 
 ## In plain words
 
