@@ -1,0 +1,2246 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Life After</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+/* Life After's shell paint (spec 001, 1): from the baseline frame's NIGHT and DAY sets and the approved look
+   mockups (05 builder v2): a muted teal body, a near-black bezel, a cyan LED, rust A and B. */
+:root{--page:#0e1012;--shell:#3e4f4c;--shell-hi:#56696a;--shell-lo:#2a3533;--bezel:#121518;--bezel-edge:#08090a;--brand-ink:#9aa6a0;
+  --led:#3ff0e8;--led-off:#22302e;--scr-bg:#0c0e10;--scr-fg:#e8dcc0;--scr-hi:#e8c88a;--btn:#1a2022;--label:#9aa6a0;
+  --btn-a:#b4582e;--btn-b:#6a3424;--btn-ink:#f2ead6;--px:"Press Start 2P",ui-monospace,Menlo,monospace;--vt:"VT323",ui-monospace,Menlo,monospace;color-scheme:dark}
+body{margin:0}
+</style>
+<style>/* ../../../engine/shell.css */
+/* Studio shell: the GBA-style handheld every game plays inside (studio-bible/controls.md, Shell and Buttons).
+   Layout, button sizes and the size steps are shared; each game paints it by setting these on :root:
+     --page (behind the shell)  --shell --shell-hi --shell-lo (body)  --bezel --bezel-edge (screen surround)
+     --brand-ink (brand strip text)  --led --led-off  --scr-bg --scr-fg --scr-hi (screen, focus ring)
+     --btn --label (D-pad, L/R shoulders, Select/Start)  --btn-a --btn-b --btn-ink (A and B)  --px --vt (fonts)
+   The markup comes from engine/shell.js. Loaded by each game's index.html, before the game's own styles,
+   and inlined by the game's build, so dist/index.html stays one file. */
+html,body{height:100%}
+body{background:var(--page);color:var(--scr-fg);overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.wrap{height:100%;display:flex;justify-content:center;box-sizing:border-box;padding-left:max(4px,env(safe-area-inset-left,0px));padding-right:max(4px,env(safe-area-inset-right,0px));padding-block:4px}
+.shell{width:100%;max-width:460px;height:100%;display:flex;flex-direction:column;gap:6px;box-sizing:border-box;padding:6px 12px 10px;border-radius:16px 16px 34px 34px;
+  background:linear-gradient(170deg,var(--shell-hi),var(--shell) 40%,var(--shell-lo));box-shadow:inset 0 2px 0 rgba(255,255,255,.18),inset 0 -4px 0 rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.5)}
+/* L and R are wide shoulder buttons in the top corners of the controls, right under the screen (spec 003, Nov 21, 2026).
+   The row tucks into the shell's gap above the controls (negative margin), so the screen loses only the buttons' height. */
+.shoulders{flex:none;display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:-6px}
+.mid{display:flex;flex-direction:column;align-items:center;gap:var(--midgap)}
+.sh{width:var(--shw);height:var(--shh);border:0;border-radius:5px;background:var(--btn);color:var(--label);font:9px var(--px);box-shadow:inset 0 -3px 0 rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.08)}
+.sh.l{border-top-left-radius:12px}.sh.r{border-top-right-radius:12px}
+.bezel{flex:1;min-height:0;background:var(--bezel);border-radius:10px 10px 26px 10px;padding:10px 10px 6px;display:flex;flex-direction:column;gap:5px;box-shadow:inset 0 0 0 2px var(--bezel-edge)}
+.brand{display:flex;justify-content:space-between;align-items:center;font:7px var(--px);color:var(--brand-ink);letter-spacing:.08em}
+.led{width:7px;height:7px;border-radius:50%;background:var(--led);box-shadow:0 0 6px var(--led);display:inline-block;margin-right:6px;vertical-align:middle}
+.led.off{background:var(--led-off);box-shadow:none}
+.screen{flex:1;min-height:0;position:relative;background:var(--scr-bg);border-radius:3px;overflow:hidden;display:flex;flex-direction:column;font:20px/1.05 var(--vt);transition:filter .4s}
+.ctrls{flex:none;display:grid;grid-template-columns:auto auto auto;justify-content:space-between;align-items:center;gap:6px;padding:4px 0 0}
+.dpad{display:grid;grid-template-columns:repeat(3,var(--pad));grid-template-rows:repeat(3,var(--pad))}
+.dpad button{border:0;background:var(--btn);color:var(--label);font:10px var(--px);box-shadow:inset 0 -3px 0 rgba(0,0,0,.45)}
+.dpad .u{grid-area:1/2;border-radius:6px 6px 0 0}.dpad .l{grid-area:2/1;border-radius:6px 0 0 6px}
+.dpad .r{grid-area:2/3;border-radius:0 6px 6px 0}.dpad .d{grid-area:3/2;border-radius:0 0 6px 6px}
+.dpad .c{grid-area:2/2;background:var(--btn);pointer-events:none;box-shadow:none}
+.ab{position:relative;width:calc(var(--ab)*2.15);height:calc(var(--ab)*1.85)}
+.ab button{position:absolute;width:var(--ab);height:var(--ab);border-radius:50%;border:0;color:var(--btn-ink);font:13px var(--px);box-shadow:inset 0 -4px 0 rgba(0,0,0,.4),0 3px 0 rgba(0,0,0,.35)}
+.ab .a{right:0;top:6px;background:var(--btn-a)}
+.ab .b{left:0;top:calc(var(--ab)*.82);background:var(--btn-b)}
+.ss{display:flex;gap:8px;align-items:flex-start}
+.ss>div{width:var(--pill);display:flex;flex-direction:column;align-items:center}
+.ss button{width:calc(var(--pill) - 4px);height:14px;border-radius:9px;border:0;background:var(--btn);box-shadow:inset 0 -2px 0 rgba(0,0,0,.45);transform:rotate(-22deg)}
+.ss span{display:block;font:6px var(--px);color:var(--label);margin-top:10px;text-align:center}  /* the tilted pill reaches about 8 px below its box; 10 px keeps the label clear (bug, Nov 21) */
+button{cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+button:active,button.down{filter:brightness(1.35);transform:translateY(1px)}
+.ss button:active{transform:rotate(-22deg) translateY(1px)}
+button:focus-visible{outline:2px solid var(--scr-hi);outline-offset:2px}
+:root{--pad:42px;--ab:54px;--pill:46px;--midgap:16px;--shw:80px;--shh:24px}
+@media (max-height:700px),(max-width:380px){:root{--pad:38px;--ab:48px;--pill:42px;--midgap:12px}.bezel{padding:7px 7px 5px}}
+@media (max-height:560px),(max-width:340px){:root{--pad:34px;--ab:42px;--pill:40px;--midgap:9px}.brand{display:none}}
+@media (max-height:480px){:root{--pad:30px;--ab:38px;--pill:38px;--midgap:7px;--shw:72px;--shh:22px}}
+
+</style>
+<style>
+#cv{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none}
+/* Typing (a name, a seed, a save code): a cardboard card over the screen, so the phone keyboard can be used. */
+#ovl{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(8,10,12,.72);padding:10px;box-sizing:border-box}
+#ovl.on{display:flex}
+#ovl .cb{width:100%;max-width:340px;box-sizing:border-box;background:#c09a64;background:radial-gradient(ellipse at 32% 25%,#d2ac74 0 38%,#c09a64 39%);
+  border:3px solid #a6824e;border-bottom-color:#86683c;border-right-color:#86683c;padding:12px;color:#1c1a18;box-shadow:3px 3px 0 rgba(0,0,0,.45);position:relative}
+#ovl .cb:before,#ovl .cb:after{content:"";position:absolute;top:-6px;width:34px;height:11px;background:#a8aca8;border-top:2px solid #c4c8c4;border-bottom:2px solid #868a86}
+#ovl .cb:before{left:-8px;transform:rotate(-8deg)}#ovl .cb:after{right:-8px;transform:rotate(7deg)}
+#ovl h2{font:9px/1.6 var(--px);color:#8a2a1e;margin:0 0 8px}
+#ovl p{font:20px/1 var(--vt);margin:0 0 8px}
+#ovl input,#ovl textarea{width:100%;box-sizing:border-box;font:22px/1 var(--vt);color:#1c1a18;background:#ece6d8;border:2px solid #86683c;padding:4px 6px;outline:none;
+  -webkit-user-select:text;user-select:text;border-radius:0}
+#ovl textarea{height:96px;resize:none;font-size:16px;word-break:break-all}
+#ovl input:focus,#ovl textarea:focus{border-color:#3ff0e8}
+#ovl .bt{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+#ovl button{flex:1;min-width:90px;font:8px var(--px);color:#1c1a18;background:#d2ac74;border:2px solid #86683c;padding:10px 6px}
+#ovl button.go{border-color:#3ff0e8;outline:1px solid #3ff0e8}
+#ovl .err{color:#8a2a1e;min-height:20px}
+</style>
+</head><body>
+<div class="screen" id="screen" data-brand="LIFE AFTER" data-brand-sub=""
+  data-label-l="L: bag" data-label-r="R: map" data-label-select="Select: orders" data-label-start="Start: menu">
+  <canvas id="cv" aria-label="Life After"></canvas>
+  <div id="ovl" role="dialog"></div>
+</div>
+<script>/* ../../../engine/shell.js */
+// Studio shell: builds the GBA-style handheld around a game's screen (studio-bible/controls.md, Shell and Buttons).
+// Shared by every game; the look comes from engine/shell.css and the game's own colors.
+//
+// The game's index.html holds only its screen, marked with the brand text and its own button labels:
+//   <div class="screen" id="screen" data-brand="BLACK LANTERN" data-brand-sub="DOT MATRIX"
+//        data-label-start="Start: menu">...</div>
+//   <script src="../../../engine/shell.js"><\/script>   (first script, before any game code)
+// Optional labels (spoken by screen readers): data-label-l, -r, -start, -select, -a, -b.
+//
+// It wraps the screen in the bezel with the brand strip and the LED (#led), then the shoulder row with
+// L top left and R top right (#bL #bR, spec 003), then the controls row: D-pad ([data-pad]),
+// Select and Start (#bSel #bStart), and A and B (#bA #bB).
+// engine/input.js makes the buttons work.
+(function () {
+  var screen = document.getElementById('screen');
+  if (!screen) throw new Error('shell.js: no #screen element');
+  var d = screen.dataset;
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var lab = function (k, def) { return esc(d['label' + k] || def); };
+
+  var wrap = document.createElement('div');
+  wrap.className = 'wrap';
+  // Same markup, spacing included, as the hand-copied shell it replaced (Nov 21, 2026), apart from L and R,
+  // which moved from the middle cluster into their own shoulder row under the screen (spec 003, Nov 21).
+  wrap.innerHTML =
+    '\n  <div class="shell">\n    <div class="bezel">\n' +
+    '      <div class="brand"><span><span class="led" id="led"></span>' + esc(d.brand || '') + '</span><span>' + esc(d.brandSub || '') + '</span></div>\n' +
+    '      <i data-screen></i>\n    </div>\n' +
+    '    <div class="shoulders">\n' +
+    '      <button class="sh l" id="bL" aria-label="' + lab('L', 'L: previous') + '">L</button>\n' +
+    '      <button class="sh r" id="bR" aria-label="' + lab('R', 'R: next') + '">R</button>\n' +
+    '    </div>\n' +
+    '    <div class="ctrls">\n' +
+    '      <div class="dpad">\n' +
+    '        <button class="u" data-pad="up" aria-label="Up">▲</button>\n' +
+    '        <button class="l" data-pad="left" aria-label="Left">◀</button>\n' +
+    '        <span class="c"></span>\n' +
+    '        <button class="r" data-pad="right" aria-label="Right">▶</button>\n' +
+    '        <button class="d" data-pad="down" aria-label="Down">▼</button>\n' +
+    '      </div>\n' +
+    '      <div class="mid">\n' +
+    '        <div class="ss">\n' +
+    '          <div><button id="bSel" aria-label="' + lab('Select', 'Select') + '"></button><span>SELECT</span></div>\n' +
+    '          <div><button id="bStart" aria-label="' + lab('Start', 'Start: menu') + '"></button><span>START</span></div>\n' +
+    '        </div>\n' +
+    '      </div>\n' +
+    '      <div class="ab">\n' +
+    '        <button class="a" id="bA" aria-label="' + lab('A', 'A: confirm') + '">A</button>\n' +
+    '        <button class="b" id="bB" aria-label="' + lab('B', 'B: back') + '">B</button>\n' +
+    '      </div>\n' +
+    '    </div>\n  </div>\n';
+  screen.parentNode.insertBefore(wrap, screen);
+  var slot = wrap.querySelector('[data-screen]');
+  slot.parentNode.replaceChild(screen, slot);
+})();
+
+</script>
+<script>/* ../../../engine/studio.js */
+// Studio link: the small piece every game shares with the launcher.
+// Tells a game which build it is (Dev or Release), which save prefix to use,
+// and reads the launcher's shared settings. Plain script, no framework.
+// A game loads it before its own code: <script src="../../../engine/studio.js"><\/script>
+(function () {
+  var path = location.pathname;
+  // Dev builds live under /dev/<game>/ on the site; everything else is Release.
+  var channel = /\/dev\/[^/]+\/?(index\.html)?$/.test(path) ? 'dev' : 'release';
+  var params = new URLSearchParams(location.search);
+
+  var shelfUrl = channel === 'dev' ? '../../' : '../';
+  // True when this game was opened from the game shelf (now, or earlier in this tab), so a game only offers
+  // "back to the shelf" where there is one. A copy played elsewhere (the Black Lantern Intake page, a check
+  // opening the file directly) has no shelf to go back to.
+  var fromShelf = false;
+  try {
+    var shelf = new URL(shelfUrl, location.href).href;
+    fromShelf = document.referrer.split(/[?#]/)[0].replace(/index\.html$/, '') === shelf || sessionStorage.getItem('studio.fromShelf') === shelf;
+    if (fromShelf) sessionStorage.setItem('studio.fromShelf', shelf);
+  } catch (e) {}
+
+  window.Studio = {
+    channel: channel,
+    fromShelf: fromShelf,
+    // True when the launcher's Continue button opened the game.
+    continued: params.get('continue') === '1',
+    // Dev builds keep their own saves, so testing never touches the stable one.
+    // savePrefix('bl.') -> 'bl.' on Release, 'dev.bl.' on Dev.
+    savePrefix: function (base) { return channel === 'dev' ? 'dev.' + base : base; },
+    // Shared settings set in the launcher. Games read them and never keep their own copy.
+    settings: function () {
+      try { return JSON.parse(localStorage.getItem('studio.settings') || '{}'); } catch (e) { return {}; }
+    },
+    // Back to the game shelf. The launcher sits at the site root, one level up
+    // from a Release game and two from a Dev game.
+    shelfUrl: shelfUrl,
+    toShelf: function () { location.href = window.Studio.shelfUrl; }
+  };
+})();
+
+</script>
+<script>/* ../../../engine/input.js */
+// Studio input: the shell's buttons and the test keyboard, for every game (studio-bible/controls.md, Buttons and Keyboard).
+// Needs the buttons from engine/shell.js. Knows nothing about any game: the game says where presses go.
+//
+//   StudioInput.start({
+//     press(kind),       // every press: 'up' 'down' 'left' 'right' 'a' 'b' 'l' 'r' 'start' 'select'.
+//                        // The game routes it (for example to the map while it's up, otherwise to the menus).
+//     walking(),         // true while held directions should walk (the map is up)
+//     hold(dir, on),     // a direction went down (on) or up while walking; also told to let go on lift and blur
+//   });
+//
+// D-pad buttons fire once on press, then repeat after 320 ms every 85 ms (menus). While walking() the
+// direction also counts as held until the finger lifts, slides off or the touch is cancelled.
+// A, B, L, R, Start and Select fire on tap. Keys are ignored while a text field has focus, and Enter or
+// Escape there only closes the phone keyboard. Leaving the window lets go of every direction.
+// Later (Running, hold B): add an "is this button held?" query here so every game shares it.
+(function () {
+  var DIRS = ['up', 'down', 'left', 'right'];
+  var KEYS = {
+    ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+    z: 'a', Z: 'a', ' ': 'a', x: 'b', X: 'b', q: 'l', Q: 'l', w: 'r', W: 'r',
+    Enter: 'start', Backspace: 'select', Shift: 'select'   // Backspace = Select, Shift a second Select (controls.md, Nov 21)
+  };
+  var REPEAT_AFTER = 320, REPEAT_EVERY = 85;
+  var typing = function () { var el = document.activeElement; return !!(el && el.tagName === 'INPUT'); };
+
+  function start(o) {
+    var press = o.press, walking = o.walking || function () { return false; }, hold = o.hold || function () {};
+    var $ = function (s) { return document.querySelector(s); };
+
+    // D-pad with hold-repeat
+    document.querySelectorAll('[data-pad]').forEach(function (b) {
+      var t1, t2, d = b.dataset.pad;
+      var stop = function () { clearTimeout(t1); clearInterval(t2); b.classList.remove('down'); if (walking()) hold(d, false); };
+      b.addEventListener('pointerdown', function (e) {
+        e.preventDefault();
+        if (typing()) document.activeElement.blur();
+        b.classList.add('down');
+        if (walking()) hold(d, true);
+        press(d);
+        t1 = setTimeout(function () { t2 = setInterval(function () { press(d); }, REPEAT_EVERY); }, REPEAT_AFTER);
+      });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { b.addEventListener(ev, stop); });
+      b.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    });
+
+    // A, B, L, R, Start, Select: on tap
+    [['#bA', 'a'], ['#bB', 'b'], ['#bL', 'l'], ['#bR', 'r'], ['#bStart', 'start'], ['#bSel', 'select']].forEach(function (p) {
+      $(p[0]).addEventListener('click', function () { press(p[1]); });
+    });
+
+    // Keyboard, for testing on a computer
+    document.addEventListener('keydown', function (e) {
+      if (typing()) {
+        // Enter (the phone keyboard's Go) or Escape only closes the keyboard; it must not also count as Start
+        // (a game's own field handler can claim the key first with preventDefault)
+        if (!e.defaultPrevented && (e.key === 'Enter' || e.key === 'Escape')) { e.preventDefault(); document.activeElement.blur(); }
+        return;
+      }
+      var k = KEYS[e.key]; if (!k) return;
+      e.preventDefault();
+      if (walking() && DIRS.indexOf(k) >= 0) { if (e.repeat) return; hold(k, true); }
+      press(k);
+    });
+    document.addEventListener('keyup', function (e) { var k = KEYS[e.key]; if (k && DIRS.indexOf(k) >= 0) hold(k, false); });
+    window.addEventListener('blur', function () { DIRS.forEach(function (d) { hold(d, false); }); });
+  }
+
+  window.StudioInput = { start: start, KEYS: KEYS };
+})();
+
+</script>
+<script>/* ../../../engine/move.js */
+// Studio movement: grid walking on the map, the camera and the canvas fit, for every game
+// (studio-bible/controls.md: Shell, and "on the map, the last direction pressed wins"; art-style.md: 16 px tiles).
+// Knows nothing about any game. The game keeps its own state object and passes it in, so what a save
+// holds (map, x, y, dir) doesn't change. The state's fields:
+//   x, y      tile the lead stands on        px, py   pixel position (moves during a step)
+//   dir       'up' 'down' 'left' 'right'     mv       the step in progress, or null
+//   anim      frames walked, for the walk cycle
+//
+//   StudioMove.place(s, x, y, dir)           put the lead on a tile, standing still
+//   StudioMove.update(s, dir, {passable(x, y), busy(), arrive()})
+//                                            once per screen frame while the map is up. dir is the held
+//                                            direction (StudioMove.last(held)) or null. arrive() runs on
+//                                            reaching a tile (warps, step triggers).
+//   StudioMove.hold(held, dir, on)           returns the new held list; the last one pressed wins
+//   StudioMove.ahead(s)                      [x, y] of the tile the lead faces (A uses it)
+//   StudioMove.walkFrame(s)                  0 standing, 1 or 2 walking
+//   StudioMove.camera(s, mapW, mapH, vw, vh) [x, y]: follows the lead, stops at the map's edges, centers small maps
+//   StudioMove.nearestOpen(x, y, w, h, open)  [x, y] of the nearest tile (steps on the grid, through walls) where
+//                                            open(x, y) is true, or null: a saved spot that's now a wall moves here
+//   StudioMove.fit(box, canvas)              sizes the canvas 240 px wide and as tall as the box's shape allows
+//                                            (130 to 320), crisp pixels; returns {w, h, boxW, boxH}, or null while hidden
+(function () {
+  var TILE = 16, STEPF = 10, WALKF = 5;   // a step takes 10 frames (about 6 tiles a second at 60 Hz); frames change every 5
+  var VIEW_W = 240, VIEW_MIN_H = 130, VIEW_MAX_H = 320;
+  var DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+
+  function place(s, x, y, dir) { s.x = x; s.y = y; s.dir = dir || 'down'; s.px = x * TILE; s.py = y * TILE; s.mv = null; }
+
+  function update(s, dir, o) {
+    var mv = s.mv;
+    if (mv) {
+      mv.t++;
+      var k = mv.t / STEPF;
+      s.px = Math.round((mv.fx + (mv.tx - mv.fx) * k) * TILE);
+      s.py = Math.round((mv.fy + (mv.ty - mv.fy) * k) * TILE);
+      s.anim = (s.anim || 0) + 1;
+      if (mv.t >= STEPF) { s.x = mv.tx; s.y = mv.ty; s.mv = null; o.arrive(); }
+      return;
+    }
+    if (o.busy() || !dir) return;
+    // blocked: turn to face it without moving
+    s.dir = dir;
+    var d = DIRS[dir], nx = s.x + d[0], ny = s.y + d[1];
+    if (o.passable(nx, ny)) s.mv = { fx: s.x, fy: s.y, tx: nx, ty: ny, t: 0 };
+  }
+
+  function hold(held, dir, on) { held = held.filter(function (x) { return x !== dir; }); if (on) held.push(dir); return held; }
+  function last(held) { return held[held.length - 1]; }
+  function ahead(s) { var d = DIRS[s.dir]; return [s.x + d[0], s.y + d[1]]; }
+  function walkFrame(s) { return s.mv ? (Math.floor((s.anim || 0) / WALKF) % 2) + 1 : 0; }
+
+  function nearestOpen(x, y, w, h, open) {
+    var seen = {}, q = [[x, y]]; seen[x + ',' + y] = true;
+    while (q.length) {
+      var c = q.shift();
+      if (open(c[0], c[1])) return c;
+      ['up', 'left', 'right', 'down'].forEach(function (k) {
+        var nx = c[0] + DIRS[k][0], ny = c[1] + DIRS[k][1];
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h || seen[nx + ',' + ny]) return;
+        seen[nx + ',' + ny] = true; q.push([nx, ny]);
+      });
+    }
+    return null;
+  }
+
+  function camera(s, mapW, mapH, vw, vh) {
+    var mw = mapW * TILE, mh = mapH * TILE;
+    var x = mw <= vw ? (mw - vw) / 2 : clamp(s.px + 8 - vw / 2, 0, mw - vw);
+    var y = mh <= vh ? (mh - vh) / 2 : clamp(s.py + 8 - vh / 2, 0, mh - vh);
+    return [Math.round(x), Math.round(y)];
+  }
+
+  function fit(box, canvas) {
+    var r = box.getBoundingClientRect();
+    if (!r.width || !r.height) return null;
+    var w = VIEW_W, h = clamp(Math.round(VIEW_W * r.height / r.width), VIEW_MIN_H, VIEW_MAX_H);
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').imageSmoothingEnabled = false;
+    return { w: w, h: h, boxW: r.width, boxH: r.height };
+  }
+
+  window.StudioMove = { TILE: TILE, STEPF: STEPF, DIRS: DIRS, place: place, update: update, hold: hold, last: last, ahead: ahead, walkFrame: walkFrame, camera: camera, nearestOpen: nearestOpen, fit: fit };
+})();
+
+</script>
+<script>/* ../../../engine/clock.js */
+// Studio clock: runs a game's logic at a steady 60 ticks a second, whatever the phone's screen rate, for every game.
+// Walking counts its steps in ticks (engine/move.js: 10 ticks a step), so without this a 120 Hz screen
+// walks twice as fast as the iPhone SE's 60 Hz screen, and a 30 Hz one (iPhone Low Power Mode) half as fast.
+// Knows nothing about any game.
+//
+//   var clock = StudioClock.make();
+//   function loop(now) {                  // now: the timestamp requestAnimationFrame passes in
+//     var n = clock.ticks(now);           // how many 1/60 s ticks have passed since the last frame (0 to 4)
+//     if (n) { for (var i = 0; i < n; i++) update(); draw(); }
+//     raf = requestAnimationFrame(loop);
+//   }
+//   clock.reset()                         // call when the loop (re)starts, so time spent away isn't caught up
+//
+// 60 Hz: one tick every frame, as before. 120 Hz: a tick every other frame, and the frames in between are
+// skipped (nothing would change on screen). 90 Hz: two ticks every three frames. 30 Hz: two ticks a frame.
+// A long gap (tab hidden, a slow frame) counts as one tick, so the game never jumps ahead.
+(function () {
+  var STEP = 1000 / 60;   // one tick, in ms
+  var SLACK = 3;          // a frame up to 3 ms early still counts, so 60 Hz screens with jitter keep one tick a frame
+  var MAX = 4;            // at most 4 ticks per frame (15 Hz)
+  var GAP = 250;          // longer than this: count one tick
+
+  function make() {
+    var last = null, acc = 0;
+    return {
+      reset: function () { last = null; acc = 0; },
+      ticks: function (now) {
+        if (last === null || now - last > GAP || now < last) { last = now; acc = 0; return 1; }
+        acc += now - last; last = now;
+        var n = Math.min(MAX, Math.floor((acc + SLACK) / STEP));
+        acc = Math.max(-SLACK, Math.min(STEP, acc - n * STEP));
+        return n;
+      }
+    };
+  }
+
+  window.StudioClock = { STEP: STEP, make: make };
+})();
+
+</script>
+<script>/* ../../../engine/seed.js */
+// Studio seed: seeded random streams whose position can be saved and restored, for every game that builds its world
+// or rolls its dice from a seed (studio-bible/saves.md, Seeds: one seed per run; dice from a second stream whose
+// position is saved, so reopening rerolls nothing). Set Nov 22, 2026 from Rushlight spec 002. Knows nothing about any game.
+//
+//   StudioSeed.stream(seed)       a stream made from a whole number. Several can run side by side (a run's world,
+//                                 muster and dice streams are separate).
+//     s.next()                    the next number from 0 up to (not including) 1, like Math.random
+//     s.int(n)                    a whole number from 0 to n - 1
+//     s.pos                       how many numbers it has given so far
+//     s.save()                    its position as a small plain object {seed, a, n}, safe to put in a save
+//   StudioSeed.load(saved)        a stream back exactly where save() left it: the same next numbers follow
+//   StudioSeed.hash(text)         a whole number from any text, to make a seed from a typed word
+//
+// The maths is mulberry32: small, fast and the same in every browser.
+(function () {
+  function stream(seed, a, n) {
+    var s = { seed: seed | 0, a: a == null ? seed | 0 : a | 0, pos: n | 0 };
+    s.next = function () {
+      s.pos++;
+      var t = s.a = (s.a + 0x6D2B79F5) | 0;
+      t = Math.imul(t ^ (t >>> 15), 1 | t);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    s.int = function (n) { return Math.floor(s.next() * n); };
+    s.save = function () { return { seed: s.seed, a: s.a, n: s.pos }; };
+    return s;
+  }
+  function load(o) { return o ? stream(o.seed, o.a, o.n) : null; }
+  function hash(text) {
+    var h = 2166136261;
+    text = String(text);
+    for (var i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h | 0;
+  }
+  window.StudioSeed = { stream: stream, load: load, hash: hash };
+})();
+
+</script>
+<script>/* ../../../engine/party.js */
+// Studio party: who leads, Select cycling the lead, and the Pokémon-style party card list, for every game
+// (studio-bible/ui.md, Party menu; controls.md, Buttons: Select). Set Nov 21, 2026 from Black Lantern spec 002.
+// Knows nothing about any game. The game keeps its own party and lead index, says what a card shows,
+// its words and its colors, and draws on its own 240 px canvas.
+//
+//   StudioParty.next(n, cur, canLead)    the next seat after cur that can lead (seat order, wraps), or cur
+//   StudioParty.canSwap(s)               may the lead change now? s: {battle, dialog, menu, cutscene, moving, busy}
+//                                        (any true: no). Presses while it can't are ignored, not saved up.
+//
+//   const list = StudioParty.list({
+//     count(),                 how many cards (seat order, top to bottom; cards never move)
+//     lead(),                  seat index of the lead
+//     cycle(),                 Select pressed: the game moves the lead (usually to StudioParty.next(...))
+//     actions(i),              popup rows for card i: [{label, dis, why, run()}]; run may return a promise
+//     close(),                 B on the cards: leave the list
+//     pulse(i),                true while card i should blink (low-health pulse)
+//     paint: {
+//       header(ctx, r),                      the box above the cards
+//       card(ctx, i, r, st),                 one card; st: {on, lead, blink, hit(rect, fn)} — hit() makes a
+//                                            spot tappable this frame (status chips)
+//       detail(ctx, r, i, st),               the box under the cards; st: {note, why}: a tapped chip's line,
+//                                            or the highlighted popup row's reason; avoid: the popup's
+//                                            rect while it's open (keep text clear of it), else null
+//     },
+//     colors: {box, border, shadow, on, text, dim, cursor},   the popup's look
+//     font: '16px "VT323"',    popup row font
+//     headerH, cardH, gap, detailMin,        layout in canvas pixels (defaults 18, 50, 4, 40)
+//   });
+//   list.press(kind)           'up' 'down' 'a' 'b' 'select' (others ignored)
+//   list.tap(x, y)             a tap in canvas pixels
+//   list.draw(ctx, w, h, now)  once per frame
+//   list.sel, list.pop         highlighted card; open popup {sel} or null
+//   list.note                  the game may set a line for the detail box (cleared when the cursor moves)
+//   list.reset(sel)            cursor to sel, popup closed
+(function () {
+  var BLINK_MS = 400;   // low-health pulse: on, off, on...
+
+  function next(n, cur, canLead) {
+    for (var k = 1; k <= n; k++) { var i = (cur + k) % n; if (!canLead || canLead(i)) return i; }
+    return cur;
+  }
+  function canSwap(s) { return !(s.battle || s.dialog || s.menu || s.cutscene || s.moving || s.busy); }
+
+  var inside = function (r, x, y) { return x >= r.x && y >= r.y && x < r.x + r.w && y < r.y + r.h; };
+
+  function list(o) {
+    var L = { sel: 0, pop: null, note: '', hits: [], rects: null, busy: false };
+    var headerH = o.headerH || 18, cardH = o.cardH || 50, gap = o.gap == null ? 4 : o.gap, detailMin = o.detailMin || 40;
+    var n = function () { return o.count(); };
+    var firstOn = function (rows) { for (var i = 0; i < rows.length; i++) if (!rows[i].dis) return i; return 0; };
+
+    L.reset = function (sel) { L.sel = sel || 0; L.pop = null; L.note = ''; };
+    function move(d) { var c = n(); L.sel = (L.sel + d + c) % c; L.note = ''; }
+    function openPop() { var rows = o.actions(L.sel); L.pop = { sel: firstOn(rows), rows: rows }; L.note = ''; }
+    function run(row) {
+      if (!row || row.dis) return;
+      L.pop = null;
+      var r = row.run && row.run();
+      if (r && r.then) { L.busy = true; r.then(function () { L.busy = false; }, function () { L.busy = false; }); }
+    }
+
+    L.press = function (k) {
+      if (L.busy) return;
+      if (k === 'select') { o.cycle(); if (L.pop) L.pop.rows = o.actions(L.sel); return; }
+      if (L.pop) {
+        var rows = L.pop.rows, m = rows.length;
+        if (k === 'up') L.pop.sel = (L.pop.sel - 1 + m) % m;
+        else if (k === 'down') L.pop.sel = (L.pop.sel + 1) % m;
+        else if (k === 'a') run(rows[L.pop.sel]);
+        else if (k === 'b') L.pop = null;
+        return;
+      }
+      if (k === 'up') move(-1);
+      else if (k === 'down') move(1);
+      else if (k === 'a') openPop();
+      else if (k === 'b') o.close();
+    };
+
+    L.tap = function (x, y) {
+      if (L.busy || !L.rects) return;
+      if (L.pop) {
+        var pr = L.rects.pop;
+        if (pr && inside(pr.box, x, y)) {
+          for (var j = 0; j < pr.rows.length; j++) if (inside(pr.rows[j], x, y)) { L.pop.sel = j; run(L.pop.rows[j]); return; }
+          return;
+        }
+        L.pop = null; return;   // a tap outside the popup closes it, like B
+      }
+      for (var h = L.hits.length - 1; h >= 0; h--) if (inside(L.hits[h].r, x, y)) { var c = L.hits[h]; if (c.i !== L.sel) { L.sel = c.i; } c.fn(); return; }
+      var cards = L.rects.cards;
+      for (var i = 0; i < cards.length; i++) if (inside(cards[i], x, y)) { if (i === L.sel) openPop(); else { L.sel = i; L.note = ''; } return; }
+    };
+
+    function cursor(ctx, x, y) {   // ▶ drawn in pixels, so it never depends on a font
+      ctx.fillStyle = o.colors.cursor;
+      for (var k = 0; k < 5; k++) ctx.fillRect(x + k, y + k, 1, 9 - 2 * k);
+    }
+
+    L.draw = function (ctx, w, h, now) {
+      var c = n(); if (L.sel >= c) L.sel = 0;
+      var pad = 4, top = pad + headerH + 4;
+      // when the screen is short, the cards scroll so the highlighted one stays in view
+      var room = h - top - detailMin - pad, all = c * (cardH + gap);
+      var off = 0;
+      if (all > room) { var want = L.sel * (cardH + gap); off = Math.max(0, Math.min(want - Math.max(0, room - cardH - gap), all - Math.max(room, cardH + gap))); }
+      L.hits = [];
+      var rects = { header: { x: pad, y: pad, w: w - 2 * pad, h: headerH }, cards: [], pop: null };
+      var blinkOn = Math.floor(now / BLINK_MS) % 2 === 0;
+      var lead = o.lead();
+      var cardsTop = top, cardsBottom = all > room ? top + Math.max(room, cardH + gap) : top + all;
+      ctx.save(); ctx.beginPath(); ctx.rect(0, cardsTop, w, cardsBottom - cardsTop); ctx.clip();
+      for (var i = 0; i < c; i++) {
+        var r = { x: pad, y: top + i * (cardH + gap) - off, w: w - 2 * pad, h: cardH };
+        rects.cards.push(r);
+        (function (i) {
+          o.paint.card(ctx, i, r, { on: i === L.sel, lead: i === lead, blink: !!(o.pulse && o.pulse(i)) && blinkOn,
+            hit: function (rr, fn) { L.hits.push({ r: rr, fn: fn, i: i }); } });
+        })(i);
+        if (i === L.sel) cursor(ctx, r.x + 2, r.y + Math.round(cardH / 2) - 4);
+      }
+      ctx.restore();
+      o.paint.header(ctx, rects.header);
+      var d = { x: pad, y: cardsBottom, w: w - 2 * pad, h: h - cardsBottom - pad };
+      var why = L.pop && L.pop.rows[L.pop.sel] && L.pop.rows[L.pop.sel].dis ? L.pop.rows[L.pop.sel].why || '' : '';
+      var box = null;
+      if (L.pop) {
+        var rh = 16, pw = 92, ph = L.pop.rows.length * rh + 6, sc = rects.cards[L.sel];
+        box = { x: w - pad - pw - 4, y: Math.max(pad, Math.min(sc.y + sc.h - 4, h - pad - ph - 3)), w: pw, h: ph };
+      }
+      // avoid: where the popup covers the screen, so the detail box can keep its text beside it
+      if (d.h >= 12) o.paint.detail(ctx, d, L.sel, { note: L.note, why: why, avoid: box });
+      if (L.pop) {
+        var rows = L.pop.rows, px = box.x, py = box.y;
+        var C = o.colors, rr = [];
+        ctx.fillStyle = C.shadow; ctx.fillRect(px + 3, py + 3, pw, ph);
+        ctx.fillStyle = C.border; ctx.fillRect(px, py, pw, ph);
+        ctx.fillStyle = C.box; ctx.fillRect(px + 2, py + 2, pw - 4, ph - 4);
+        ctx.font = o.font; ctx.textBaseline = 'top';
+        rows.forEach(function (row, j) {
+          var y = py + 3 + j * rh, on = j === L.pop.sel;
+          rr.push({ x: px, y: y, w: pw, h: rh });
+          if (on) { ctx.fillStyle = C.on; ctx.fillRect(px + 2, y, pw - 4, rh - 1); cursor(ctx, px + 5, y + 3); }
+          ctx.fillStyle = row.dis ? C.dim : C.text; ctx.fillText(row.label, px + 14, y - 1);
+        });
+        rects.pop = { box: box, rows: rr };
+      }
+      L.rects = rects;
+    };
+    return L;
+  }
+
+  window.StudioParty = { next: next, canSwap: canSwap, list: list };
+})();
+
+</script>
+<script>/* ../../../engine/savecode.js */
+// Studio save code: a save turned into one line of text the player copies out and pastes back
+// (studio-bible/saves.md: save export and import, because clearing Safari's data wipes saves).
+// Set Nov 24, 2026 from Life After spec 001; Black Lantern (BL1:) and Rushlight (RL1:) make the same
+// kind of code by hand. Knows nothing about any game.
+//
+//   StudioCode.make(tag, obj)     'TAG:' plus the object as JSON in base64, safe for any letters (names with accents)
+//   StudioCode.read(tag, text)    the object back, or null when the text isn't a good code with that tag.
+//                                 Spaces and line breaks the phone adds when pasting are ignored.
+(function () {
+  function make(tag, obj) {
+    return tag + ':' + btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+  }
+  function read(tag, text) {
+    text = String(text || '').replace(/\s+/g, '');
+    if (text.indexOf(tag + ':') !== 0) return null;
+    try {
+      var o = JSON.parse(decodeURIComponent(escape(atob(text.slice(tag.length + 1)))));
+      return o && typeof o === 'object' ? o : null;
+    } catch (e) { return null; }
+  }
+  window.StudioCode = { make: make, read: read };
+})();
+
+</script>
+<script>/* ../assets/look.js */
+// Life After look: the palette, people, portraits, cars, icons, the top bar card and the cardboard menu surface.
+// Final drawing code (studio.md: final sprites go in assets/ as drawing code). Built from the approved look mockups'
+// shared code, mockups/la-look-rough-v3.js (04 street v2, 05 builder v2, 06 sprite reference v3, approved Nov 23),
+// with the survivor's looks parts added (survivor.md, Looks parts): body, skin, face, hair style and color,
+// the job's outfit in 4 color sets, and age.
+// Light: one sun from the upper left. Hard shadows to the lower right. Flat shapes and tone, no grain (bible, Art).
+(function(){
+// ---------- palette (from the baseline frame, 02-baseline-san-rough-v2, NIGHT and DAY sets, grown into ramps) ----------
+const P={
+  out:'#0c0e10', ink:'#1e1a16',
+  // asphalt, concrete, grass, dirt
+  asph:['#7a766c','#6e6a62','#5e5a54','#4a4844'], conc:['#bcb59c','#a8a28a','#8e8a76','#6e6c5e'],
+  grass:['#8c9058','#747852','#5e6444','#464c36'], dirt:['#9a845c','#84704e','#6a5a40','#4e4434'],
+  // building walls
+  stucco:['#c8c4aa','#aeae96','#9a9e8a','#7a8070'], tealw:['#7e9a96','#5a7472','#46605e','#34484a'],
+  roof:['#8a8a80','#74746c','#5e5e58','#46464a'], brick:['#b4582e','#9a4a28','#7a3e26','#5a2e1e'],
+  ochre:['#e8d0a0','#d8c08a','#b8a070','#8a7650'],
+  // people
+  skin:['#ecc09a','#d8a880','#b47e5e','#8a5a48'], skinB:['#b47e5e','#8e5e44','#6e4634','#4e3226'],
+  zom:['#bcbe9a','#a8aa88','#868a6c','#5e6650'],
+  jeans:['#6a86a0','#4e6a86','#3a5068','#283a4e'], coverall:['#7e9a96','#5a7472','#46605e','#30403e'],
+  red:['#d06a3a','#b4582e','#8a4028','#6a3424'], mail:['#9aa8b4','#7e8c9a','#606e7c','#46525e'],
+  navy:['#46526e','#36405a','#283046','#1c2232'], over:['#5a7a9a','#46647e','#344c62','#243646'],
+  cap:['#6e8a4a','#56703a','#42582e','#2e3e20'], boot:['#5e4a3a','#46382c','#34281e','#221a14'],
+  hairD:['#4a3a30','#3a2c24','#2a201a','#1a1410'], hairG:['#a8a49a','#8a867c','#6e6a62','#4e4a44'],
+  blood:'#7a1e1a', bloodD:'#4a1210', bone:'#e8e0c8',
+  cyan:'#3ff0e8', pink:'#ff4fa3', amber:'#ffb43a', warm:'#e8c88a',
+  // UI
+  card:'#14181a', cardHi:'#2a3234', line:'#8e9a94', text:'#e8dcc0', dim:'#9aa094',
+  kraft:['#d2ac74','#c09a64','#a6824e','#86683c'], tape:['#c4c8c4','#a8aca8','#868a86'], marker:'#1c1a18', markR:'#8a2a1e'
+};
+window.LAP=P;
+
+// ---------- pixel helpers ----------
+function mk(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');g.imageSmoothingEnabled=false;return [c,g];}
+function R(g,col,x,y,w,h){g.fillStyle=col;g.fillRect(x|0,y|0,w|0,h|0);}
+function px(g,col,x,y){g.fillStyle=col;g.fillRect(x|0,y|0,1,1);}
+// shaded ellipse: four tones from one upper-left light
+function vol(g,cx,cy,rx,ry,ramp,clip,dir){const dx=dir?dir[0]:-.62,dy=dir?dir[1]:-.72;
+  for(let y=Math.floor(cy-ry);y<=Math.ceil(cy+ry);y++)for(let x=Math.floor(cx-rx);x<=Math.ceil(cx+rx);x++){
+    const nx=(x+.5-cx)/rx,ny=(y+.5-cy)/ry,r2=nx*nx+ny*ny;if(r2>1)continue;if(clip&&!clip(x,y))continue;
+    const nz=Math.sqrt(1-r2),l=.55*nz+.5*(dx*nx+dy*ny);
+    px(g,l>.62?ramp[0]:l>.3?ramp[1]:l>.02?ramp[2]:ramp[3],x,y);}
+}
+// shaded box (cylinder across x): light on the left, deep on the right
+function box(g,x,y,w,h,ramp){for(let i=0;i<w;i++){const t=(i+.5)/w;R(g,t<.25?ramp[0]:t<.6?ramp[1]:t<.88?ramp[2]:ramp[3],x+i,y,1,h);}}
+function data(g,w,h){return g.getImageData(0,0,w,h);}
+function hex(c){return [parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)];}
+// a four-tone ramp (light, base, shade, deep) from one base color
+function mix(a,b,k){const x=hex(a),y=hex(b);return '#'+x.map((v,i)=>Math.round(v+(y[i]-v)*k).toString(16).padStart(2,'0')).join('');}
+function ramp(c){return [mix(c,'#fff4e0',.22),c,mix(c,'#10141a',.28),mix(c,'#10141a',.52)];}
+// selective outline: deep outline on the shadow side (right, bottom), a dark tone of the part's own color on the lit side
+function outline(c,g){
+  const w=c.width,h=c.height,d=data(g,w,h),o=new Uint8ClampedArray(d.data),A=(x,y)=>x<0||y<0||x>=w||y>=h?0:d.data[(y*w+x)*4+3];
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){if(A(x,y))continue;
+    const L=A(x+1,y),T=A(x,y+1),Rr=A(x-1,y),B=A(x,y-1);if(!(L||T||Rr||B))continue;
+    const i=(y*w+x)*4;let r=12,gg=14,b=16;
+    if((L||T)&&!(Rr||B)){const j=L?(y*w+x+1)*4:((y+1)*w+x)*4;r=d.data[j]*.45;gg=d.data[j+1]*.45;b=d.data[j+2]*.48;}
+    o[i]=r;o[i+1]=gg;o[i+2]=b;o[i+3]=255;}
+  d.data.set(o);g.putImageData(d,0,0);
+}
+// rim light on the lit edge (portraits and big sprites)
+function rim(c,g,col){
+  const w=c.width,h=c.height,d=data(g,w,h),o=new Uint8ClampedArray(d.data),A=(x,y)=>x<0||y<0||x>=w||y>=h?0:d.data[(y*w+x)*4+3],[cr,cg,cb]=hex(col);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){if(!A(x,y))continue;if(A(x-1,y)&&A(x,y-1))continue;
+    // the pixel just inside the outline gets the rim
+    if(!(A(x-2,y)&&A(x,y-2))){} }
+  for(let y=1;y<h;y++)for(let x=1;x<w;x++){const i=(y*w+x)*4;if(!A(x,y))continue;
+    const edge=!A(x-2,y)||!A(x,y-2);const inner=A(x-1,y)&&A(x,y-1);
+    if(edge&&inner){o[i]=(o[i]+cr*1.4)/2.4;o[i+1]=(o[i+1]+cg*1.4)/2.4;o[i+2]=(o[i+2]+cb*1.4)/2.4;}}
+  d.data.set(o);g.putImageData(d,0,0);
+}
+function shadow(g,x,y,w,a){g.fillStyle='rgba(10,12,14,'+(a||.38)+')';g.beginPath();g.ellipse(x,y,w,w*.32,0,0,7);g.fill();}
+
+// ---------- map sprite: 14 x 26 in a 18 x 30 frame (room for the outline) ----------
+// o: {skin, hair, hairStyle, top, legs, boots, kind:'surv'|'zom', job, cap, gore, arm, face:'down'|'right'}
+function person(o){
+  const [c,g]=mk(18,30),X=2,S=o.skin||P.skin,top=o.top||P.coverall,legs=o.legs||P.jeans,bt=o.boots||P.boot,z=o.kind==='zom';
+  const sh=o.short?3:0,Y=2+sh,lean=z?(o.lean==null?1:o.lean):0,hx=lean,hy=z?1:0,lh=6-sh;
+  const H=o.hair||P.hairD;
+  // long hair hangs behind the head and shoulders
+  if(o.hairStyle==='long')vol(g,X+7+hx,Y+8+hy,5.6,7,H,(x,y)=>x<X+4+hx||x>X+10+hx||y<Y+6);
+  if(o.hairStyle==='pony'){vol(g,X+12+hx,Y+7+hy,2,4,H);px(g,'#c8503a',X+11+hx,Y+4+hy);}
+  if(o.hairStyle==='mullet')vol(g,X+7+hx,Y+8+hy,5.4,4,H,(x,y)=>x<X+4+hx||x>X+10+hx);
+  // legs and boots (a deep gap between the legs, shade on the far side)
+  // walking: one leg lifts a pixel on each step (o.step 1 or 2)
+  const u1=o.step===1?1:0,u2=o.step===2?1:0;
+  box(g,X+3,Y+18,3,lh-u1,legs);box(g,X+8,Y+18,3,lh-u2,legs);
+  if(o.shorts){R(g,S[1],X+3,Y+21,3,lh-3);R(g,S[2],X+5,Y+21,1,lh-3);R(g,S[1],X+8,Y+21,3,lh-3);R(g,S[2],X+10,Y+21,1,lh-3);}
+  const fy=Y+18+lh;box(g,X+2,fy-u1,4,2,bt);box(g,X+8,fy-u2,4,2,bt);px(g,'#9a8a74',X+3,fy-u1);px(g,'#9a8a74',X+9,fy-u2);
+  // body: rounded, shaded from its shape
+  vol(g,X+7,Y+15,o.bw||5.4,5.2,top,(x,y)=>y>=Y+11&&y<Y+19);
+  if(o.apron){R(g,o.apron[1],X+4,Y+14,6,4);R(g,o.apron[2],X+9,Y+14,1,4);R(g,o.apron[0],X+5,Y+11,1,3);R(g,o.apron[0],X+8,Y+11,1,3);}
+  if(o.vest){R(g,o.vest[1],X+3,Y+12,2,6);R(g,o.vest[2],X+9,Y+12,2,6);R(g,'#e8e8d8',X+3,Y+15,2,1);R(g,'#c8c8b8',X+9,Y+15,2,1);}
+  if(o.overalls){vol(g,X+7,Y+17,4.2,3.4,P.over,(x,y)=>y>=Y+14&&y<Y+19);R(g,P.over[0],X+4,Y+11,1,3);R(g,P.over[2],X+9,Y+11,1,3);px(g,'#e8d08a',X+4,Y+14);px(g,'#e8d08a',X+9,Y+14);}
+  // belt
+  R(g,'#2a221c',X+3,Y+18,8,1);px(g,'#c8b070',X+7,Y+18);
+  // collar, seams and details
+  px(g,top[0],X+5,Y+11);px(g,top[0],X+6,Y+12);px(g,top[3],X+8,Y+12);px(g,top[2],X+9,Y+11);R(g,top[3],X+7,Y+13,1,5);
+  if(o.patch){R(g,'#f0e6d0',X+4,Y+14,2,1);}
+  if(o.badge)px(g,'#e8d08a',X+4,Y+13);
+  if(o.tag)R(g,'#f0ece0',X+4,Y+13,2,1);
+  if(o.number)R(g,o.number,X+6,Y+14,2,2);
+  if(o.bag){for(let i=0;i<7;i++)px(g,'#5e4026',X+3+i,Y+11+i);box(g,X+9,Y+16,4,4,['#a87e4e','#84603a','#6a4a2e','#4e3622']);px(g,'#c8a070',X+10,Y+16);}
+  // arms: separate from the body by a deep line, with hands
+  const armL=o.arm!=='noL',armR=o.arm!=='noR',dl=top[3];
+  if(z){ // reaching
+    if(armL){box(g,X,Y+12,2,4,top);R(g,dl,X+2,Y+12,1,3);box(g,X,Y+16,2,2,S);}
+    if(armR){box(g,X+12,Y+11-(o.lean<0?0:1),2,4,top);R(g,dl,X+11,Y+12,1,3);box(g,X+12,Y+15-(o.lean<0?0:1),2,2,S);}
+    else{px(g,P.blood,X+12,Y+12);px(g,P.bone,X+12,Y+13);px(g,P.bloodD,X+12,Y+14);}
+  }else{box(g,X,Y+11,2,6,top);box(g,X+12,Y+11,2,6,top);R(g,dl,X+2,Y+12,1,5);R(g,dl,X+11,Y+12,1,5);box(g,X,Y+17,2,2,S);box(g,X+12,Y+17,2,2,S);}
+  // neck and head
+  vol(g,X+7+hx,Y+6+hy,4.6,5,S);
+  // hair or cap
+  if(o.cap){vol(g,X+7+hx,Y+3+hy,5,3,o.cap,(x,y)=>y<Y+4+hy);R(g,o.cap[2],X+3+hx,Y+4+hy,9,1);R(g,o.cap[3],X+5+hx,Y+5+hy,6,1);}
+  else if(o.hairStyle==='buzz'){vol(g,X+7+hx,Y+4+hy,4.8,3.4,[H[1],H[1],H[2],H[2]],(x,y)=>y<Y+3+hy);}
+  else if(o.hairStyle!=='bald'){vol(g,X+7+hx,Y+3.6+hy,5,3.6,H,(x,y)=>y<Y+4+hy||x<X+3+hx||x>X+10+hx);px(g,H[0],X+5+hx,Y+2+hy);px(g,H[2],X+8+hx,Y+4+hy);
+    if(o.hairStyle==='curly'){for(const [a,b] of [[2,2],[4,0],[7,0],[10,1],[12,3]])px(g,H[1],X+a+hx,Y+b+hy);px(g,H[0],X+5+hx,Y+1+hy);}
+    if(o.hairStyle==='part')R(g,H[3],X+5+hx,Y+1+hy,1,2);}
+  if(o.gray&&o.hairStyle!=='bald'&&!o.cap){px(g,P.hairG[0],X+4+hx,Y+3+hy);px(g,P.hairG[1],X+10+hx,Y+4+hy);}
+  // face
+  if(o.face==='up'){vol(g,X+7+hx,Y+6+hy,4.6,5,H,(x,y)=>y<Y+9+hy);}
+  else if(o.face==='right'){px(g,z?'#d8d8b0':'#2a1e1a',X+9+hx,Y+6+hy);px(g,S[2],X+10+hx,Y+8+hy);}
+  else{px(g,z?'#e0e0c0':'#2a1e1a',X+5+hx,Y+6+hy);px(g,z?'#e0e0c0':'#2a1e1a',X+8+hx,Y+6+hy);px(g,S[2],X+6+hx,Y+8+hy);px(g,S[2],X+7+hx,Y+8+hy);}
+  if(z){ // gore on top: torn cloth, wounds, bone
+    px(g,P.blood,X+4,Y+13);px(g,P.bloodD,X+5,Y+14);px(g,P.blood,X+4,Y+15);
+    px(g,P.bone,X+9+hx,Y+3+hy);px(g,P.blood,X+8+hx,Y+9+hy);px(g,P.bloodD,X+7+hx,Y+9+hy);
+    if(o.gore==='heavy'){R(g,P.blood,X+6,Y+15,3,2);px(g,P.bone,X+7,Y+15);px(g,P.bloodD,X+9,Y+19);}
+  }
+  outline(c,g);return c;
+}
+
+
+// ---------- cars: side view with the roof showing (3/4), front to the right ----------
+// o: {len, ramp, wagon, wreck}
+function car(o){
+  const L=o.len||46,[c,g]=mk(L+4,30),x=2,y=2,K=o.ramp,glass=['#9ab8c0','#4e6e78','#34505a','#22343c'];
+  const c0=x+Math.round(L*.24),c1=x+Math.round(L*(o.wagon?.86:.7)); // cabin from the back pillar to the windshield
+  // body: a long box with rounded ends, lit along the top edge, deep along the sill
+  for(let i=0;i<L;i++){const end=i<2||i>L-3;const top=y+9+(end?1:0),bot=y+19-(end?1:0);
+    R(g,K[0],x+i,top,1,1);R(g,K[1],x+i,top+1,1,5);R(g,K[2],x+i,top+6,1,bot-top-7);R(g,K[3],x+i,bot-1,1,1);}
+  // hood and trunk dip a little below the beltline
+  R(g,K[1],x+L-9,y+9,9,1);
+  // cabin: roof seen from above, then the glass with a slanted windshield and back window
+  for(let j=0;j<8;j++){const a=c0+Math.round((7-j)*.6),b=c1-Math.round((7-j)*(o.wagon?.4:1.1))+ (j>5?2:0);
+    R(g,j<2?K[0]:glass[j<4?1:2],a,y+1+j,Math.max(1,b-a+(j<2?0:0)),1);}
+  R(g,K[1],c0+3,y+1,c1-c0-6,1);
+  // pillars and a sky streak on the glass
+  const mid=Math.round((c0+c1)/2);R(g,K[2],mid,y+3,2,6);if(o.wagon)R(g,K[2],c0+Math.round((c1-c0)*.75),y+3,2,6);
+  for(let j=0;j<4;j++)px(g,glass[0],c1-6-j,y+3+j);for(let j=0;j<3;j++)px(g,glass[0],mid-4-j,y+3+j);
+  // door seams, handles, a chrome strip, bumpers and lights
+  R(g,K[3],mid,y+10,1,7);R(g,K[3],c0+1,y+10,1,7);px(g,'#d8d8d0',mid+3,y+12);px(g,'#d8d8d0',c0+4,y+12);
+  if(o.wagon){R(g,'#7a5230',x+4,y+12,L-10,3);R(g,'#a87a48',x+4,y+12,L-10,1);R(g,'#5a3a20',x+4,y+14,L-10,1);}
+  else R(g,'#c8ccc8',x+3,y+13,L-6,1);
+  R(g,'#c8ccc8',x,y+16,3,2);R(g,'#c8ccc8',x+L-3,y+16,3,2);
+  R(g,'#f0e0a0',x+L-2,y+11,2,2);R(g,'#c8503a',x,y+11,2,2);
+  // wheels under arches
+  for(const wx of [x+Math.round(L*.2),x+Math.round(L*.8)]){
+    g.fillStyle='#14161a';g.beginPath();g.arc(wx,y+18,5,Math.PI,0);g.fill();
+    const flat=o.wreck&&wx>x+L/2;
+    g.fillStyle='#1e1e20';g.beginPath();g.ellipse(wx,y+18+(flat?1:0),4,flat?3:4,0,0,7);g.fill();
+    R(g,'#8a8e90',wx-1,y+17+(flat?1:0),2,2);px(g,'#c8ccc8',wx-1,y+17+(flat?1:0));}
+  if(o.wreck){ // crumpled nose, starred windshield, rust and blood
+    R(g,K[3],x+L-6,y+9,6,2);px(g,K[3],x+L-8,y+10);R(g,'#2a2e30',x+L-3,y+11,3,2);
+    for(const [dx,dy] of [[0,0],[1,-1],[-1,1],[2,1],[-2,-1],[1,2]])px(g,'#d8e8ec',c1-5+dx,y+5+dy);
+    R(g,P.blood,mid+4,y+15,3,1);
+  }
+  outline(c,g);return c;
+}
+
+// ---------- 64 x 64 portrait on a lit backing ----------
+// o: {skin, hair, hairStyle, top, mood:'ok'|'scared'|'hurt'|'tired', zom, cap, stubble, back}
+function portrait(o){
+  const [f,g]=mk(64,64),S=o.skin||P.skin,H=o.hair||P.hairD,T=o.top||P.coverall,z=!!o.zom;
+  // shoulders and collar
+  vol(g,32,62,o.sw||28,15,T);
+  if(o.apron){R(g,o.apron[1],22,50,4,14);R(g,o.apron[2],38,50,4,14);}
+  if(o.vest){R(g,o.vest[1],12,52,12,12);R(g,o.vest[2],40,52,12,12);R(g,'#e8e8d8',12,58,12,2);R(g,'#c8c8b8',40,58,12,2);}
+  if(o.badge){R(g,'#e8d08a',42,54,4,4);px(g,'#a88a40',45,57);}
+  if(o.tag){R(g,'#f0ece0',40,55,9,4);R(g,'#8a2a1e',41,56,7,1);}
+  if(o.number){R(g,o.number,29,54,2,8);R(g,o.number,33,54,4,2);R(g,o.number,35,56,2,6);}
+  if(o.overalls){R(g,P.over[1],20,54,5,10);R(g,P.over[2],40,54,5,10);}
+  R(g,T[0],22,47,6,3);R(g,T[2],37,47,6,3); // collar points
+  if(o.patch){R(g,'#e8dcc0',14,55,8,4);R(g,'#8a4028',15,56,6,1);}
+  const F=FACES[o.faceN||0];
+  if(o.hairStyle==='long'&&!o.cap)vol(g,32,36,F[0]+4,24,H,(x,y)=>x<21||x>43||y<27);
+  if(o.hairStyle==='pony'&&!o.cap){vol(g,47,30,4,8,H);R(g,'#c8503a',44,24,3,3);}
+  if(o.hairStyle==='mullet'&&!o.cap)vol(g,32,40,F[0]+2,10,H,(x,y)=>(x<23||x>41)&&y>30);
+  // neck
+  box(g,26,40,12,8,S);R(g,S[3],27,46,10,1);R(g,S[2],27,40,10,2);
+  // head
+  const cx=32+(z?2:0),cy=28+(z?2:0);
+  const fx=F[0],fy=F[1];
+  vol(g,cx,cy,fx,fy,[S[0],S[1],S[2],S[2]],null,[-.9,-.15]);
+  if(F[3]===1){vol(g,cx,cy+fy-5,fx-1,5,[S[1],S[1],S[2],S[2]],null,[-.9,-.15]);} // square jaw
+  R(g,S[2],cx-5,cy+fy-1,11,1); // one clean shadow line under the jaw
+  // ears
+  vol(g,cx-fx,cy+1,2.6,4,S);vol(g,cx+fx,cy+1,2.6,4,S);px(g,S[3],cx+fx,cy+1);px(g,S[2],cx-fx,cy+1);
+  // jaw shading and stubble as flat tone, no grain
+  if(o.stubble){vol(g,cx+1,cy+9,10,6,[S[1],S[2],S[2],S[3]],(x,y)=>y>cy+5);}
+  // hair
+  if(o.cap){vol(g,cx,cy-9,14,8,o.cap,(x,y)=>y<cy-6);R(g,o.cap[2],cx-14,cy-7,28,2);R(g,o.cap[3],cx-10,cy-5,22,1);}
+  else if(o.hairStyle!=='bald'){
+    if(o.hairStyle==='buzz'){vol(g,cx,cy-8,fx+.3,9,[H[1],H[1],H[2],H[3]],(x,y)=>y<cy-7);}
+    else{
+    vol(g,cx,cy-8,fx+1.5,10,H,(x,y)=>y<cy-6||((x<cx-fx+3||x>cx+fx-2)&&y<cy+2));
+    // locks that break the hairline
+    for(const [x,y] of [[cx-6,cy-6],[cx-1,cy-5],[cx+5,cy-6],[cx+9,cy-5]]){px(g,H[1],x,y);px(g,H[2],x,y+1);}
+    if(o.hairStyle==='curly')for(let a=0;a<9;a++){const t=Math.PI*(1.05+a*.11);vol(g,cx+Math.cos(t)*(fx+1),cy-8+Math.sin(t)*9,3,3,H);}
+    if(o.hairStyle==='part'){R(g,H[3],cx-5,cy-17,1,7);R(g,H[0],cx-4,cy-16,6,1);R(g,H[0],cx-3,cy-14,8,1);}
+    if(o.hairStyle==='pony')R(g,H[3],cx+fx-1,cy-6,2,3);
+    }
+    if(o.gray)for(const [x,y] of [[cx-9,cy-10],[cx-4,cy-13],[cx+3,cy-12],[cx+8,cy-9],[cx-fx+1,cy-2],[cx+fx-2,cy-1]])R(g,P.hairG[0],x,y,2,1);
+  }
+  // brows, eyes, nose, mouth by mood
+  const m=o.mood||'ok',ey=cy+1,lx=cx-F[2],rx=cx+F[2]-1;
+  const brow=(x,dy,tilt)=>{R(g,H[3],x-1,ey-4+dy,5,1);px(g,H[3],tilt>0?x+3:x-1,ey-5+dy);};
+  if(z){R(g,'#d8d8b0',lx-1,ey,4,2);R(g,'#d8d8b0',rx-1,ey,4,2);px(g,'#7a7a60',lx+1,ey+1);px(g,S[3],rx+2,ey+1);
+    R(g,S[3],lx-2,ey-2,5,1);R(g,S[3],rx-2,ey-2,5,1);}
+  else{
+    if(m==='scared'){
+      // fear, not surprise: inner brows pulled up and together, eyes wide with the pupils darting to one side,
+      // a tight grimace with the lower teeth showing, a sweat bead, and the face a shade paler
+      for(const [ex,dir] of [[lx,1],[rx,-1]]){R(g,'#f2eadc',ex-1,ey,4,3);R(g,'#2a1e1a',ex+(dir>0?1:0)+1,ey+1,2,2);px(g,'#f8f4ec',ex+(dir>0?2:1),ey+1);R(g,S[2],ex-1,ey+3,4,1);}
+      // brows: outer end low, inner end high, a crease between them
+      R(g,H[3],lx-2,ey-3,3,1);R(g,H[3],lx+1,ey-4,2,1);px(g,H[3],lx+3,ey-5);
+      R(g,H[3],rx+2,ey-3,3,1);R(g,H[3],rx,ey-4,2,1);px(g,H[3],rx-1,ey-5);
+      R(g,S[2],cx,ey-5,1,3);
+      px(g,'#e8f4f8',cx-12,ey-3);px(g,'#bcd4dc',cx-12,ey-2);
+    }else{
+    const wide=m==='tired'?1:2;
+    R(g,'#f2eadc',lx-1,ey,4,wide);R(g,'#f2eadc',rx-1,ey,4,wide);
+    R(g,'#2a1e1a',lx+1,ey,2,wide);R(g,'#2a1e1a',rx,ey,2,wide);px(g,'#f8f4ec',lx+1,ey);px(g,'#f8f4ec',rx,ey);
+    if(m==='tired'){R(g,S[2],lx-1,ey+1,4,1);R(g,S[2],rx-1,ey+1,4,1);}
+    brow(lx,0,1);brow(rx,0,-1);}
+    if(m==='hurt'){R(g,S[3],rx-1,ey,4,1);R(g,'#2a1e1a',rx-1,ey+1,4,1);} // squint
+  }
+  // nose: a shade plane on the right, a light on the bridge
+  R(g,S[2],cx+1,ey+2,2,5);px(g,S[0],cx-1,ey+3);R(g,S[3],cx-1,ey+7,4,1);
+  // mouth
+  if(z){R(g,'#3a1e1a',cx-4,ey+10,9,3);R(g,P.bone,cx-3,ey+10,1,1);R(g,P.bone,cx+1,ey+10,1,1);R(g,P.bone,cx+3,ey+12,1,1);}
+  else if(m==='scared'){R(g,'#4a2420',cx-4,ey+10,9,2);R(g,'#e8e2d0',cx-3,ey+11,7,1);px(g,S[3],cx-5,ey+11);px(g,S[3],cx+5,ey+11);R(g,S[2],cx-3,ey+13,7,1);}
+  else{R(g,S[3],cx-4,ey+11,8,1);px(g,S[2],cx-5,ey+10);px(g,S[1],cx-1,ey+12);}
+  // age: lines under the eyes and beside the mouth, as flat tone
+  if(!z&&o.age>=1){R(g,S[2],lx-1,ey+4,3,1);R(g,S[2],rx,ey+4,3,1);}
+  if(!z&&o.age>=2){px(g,S[2],cx-6,ey+8);px(g,S[2],cx-6,ey+9);px(g,S[2],cx+6,ey+8);px(g,S[2],cx+6,ey+9);R(g,S[2],cx-4,cy-5,8,1);}
+  // injuries and gore
+  if(m==='hurt'){R(g,'#e8e2d0',cx-13,cy-8,26,4);R(g,'#c8c0aa',cx-13,cy-5,26,1);R(g,P.blood,cx+4,cy-8,4,3);px(g,P.blood,cx+8,cy-3);R(g,P.blood,cx+7,cy-2,1,3);
+    R(g,S[3],lx-2,ey+4,3,2);}
+  if(z){R(g,P.blood,cx+5,cy+6,4,3);px(g,P.bone,cx+6,cy+7);R(g,P.bloodD,cx+4,cy+9,3,2);R(g,P.blood,cx-12,cy-6,5,2);R(g,S[3],cx+9,cy-12,3,3);px(g,P.bone,cx+10,cy-11);
+    R(g,P.blood,20,49,6,4);R(g,P.bloodD,22,53,3,6);}
+  outline(f,g);rim(f,g,o.rimCol||'#fff0c8');
+  // lit backing
+  const [c,b]=mk(64,64),bk=o.back||['#5a7472','#46605e','#34484a'];
+  R(b,bk[2],0,0,64,64);
+  for(let r=30;r>0;r-=3){b.fillStyle=r>22?bk[2]:r>13?bk[1]:bk[0];b.beginPath();b.arc(24,22,r,0,7);b.fill();}
+  b.drawImage(f,0,0);return c;
+}
+
+// ---------- small pixel icons for the top bar (7 x 7) ----------
+const ICONS={
+  food:['..xxx..','.x...x.','xxxxxxx','x.....x','x.xxx.x','x.....x','.xxxxx.'], // a can
+  hp:['..xxx..','..xxx..','xxxxxxx','xxxxxxx','xxxxxxx','..xxx..','..xxx..'], // a cross
+  rest:['...xx..','..xx...','.xx....','.xx....','.xx....','..xx..x','...xxx.'], // a moon
+  san:['.......','..xxx..','.x...x.','x..x..x','.x...x.','..xxx..','.......'], // an eye
+  leaf:['....xx.','..xxxx.','.xxxxx.','.xxxx..','x.xx...','.x.....','x......']
+};
+function icon(g,name,x,y,col){const m=ICONS[name];for(let j=0;j<7;j++)for(let i=0;i<7;i++)if(m[j][i]==='x')px(g,col,x+i,y+j);}
+
+// ---------- the HUD: one framed card across the top ----------
+// lead face (crop of the portrait), the four bars with icons and labels, then day, clock, season and place.
+function hud(g,W,o){
+  const h=42,x0=3,y0=3,w=W-6;
+  R(g,'rgba(0,0,0,.35)',x0+2,y0+2,w,h);
+  R(g,P.card,x0,y0,w,h);R(g,P.line,x0,y0,w,1);R(g,P.line,x0,y0,1,h);R(g,'#4e5854',x0,y0+h-1,w,1);R(g,'#4e5854',x0+w-1,y0,1,h);
+  // face: the portrait's head, 32 x 32, on its own backing
+  const fp=o.portrait;R(g,'#4e5854',x0+3,y0+3,36,36);g.drawImage(fp,14,10,34,34,x0+4,y0+4,34,34);
+  // bars
+  const bars=[['food','FOOD',o.food,'#d06a3a'],['hp','HP',o.hp,'#c8503a'],['rest','REST',o.rest,'#d8c08a'],['san','SAN',o.san,'#3ff0e8']];
+  g.font='8px "Press Start 2P"';g.textBaseline='top';
+  bars.forEach((b,i)=>{const bx=x0+44+(i%2)*56,by=y0+6+((i/2)|0)*17;
+    icon(g,b[0],bx,by,b[3]);
+    g.fillStyle=P.dim;g.font='8px VT323';
+    R(g,"#2a3234",bx+10,by+1,42,5);R(g,b[3],bx+10,by+1,Math.round(42*b[2]/100),5);R(g,'rgba(255,255,255,.25)',bx+10,by+1,Math.round(42*b[2]/100),1);
+    g.font="12px VT323";g.fillStyle=P.dim;g.fillText(b[1],bx+10,by+7);
+  });
+  // time and place
+  const tx=x0+w-50;R(g,'#4e5854',tx-4,y0+4,1,h-8);
+  g.font='8px "Press Start 2P"';g.fillStyle=P.warm;g.fillText('DAY '+o.day,tx,y0+6);
+  g.font='16px VT323';g.fillStyle=P.text;g.fillText(o.clock,tx,y0+15);
+  icon(g,'leaf',tx,y0+30,o.seasonCol||'#c8a050');g.font='12px VT323';g.fillStyle=P.dim;g.fillText(o.season,tx+9,y0+29);
+  return h+3;
+}
+
+// ---------- the survivor's looks parts (survivor.md, Looks parts) ----------
+// Faces: [half width, half height, eye gap, jaw]. Round, Long, Square, Soft, Sharp, Wide.
+const FACES=[[14,15,6,0],[12,17,5,0],[14,16,6,1],[13,16,6,0],[12,16,5,0],[15,15,7,1]];
+// Skin: Fair, Light (the mockups' skin), Tan, Olive, Brown, Dark
+const SKINS=[ramp('#ecc4a4'),P.skin,ramp('#c8926a'),ramp('#b08a60'),P.skinB,ramp('#6a4430')];
+// Hair: Black, Dark brown (the mockups' hair), Brown, Red, Blond, Gray
+const HAIRS=[ramp('#2a2624'),P.hairD,ramp('#6a4a30'),ramp('#9a4a2a'),ramp('#c8a860'),P.hairG];
+const STYLES=['short','buzz','part','curly','long','pony','mullet','bald'];
+const BODY=[[4.6,25],[5.4,28],[6.3,31]]; // map sprite body width, portrait shoulders
+const C=(a,b,c,d)=>[a,b,c,d].map(ramp);
+// Each job's outfit in 4 color sets: the top's color, plus legs and what's on it.
+const OUTFITS={
+  scrubs:{top:C('#6a9a9a','#7a8ab4','#a87a8a','#7a9a6e'),legs:'top'},
+  coverall:{top:[P.coverall,ramp('#5e6a7e'),ramp('#7e6a4e'),ramp('#6e7468')],patch:1},
+  overalls:{top:C('#b4582e','#5e7aa0','#a8984e','#7e4e6a'),over:1,legs:'over'},
+  uniform:{top:C('#46526e','#8a7a5a','#5e5a4e','#6a7480'),badge:1,legs:P.navy},
+  cardigan:{top:C('#7e3e3e','#a88a3a','#5e6e4a','#4e5e7e'),legs:ramp('#8a7e66')},
+  flannel:{top:C('#a83e2e','#3e6e4e','#3e5a8a','#7e5a3a'),patch:0},
+  apron:{top:[ramp('#e0dccc'),ramp('#e0dccc'),ramp('#d8d0b8'),ramp('#e0dccc')],apron:C('#c8c4b4','#5a6a7a','#8a4a3a','#4e4e4e'),legs:ramp('#3e3e44')},
+  jersey:{top:C('#c8a030','#a83a3a','#3a5a9a','#3a7a4e'),number:['#3a2a10','#f0e8d8','#f0e8d8','#f0e8d8'],shorts:1,legs:ramp('#3e3e44')},
+  layers:{top:C('#6e6450','#5a5e4e','#7a6a5a','#4e5258'),legs:ramp('#4e4a40')},
+  vest:{top:C('#8a8a80','#5e6e7e','#7e6a5a','#6e6e6e'),vest:C('#e88a2a','#d8d040','#e88a2a','#d8d040')},
+  fatigues:{top:C('#6a6e4a','#8a7e5a','#5a5e46','#6e6a5a'),legs:'top'},
+  polo:{top:C('#a83a3a','#3a5a8a','#3e7a5a','#b8902e'),tag:1,legs:ramp('#9a8a6a')}
+};
+// Turn a survivor's looks and job into drawing options for person() and portrait().
+function dress(look,outfit){
+  look=look||{};const O=OUTFITS[outfit]||OUTFITS.coverall,k=look.colors||0,age=look.age||0;
+  let hair=HAIRS[look.hairColor||0];if(age===2)hair=hair.map(c=>mix(c,'#a8a49a',.45));
+  const top=O.top[k],legs=O.legs==='top'?top:O.legs==='over'?P.over:(O.legs||P.jeans);
+  return {skin:SKINS[look.skin||0],hair,hairStyle:STYLES[look.hairStyle||0],top,legs,
+    bw:BODY[look.body==null?1:look.body][0],sw:BODY[look.body==null?1:look.body][1],faceN:look.face||0,age,gray:age===2,
+    patch:O.patch,overalls:O.over,badge:O.badge,tag:O.tag,apron:O.apron&&O.apron[k],vest:O.vest&&O.vest[k],number:O.number&&O.number[k],shorts:O.shorts};
+}
+
+// ---------- the menu surface (bible.md, Art, Menu surface; mockup 05) ----------
+// Flattened cardboard: a lit spot upper left, darker edges, the flutes showing on the cut top edge. Flat tones only.
+function cardboard(g,x,y,w,h){
+  const K=P.kraft;
+  R(g,'rgba(0,0,0,.4)',x+2,y+2,w,h);
+  R(g,K[1],x,y,w,h);
+  g.save();g.beginPath();g.rect(x,y,w,h);g.clip();g.fillStyle=K[0];g.beginPath();g.ellipse(x+w*.32,y+h*.3,w*.3,Math.max(8,h*.28),0,0,7);g.fill();g.restore();
+  R(g,K[2],x,y,w,2);R(g,K[2],x,y,2,h);R(g,K[3],x,y+h-2,w,2);R(g,K[3],x+w-2,y,2,h);
+  for(let i=x+3;i<x+w-3;i+=4){px(g,K[3],i,y+1);px(g,K[0],i+1,y);px(g,K[0],i+2,y);}
+}
+function tape(g,x,y,w,h){R(g,P.tape[1],x,y,w,h);R(g,P.tape[0],x,y,w,1);R(g,P.tape[2],x,y+h-1,w,1);for(let i=x;i<x+w;i+=3)px(g,P.tape[2],i,y+h);}
+// a card on the cardboard: lighter kraft, a shadow, the picked one edged in cyan with a cursor
+function card(g,x,y,w,h,on){
+  const K=P.kraft;R(g,'rgba(60,40,20,.35)',x+2,y+2,w,h);R(g,on?'#e2c48e':K[0],x,y,w,h);R(g,K[2],x,y+h-1,w,1);R(g,K[2],x+w-1,y,1,h);
+  if(on){g.strokeStyle=P.cyan;g.lineWidth=2;g.strokeRect(x-1,y-1,w+2,h+2);R(g,P.cyan,x-6,y+4,3,7);px(g,P.cyan,x-3,y+7);}
+}
+// the taped photo of a portrait, 72 x 82, with the name under it in marker
+function photo(g,x,y,por,name){
+  R(g,'rgba(0,0,0,.35)',x+2,y+2,72,82);R(g,'#ece6d8',x,y,72,82);R(g,'#d2ccbe',x,y+79,72,2);
+  g.drawImage(por,x+4,y+4);tape(g,x-4,y-2,14,5);tape(g,x+62,y-2,14,5);
+  if(name){g.font='16px VT323';g.textBaseline='top';g.fillStyle=P.marker;const t=fit(g,name.toUpperCase(),64);g.fillText(t,x+36-g.measureText(t).width/2,y+67);}
+}
+// word wrap to a width, in the current font. A word longer than the line is split, never cut.
+function wrap(g,t,max){const out=[];let line='';for(const w of String(t).split(' ')){const s=line?line+' '+w:w;if(line&&g.measureText(s).width>max){out.push(line);line=w;}else line=s;}if(line)out.push(line);return out;}
+// a name that must fit one line: steps the font down rather than cutting it (ui.md, No cut-off names)
+function fit(g,t,max){if(g.measureText(t).width<=max)return t;g.font='12px VT323';return t;}
+
+window.LA={P,mk,R,px,vol,box,outline,rim,shadow,person,portrait,icon,hud,car,ramp,mix,dress,FACES,cardboard,tape,card,photo,wrap,fit};
+})();
+
+</script>
+<script>/* ../assets/street.js */
+// Life After street: the highway strip by day and night, drawn in code. From the approved look mockup
+// mockups/04-look-street-rough-v2.js (Keegan, Nov 23). The title screen uses it at night as its mood piece
+// (spec 001, 2: a dead streetlight, a car, a neon motel sign flickering), with no survivor in it.
+// LA.street(g, W, H, {night, title}) draws the street; with title set, the motel sign is left dark so the
+// title screen can flicker it each frame (LA.streetSign).
+(function(){
+const {P,mk,R,px,vol,box,shadow,person,portrait,hud}=LA;
+function tuft(g,x,y,c){px(g,c[1],x,y);px(g,c[0],x-1,y+1);px(g,c[1],x+1,y+1);R(g,c[2],x-1,y+2,3,1);}
+function crack(g,x,y,len,c){let cx=x,cy=y;for(let i=0;i<len;i++){px(g,c,cx,cy);cx+=1;cy+=(i%3===0?1:(i%5===0?-1:0));}}
+
+function scene(g,W,H,night,o){
+  // back lot and a treeline behind the buildings (mostly under the top bar)
+  R(g,P.grass[2],0,0,W,58);
+  for(let x=-6;x<W;x+=13){vol(g,x+6,30+(x%3),9,10,['#6e7a4a','#56643e','#424e32','#303a26']);}
+  for(let x=0;x<W;x+=9)tuft(g,x+3,50+(x%4),P.grass);
+
+  // ---- gas station: canopy seen from above, then the fascia, columns and pumps ----
+  R(g,'#3a3c38',0,118,92,2);
+  R(g,P.conc[2],0,72,92,46);               // pad under the canopy, in its shade
+  R(g,'rgba(20,24,28,.38)',0,72,92,46);
+  R(g,P.conc[1],22,104,46,8);R(g,P.conc[0],22,104,46,1); // pump island
+  for(const x of [28,52]){box(g,x,90,10,16,['#c8c4b4','#a8a494','#8a8676','#64625a']);R(g,'#2a2e30',x+2,93,6,4);R(g,'#c8503a',x+2,99,6,2);px(g,'#1e1a16',x+9,98);R(g,'#1e1a16',x+9,99,1,6);}
+  for(const x of [10,78]){box(g,x,70,4,48,['#d8d4c4','#b8b4a4','#94907e','#6e6c5e']);}
+  R(g,'#e2ded0',0,54,94,13);R(g,'#c8c4b4',0,54,94,1);R(g,'#f0ece0',2,56,88,2); // canopy top, lit
+  R(g,'#46605e',0,64,94,10);R(g,'#5a7472',0,64,94,2);R(g,'#2e3e3c',0,73,94,1);    // fascia
+  g.font='8px "Press Start 2P"';g.textBaseline='top';
+  g.fillStyle=night?P.cyan:'#8aa8a4';g.fillText('GAS·N·GO',14,65);
+  // canopy shadow falls to the lower right, onto the lot
+  g.fillStyle='rgba(20,24,28,.30)';g.beginPath();g.moveTo(94,74);g.lineTo(100,80);g.lineTo(100,118);g.lineTo(94,118);g.fill();
+  // ice chest and a propane cage at the back of the pad
+  box(g,72,78,14,10,['#e8e8e0','#c8ccc4','#a8aca4','#7e827c']);g.font='6px "Press Start 2P"';g.fillStyle='#46647e';g.fillText('ICE',74,80);
+  R(g,'#3e4440',4,78,12,14);for(let i=5;i<16;i+=3)R(g,'#6e7470',i,78,1,14);R(g,'#c8c4b4',6,84,3,7);R(g,'#c8c4b4',10,84,3,7);
+
+  // ---- motel: flat roof, parapet, the row of rooms ----
+  const mx=98;
+  R(g,P.roof[1],mx,52,W-mx,18);R(g,P.roof[0],mx,52,W-mx,2);R(g,P.roof[2],mx,68,W-mx,2);
+  box(g,mx+16,56,14,9,['#b8bcb4','#9a9e96','#7e827a','#5e625c']);R(g,'#5e625c',mx+18,58,10,1);R(g,'#5e625c',mx+18,61,10,1); // AC unit
+  box(g,mx+72,57,12,8,['#b8bcb4','#9a9e96','#7e827a','#5e625c']);
+  R(g,'#5e5e58',mx+50,55,3,8);R(g,'#7a7a72',mx+50,55,1,8);px(g,'#3a3a38',mx+51,54); // vent pipe
+  R(g,'rgba(20,24,28,.25)',mx+31,63,4,3);R(g,'rgba(20,24,28,.25)',mx+85,63,4,3);
+  // wall
+  R(g,P.ochre[1],mx,70,W-mx,42);R(g,P.ochre[0],mx,70,2,42);R(g,P.ochre[2],mx,70,W-mx,2);
+  R(g,P.tealw[1],mx,70,W-mx,4);R(g,P.tealw[0],mx,70,W-mx,1);R(g,P.tealw[3],mx,74,W-mx,1); // trim band
+  for(let i=0;i<6;i++){const dx=mx+8+i*24,open=i===2;
+    // window
+    R(g,'#2a3234',dx+14,82,8,8);R(g,P.tealw[2],dx+14,82,8,1);R(g,'#46524e',dx+15,83,3,3);R(g,P.ochre[3],dx+14,90,8,1);
+    if(i===4){R(g,'#5a5a50',dx+15,84,6,5);} // boarded
+    // door
+    const d=open?['#5af0e8','#3ff0e8','#2ab8b0','#1a8078']:P.tealw;
+    box(g,dx,84,10,24,d);R(g,'#1e2428',dx,84,10,1);px(g,'#e8d08a',dx+8,96);
+    g.font='6px "Press Start 2P"';g.fillStyle=open?'#0c3a38':'#c8d4cc';g.fillText(String(i+1),dx+3,86);
+    if(i===5){R(g,'#1e2428',dx+1,85,4,22);} // a door left half open, dark inside
+  }
+  // walkway and its edge
+  R(g,P.conc[1],mx,112,W-mx,8);R(g,P.conc[0],mx,112,W-mx,1);R(g,P.conc[3],mx,119,W-mx,1);
+  R(g,'rgba(20,24,28,.25)',mx,112,W-mx,2); // the eave's shadow
+  // ice machine and vending machine by the office end
+  box(g,226,92,14,20,['#d8d8d0','#bcbcb4','#9a9a92','#74746e']);R(g,'#46647e',228,95,10,4);
+  // a man who sat down against the wall and never got up (grounded: shown plainly, not lingered on)
+  box(g,142,104,8,8,['#9a7448','#84603a','#6a4a2e','#4e3622']);vol(g,146,101,3.4,3.6,P.skinB);R(g,P.hairG[2],143,98,7,2);
+  R(g,P.jeans[2],141,111,10,2);R(g,P.blood,140,113,9,1);R(g,P.bloodD,147,113,6,1);
+
+  // ---- the lot ----
+  R(g,P.asph[1],0,120,W,78);
+  R(g,P.asph[0],0,120,W,1);
+  for(let x=mx+20;x<W;x+=34){R(g,'#c8c0a0',x,124,1,22);R(g,'#a8a08a',x,146,1,2);} // faded bay lines
+  R(g,P.asph[3],60,170,14,5);R(g,P.asph[2],58,171,18,3); // oil stain
+  crack(g,10,140,26,P.asph[3]);crack(g,104,180,20,P.asph[3]);crack(g,200,186,18,P.asph[3]);
+  tuft(g,22,144,P.grass);tuft(g,116,183,P.grass);tuft(g,212,189,P.grass);tuft(g,90,121,P.grass);
+  R(g,'#8a9aa0',176,176,12,4);R(g,'#a8b8bc',177,176,8,1);R(g,'#6e7a7e',176,179,12,1); // puddle catching the sky
+  // dead station wagon in bay 3, nose out
+  shadow(g,186,148,25,.32);g.drawImage(LA.car({len:48,ramp:P.red,wagon:1}),162,128);
+  // shopping cart on its side and trash bags by the machines
+  R(g,'#9aa0a0',120,150,13,1);for(let i=120;i<133;i+=3)R(g,'#9aa0a0',i,150,1,7);R(g,'#9aa0a0',120,157,13,1);R(g,'#1a1a1a',121,158,2,2);R(g,'#1a1a1a',130,158,2,2);
+  for(const [x,y] of [[216,120],[226,122],[220,128]]){vol(g,x,y,5,4,['#4a524e','#363c3a','#262a28','#181a1a']);px(g,'#7e8682',x-2,y-2);}
+  shadow(g,226,133,10,.3);
+  // a stray dog nosing the bags (alive; it moves)
+  shadow(g,204,139,6,.3);box(g,198,132,10,5,['#c8a070','#a8844e','#84663a','#5e4a2a']);vol(g,196,131,3,2.6,['#c8a070','#a8844e','#84663a','#5e4a2a']);
+  R(g,'#5e4a2a',199,137,1,3);R(g,'#5e4a2a',206,137,1,3);R(g,'#84663a',208,131,2,1);px(g,'#1a1410',194,131);
+
+  // payphone, newspaper box and a dropped bike, so the lot's left side isn't bare
+  box(g,4,122,9,16,['#b8bcb4','#9a9e96','#7e827a','#5e625c']);R(g,'#2a2e30',6,125,5,5);R(g,'#46647e',5,122,7,2);R(g,'#1e1a16',11,130,1,6);shadow(g,12,139,6,.3);
+  box(g,18,128,8,10,['#d06a3a','#b4582e','#8a4028','#6a3424']);R(g,'#e8dcc0',19,130,6,3);shadow(g,24,139,5,.3);
+  g.strokeStyle='#3a4a5a';g.lineWidth=1;g.beginPath();g.arc(66,166,4,0,7);g.arc(80,168,4,0,7);g.stroke();R(g,'#c8503a',66,164,14,1);R(g,'#c8503a',72,160,1,5);R(g,'#1a1a1a',70,159,4,1);
+  R(g,'#d8c08a',38,182,6,4);R(g,'#b8a070',38,185,6,1);px(g,'#e8e0c8',90,148);px(g,'#e8e0c8',92,149);R(g,'#c8c4b4',100,160,4,3); // litter: a burger box, napkins, a cup
+  // curb
+  R(g,P.conc[1],0,196,W,4);R(g,P.conc[0],0,196,W,1);R(g,P.conc[3],0,199,W,1);
+
+  // ---- the road ----
+  R(g,P.asph[2],0,200,W,44);R(g,P.asph[1],0,200,W,1);
+  for(let x=4;x<W;x+=26)R(g,'#d8c08a',x,221,13,2);
+  g.fillStyle='rgba(30,30,30,.35)';for(let i=0;i<40;i++){g.fillRect(96+i,226+i*0.25,1,2);g.fillRect(100+i,231+i*0.25,1,2);} // skid marks
+  // crashed sedan, nose in the ditch, driver door open
+  shadow(g,44,236,26,.35);g.drawImage(LA.car({len:46,ramp:['#b8c4cc','#8a96a0','#6e7a84','#4e5860'],wreck:1}),20,212);
+  R(g,'#525c64',36,231,9,3);R(g,'#8a96a0',36,231,9,1);R(g,'#2e3a40',37,234,7,1); // the open door swung toward us
+  R(g,P.blood,40,238,3,1);R(g,P.bloodD,38,240,5,1);
+  // a tire in the lane
+  vol(g,130,234,5,3,['#3e3e3e','#2a2a2a','#1e1e1e','#121212']);R(g,'#4e4e4e',128,233,4,1);
+  // shoulder and grass verge
+  R(g,P.dirt[1],0,244,W,6);R(g,P.dirt[0],0,244,W,1);for(let x=3;x<W;x+=7)px(g,P.dirt[3],x,247+(x%3));
+  R(g,P.grass[1],0,250,W,H-250);
+  for(let y=254;y<H;y+=9)for(let x=(y%2)*5;x<W;x+=11)tuft(g,x,y,P.grass);
+  // fence line and the field beyond (bottom edge framed, never blank ground)
+  const fy=H-22;R(g,P.dirt[2],0,fy+8,W,H-fy-8);
+  for(let y=fy+10;y<H;y+=4)R(g,P.dirt[3],0,y,W,1); // furrows: flat rows of shape, no grain
+  for(let x=4;x<W;x+=20){box(g,x,fy-6,3,14,['#9a845c','#84704e','#6a5a40','#4e4434']);}
+  R(g,'#5e5a54',0,fy-3,W,1);R(g,'#5e5a54',0,fy+2,W,1);
+
+  // weeds and a rusted drum on the verge
+  for(const [x,y] of [[60,262],[150,270],[176,290],[12,292]]){for(let i=0;i<4;i++){R(g,P.grass[i%2?0:2],x+i*2,y-4-(i%3)*2,1,6+(i%3)*2);} }
+  box(g,160,262,10,12,['#a8583a','#8a4428','#6a3420','#4a2416']);R(g,'#6a3420',160,265,10,1);R(g,'#6a3420',160,270,10,1);shadow(g,168,275,7,.3);
+  // mailbox on a post
+  R(g,'#6a5a40',33,266,2,12);box(g,28,260,12,7,['#c8ccd0','#a8acb0','#868a8e','#5e6266']);R(g,'#c8503a',40,258,1,5);
+  shadow(g,38,279,6,.3);
+  // utility pole, wires and crows
+  shadow(g,110,300,8,.32);box(g,102,236,4,64,['#9a845c','#7e6a4a','#62523a','#44382a']);R(g,'#62523a',94,240,20,2);R(g,'#c8c8c0',95,239,2,1);R(g,'#c8c8c0',111,239,2,1);
+  g.strokeStyle='#2a2a2a';g.lineWidth=1;g.beginPath();g.moveTo(96,240.5);g.quadraticCurveTo(48,252,0,246);g.moveTo(112,240.5);g.quadraticCurveTo(176,250,240,236);g.stroke();
+  for(const [x,y] of [[140,243],[150,244],[171,243]]){R(g,'#1a1c1e',x,y-4,4,4);px(g,'#1a1c1e',x+4,y-3);px(g,'#3a3e42',x+1,y-4);px(g,'#c8b070',x-1,y-3);}
+  // motel roadside sign: VACANCY in pink, MOTEL in amber (dead by day)
+  shadow(g,222,292,10,.32);box(g,218,244,3,48,['#9aa0a0','#7e8484','#626868','#464a4a']);
+  R(g,'#1e2428',198,244,40,26);R(g,'#2e3638',199,245,38,24);
+  const lit=night&&!o.title;
+  g.font='8px "Press Start 2P"';g.fillStyle=lit?P.amber:'#8a7650';g.fillText('MOTEL',199,247);
+  g.font='6px "Press Start 2P"';g.fillStyle=lit?P.pink:'#8a6a78';g.fillText('VACANCY',197,260);
+  // ---- people and the dead ----
+  const S=o.surv;
+  if(S){shadow(g,130,184,7,.38);g.drawImage(S,121,156);}
+  if(o.title){ // a dead streetlight on the curb: the arm reaches over the lot, the lamp is dark
+    shadow(g,150,198,6,.32);box(g,147,128,3,70,['#9aa0a0','#7e8484','#626868','#464a4a']);R(g,'#626868',132,128,18,2);R(g,'#7e8484',132,128,18,1);
+    box(g,126,127,10,4,['#7e8484','#626868','#464a4a','#2e3232']);R(g,'#3a4040',127,131,8,1);px(g,'#1e2222',130,132);}
+  const Z1=person({kind:'zom',skin:P.zom,top:P.mail,legs:P.navy,shorts:1,bag:1,gore:'light'});
+  shadow(g,190,234,7,.38);g.drawImage(Z1,181,206);
+  const Z2=person({kind:'zom',skin:P.zom,top:P.red,overalls:1,legs:P.over,cap:P.cap,arm:'noR',gore:'heavy'});
+  shadow(g,78,286,7,.38);g.drawImage(Z2,69,258);
+  const Z3=person({kind:'zom',skin:P.zom,top:['#e8d070','#d0b048','#a88a34','#7a6426'],legs:['#4a4a50','#3a3a40','#2a2a30','#1e1e22'],shorts:1,hair:P.hairD,face:'right',short:1,lean:-1});
+  shadow(g,56,124,6,.35);g.drawImage(Z3,47,96);
+  // jersey number on the kid
+  g.font='6px "Press Start 2P"';g.fillStyle='#46647e';g.fillText('7',53,110);
+}
+
+function night(g,W,H,o){
+  // darkness over everything, then the light: neon, the open room, the flashlight
+  const [c,d]=mk(W,H);d.fillStyle='rgba(12,16,26,.80)';d.fillRect(0,0,W,H);
+  d.globalCompositeOperation='destination-out';
+  const pool=(x,y,r,a)=>{const gr=d.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,'rgba(0,0,0,'+a+')');gr.addColorStop(1,'rgba(0,0,0,0)');d.fillStyle=gr;d.fillRect(x-r,y-r,r*2,r*2);};
+  pool(46,70,46,.7);pool(218,258,36,.75);pool(156,96,26,.75);
+  if(!o.title){pool(130,172,30,.55);
+  // flashlight cone, toward the mail carrier
+  d.fillStyle='rgba(0,0,0,.7)';d.beginPath();d.moveTo(136,170);d.lineTo(206,200);d.lineTo(196,240);d.closePath();d.fill();}
+  g.drawImage(c,0,0);
+  // colored light on top
+  const glow=(x,y,r,col,a)=>{const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,col.replace(')',','+a+')').replace('rgb','rgba'));gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(x-r,y-r,r*2,r*2);};
+  glow(46,70,40,'rgb(63,240,232)',.18);glow(218,252,30,'rgb(255,79,163)',.16);glow(218,250,24,'rgb(255,180,58)',.12);glow(156,96,22,'rgb(63,240,232)',.22);
+  if(!o.title){g.fillStyle='rgba(255,236,190,.10)';g.beginPath();g.moveTo(136,170);g.lineTo(206,200);g.lineTo(196,240);g.closePath();g.fill();}
+  // neon redrawn on top so it stays bright
+  g.font='8px "Press Start 2P"';g.textBaseline='top';g.fillStyle=P.cyan;g.fillText('GAS·N·GO',14,65);
+  if(!o.title){g.fillStyle=P.amber;g.fillText('MOTEL',199,247);g.font='6px "Press Start 2P"';g.fillStyle=P.pink;g.fillText('VACANCY',197,260);}
+  if(o.title)return;
+  // usable things glow cyan: room 3's door and the car with gas
+  g.strokeStyle='rgba(63,240,232,.9)';g.lineWidth=1;g.strokeRect(153.5,83.5,11,25);g.beginPath();g.moveTo(175.5,129.5);g.lineTo(206.5,129.5);g.lineTo(207.5,138.5);g.lineTo(213.5,138.5);g.lineTo(213.5,154.5);g.lineTo(162.5,154.5);g.lineTo(162.5,138.5);g.lineTo(174.5,138.5);g.closePath();g.stroke();
+}
+
+LA.street=function(g,W,H,o){o=o||{};scene(g,W,H,!!o.night,o);if(o.night)night(g,W,H,o);};
+// the motel sign's neon, drawn on top each frame. on: how much of it is lit (0 dead, 1 full); vac: VACANCY lit too
+LA.streetSign=function(g,dy,on,vac){
+  const glow=(x,y,r,col,a)=>{const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,'rgba('+col+','+a+')');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(x-r,y-r,r*2,r*2);};
+  if(on>0){glow(218,252+dy,30,'255,180,58',.14*on);if(vac)glow(218,262+dy,26,'255,79,163',.14*on);}
+  g.font='8px "Press Start 2P"';g.textBaseline='top';g.fillStyle=on>0?P.amber:'#5a4a30';g.fillText('MOTEL',199,247+dy);
+  g.font='6px "Press Start 2P"';g.fillStyle=on>0&&vac?P.pink:'#4a3a44';g.fillText('VACANCY',197,260+dy);
+};
+})();
+
+</script>
+<script>/* data.js */
+// Life After data: skills, abilities, jobs, traits, wants, looks parts, templates, names and the starting items.
+// All of it from survivor.md (part of the bible) and items.md; starting recipes from spec 002 (Recipes).
+// Plain data plus a few rule checks the builder uses. window.LAD.
+(function () {
+  var SKILLS = [
+    ['melee', 'Melee'], ['guns', 'Guns'], ['sneak', 'Sneak'], ['medicine', 'Medicine'],
+    ['fixing', 'Fixing'], ['outdoors', 'Outdoors'], ['cooking', 'Cooking'], ['talk', 'Talk']
+  ].map(function (s) { return { id: s[0], name: s[1] }; });
+
+  // survivor.md, Abilities: [at 3, at 5]
+  var ABILITIES = {
+    melee: ['Shove', 'Sweep'], guns: ['Steady shot', 'Headshot'], sneak: ['Soft steps', 'Vanish'],
+    medicine: ['Field care', 'Clean the bite'], fixing: ['Hotwire', 'Jury-rig'], outdoors: ['Tracker', 'Read the sky'],
+    cooking: ['Stretch it', 'Comfort food'], talk: ['Read people', 'Silver tongue']
+  };
+
+  // items.md. slots: how many bag slots it takes. bag: extra slots when worn. Look-alike brands only.
+  var ITEMS = {
+    bandage: { name: 'Bandages', slots: 1 }, painkillers: { name: 'Painkillers (Relievo)', slots: 1 },
+    ducttape: { name: 'Duct tape', slots: 1 }, hammer: { name: 'Hammer and nails', slots: 1 },
+    seeds: { name: 'Seed packets', slots: 1 }, hatchet: { name: 'Hatchet', slots: 1 },
+    revolver: { name: 'Revolver', slots: 1 }, revolverAmmo: { name: 'Revolver rounds', slots: 1 },
+    flashlight: { name: 'Flashlight (Beamline)', slots: 1 }, backpack: { name: 'School backpack', slots: 1, bag: 6 },
+    fieldguide: { name: 'Field guide', slots: 1 }, roadmap: { name: 'Road map', slots: 1 },
+    jerky: { name: 'Beef jerky (Trail Boss)', slots: 1 }, lighter: { name: 'Lighter (Flint King)', slots: 1 },
+    knife: { name: 'Kitchen knife', slots: 1 }, canopener: { name: 'Can opener', slots: 1 },
+    beans: { name: 'Farmstead canned beans', slots: 1 }, bat: { name: 'Baseball bat (Slugger)', slots: 1 },
+    fannypack: { name: 'Fanny pack', slots: 1, bag: 2 }, duffel: { name: 'Duffel bag', slots: 1, bag: 8 },
+    rags: { name: 'Rags', slots: 1 }, crowbar: { name: 'Crowbar', slots: 1 },
+    rifle: { name: 'Hunting rifle', slots: 2 }, rifleAmmo: { name: 'Rifle rounds', slots: 1 },
+    soda: { name: 'Kola King soda', slots: 1 }, chocolate: { name: 'Chocolate bar (Cocoa Joe)', slots: 1 },
+    cigarettes: { name: 'Cigarettes (Marlo Reds)', slots: 1 }
+  };
+
+  // survivor.md, The 12 jobs. skills: the 5 job points, main skill first. items: [id, count].
+  // recipes: spec 002, Recipes, Starting recipes by job (everyone also knows the torch).
+  // outfit: how the job dresses (look.js draws it), in 4 color sets.
+  var JOBS = [
+    { id: 'nurse', name: 'Nurse', skills: { medicine: 3, talk: 1, cooking: 1 }, items: [['bandage', 2], ['painkillers', 1]],
+      itemText: '2 bandages, painkillers', extra: 'Knows the rag bandage recipe', recipes: ['torch', 'ragBandage'], outfit: 'scrubs' },
+    { id: 'mechanic', name: 'Mechanic', skills: { fixing: 3, melee: 1, outdoors: 1 }, items: [['ducttape', 1], ['hammer', 1]],
+      itemText: 'Duct tape, hammer and nails', extra: 'Starts dead cars faster; knows the weapon fix', recipes: ['torch', 'weaponFix'], outfit: 'coverall' },
+    { id: 'farmer', name: 'Farmer', skills: { outdoors: 3, fixing: 1, cooking: 1 }, items: [['seeds', 1], ['hatchet', 1]],
+      itemText: 'Seed packets, hatchet', extra: 'Knows the garden plot and both natural remedies', recipes: ['torch', 'gardenPlot', 'willowTea', 'yarrow'], outfit: 'overalls' },
+    { id: 'cop', name: 'Cop', skills: { guns: 3, melee: 1, talk: 1 }, items: [['revolver', 1], ['revolverAmmo', 6], ['flashlight', 1]],
+      itemText: 'Revolver with 6 rounds, flashlight', extra: 'People are more likely to surrender to you', recipes: ['torch', 'nailBat'], outfit: 'uniform' },
+    { id: 'teacher', name: 'Teacher', skills: { talk: 3, medicine: 1, fixing: 1 }, items: [['backpack', 1], ['fieldguide', 1]],
+      itemText: 'School backpack, field guide', extra: 'Learns recipes from books in half the time', recipes: ['torch'], outfit: 'cardigan' },
+    { id: 'trucker', name: 'Trucker', skills: { fixing: 2, outdoors: 1, talk: 1, guns: 1 }, items: [['roadmap', 1], ['jerky', 1], ['lighter', 1]],
+      itemText: 'Road map, beef jerky, lighter', extra: 'Knows the roads: all sections show on the road map from day 1', recipes: ['torch'], outfit: 'flannel' },
+    { id: 'cook', name: 'Line cook', skills: { cooking: 3, melee: 1, fixing: 1 }, items: [['knife', 1], ['canopener', 1], ['beans', 2]],
+      itemText: 'Kitchen knife, can opener, 2 cans', extra: 'Can cook on any fire, not only a stove', recipes: ['torch', 'canAlarm'], outfit: 'apron' },
+    { id: 'athlete', name: 'High school athlete', skills: { melee: 3, sneak: 1, outdoors: 1 }, items: [['bat', 1], ['fannypack', 1]],
+      itemText: 'Baseball bat, fanny pack', extra: 'Gets 1 extra step when fleeing', recipes: ['torch', 'nailBat'], outfit: 'jersey' },
+    { id: 'homeless', name: 'Homeless', skills: { outdoors: 2, sneak: 2, talk: 1 }, items: [['duffel', 1], ['rags', 1], ['lighter', 1]],
+      itemText: 'Duffel bag, rags, lighter', extra: 'Sleeping rough costs no SAN, and you find 1 extra item in alleys, bins and camps', recipes: ['torch', 'canAlarm'], outfit: 'layers' },
+    { id: 'construction', name: 'Construction worker', skills: { fixing: 2, melee: 2, outdoors: 1 }, items: [['crowbar', 1], ['hammer', 1]],
+      itemText: 'Crowbar, hammer and nails', extra: 'Board-ups and big builds take half the time', recipes: ['torch'], outfit: 'vest' },
+    { id: 'veteran', name: 'Army veteran', skills: { guns: 2, melee: 1, sneak: 1, medicine: 1 }, items: [['rifle', 1], ['rifleAmmo', 3], ['bandage', 1]],
+      itemText: 'Hunting rifle with 3 rounds, bandages', extra: 'Reloading never costs a turn', recipes: ['torch', 'firebomb'], outfit: 'fatigues' },
+    { id: 'clerk', name: 'Store clerk', skills: { talk: 2, sneak: 1, fixing: 1, cooking: 1 }, items: [['fannypack', 1], ['soda', 2], ['chocolate', 1]],
+      itemText: 'Fanny pack, 2 Kola King sodas, chocolate bar', extra: 'Searching stores (gas station, big-box store, pharmacy) takes half the time', recipes: ['torch'], outfit: 'polo' }
+  ];
+  JOBS.forEach(function (j) { j.main = Object.keys(j.skills)[0]; });
+
+  // survivor.md, Traits. opp: the opposite trait you can't also take. later: stored and shown, does nothing yet (spec 001, 5).
+  var GOOD = [
+    ['lightSleeper', 'Light Sleeper', 2, 'You always wake before anything reaches you.', 'heavySleeper'],
+    ['strongBack', 'Strong Back', 2, '2 extra pocket slots.', 'badBack'],
+    ['steadyHands', 'Steady Hands', 3, 'Locks, searching and crafting take half the time.'],
+    ['ironGut', 'Iron Gut', 1, 'Raw meat, wild berries and spoiled food never make you sick.'],
+    ['brave', 'Brave', 3, 'Fear and gore cost half the SAN.'],
+    ['calm', 'Calm', 2, 'At zero SAN you only freeze, never run, and SAN comes back faster at rest.'],
+    ['kind', 'Kind', 1, 'People trust you faster, but killing people costs more SAN.'],
+    ['quickLearner', 'Quick Learner', 3, 'Skills grow faster.'],
+    ['nightOwl', 'Night Owl', 2, 'You see 2 tiles farther at night.'],
+    ['greenThumb', 'Green Thumb', 1, 'Crops grow a day faster.']
+  ];
+  var BAD = [
+    ['smoker', 'Smoker', 1, 'Starts hooked on cigarettes. Without one each day, SAN slips.'],
+    ['greedy', 'Greedy', 1, 'You trade a little better, but companions bond with you slower.'],
+    ['weakStomach', 'Weak Stomach', 1, 'Bad food makes you sick for longer.'],
+    ['nearsighted', 'Nearsighted', 2, 'You see 2 tiles less, and guns are harder to aim.'],
+    ['hothead', 'Hothead', 2, 'Talking a fight down and trading go worse, and an insult can start a fight.'],
+    ['jumpy', 'Jumpy', 2, 'Surprises and dark nights cost extra SAN.'],
+    ['stubborn', 'Stubborn', 2, "Skills grow slower, and companions' advice is easier to ignore by accident."],
+    ['heavySleeper', 'Heavy Sleeper', 2, 'Noises rarely wake you.', 'lightSleeper'],
+    ['badBack', 'Bad Back', 2, '2 fewer pocket slots.', 'strongBack'],
+    ['badKnee', 'Bad Knee', 3, 'Fleeing gives you 1 fewer step, and stairs and fences take an extra turn.']
+  ];
+  var TRAITS = {};
+  function tr(list, good) { return list.map(function (t) { var o = { id: t[0], name: t[1], cost: t[2], text: t[3], opp: t[4] || null, good: good }; TRAITS[o.id] = o; return o; }); }
+  GOOD = tr(GOOD, true); BAD = tr(BAD, false);
+
+  var WANTS = [
+    ['family', 'Find family', 'Someone you lost is out there, and some rumors are about them.'],
+    ['home', 'Get home', 'A far-off town the roads may lead to.'],
+    ['cure', 'Find the cure', 'Chase rumors of a lab or depot.'],
+    ['last', 'Make something last', 'A hideout that feeds other people.'],
+    ['ocean', 'See the ocean', 'A long, quiet hope.'],
+    ['score', 'Settle a score', 'Someone did something before the end, and they may still be alive.'],
+    ['promise', 'Keep a promise', 'Carry something to someone.'],
+    ['happened', 'Find out what happened', "The world's history, from notes and places."],
+    ['clean', 'Get clean', 'Stay off a vice you used to lean on. Each clean week lifts SAN, and a slip costs it.'],
+    ['dog', 'Find the dog', 'Your dog ran off when it started. A dog that finds you is a companion that never argues.'],
+    ['safezone', 'Reach the safe zone', 'The radio keeps naming a place. It may be real.'],
+    ['amends', 'Make amends', 'You did something before the end. Helping other survivors slowly settles it.']
+  ].map(function (w) { return { id: w[0], name: w[1], text: w[2] }; });
+
+  // survivor.md, Looks parts. Counts: body 3, skin 6, face 6, hair style 8 and color 6, outfit color set 4, age 3.
+  var LOOKS = {
+    body: ['Slim', 'Average', 'Heavy'],
+    skin: ['Fair', 'Light', 'Tan', 'Olive', 'Brown', 'Dark'],
+    face: ['Round', 'Long', 'Square', 'Soft', 'Sharp', 'Wide'],
+    hairStyle: ['Short', 'Buzzed', 'Side part', 'Curly', 'Long', 'Ponytail', 'Mullet', 'Bald'],
+    hairColor: ['Black', 'Dark brown', 'Brown', 'Red', 'Blond', 'Gray'],
+    colors: ['Set 1', 'Set 2', 'Set 3', 'Set 4'],
+    age: ['Young adult', 'Middle-aged', 'Older']
+  };
+  var LOOK_ROWS = [['body', 'Body'], ['skin', 'Skin'], ['face', 'Face'], ['hairStyle', 'Hair'], ['hairColor', 'Hair color'], ['colors', 'Clothes'], ['age', 'Age']];
+
+  // survivor.md, Templates. looks are picked to fit each person.
+  var TEMPLATES = [
+    ['Rita', 'the night-shift nurse', 'nurse', ['lightSleeper', 'calm'], ['smoker', 'stubborn', 'weakStomach'], 'family', { body: 1, skin: 1, face: 3, hairStyle: 5, hairColor: 2, colors: 0, age: 1 }],
+    ['Dale', 'the garage owner', 'mechanic', ['steadyHands'], ['badKnee'], 'last', { body: 2, skin: 0, face: 2, hairStyle: 2, hairColor: 5, colors: 0, age: 2 }],
+    ['June', 'the third-generation farmer', 'farmer', ['ironGut', 'greenThumb', 'kind'], ['nearsighted', 'greedy'], 'last', { body: 1, skin: 2, face: 0, hairStyle: 5, hairColor: 3, colors: 1, age: 1 }],
+    ['Ray', 'the small-town deputy', 'cop', ['brave'], ['hothead', 'smoker'], 'score', { body: 1, skin: 1, face: 4, hairStyle: 0, hairColor: 1, colors: 0, age: 0 }],
+    ['Denise', 'the chemistry teacher', 'teacher', ['quickLearner'], ['nearsighted', 'weakStomach'], 'cure', { body: 0, skin: 4, face: 3, hairStyle: 3, hairColor: 0, colors: 2, age: 1 }],
+    ['Hank', 'the long-haul trucker', 'trucker', ['strongBack', 'nightOwl'], ['smoker', 'greedy', 'stubborn'], 'home', { body: 2, skin: 1, face: 5, hairStyle: 6, hairColor: 2, colors: 0, age: 1 }],
+    ['Tommy', 'the diner line cook', 'cook', ['ironGut', 'kind'], ['hothead'], 'promise', { body: 1, skin: 3, face: 0, hairStyle: 1, hairColor: 0, colors: 0, age: 0 }],
+    ['Kayla', 'the track star', 'athlete', ['lightSleeper', 'brave'], ['badKnee', 'stubborn'], 'ocean', { body: 0, skin: 5, face: 1, hairStyle: 5, hairColor: 0, colors: 1, age: 0 }],
+    ['Earl', 'who lived under the overpass', 'homeless', ['ironGut', 'nightOwl'], ['badBack', 'smoker'], 'happened', { body: 0, skin: 2, face: 1, hairStyle: 4, hairColor: 5, colors: 2, age: 2 }],
+    ['Luis', 'the framing carpenter', 'construction', ['strongBack'], ['hothead'], 'family', { body: 2, skin: 3, face: 2, hairStyle: 0, hairColor: 0, colors: 0, age: 1 }],
+    ['Marcy', 'the Gulf War medic', 'veteran', ['steadyHands', 'nightOwl'], ['heavySleeper', 'badKnee'], 'promise', { body: 1, skin: 0, face: 4, hairStyle: 1, hairColor: 4, colors: 0, age: 1 }],
+    ['Kevin', 'the gas station night clerk', 'clerk', ['nightOwl', 'kind'], ['jumpy', 'weakStomach'], 'home', { body: 0, skin: 1, face: 5, hairStyle: 2, hairColor: 4, colors: 3, age: 0 }]
+  ].map(function (t) { return { name: t[0], tag: t[1], job: t[2], good: t[3], bad: t[4], want: t[5], looks: t[6] }; });
+
+  // About 60 1990s American first names, for the Random row (spec 001, 4).
+  var NAMES = ('Jennifer Jessica Amanda Ashley Sarah Stephanie Melissa Nicole Heather Amy Michelle Angela Tiffany Kimberly ' +
+    'Lisa Tammy Shannon Crystal Dawn Tonya Wendy Rhonda Brandy Misty Carla Debbie Tracy Kristen Erin Holly ' +
+    'Michael Christopher Jason David James Matthew Joshua John Robert Daniel Brian Kevin Jeremy Travis Chad ' +
+    'Shane Dustin Corey Derek Brandon Darnell Marcus Jamal Luis Carlos Jose Troy Wade Rusty Duane Curtis Lance').split(' ');
+
+  var PRESETS = [
+    { id: 'gentle', name: 'Gentle', note: 'More food, softer bites, fewer surprises.' },
+    { id: 'standard', name: 'Standard', note: 'The world as it is.' },
+    { id: 'harsh', name: 'Harsh', note: 'Less of everything, and the dead hit hard.' }
+  ];
+  var SEASONS = ['Spring', 'Summer', 'Fall', 'Winter'];
+
+  var job = function (id) { for (var i = 0; i < JOBS.length; i++) if (JOBS[i].id === id) return JOBS[i]; return null; };
+  var want = function (id) { for (var i = 0; i < WANTS.length; i++) if (WANTS[i].id === id) return WANTS[i]; return null; };
+  var sum = function (ids) { return ids.reduce(function (n, id) { return n + (TRAITS[id] ? TRAITS[id].cost : 0); }, 0); };
+
+  // The trait rules (survivor.md, Traits): '' when the picks are fine, otherwise the reason in plain words.
+  function traitProblem(good, bad) {
+    if (good.length > 3) return 'Up to 3 good traits.';
+    var all = good.concat(bad);
+    for (var i = 0; i < all.length; i++) { var o = TRAITS[all[i]].opp; if (o && all.indexOf(o) >= 0) return TRAITS[all[i]].name + ' and ' + TRAITS[o].name + " can't go together."; }
+    if (sum(good) > sum(bad)) return 'Good points are more than bad points.';
+    return '';
+  }
+  // Highest a skill can start (spec 001, 4): 3, or 4 for an older survivor's main job skill.
+  function skillCap(jobId, age, skill) { var j = job(jobId); return (j && age === 2 && j.main === skill) ? 4 : 3; }
+  // A survivor's skills from the job, the age and the free points.
+  function skillsOf(jobId, age, free) {
+    var j = job(jobId), s = {};
+    SKILLS.forEach(function (k) { s[k.id] = (j && j.skills[k.id]) || 0; });
+    if (j && age === 2) s[j.main]++;
+    for (var k in free || {}) s[k] = Math.min(skillCap(jobId, age, k), s[k] + free[k]);
+    return s;
+  }
+
+  window.LAD = { SKILLS: SKILLS, ABILITIES: ABILITIES, ITEMS: ITEMS, JOBS: JOBS, GOOD: GOOD, BAD: BAD, TRAITS: TRAITS, WANTS: WANTS,
+    LOOKS: LOOKS, LOOK_ROWS: LOOK_ROWS, TEMPLATES: TEMPLATES, NAMES: NAMES, PRESETS: PRESETS, SEASONS: SEASONS,
+    job: job, want: want, traitSum: sum, traitProblem: traitProblem, skillCap: skillCap, skillsOf: skillsOf, FREE: 3 };
+})();
+
+</script>
+<script>/* ui.js */
+// Life After screens kit: everything is drawn on the 240 px canvas, on the cardboard menu surface (bible.md, Art,
+// Menu surface; mockup 05). Cards with a cursor, worked by the D-pad or by tapping (controls.md: tapping a menu row
+// also works), a header with the step, a key help line, a short note at the bottom, and a yes / no question whose
+// cursor starts on "Not yet" (studio-bible/play.md, No accidental point of no return). window.LAU.
+(function () {
+  var P = LA.P, R = LA.R, px = LA.px;
+  var F8 = '8px "Press Start 2P"', F16 = '16px VT323', F12 = '12px VT323';
+  var U = { F8: F8, F16: F16, F12: F12, hits: [], W: 240, H: 300, g: null };
+
+  // ---- taps: each frame the screens register the spots that can be tapped ----
+  U.clearHits = function () { U.hits = []; };
+  U.hit = function (x, y, w, h, fn) { U.hits.push({ x: x, y: y, w: w, h: h, fn: fn }); };
+  U.tap = function (x, y) {
+    for (var i = U.hits.length - 1; i >= 0; i--) { var r = U.hits[i]; if (x >= r.x && y >= r.y && x < r.x + r.w && y < r.y + r.h) { r.fn(x, y); return true; } }
+    return false;
+  };
+
+  U.text = function (t, x, y, font, col) { var g = U.g; g.font = font; g.textBaseline = 'top'; g.fillStyle = col; g.fillText(t, x, y); return g.measureText(t).width; };
+  U.width = function (t, font) { U.g.font = font; return U.g.measureText(t).width; };
+  U.center = function (t, y, font, col) { U.text(t, Math.round((U.W - U.width(t, font)) / 2), y, font, col); };
+  // a ▶ in pixels, so it never depends on a font
+  U.arrow = function (x, y, col, left) { for (var k = 0; k < 4; k++) R(U.g, col, left ? x + 3 - k : x + k, y + k, 1, 7 - 2 * k); };
+
+  // ---- header: the step's name, the L and R steps (tappable), and progress pips ----
+  U.header = function (title, o) {
+    o = o || {};
+    var g = U.g, W = U.W;
+    R(g, P.card, 0, 0, W, 18); R(g, '#4e5854', 0, 18, W, 1);
+    if (o.l) { U.text('<L', 4, 5, F8, P.dim); U.hit(0, 0, 34, 20, o.l); }
+    if (o.r) { U.text('R>', W - 20, 5, F8, o.rDim ? '#4e5854' : P.dim); U.hit(W - 34, 0, 34, 20, o.r); }
+    // a long step name drops the word STEP so it never runs under <L and R> (ui.md, No cut-off names)
+    if (U.width(title, F8) > W - 56) title = title.replace(/^STEP /, '');
+    if (U.width(title, F8) > W - 56) title = title.replace(/ OF \d+ ·/, ' ·');
+    U.center(title, 5, F8, P.warm);
+    if (o.steps) for (var i = 0; i < o.steps; i++) R(g, i < o.at ? P.dim : i === o.at ? P.cyan : '#3a4442', W / 2 - o.steps * 4 + 1 + i * 8, 14, 5, 2);
+    return 19;
+  };
+  U.help = function (t) { var g = U.g; R(g, '#101416', 0, U.H - 13, U.W, 13); U.center(t, U.H - 13, F12, P.dim); };
+
+  // ---- a list of cards on cardboard ----
+  // items: {title, lines[], value, lr(d), a(), check, dim, red} ; st: {sel, off}
+  function layout(items, w) {
+    var g = U.g;
+    return items.map(function (it) {
+      g.font = F16;
+      var lines = [];
+      (it.lines || []).forEach(function (l) { lines = lines.concat(LA.wrap(g, l, w - 12 - (it.lr && !it.title ? 30 : 0))); });
+      var h = 6 + (it.title ? 11 : 0) + lines.length * 13 + (it.title && !lines.length ? 3 : 2);
+      if (!it.title && lines.length === 1) h = 18;
+      return { it: it, lines: lines, h: h };
+    });
+  }
+  U.list = function (box, items, st, o) {
+    o = o || {};
+    var g = U.g;
+    LA.cardboard(g, box.x, box.y, box.w, box.h);
+    var x = box.x + 8, w = box.w - 16, L = layout(items, w), gap = 5, top = box.y + 6, room = box.h - 12;
+    if (st.sel >= items.length) st.sel = items.length - 1;
+    if (st.sel < 0) st.sel = 0;
+    var ys = [], y = 0;
+    L.forEach(function (c) { ys.push(y); y += c.h + gap; });
+    var total = y - gap;
+    // keep the picked card in view
+    if (st.off == null) st.off = 0;
+    var cy = ys[st.sel] || 0, ch = L[st.sel] ? L[st.sel].h : 0;
+    if (cy - st.off < 0) st.off = cy;
+    if (cy + ch - st.off > room) st.off = cy + ch - room;
+    st.off = Math.max(0, Math.min(st.off, Math.max(0, total - room)));
+    g.save(); g.beginPath(); g.rect(box.x + 2, box.y + 3, box.w - 4, box.h - 6); g.clip();
+    L.forEach(function (c, i) {
+      var cy = top + ys[i] - st.off, it = c.it, on = i === st.sel;
+      if (cy > box.y + box.h || cy + c.h < box.y) return;
+      LA.card(g, x, cy, w, c.h, on);
+      var ty = cy + 4, col = it.dim ? '#6a5a40' : P.marker;
+      if (it.title) { U.text(it.title, x + 6, ty + 1, F8, it.dim ? '#7a5a40' : P.markR); ty += 11; }
+      c.lines.forEach(function (l, k) { U.text(l, x + 6, ty - 1 + k * 13, F16, k === 0 && it.red ? P.markR : col); });
+      if (it.check) { var cx0 = x + w - 14; R(g, P.marker, cx0, cy + 4, 9, 9); R(g, '#ece6d8', cx0 + 1, cy + 5, 7, 7); R(g, P.markR, cx0 + 2, cy + 8, 2, 2); R(g, P.markR, cx0 + 3, cy + 9, 1, 2); R(g, P.markR, cx0 + 4, cy + 7, 1, 3); R(g, P.markR, cx0 + 5, cy + 6, 1, 2); R(g, P.markR, cx0 + 6, cy + 5, 1, 2); }
+      if (it.value != null) {
+        var vw = U.width(String(it.value), F16), vx = x + w - 8 - vw - (it.lr ? 12 : 0), vy = it.title ? cy + 2 : cy + 1;
+        U.text(String(it.value), vx, vy, F16, P.markR);
+        if (it.lr) {
+          U.arrow(vx - 10, vy + 4, on ? P.marker : '#86683c', true); U.arrow(x + w - 12, vy + 4, on ? P.marker : '#86683c');
+          (function (i) {
+            U.hit(vx - 16, cy, 16, Math.min(c.h, 20), function () { st.sel = i; it.lr(-1); });
+            U.hit(x + w - 18, cy, 18, Math.min(c.h, 20), function () { st.sel = i; it.lr(1); });
+          })(i);
+        }
+      }
+      (function (i) {
+        var vy0 = Math.max(cy, box.y), vy1 = Math.min(cy + c.h, box.y + box.h);
+        if (vy1 > vy0) U.hits.splice(U.hits.length - (it.lr && it.value != null ? 2 : 0), 0, { x: x, y: vy0, w: w, h: vy1 - vy0, fn: function () { st.sel = i; if (it.a) it.a(); else if (it.lr) it.lr(1); } });
+      })(i);
+    });
+    g.restore();
+    if (total > room) {
+      if (st.off > 0) U.text('▲', box.x + box.w - 13, box.y + 4, F8, P.marker);
+      if (st.off < total - room) U.text('▼', box.x + box.w - 13, box.y + box.h - 12, F8, P.marker);
+    }
+  };
+  // D-pad in a list: up and down move, left and right change a value, A picks
+  U.listPress = function (k, items, st) {
+    var it = items[st.sel];
+    if (k === 'up') { st.sel = (st.sel - 1 + items.length) % items.length; return true; }
+    if (k === 'down') { st.sel = (st.sel + 1) % items.length; return true; }
+    if ((k === 'left' || k === 'right') && it && it.lr) { it.lr(k === 'left' ? -1 : 1); return true; }
+    if (k === 'a' && it) { if (it.a) it.a(); else if (it.lr) it.lr(1); return true; }
+    return false;
+  };
+
+  // ---- a short note at the bottom of the screen ----
+  var note = null;
+  U.toast = function (t, ms) { note = { t: t, until: performance.now() + (ms || 2200) }; };
+  U.drawToast = function (now) {
+    if (!note || now > note.until) { note = null; return; }
+    var g = U.g; g.font = F16;
+    var lines = LA.wrap(g, note.t, U.W - 28), h = 8 + lines.length * 13, y = U.H - h - 18;
+    R(g, 'rgba(0,0,0,.4)', 8, y + 2, U.W - 14, h); R(g, '#101416', 6, y, U.W - 12, h); R(g, P.line, 6, y, U.W - 12, 1); R(g, P.line, 6, y, 1, h);
+    R(g, '#4e5854', 6, y + h - 1, U.W - 12, 1); R(g, '#4e5854', U.W - 7, y, 1, h);
+    lines.forEach(function (l, i) { U.text(l, 12, y + 3 + i * 13, F16, P.text); });
+  };
+
+  // ---- a question with choices (the narration box look from mockup 04) ----
+  // q: {text, choices: [{label, run}], sel}
+  U.drawAsk = function (q) {
+    var g = U.g; g.font = F16;
+    var lines = LA.wrap(g, q.text, U.W - 24), h = 10 + lines.length * 13 + q.choices.length * 16, y = Math.round((U.H - h) / 2);
+    R(g, 'rgba(8,10,12,.6)', 0, 0, U.W, U.H);
+    R(g, 'rgba(0,0,0,.4)', 5, y + 2, U.W - 8, h); R(g, '#101416', 3, y, U.W - 6, h); R(g, P.line, 3, y, U.W - 6, 1); R(g, P.line, 3, y, 1, h);
+    R(g, '#4e5854', 3, y + h - 1, U.W - 6, 1); R(g, '#4e5854', U.W - 4, y, 1, h);
+    lines.forEach(function (l, i) { U.text(l, 10, y + 4 + i * 13, F16, P.text); });
+    var cy = y + 8 + lines.length * 13;
+    U.hit(0, 0, U.W, U.H, function () {});
+    q.choices.forEach(function (c, i) {
+      var on = i === q.sel;
+      if (on) { R(g, P.cardHi, 8, cy + i * 16 - 1, U.W - 16, 15); U.arrow(12, cy + i * 16 + 3, P.cyan); }
+      U.text(c.label, 22, cy + i * 16 - 1, F16, on ? P.warm : P.text);
+      U.hit(8, cy + i * 16 - 1, U.W - 16, 15, function () { q.sel = i; c.run(); });
+    });
+  };
+  U.askPress = function (q, k) {
+    var n = q.choices.length;
+    if (k === 'up') q.sel = (q.sel - 1 + n) % n;
+    else if (k === 'down') q.sel = (q.sel + 1) % n;
+    else if (k === 'a') q.choices[q.sel].run();
+    else if (k === 'b') { var no = q.choices.filter(function (c) { return c.no; })[0]; if (no) no.run(); }
+  };
+
+  // ---- the narration box (no tab), from mockup 04 ----
+  U.narrate = function (lines) {
+    var g = U.g, y = U.H - 44;
+    R(g, 'rgba(0,0,0,.4)', 5, y + 2, U.W - 8, 40); R(g, '#101416', 3, y, U.W - 6, 40); R(g, P.line, 3, y, U.W - 6, 1); R(g, P.line, 3, y, 1, 40);
+    R(g, '#4e5854', 3, y + 39, U.W - 6, 1); R(g, '#4e5854', U.W - 4, y, 1, 40);
+    lines.slice(0, 2).forEach(function (l, i) { U.text(l, 10, y + 5 + i * 14, F16, P.text); });
+    if (Math.floor(performance.now() / 500) % 2 === 0) U.text('▼', U.W - 16, y + 26, F16, P.warm);
+  };
+
+  window.LAU = U;
+})();
+
+</script>
+<script>/* game.js */
+// Life After, slice part A (spec 001): the title, a new world, the survivor builder, the party card,
+// the stand-in room, saves and the save code. window.LAG.
+(function () {
+  var P = LA.P, R = LA.R, D = LAD, U = LAU;
+  var F8 = U.F8, F16 = U.F16, F12 = U.F12;
+  var cv = document.getElementById('cv'), g = cv.getContext('2d'), screenEl = document.getElementById('screen');
+  var ovl = document.getElementById('ovl');
+  U.g = g;
+
+  // ================= saves (studio-bible/saves.md; spec 001, 8) =================
+  var VERSION = 1;
+  var key = function (k) { return Studio.savePrefix('la.') + k; };   // dev.la.* on the Dev shelf
+  var store = {
+    get: function (k, d) { try { var v = localStorage.getItem(key(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set: function (k, v) { try { localStorage.setItem(key(k), JSON.stringify(v)); } catch (e) {} },
+    del: function (k) { try { localStorage.removeItem(key(k)); } catch (e) {} }
+  };
+  // Upgrade steps: STEPS_UP[n] turns a version n - 1 save into version n. Old steps never change.
+  // Version 1 is the first: nothing to upgrade yet. Parts B to D add their steps here.
+  var STEPS_UP = {};
+  function openSaves() {
+    var v = store.get('version', null);
+    if (v == null) { store.set('version', VERSION); return; }
+    if (v < VERSION) {
+      // back up first, then run each step above the stored version, in order
+      store.set('backup.v' + v, { version: v, run: store.get('run', null), record: store.get('record', null) });
+      var run = store.get('run', null), rec = store.get('record', null);
+      for (var n = v + 1; n <= VERSION; n++) if (STEPS_UP[n]) { var o = STEPS_UP[n]({ run: run, record: rec }); run = o.run; rec = o.record; }
+      if (run) store.set('run', run);
+      if (rec) store.set('record', rec);
+      store.set('version', VERSION);
+    }
+  }
+  function newRecord() { return { gentle: [], standard: [], harsh: [] }; }
+  var S = { scr: 'title', run: null };
+  function save() { if (S.run) { S.run.dice = S.dice ? S.dice.save() : S.run.dice; store.set('run', S.run); } store.set('version', VERSION); }
+
+  // The save code (spec 001, 9): the version, the world and the best runs as one line of text
+  function exportCode() { return StudioCode.make('LA1', { version: store.get('version', VERSION), run: store.get('run', null), record: store.get('record', null) }); }
+  function readCode(text) {
+    var o = StudioCode.read('LA1', text);
+    if (!o || typeof o.version !== 'number' || o.version < 1 || o.version > VERSION) return null;
+    if (o.run != null && (typeof o.run !== 'object' || !o.run.surv || !o.run.seed && o.run.seed !== 0)) return null;
+    return o;
+  }
+  function applyCode(o) {
+    if (o.run) store.set('run', o.run); else store.del('run');
+    store.set('record', o.record || newRecord());
+    store.set('version', o.version);
+    openSaves();
+    S.run = store.get('run', null);
+    S.dice = S.run ? StudioSeed.load(S.run.dice) : null;
+  }
+
+  // ================= screen size, drawing loop and input =================
+  var fitInfo = null;
+  function resize() {
+    var f = StudioMove.fit(screenEl, cv);
+    if (!f) return;
+    fitInfo = f; U.W = f.w; U.H = f.h; g.imageSmoothingEnabled = false;
+    titleCache = null;
+  }
+  window.addEventListener('resize', resize);
+
+  var screens = {};
+  function go(name, arg) { S.scr = name; if (screens[name].enter) screens[name].enter(arg); }
+
+  var clock = StudioClock.make();
+  function frame(now) {
+    var n = clock.ticks(now);
+    if (!fitInfo) resize();
+    if (fitInfo) {
+      for (var i = 0; i < n; i++) if (screens[S.scr].tick) screens[S.scr].tick();
+      U.clearHits();
+      g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;
+      screens[S.scr].draw(now);
+      if (S.ask) U.drawAsk(S.ask);
+      U.drawToast(now);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function press(k) {
+    if (ovl.classList.contains('on')) return;
+    if (S.ask) { U.askPress(S.ask, k); return; }
+    var sc = screens[S.scr];
+    if (sc.press) sc.press(k);
+  }
+  cv.addEventListener('pointerdown', function (e) {
+    if (!fitInfo || ovl.classList.contains('on')) return;
+    var r = cv.getBoundingClientRect();
+    U.tap((e.clientX - r.left) * U.W / r.width, (e.clientY - r.top) * U.H / r.height);
+  });
+
+  // a yes / no question; the cursor starts on Not yet (play.md: No accidental point of no return)
+  function ask(text, yes, yesLabel, noLabel, noFirst) {
+    S.ask = { text: text, sel: noFirst === false ? 0 : 1, choices: [
+      { label: yesLabel || 'Yes', run: function () { S.ask = null; yes(); } },
+      { label: noLabel || 'Not yet', no: true, run: function () { S.ask = null; } }
+    ] };
+  }
+
+  // ---- typing: a cardboard card with a text field, over the screen (the phone keyboard) ----
+  function typeIn(o) {
+    // o: {title, text, value, area, ph, ok(label), done(value) -> error text or '', readonly, copy}
+    ovl.innerHTML = '';
+    var cb = document.createElement('div'); cb.className = 'cb';
+    var h = document.createElement('h2'); h.textContent = o.title; cb.appendChild(h);
+    if (o.text) { var p = document.createElement('p'); p.textContent = o.text; cb.appendChild(p); }
+    var f = document.createElement(o.area ? 'textarea' : 'input');
+    if (!o.area) { f.type = o.numeric ? 'text' : 'text'; if (o.numeric) f.inputMode = 'numeric'; f.maxLength = o.max || 14; f.autocapitalize = 'words'; }
+    f.spellcheck = false; f.autocomplete = 'off'; f.value = o.value || ''; if (o.ph) f.placeholder = o.ph; if (o.readonly) f.readOnly = true;
+    cb.appendChild(f);
+    var err = document.createElement('p'); err.className = 'err'; cb.appendChild(err);
+    var bt = document.createElement('div'); bt.className = 'bt'; cb.appendChild(bt);
+    function close() { ovl.classList.remove('on'); ovl.innerHTML = ''; }
+    function ok() { var e = o.done ? o.done(f.value) : ''; if (e) err.textContent = e; else close(); }
+    function btn(label, fn, cls) { var b = document.createElement('button'); b.textContent = label; if (cls) b.className = cls; b.onclick = fn; bt.appendChild(b); return b; }
+    if (o.copy) btn('Copy', function () {
+      f.select(); var done = function () { err.textContent = 'Copied.'; };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(f.value).then(done, function () { try { document.execCommand('copy'); done(); } catch (e) {} });
+      else { try { document.execCommand('copy'); done(); } catch (e) {} }
+    }, 'go');
+    if (!o.readonly) btn(o.ok || 'OK', ok, 'go');
+    btn(o.readonly ? 'Close' : 'Cancel', close);
+    f.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !o.area) { e.preventDefault(); ok(); } if (e.key === 'Escape') { e.preventDefault(); close(); } });
+    ovl.appendChild(cb); ovl.classList.add('on');
+    if (!o.readonly) setTimeout(function () { f.focus(); }, 30);
+    LAG._ovl = { field: f, ok: ok, close: close };
+  }
+
+  // ================= survivor drawing (cached) =================
+  var cache = {};
+  function lookKey(sv, extra) { return JSON.stringify([sv.looks, sv.job, extra]); }
+  function dressOf(sv) { var j = D.job(sv.job); return LA.dress(sv.looks, j ? j.outfit : 'coverall'); }
+  function portraitOf(sv, mood) {
+    var k = 'p' + lookKey(sv, mood);
+    return cache[k] || (cache[k] = LA.portrait(Object.assign({ mood: mood || 'ok' }, dressOf(sv))));
+  }
+  function spriteOf(sv, face, step) {
+    var k = 's' + lookKey(sv, [face, step]);
+    if (cache[k]) return cache[k];
+    var c = LA.person(Object.assign({ face: face === 'left' ? 'right' : face === 'up' ? 'up' : face === 'down' ? 'down' : 'right', step: step }, dressOf(sv)));
+    if (face === 'left') { var m = document.createElement('canvas'); m.width = c.width; m.height = c.height; var mg = m.getContext('2d'); mg.translate(c.width, 0); mg.scale(-1, 1); mg.drawImage(c, 0, 0); c = m; }
+    return (cache[k] = c);
+  }
+  function moodOf(n) { return n.sleep < 30 ? 'tired' : n.health < 50 ? 'hurt' : n.san < 30 ? 'scared' : 'ok'; }
+
+  // ================= the survivor builder's working copy =================
+  var B = null;      // the draft survivor
+  var W0 = null;     // the new world's settings: {preset, season, seed, typed}
+  var rs = null;     // the builder's dice: made from the world seed, so the same seed and choices give the same survivor
+  function blankLooks() { return { body: 1, skin: 1, face: 0, hairStyle: 0, hairColor: 1, colors: 0, age: 0 }; }
+  function blank() { return { template: null, name: '', job: null, free: {}, good: [], bad: [], want: null, looks: blankLooks() }; }
+  function pick(a) { return a[rs.int(a.length)]; }
+  function freeLeft() { var n = 0; for (var k in B.free) n += B.free[k]; return D.FREE - n; }
+  function skills() { return D.skillsOf(B.job, B.looks.age, B.free); }
+  function useTemplate(t) {
+    B = { template: t.name, name: t.name, job: t.job, free: {}, good: t.good.slice(), bad: t.bad.slice(), want: t.want, looks: Object.assign({}, t.looks) };
+  }
+  // free points that no longer fit (after a job or age change) are handed back
+  function trimFree() {
+    var base = D.skillsOf(B.job, B.looks.age, {});
+    for (var k in B.free) { var cap = D.skillCap(B.job, B.looks.age, k); B.free[k] = Math.max(0, Math.min(B.free[k], cap - base[k])); if (!B.free[k]) delete B.free[k]; }
+  }
+  function randomFree() {
+    B.free = {};
+    for (var tries = 0; freeLeft() > 0 && tries < 200; tries++) {
+      var k = pick(D.SKILLS).id, s = skills();
+      if (s[k] < D.skillCap(B.job, B.looks.age, k)) B.free[k] = (B.free[k] || 0) + 1;
+    }
+  }
+  function randomTraits() {
+    // a balanced set, the way companions get one: 0 to 2 good traits, then bad ones until bad points cover them
+    for (var tries = 0; tries < 100; tries++) {
+      var good = [], bad = [], ng = rs.int(3);
+      while (good.length < ng) { var t = pick(D.GOOD).id; if (good.indexOf(t) < 0) good.push(t); }
+      var need = D.traitSum(good);
+      for (var guard = 0; D.traitSum(bad) < need && guard < 20; guard++) { var b = pick(D.BAD).id; if (bad.indexOf(b) < 0) bad.push(b); }
+      if (!ng && rs.int(2)) bad.push(pick(D.BAD).id);
+      bad = bad.filter(function (x, i) { return bad.indexOf(x) === i; });
+      if (!D.traitProblem(good, bad)) { B.good = good; B.bad = bad; return; }
+    }
+    B.good = []; B.bad = [];
+  }
+  function randomLooks() { D.LOOK_ROWS.forEach(function (r) { B.looks[r[0]] = rs.int(D.LOOKS[r[0]].length); }); trimFree(); }
+  function randomAll() {
+    B = blank(); B.name = pick(D.NAMES); B.job = pick(D.JOBS).id; randomLooks(); randomFree(); randomTraits(); B.want = pick(D.WANTS).id;
+  }
+
+  // ================= starting a world =================
+  function seasonIndex(s) { return D.SEASONS.indexOf(s); }
+  function startWorld() {
+    var seed = W0.seed, world = StudioSeed.stream(StudioSeed.hash(seed + ':world'));
+    if (!B.want) B.want = D.WANTS[world.int(D.WANTS.length)].id;
+    var season = W0.season === 'Random' ? D.SEASONS[world.int(4)] : W0.season;
+    var j = D.job(B.job), sk = skills(), uses = {};
+    D.SKILLS.forEach(function (s) { uses[s.id] = 0; });
+    // the bag (Part B fills in the rest): pockets, and a bag from the job worn straight away
+    var pockets = 4 + (B.good.indexOf('strongBack') >= 0 ? 2 : 0) - (B.bad.indexOf('badBack') >= 0 ? 2 : 0), worn = null, items = [];
+    j.items.forEach(function (it) { if (D.ITEMS[it[0]].bag && !worn) worn = it[0]; else items.push({ id: it[0], n: it[1] }); });
+    S.run = {
+      v: 1, seed: seed, typedSeed: !!W0.typed, preset: W0.preset, seasonPick: W0.season, season: season, startSeason: season,
+      clock: { day: 1, min: 7 * 60 },
+      surv: {
+        name: B.name, job: B.job, template: B.template, skills: sk, uses: uses, free: Object.assign({}, B.free),
+        traits: { good: B.good.slice(), bad: B.bad.slice() }, want: B.want, looks: Object.assign({}, B.looks),
+        needs: { hunger: 70, health: 100, sleep: 80, san: 70 }, wounds: [],
+        bag: { pockets: pockets, worn: worn, items: items }, recipes: j.recipes.slice(), notes: []
+      },
+      map: { name: 'standin', x: 5, y: 4, dir: 'down' },
+      seen: { intro: false }
+    };
+    S.dice = StudioSeed.stream(StudioSeed.hash(seed + ':dice'));
+    save();
+    go('room');
+  }
+
+  // ================= TITLE (spec 001, 2) =================
+  var titleCache = null, titleSt = { sel: 0 };
+  function drawTitleScene(now) {
+    var W = U.W, H = U.H, dy = Math.min(0, H - 300);
+    if (!titleCache) {
+      titleCache = document.createElement('canvas'); titleCache.width = 240; titleCache.height = 300;
+      var tg = titleCache.getContext('2d'); tg.imageSmoothingEnabled = false;
+      LA.street(tg, 240, 300, { night: true, title: true });
+    }
+    R(g, '#0c0e10', 0, 0, W, H);
+    g.drawImage(titleCache, 0, dy);
+    // the motel sign flickers: mostly on, with short dropouts; VACANCY stutters on its own
+    var t = Math.floor(now / 90), on = (t % 47 === 3 || t % 47 === 5 || t % 61 === 20) ? 0 : 1, vac = (t % 23) > 2 && (t % 37) !== 9;
+    LA.streetSign(g, dy, on, vac);
+  }
+  screens.title = {
+    enter: function () { titleSt.sel = 0; },
+    items: function () {
+      var a = [{ lines: ['New world'], a: function () { if (S.run) ask('There is a world in progress. Starting a new one ends it for good.', newWorld, 'Start a new world'); else newWorld(); } }];
+      if (S.run) a.push({ lines: ['Continue'], a: function () { go('room'); } });
+      a.push({ lines: ['Best runs'], a: function () { go('best'); } });
+      a.push({ lines: ['Import save'], a: importSave });
+      return a;
+    },
+    draw: function (now) {
+      var W = U.W, H = U.H;
+      drawTitleScene(now);
+      // the title on a dark band, as on the cover
+      R(g, 'rgba(12,14,16,.86)', 0, 10, W, 30); R(g, '#0c0e10', 0, 39, W, 1);
+      g.font = '16px "Press Start 2P"'; g.textBaseline = 'top';
+      var tw = g.measureText('LIFE AFTER').width, tx = Math.round((W - tw) / 2);
+      g.fillStyle = P.red[3]; g.fillText('LIFE AFTER', tx + 1, 18); g.fillStyle = P.warm; g.fillText('LIFE AFTER', tx, 17);
+      var items = this.items(), h = items.length * 23 + 10;
+      U.list({ x: 6, y: H - h - 16, w: 122, h: h }, items, titleSt);
+      U.help('A pick');
+    },
+    press: function (k) { U.listPress(k, this.items(), titleSt); }
+  };
+  function newWorld() { W0 = { preset: 'standard', season: 'Random', seed: (Math.random() * 1e9) | 0, typed: false }; rs = StudioSeed.stream(StudioSeed.hash(W0.seed + ':build')); B = blank(); go('world'); }
+  function importSave() {
+    typeIn({ title: 'IMPORT SAVE', text: 'Paste a save code.', area: true, ph: 'LA1:…', ok: 'Import', done: function (v) {
+      var o = readCode(v);
+      if (!o) return "That code didn't work.";
+      setTimeout(function () {
+        ask('This replaces your current world.', function () { applyCode(o); U.toast('Save imported.'); go(S.run ? 'room' : 'title'); }, 'Replace it');
+      }, 0);
+      return '';
+    } });
+  }
+
+  // ================= BEST RUNS =================
+  var bestSt = { sel: 0 };
+  screens.best = {
+    items: function () {
+      var rec = store.get('record', null) || newRecord();
+      return D.PRESETS.map(function (p) {
+        var list = rec[p.id] || [];
+        return { title: p.name.toUpperCase(), lines: list.length ? list.slice(0, 5).map(function (r, i) { return (i + 1) + '. ' + r.name + ', ' + r.days + ' days'; }) : ['No runs yet.'] };
+      });
+    },
+    draw: function () {
+      R(g, '#101416', 0, 0, U.W, U.H);
+      var top = U.header('BEST RUNS');
+      U.list({ x: 4, y: top + 4, w: U.W - 8, h: U.H - top - 22 }, this.items(), bestSt);
+      U.help('B back');
+    },
+    press: function (k) { if (k === 'b') go('title'); else U.listPress(k, this.items(), bestSt); }
+  };
+
+  // ================= NEW WORLD (spec 001, 3) =================
+  var worldSt = { sel: 0 };
+  function cyc(arr, cur, d) { var i = arr.indexOf(cur); return arr[(i + d + arr.length) % arr.length]; }
+  screens.world = {
+    items: function () {
+      var pr = D.PRESETS.filter(function (p) { return p.id === W0.preset; })[0];
+      return [
+        { title: 'DIFFICULTY', value: pr.name, lines: [pr.note], lr: function (d) { W0.preset = cyc(D.PRESETS.map(function (p) { return p.id; }), W0.preset, d); } },
+        { title: 'STARTING SEASON', value: W0.season, lines: [W0.season === 'Random' ? 'Picked by the world.' : W0.season === 'Summer' ? 'Gentler.' : W0.season === 'Winter' ? 'Brutal.' : 'In between.'],
+          lr: function (d) { W0.season = cyc(D.SEASONS.concat(['Random']), W0.season, d); } },
+        { title: 'SEED', value: W0.typed ? String(W0.seed) : 'Random', lines: ['A to type one.'], a: typeSeed, lr: function () { if (W0.typed) { W0.typed = false; W0.seed = (Math.random() * 1e9) | 0; rs = StudioSeed.stream(StudioSeed.hash(W0.seed + ':build')); } else typeSeed(); } },
+        { lines: ['Next: your survivor'], red: true, a: function () { toStep(0); } }
+      ];
+    },
+    draw: function () {
+      R(g, '#101416', 0, 0, U.W, U.H);
+      var top = U.header('NEW WORLD', { l: function () { go('title'); }, r: function () { toStep(0); }, steps: 9, at: 0 });
+      U.list({ x: 4, y: top + 4, w: U.W - 8, h: U.H - top - 22 }, this.items(), worldSt);
+      U.help('A pick   B back   L/R step');
+    },
+    press: function (k) {
+      if (k === 'b' || k === 'l') go('title');
+      else if (k === 'r') toStep(0);
+      else U.listPress(k, this.items(), worldSt);
+    }
+  };
+  function typeSeed() {
+    typeIn({ title: 'SEED', text: 'Type a whole number. The same seed makes the same world.', value: W0.typed ? String(W0.seed) : '', numeric: true, max: 9, ph: '12345', done: function (v) {
+      v = v.trim();
+      if (!/^\d{1,9}$/.test(v)) return 'Use digits only, up to 9.';
+      W0.seed = +v; W0.typed = true; rs = StudioSeed.stream(StudioSeed.hash(W0.seed + ':build')); B = blank(); return '';
+    } });
+  }
+
+  // ================= THE SURVIVOR BUILDER (spec 001, 4) =================
+  var STEPS = ['START FROM', 'NAME', 'JOB', 'FREE POINTS', 'TRAITS', 'WANT', 'LOOKS', 'READY'];
+  var bStep = 0, bSt = [];
+  for (var i0 = 0; i0 < 8; i0++) bSt.push({ sel: 0 });
+  // can you go on from this step? '' when yes, otherwise why not
+  function blocked(step) {
+    if (step === 1 && !B.name.trim()) return 'Give your survivor a name first.';
+    if (step === 2 && !B.job) return 'Pick a job first.';
+    if (step === 4) return D.traitProblem(B.good, B.bad);
+    return '';
+  }
+  function toStep(n) {
+    if (n > bStep && S.scr === 'build') for (var s = bStep; s < n; s++) { var why = blocked(s); if (why) { U.toast(why); return; } }
+    if (S.scr === 'world') { for (var s2 = 0; s2 < n; s2++) if (blocked(s2)) { n = s2; break; } }
+    bStep = Math.max(0, Math.min(7, n)); S.scr = 'build';
+  }
+  function stepItems(step) {
+    var it = [];
+    var rnd = function (fn, text) { return { lines: [text || 'Random'], red: true, a: fn }; };
+    if (step === 0) {
+      it.push(rnd(function () { randomAll(); toStep(1); }, 'Random survivor'));
+      it.push({ title: 'BLANK', lines: ['Make your own from scratch.'], a: function () { B = blank(); toStep(1); } });
+      D.TEMPLATES.forEach(function (t) {
+        it.push({ title: t.name.toUpperCase(), lines: [t.tag.charAt(0).toUpperCase() + t.tag.slice(1) + '. ' + D.job(t.job).name + '.'], check: B.template === t.name,
+          a: function () { useTemplate(t); toStep(1); } });
+      });
+    } else if (step === 1) {
+      it.push({ title: 'NAME', value: B.name || '—', lines: ['A to type a first name.'], a: function () {
+        typeIn({ title: 'NAME', text: 'A first name.', value: B.name, max: 14, ph: 'Rita', done: function (v) { v = v.trim().replace(/\s+/g, ' '); if (!v) return 'Type a name, or pick Random.'; B.name = v; return ''; } });
+      } });
+      it.push(rnd(function () { B.name = pick(D.NAMES); }, 'Random name'));
+    } else if (step === 2) {
+      it.push(rnd(function () { B.job = pick(D.JOBS).id; trimFree(); toStep(3); }));
+      D.JOBS.forEach(function (j) {
+        var sk = Object.keys(j.skills).map(function (k) { return skillName(k) + ' ' + j.skills[k]; }).join(', ');
+        it.push({ title: j.name.toUpperCase(), lines: [sk, j.itemText, 'Extra: ' + j.extra], check: B.job === j.id, a: function () { if (B.job !== j.id) { B.job = j.id; B.free = {}; } toStep(3); } });
+      });
+    } else if (step === 3) {
+      var s = skills(), left = freeLeft();
+      it.push({ lines: [left + ' free point' + (left === 1 ? '' : 's') + ' left. Highest start: 3' + (B.looks.age === 2 ? ' (4 in your job skill, as an older survivor)' : '') + '.'] });
+      D.SKILLS.forEach(function (k) {
+        it.push({ lines: [k.name + (B.free[k.id] ? '  +' + B.free[k.id] : '')], value: s[k.id], lr: function (d) {
+          var cur = skills()[k.id];
+          if (d > 0) {
+            if (freeLeft() <= 0) { U.toast('No free points left.'); return; }
+            if (cur >= D.skillCap(B.job, B.looks.age, k.id)) { U.toast(k.name + " can't start higher."); return; }
+            B.free[k.id] = (B.free[k.id] || 0) + 1;
+          } else if (B.free[k.id]) { B.free[k.id]--; if (!B.free[k.id]) delete B.free[k.id]; }
+        } });
+      });
+      it.push(rnd(randomFree, 'Random points'));
+      it.push({ lines: ['Take the points back'], a: function () { B.free = {}; } });
+    } else if (step === 4) {
+      var gp = D.traitSum(B.good), bp = D.traitSum(B.bad);
+      it.push({ lines: ['Good points ' + gp + ' of ' + bp + '. Good traits ' + B.good.length + ' of 3.'], red: gp > bp });
+      it.push(rnd(randomTraits, 'Random traits'));
+      [['GOOD', D.GOOD, 'good'], ['BAD', D.BAD, 'bad']].forEach(function (L) {
+        L[1].forEach(function (t) {
+          var on = B[L[2]].indexOf(t.id) >= 0;
+          it.push({ title: t.name.toUpperCase() + (L[2] === 'good' ? '  -' : '  +') + t.cost, lines: [t.text], check: on, a: function () { toggleTrait(t, L[2]); } });
+        });
+      });
+    } else if (step === 5) {
+      it.push(rnd(function () { B.want = pick(D.WANTS).id; toStep(6); }));
+      D.WANTS.forEach(function (w) { it.push({ title: w.name.toUpperCase(), lines: [w.text], check: B.want === w.id, a: function () { B.want = w.id; toStep(6); } }); });
+    } else if (step === 6) {
+      it.push(rnd(randomLooks, 'Random looks'));
+      D.LOOK_ROWS.forEach(function (r) {
+        var opts = D.LOOKS[r[0]];
+        it.push({ lines: [r[1]], value: r[0] === 'colors' ? 'Set ' + (B.looks.colors + 1) : opts[B.looks[r[0]]], lr: function (d) {
+          B.looks[r[0]] = (B.looks[r[0]] + d + opts.length) % opts.length; if (r[0] === 'age') trimFree();
+        } });
+      });
+      it.push({ lines: ['Older: +1 in the job skill (it can reach 4), and the sleep bar drops 10% faster.'], dim: true });
+    } else if (step === 7) {
+      var left7 = freeLeft();
+      it.push({ title: 'START', lines: ['One life. Death ends this world.'], a: function () {
+        for (var s = 0; s < 7; s++) { var why = blocked(s); if (why) { U.toast(why); return; } }
+        ask('Start this world? You only get one life.', startWorld, 'Start');
+      } });
+      if (left7 > 0) it.push({ lines: [left7 + ' free point' + (left7 === 1 ? ' is' : 's are') + ' not spent. L to go back.'], red: true });
+    }
+    return it;
+  }
+  function toggleTrait(t, side) {
+    var list = B[side], i = list.indexOf(t.id);
+    if (i >= 0) { list.splice(i, 1); return; }
+    if (side === 'good' && list.length >= 3) { U.toast('Up to 3 good traits.'); return; }
+    var all = B.good.concat(B.bad);
+    if (t.opp && all.indexOf(t.opp) >= 0) { U.toast(t.name + ' and ' + D.TRAITS[t.opp].name + " can't go together."); return; }
+    list.push(t.id);
+  }
+  function skillName(id) { for (var i = 0; i < D.SKILLS.length; i++) if (D.SKILLS[i].id === id) return D.SKILLS[i].name; return id; }
+
+  // the top panel: the taped photo, the map sprite at 2x on its shadow, and a summary in marker (mockup 05)
+  function drawPanel(y, h, sv) {
+    LA.cardboard(g, 4, y, U.W - 8, h);
+    var big = h >= 88;
+    var por = portraitOf(sv, 'ok');
+    if (big) LA.photo(g, 10, y + 6, por, sv.name || '?');
+    else { R(g, '#ece6d8', 8, y + 5, 44, 44); g.drawImage(por, 10, 4, 48, 48, 9, y + 6, 42, 42); LA.tape(g, 4, y + 3, 12, 4); }
+    var sp = spriteOf(sv, 'down', 0), sx = big ? 88 : 56, sw = big ? 36 : 18;
+    g.fillStyle = 'rgba(60,40,20,.35)'; g.beginPath(); g.ellipse(sx + sw / 2, y + (big ? 81 : 46), big ? 13 : 7, big ? 4 : 2, 0, 0, 7); g.fill();
+    g.drawImage(sp, 0, 0, 18, 30, sx, y + (big ? 23 : 15), sw, big ? 60 : 30);
+    var tx = big ? 130 : 80, j = D.job(sv.job);
+    U.text(j ? j.name.toUpperCase() : 'NO JOB YET', tx, y + 9, F8, P.markR);
+    var s = D.skillsOf(sv.job, sv.looks.age, sv.free), rows = D.SKILLS.filter(function (k) { return s[k.id] > 0; }).map(function (k) { return k.name + ' ' + s[k.id]; });
+    if (!big) rows = [rows.join(', ')];
+    g.font = F16;
+    var lines = []; rows.forEach(function (r) { lines = lines.concat(LA.wrap(g, r, U.W - tx - 10)); });
+    var max = Math.floor((h - 24) / 12);
+    lines.slice(0, max).forEach(function (l, i) { U.text(l, tx, y + 19 + i * 12, F16, P.marker); });
+    if (!big && sv.name) U.text(sv.name, tx, y + h - 15, F16, P.markR);
+  }
+  // the party card's look on the Ready step and the Party screen: photo, name, job, bars, traits and want
+  screens.build = {
+    draw: function () {
+      R(g, '#101416', 0, 0, U.W, U.H);
+      var top = U.header('STEP ' + (bStep + 1) + ' OF 8 · ' + STEPS[bStep], { l: function () { press('l'); }, r: function () { press('r'); }, rDim: bStep === 7, steps: 9, at: bStep + 1 });
+      var ph = U.H >= 290 ? 92 : 56;
+      drawPanel(top + 4, ph, B);
+      var items = stepItems(bStep), ly = top + ph + 9;
+      if (bStep === 7) { ly = drawReady(ly); }
+      U.list({ x: 4, y: ly, w: U.W - 8, h: U.H - ly - 16 }, items, bSt[bStep]);
+      U.help(bStep === 7 ? 'A start   B back   L step' : 'A pick   B back   L/R step');
+    },
+    press: function (k) {
+      if (k === 'l' || k === 'b') { if (bStep === 0) go('world'); else bStep--; return; }
+      if (k === 'r') { if (bStep < 7) toStep(bStep + 1); return; }
+      U.listPress(k, stepItems(bStep), bSt[bStep]);
+    }
+  };
+  // the Ready step: the world's preset, season and seed, the traits and the want, over the Start card
+  function drawReady(y) {
+    var pr = D.PRESETS.filter(function (p) { return p.id === W0.preset; })[0];
+    var w = D.want(B.want);
+    var lines = [
+      'World: ' + pr.name + ', ' + (W0.season === 'Random' ? 'random season' : W0.season) + ', seed ' + W0.seed,
+      'Traits: ' + (B.good.concat(B.bad).map(function (t) { return D.TRAITS[t].name; }).join(', ') || 'none'),
+      'Want: ' + (w ? w.name : 'random')
+    ];
+    g.font = F16;
+    var all = []; lines.forEach(function (l) { all = all.concat(LA.wrap(g, l, U.W - 28)); });
+    var h = 8 + all.length * 13;
+    LA.cardboard(g, 4, y, U.W - 8, h);
+    all.forEach(function (l, i) { U.text(l, 12, y + 3 + i * 13, F16, P.marker); });
+    return y + h + 5;
+  }
+
+  // ================= THE STAND-IN ROOM (spec 001, 7) =================
+  // A small bedroom: a bed, a window, a closed door. Walk, open the party card and the Start menu, nothing else.
+  var ROOM = [
+    '###############',
+    '#WWWWWwwWWWWWW#',
+    '#bbn....ddd..k#',
+    '#bb..........k#',
+    '#bb...........#',
+    '#.....rrrr..tt#',
+    '#.....rrrr..h.#',
+    '#.............#',
+    '#c..........x.#',
+    '#.............#',
+    '#######D#######'
+  ];
+  var RW = ROOM[0].length, RH = ROOM.length, T = 16;
+  function solid(x, y) { if (x < 0 || y < 0 || x >= RW || y >= RH) return true; var c = ROOM[y][x]; return c !== '.' && c !== 'r'; }
+  var mv = { held: [] }, me = {}, roomMenu = null, roomNote = null, menuSt = { sel: 0 };
+  var roomCache = null;
+  // the bedroom, drawn once: lit from the window (upper middle), hard shadows to the lower right, flat tones, no grain
+  function drawRoomTiles() {
+    var c = document.createElement('canvas'); c.width = RW * T; c.height = RH * T;
+    var r = c.getContext('2d'); r.imageSmoothingEnabled = false;
+    var vol = LA.vol, box = LA.box, px = LA.px, W = c.width, H = c.height;
+    var shade = function (x, y, w, h) { r.fillStyle = 'rgba(10,12,14,.34)'; r.fillRect(x, y, w, h); };
+    var wood = ['#9a7448', '#84603a', '#6a4a2e', '#4e3622'];
+    // floor: worn planks, a tone apart from clothes
+    var plank = ['#8a6a48', '#7a5c3e', '#6a4e34', '#5a422c'];
+    R(r, plank[1], 0, 0, W, H);
+    for (var y = 2 * T; y < H; y += 4) { R(r, plank[2], 0, y + 3, W, 1); for (var x = ((y / 4) % 3) * 13; x < W; x += 37) R(r, plank[3], x, y, 1, 3); }
+    [[40, 58, 22], [150, 74, 18], [70, 140, 26], [196, 132, 16], [30, 118, 14]].forEach(function (s) { R(r, plank[0], s[0], s[1], s[2], 1); });
+    R(r, plank[2], 170, 150, 10, 2); R(r, plank[3], 58, 98, 6, 2);
+    // the window's light falls down and to the right across the floor
+    r.fillStyle = 'rgba(232,208,160,.16)'; r.beginPath(); r.moveTo(96, 32); r.lineTo(128, 32); r.lineTo(162, 104); r.lineTo(118, 104); r.fill();
+    // walls: the back wall's face, papered, with a rail; the side and bottom walls seen from above
+    var wall = ['#9a9e8a', '#868a76', '#6e7262', '#545848'];
+    R(r, wall[1], 0, 0, W, 2 * T);
+    for (var wx = 4; wx < W; wx += 8) R(r, wall[2], wx, 4, 1, 18);
+    R(r, wall[0], 0, 0, W, 2); R(r, '#6a5a40', 0, 22, W, 2); R(r, '#8a7650', 0, 22, W, 1); R(r, wall[3], 0, 30, W, 2);
+    R(r, '#2e302a', 0, 0, T, H); R(r, '#3e4038', T - 2, 2 * T, 2, H); R(r, '#2e302a', W - T, 0, T, H); R(r, '#24261f', W - T, 2 * T, 2, H);
+    R(r, '#2e302a', 0, (RH - 1) * T, W, T); R(r, '#3e4038', 0, (RH - 1) * T, W, 2);
+    // the window: morning outside over a field, a cracked pane, a curtain
+    R(r, '#3e3a30', 96, 4, 32, 22); R(r, '#8a9a98', 98, 6, 28, 8); R(r, '#e8d0a0', 98, 14, 28, 2); R(r, '#5e6444', 98, 16, 28, 8);
+    R(r, '#3e3a30', 111, 6, 2, 18); R(r, '#3e3a30', 98, 14, 28, 1);
+    px(r, '#f0ece0', 102, 8); px(r, '#f0ece0', 103, 9); px(r, '#f0ece0', 104, 9); px(r, '#f0ece0', 105, 10);
+    R(r, '#8a4028', 92, 3, 6, 25); R(r, '#b4582e', 92, 3, 2, 25); R(r, '#6a3424', 96, 3, 2, 25);
+    // a poster, half torn; a calendar stuck on a month that never ended; a clock that stopped
+    R(r, '#3a5068', 58, 6, 14, 15); R(r, '#e8c88a', 60, 8, 10, 3); R(r, '#c8503a', 61, 13, 8, 5); R(r, wall[1], 66, 17, 6, 4);
+    R(r, '#e8e4d8', 150, 7, 12, 14); R(r, '#c8503a', 150, 7, 12, 3); for (var k = 0; k < 9; k++) px(r, '#6e6a62', 152 + (k % 3) * 3, 12 + Math.floor(k / 3) * 3);
+    vol(r, 186, 12, 5, 5, ['#e8e4d8', '#c8c4b4', '#a8a494', '#7e7a6c']); R(r, '#1c1a18', 186, 9, 1, 4); R(r, '#1c1a18', 186, 12, 3, 1);
+    // the bed: a frame, the quilt thrown back, a pillow
+    shade(20, 40, 32, 42);
+    box(r, 17, 34, 30, 44, ['#8a6040', '#74502e', '#5e4024', '#44301c']);
+    R(r, '#e8e4d8', 19, 36, 26, 8); R(r, '#c8c4b4', 19, 42, 26, 2);
+    box(r, 19, 50, 26, 26, ['#7e9a96', '#5a7472', '#46605e', '#34484a']);
+    R(r, '#8aa8a4', 19, 50, 26, 1); for (var q = 21; q < 44; q += 6) R(r, '#46605e', q, 52, 1, 23);
+    R(r, '#5a7472', 28, 46, 16, 5); R(r, '#7e9a96', 28, 46, 16, 1);
+    // the nightstand with a dead lamp
+    shade(52, 38, 14, 12); box(r, 49, 34, 14, 13, wood); R(r, wood[3], 51, 40, 10, 1); px(r, '#e8d08a', 55, 42);
+    vol(r, 56, 30, 4, 3, ['#e8e0c8', '#c8c0aa', '#a8a08a', '#7a7462']); R(r, '#5e5a54', 55, 33, 2, 2);
+    // the dresser, a drawer pulled out, a photo frame face down and a radio on top
+    shade(132, 40, 48, 14); box(r, 129, 30, 46, 18, wood);
+    for (var d = 0; d < 3; d++) { R(r, wood[3], 131 + d * 15, 36, 13, 1); R(r, wood[3], 131 + d * 15, 42, 13, 1); px(r, '#e8d08a', 137 + d * 15, 39); }
+    box(r, 146, 44, 13, 6, wood); R(r, '#e8e4d8', 148, 45, 9, 2);
+    R(r, '#e8e4d8', 133, 26, 8, 4); box(r, 160, 24, 10, 6, ['#5e6e7e', '#465464', '#34404c', '#242c34']); px(r, '#c8c4b4', 162, 26);
+    // a bookshelf by the right wall, half emptied
+    shade(212, 36, 12, 32); box(r, 208, 28, 14, 36, wood);
+    for (var sy = 34; sy < 62; sy += 9) { R(r, wood[3], 210, sy, 10, 1); for (var bk = 0; bk < 3; bk++) if ((sy + bk) % 4) R(r, ['#8a4028', '#3a5068', '#5e6444', '#a8984e'][(sy + bk) % 4], 211 + bk * 3, sy - 6, 2, 6); }
+    // a table and a chair, a mug and a newspaper left on it
+    shade(196, 90, 34, 14); box(r, 193, 84, 30, 14, wood); R(r, '#ece6d8', 197, 86, 10, 7); R(r, '#6e6a62', 198, 88, 8, 1); R(r, '#6e6a62', 198, 90, 6, 1);
+    vol(r, 214, 88, 3, 3, ['#e8e0c8', '#c8503a', '#8a4028', '#6a3424']);
+    box(r, 198, 98, 2, 10, wood); box(r, 216, 98, 2, 10, wood);
+    shade(198, 106, 14, 6); box(r, 196, 100, 12, 10, wood); R(r, wood[0], 196, 100, 12, 1);
+    // a moving box, a tipped trash bin
+    shade(20, 136, 14, 10); box(r, 17, 128, 14, 12, ['#d2ac74', '#c09a64', '#a6824e', '#86683c']); R(r, '#a8aca8', 17, 133, 14, 2); R(r, '#1c1a18', 20, 130, 6, 1);
+    box(r, 194, 130, 10, 10, ['#9aa0a0', '#7e8484', '#626868', '#464a4a']); R(r, '#e8e4d8', 188, 136, 5, 3); px(r, '#c8503a', 190, 140); R(r, '#c8c4b4', 184, 142, 4, 2);
+    // the rug: a braided oval in flat rings
+    [['#7a3e26', 34, 17], ['#a8583a', 28, 13], ['#c8a050', 19, 8], ['#8a4028', 9, 4]].forEach(function (o) { r.fillStyle = o[0]; r.beginPath(); r.ellipse(128, 96, o[1], o[2], 0, 0, 7); r.fill(); });
+    // things dropped on the floor: a shirt, a shoe, a magazine, a backpack strap, a spilled pill bottle
+    R(r, '#5e7aa0', 150, 118, 9, 5); R(r, '#46647e', 148, 119, 3, 3); R(r, '#46382c', 70, 122, 5, 2); R(r, '#46382c', 76, 124, 5, 2);
+    R(r, '#e8c88a', 40, 92, 10, 7); R(r, '#c8503a', 41, 93, 8, 2); R(r, '#ece6d8', 90, 150, 6, 3); px(r, '#e8e4d8', 97, 151); px(r, '#e8e4d8', 99, 152);
+    // the closed door in the bottom wall, the knob lit, a towel shoved under it
+    R(r, wood[3], 110, 160, 20, 16); box(r, 112, 160, 16, 15, wood);
+    R(r, wood[2], 114, 162, 12, 5); R(r, wood[2], 114, 169, 12, 5); px(r, '#e8d08a', 125, 167); R(r, '#c8c4b4', 112, 158, 16, 2);
+    return c;
+  }
+  screens.room = {
+    enter: function () {
+      var m = S.run.map, open = function (x, y) { return !solid(x, y); };
+      var at = solid(m.x, m.y) ? StudioMove.nearestOpen(m.x, m.y, RW, RH, open) : [m.x, m.y];
+      StudioMove.place(me, at[0], at[1], m.dir || 'down'); mv.held = []; roomMenu = null;
+      if (!S.run.seen.intro) roomNote = ["Weeks since it started.", "It's quiet out there."];
+      if (!S.dice) S.dice = StudioSeed.load(S.run.dice);
+      save();
+    },
+    tick: function () {
+      if (roomMenu || roomNote || S.ask) return;
+      StudioMove.update(me, StudioMove.last(mv.held), {
+        passable: function (x, y) { return !solid(x, y); },
+        busy: function () { return false; },
+        arrive: function () { S.run.map.x = me.x; S.run.map.y = me.y; S.run.map.dir = me.dir; save(); }
+      });
+      if (!me.mv) S.run.map.dir = me.dir;
+    },
+    draw: function (now) {
+      var W = U.W, H = U.H, sv = S.run.surv;
+      R(g, '#24261f', 0, 0, W, H);
+      if (!roomCache) roomCache = drawRoomTiles();
+      // the room sits under the top bar card
+      var top = 62, cam = StudioMove.camera(me, RW, RH, W, H - top), ox = -cam[0], oy = top - cam[1];
+      g.drawImage(roomCache, ox, oy);
+      // dust turning in the window light (something moves besides you)
+      for (var i = 0; i < 7; i++) { var t = now / 1000 + i * 1.7, my = 36 + ((i * 23 + t * 4) % 64), mx = 100 + (my - 32) * .5 + ((i * 37 + t * 3) % 28); LA.px(g, 'rgba(240,230,200,.55)', ox + Math.round(mx), oy + Math.round(my)); }
+      // the survivor on a soft shadow
+      var step = StudioMove.walkFrame(me), sp = spriteOf(sv, me.dir, step);
+      var sx = ox + me.px - 1, sy = oy + me.py - 14;
+      LA.shadow(g, sx + 9, sy + 28, 6, .38);
+      g.drawImage(sp, sx, sy);
+      // the top bar card (mockup 04): face, the four bars, day, clock and season; the place on a tab under it
+      var n = sv.needs, hm = S.run.clock.min, hh = Math.floor(hm / 60), mm = hm % 60;
+      var clk = ((hh + 11) % 12 + 1) + ':' + (mm < 10 ? '0' : '') + mm + (hh < 12 ? ' AM' : ' PM');
+      var hh2 = LA.hud(g, W, { portrait: portraitOf(sv, moodOf(n)), food: n.hunger, hp: n.health, rest: n.sleep, san: n.san, day: S.run.clock.day, clock: clk, season: S.run.season.toUpperCase(), seasonCol: { Spring: '#8aa850', Summer: '#c8a050', Fall: '#c87a3a', Winter: '#a8c4d0' }[S.run.season] });
+      g.font = F12; var tab = 'BEDROOM', tw = g.measureText(tab).width + 8;
+      R(g, '#14181a', 3, hh2 + 1, tw, 11); R(g, '#4e5854', 3, hh2 + 11, tw, 1); U.text(tab, 7, hh2 + 1, F12, P.dim);
+      U.hit(0, 0, W, H, function (x, y) { tapWalk(x - ox, y - oy); });
+      if (roomNote) { U.narrate(roomNote); U.hit(0, 0, W, H, function () { closeNote(); }); }
+      if (roomMenu) drawRoomMenu();
+    },
+    press: function (k) {
+      if (roomNote) { if (k === 'a' || k === 'b' || k === 'start') closeNote(); return; }
+      if (roomMenu) { roomMenuPress(k); return; }
+      if (k === 'start') { roomMenu = 'menu'; menuSt.sel = 0; mv.held = []; return; }
+      if (k === 'select') { U.toast("No one's with you."); return; }
+      // L and R do nothing until Part B adds the bag and the map screens
+    },
+    hold: function (dir, on) { if (roomMenu || roomNote) { mv.held = []; return; } mv.held = StudioMove.hold(mv.held, dir, on); }
+  };
+  function closeNote() { roomNote = null; S.run.seen.intro = true; save(); }
+  // a tap on the floor walks one step toward it
+  function tapWalk(x, y) {
+    var tx = Math.floor(x / T), ty = Math.floor(y / T), dx = tx - me.x, dy = ty - me.y;
+    if (!dx && !dy) return;
+    var dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+    mv.held = [dir]; setTimeout(function () { mv.held = []; }, 120);
+  }
+  // the Start menu (Part A: Party, Save code, Quit to title)
+  function menuItems() {
+    if (roomMenu === 'code') return [
+      { lines: ['Export'], a: function () { save(); typeIn({ title: 'EXPORT', text: 'Copy this code and keep it somewhere safe. Import it to get this world back.', area: true, readonly: true, copy: true, value: exportCode() }); } },
+      { lines: ['Import'], a: importSave }
+    ];
+    return [
+      { lines: ['Party'], a: function () { roomMenu = null; go('party'); } },
+      { lines: ['Save code'], a: function () { roomMenu = 'code'; codeSt.sel = 0; } },
+      { lines: ['Quit to title'], a: function () { save(); roomMenu = null; go('title'); } }
+    ];
+  }
+  var codeSt = { sel: 0 };
+  function drawRoomMenu() {
+    var items = menuItems(), st = roomMenu === 'code' ? codeSt : menuSt, h = items.length * 23 + 10, w = 116;
+    R(g, 'rgba(8,10,12,.45)', 0, 0, U.W, U.H);
+    U.hit(0, 0, U.W, U.H, function () { roomMenuPress('b'); });
+    if (roomMenu === 'code') U.text('SAVE CODE', U.W - w - 6, 52, F8, P.warm);
+    U.list({ x: U.W - w - 6, y: 62, w: w, h: h }, items, st);
+  }
+  function roomMenuPress(k) {
+    var st = roomMenu === 'code' ? codeSt : menuSt;
+    if (k === 'b' || k === 'start') { roomMenu = roomMenu === 'code' ? 'menu' : null; return; }
+    U.listPress(k, menuItems(), st);
+  }
+
+  // ================= THE PARTY CARD (spec 001, 6; ui.md, Party menu, one fixed lead) =================
+  var plist = StudioParty.list({
+    count: function () { return 1; }, lead: function () { return 0; }, cycle: function () {},
+    actions: function () { return []; }, close: function () { go('room'); }, pulse: function () { return S.run.surv.needs.health < 25; },
+    headerH: 16, cardH: 84, detailMin: 60,
+    paint: {
+      header: function (c, r) { U.text('PARTY', r.x + 2, r.y + 4, F8, P.warm); U.text('A details   B back', r.x + r.w - U.width('A details   B back', F12), r.y + 2, F12, P.dim); },
+      card: function (c, i, r, st) {
+        var sv = S.run.surv, n = sv.needs, j = D.job(sv.job);
+        LA.cardboard(c, r.x, r.y, r.w, r.h);
+        if (st.on) { c.strokeStyle = P.cyan; c.lineWidth = 2; c.strokeRect(r.x - 1, r.y - 1, r.w + 2, r.h + 2); }
+        // the portrait at 2x of the top bar's face, on its lit backing
+        R(c, '#ece6d8', r.x + 8, r.y + 6, 40, 40); c.drawImage(portraitOf(sv, moodOf(n)), 12, 6, 44, 44, r.x + 10, r.y + 8, 36, 36); LA.tape(c, r.x + 5, r.y + 4, 12, 4);
+        U.text(sv.name.toUpperCase(), r.x + 54, r.y + 7, F8, P.markR);
+        U.text(j.name, r.x + 54, r.y + 16, F16, P.marker);
+        var bars = [['food', 'FOOD', n.hunger, '#d06a3a'], ['hp', 'HP', n.health, '#c8503a'], ['rest', 'REST', n.sleep, '#a88a40'], ['san', 'SAN', n.san, '#2ab8b0']];
+        bars.forEach(function (b, k) {
+          var bx = r.x + 54 + (k % 2) * 82, by = r.y + 34 + Math.floor(k / 2) * 12;
+          LA.icon(c, b[0], bx, by, b[3]); U.text(b[1], bx + 9, by - 2, F12, P.marker);
+          R(c, '#86683c', bx + 32, by + 1, 42, 5); R(c, b[3], bx + 32, by + 1, Math.round(42 * b[2] / 100), 5);
+        });
+        U.text(sv.wounds.length ? sv.wounds.length + ' wounds' : 'No wounds', r.x + 10, r.y + 62, F16, P.marker);
+        var pr = D.PRESETS.filter(function (p) { return p.id === S.run.preset; })[0];
+        U.text(pr.name, r.x + r.w - 10 - U.width(pr.name, F16), r.y + 62, F16, P.markR);
+      },
+      detail: function (c, r) {
+        var sv = S.run.surv, w = D.want(sv.want);
+        LA.cardboard(c, r.x, r.y + 4, r.w, r.h - 4);
+        var lines = [];
+        c.font = F16;
+        ['Good: ' + (sv.traits.good.map(function (t) { return D.TRAITS[t].name; }).join(', ') || 'none'),
+          'Bad: ' + (sv.traits.bad.map(function (t) { return D.TRAITS[t].name; }).join(', ') || 'none'),
+          'Want: ' + w.name + '. ' + w.text, 'Job extra: ' + D.job(sv.job).extra].forEach(function (l) { lines = lines.concat(LA.wrap(c, l, r.w - 16)); });
+        lines.forEach(function (l, i) { if (10 + i * 13 < r.h - 8) U.text(l, r.x + 8, r.y + 9 + i * 13, F16, P.marker); });
+      }
+    },
+    colors: { box: '#101416', border: P.line, shadow: 'rgba(0,0,0,.4)', on: P.cardHi, text: P.text, dim: P.dim, cursor: P.cyan },
+    font: F16
+  });
+  screens.party = {
+    enter: function () { plist.reset(0); },
+    draw: function (now) {
+      R(g, '#101416', 0, 0, U.W, U.H);
+      plist.draw(g, U.W, U.H, now);
+      U.hit(0, 0, U.W, U.H, function (x, y) { if (y > 20 && y < 112) go('detail'); });
+      U.hit(0, 0, 80, 20, function () { go('room'); });
+    },
+    press: function (k) { if (k === 'a') go('detail'); else if (k === 'start') go('room'); else plist.press(k); }
+  };
+  // the detail page: all 8 skills with their level, abilities unlocked, and the world's preset, season and seed
+  var detSt = { sel: 0 };
+  screens.detail = {
+    enter: function () { detSt.sel = 0; detSt.off = 0; },
+    items: function () {
+      var sv = S.run.surv, out = [];
+      D.SKILLS.forEach(function (k) {
+        var lv = sv.skills[k.id], ab = D.ABILITIES[k.id], got = lv >= 5 ? ab.join(', ') : lv >= 3 ? ab[0] : '';
+        out.push({ lines: [k.name].concat(got ? ['Can: ' + got] : []), value: lv });
+      });
+      var pr = D.PRESETS.filter(function (p) { return p.id === S.run.preset; })[0];
+      out.push({ title: 'THE WORLD', lines: [pr.name + '. Started in ' + S.run.startSeason.toLowerCase() + (S.run.seasonPick === 'Random' ? ' (random)' : '') + '.', 'Seed ' + S.run.seed] });
+      return out;
+    },
+    draw: function () {
+      R(g, '#101416', 0, 0, U.W, U.H);
+      var top = U.header(S.run.surv.name.toUpperCase() + ' · SKILLS');
+      U.list({ x: 4, y: top + 4, w: U.W - 8, h: U.H - top - 22 }, this.items(), detSt);
+      U.help('B back');
+      U.hit(0, 0, 60, 20, function () { go('party'); });
+    },
+    press: function (k) { if (k === 'b' || k === 'a') go('party'); else if (k === 'start') go('room'); else U.listPress(k, this.items(), detSt); }
+  };
+
+  // ================= start up =================
+  openSaves();
+  S.run = store.get('run', null);
+  if (S.run) S.dice = StudioSeed.load(S.run.dice);
+  if (!store.get('record', null)) store.set('record', newRecord());
+  StudioInput.start({
+    press: press,
+    walking: function () { return S.scr === 'room' && !roomMenu && !roomNote && !S.ask && !ovl.classList.contains('on'); },
+    hold: function (dir, on) { if (S.scr === 'room') screens.room.hold(dir, on); }
+  });
+  window.addEventListener('pagehide', save);
+  document.addEventListener('visibilitychange', function () { if (document.hidden) save(); });
+
+  function boot() {
+    resize();
+    if (S.run && Studio.continued) go('room'); else go('title');
+    requestAnimationFrame(frame);
+  }
+  var fonts = document.fonts ? Promise.all([document.fonts.load(F16), document.fonts.load(F8), document.fonts.load('16px "Press Start 2P"')]) : Promise.resolve();
+  var booted = false; var once = function () { if (!booted) { booted = true; boot(); } };
+  fonts.then(once, once); setTimeout(once, 1500);
+
+  // ================= test hooks (tools/check.js) =================
+  window.LAG = {
+    VERSION: VERSION, key: key, store: store, exportCode: exportCode, readCode: readCode, applyCode: applyCode,
+    _t: {
+      S: function () { return S; }, B: function () { return B; }, W0: function () { return W0; }, step: function () { return bStep; },
+      scr: function () { return S.scr; }, go: go, me: function () { return me; }, ask: function () { return S.ask; },
+      menu: function () { return roomMenu; }, note: function () { return roomNote; },
+      // make a world straight from settings, through the same builder steps the screens use
+      make: function (o) {
+        newWorld();
+        W0.preset = o.preset || 'standard'; W0.season = o.season || 'Random';
+        if (o.seed != null) { W0.seed = o.seed; W0.typed = true; rs = StudioSeed.stream(StudioSeed.hash(W0.seed + ':build')); }
+        if (o.template === 'blank' || !o.template) B = blank(); else if (o.template === 'random') randomAll(); else useTemplate(D.TEMPLATES.filter(function (t) { return t.name === o.template; })[0]);
+        if (o.name) B.name = o.name; if (o.job) { B.job = o.job; B.free = {}; }
+        if (o.free) B.free = o.free; if (o.good) B.good = o.good; if (o.bad) B.bad = o.bad; if (o.want) B.want = o.want; if (o.looks) Object.assign(B.looks, o.looks);
+        if (o.randomPoints) randomFree(); if (o.randomTraits) randomTraits(); if (o.randomLooks) randomLooks();
+        for (var s = 0; s < 7; s++) { var why = blocked(s); if (why) return { ok: false, why: why, step: s }; }
+        startWorld(); return { ok: true, run: JSON.parse(JSON.stringify(S.run)) };
+      },
+      blocked: blocked, toStep: toStep, items: function () { return stepItems(bStep); }, ovl: function () { return LAG._ovl; }
+    }
+  };
+})();
+
+</script>
+</body></html>

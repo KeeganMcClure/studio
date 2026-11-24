@@ -29,11 +29,13 @@ One item per chat, in order, biggest open decisions first. The Designer ticks th
 - [x] Other survivors and trade: group types, starting moods, what they remember, and barter values (Nov 23). See `survivors.md`.
 - [x] Weather and events: the first list, how often each comes, and how sure the warnings are (Nov 23). See `weather.md`.
 - [x] Difficulty presets: what Gentle, Standard and Harsh change, in numbers (Nov 23). See The run, Difficulty presets.
-- [ ] Cover: 120 × 80 cover art (`studio-bible/launcher.md`). The Developer adds `game.json` when the game is ready for the shelf. Design picked Nov 22: Boarded window (see Art, Cover). Left to build: `assets/cover.js` drawn from `mockups/03-cover-b-rough-v2.html`.
+- [x] Cover: 120 × 80 cover art (`studio-bible/launcher.md`). The Developer adds `game.json` when the game is ready for the shelf. Design picked Nov 22: Boarded window (see Art, Cover). Left to build: `assets/cover.js` drawn from `mockups/03-cover-b-rough-v2.html`.
+  Done Nov 24: `assets/cover.js` draws the Boarded window cover, and `game.json` puts Life After on the Dev shelf.
 - [x] Spec 001: the first playable slice, cited against this bible. Set Nov 21: survive a week alone. A small generated town (the houses and highway strip sections), the survivor builder with all 12 jobs, scavenging, hunger and sleep, map combat with the noise ring, day and night, one hideout and the death screen. No companions yet. Written Nov 23 in four parts, `specs/001` to `004`.
 - [x ] Look check before the build (studio rules from Rushlight's look lessons, Nov 23): Keegan approves the street by day and night (`mockups/04-look-street-rough-v2`), the survivor builder (`05-look-builder-rough-v2`) and the sprite reference (`06-sprite-reference-rough-v3`). Together they set the palette hex codes, the top bar card, the menu surface and the sprite bar (see Art, Look bar). Build part A starts after this is ticked.
   Done Nov 23: Keegan approved the v2 mockups by merging studio PR #170. The palette, top bar card, cardboard menu surface and sprite reference are set; build part A can start.
-- [ ] Build slice part A, a new world: the game folder, title, world setup, the survivor builder, saves and the save code (`specs/001-slice-a-new-world.md`).
+- [x] Build slice part A, a new world: the game folder, title, world setup, the survivor builder, saves and the save code (`specs/001-slice-a-new-world.md`).
+  Done Nov 24: the title, New world, the 8-step survivor builder, the party card, the stand-in room, saves and the save code are built and on the Dev shelf.
 - [ ] Build slice part B, the town: the two sections, the clock, day and night, searching, locks, the bag, items, crafting, the notebook and the map screen (`specs/002-slice-b-the-town.md`).
 - [ ] Build slice part C, survival and fights: needs, SAN, wounds, infection, zombies, fights, noise, sight and sneaking (`specs/003-slice-c-survival-and-fights.md`).
 - [ ] Build slice part D, the hideout and the end: claiming, builds, sleep, night attacks, the death screen and best runs (`specs/004-slice-d-hideout-and-death.md`).
