@@ -120,7 +120,7 @@ gleaner:{name:'The Gleaner',w:100,h:128,trait:'A harvest stood up on a stake. It
  L.r(8,22+f,3,26,'#5e4630');L.r(89,22-f,3,26,'#5e4630');
  for(const [s,x0,ff] of [[-1,9,f],[1,90,-f]]){for(let k=0;k<14;k++){const a=k/13*Math.PI*.9,x=x0+s*Math.round(Math.sin(a)*12),y=22+ff-Math.round(Math.cos(a)*9)+4;L.r(x,y,2,2,bl)}L.p(x0+s*2,17+ff,'#e8dcc0')}
  L.r(40,38,20,8,'#5a4418');for(let i=0;i<10;i++)L.r(38+i*2+(i%2),36+(i%3),1,6,i%2?st:sd);
- L.e(50,20,19,21,'#5e4630');L.e(49,19,18,20,'#8a6a44');for(let y=0;y<40;y++)for(let x=31;x<68;x++)if(L.g(x,y)==='#8a6a44'&&(x*3+y*5)%7===0)L.p(x,y,'#a3825a');
+ L.e(50,20.5,19,20.5,'#5e4630');L.e(49,19.5,18,19.5,'#8a6a44');for(let y=0;y<40;y++)for(let x=31;x<68;x++)if(L.g(x,y)==='#8a6a44'&&(x*3+y*5)%7===0)L.p(x,y,'#a3825a');
  L.r(60,6,7,28,'#5e4630');
  [[34,4],[38,1],[44,0],[52,0],[58,2],[63,5]].forEach(([x,y],i)=>L.r(x,y,1,4+(i%3),st));
  L.r(38,8,24,26,K);L.r(40,10,20,22,gl);L.e(50,21,ph2?6:5,ph2?9:7+f,fl);L.e(50,23,2,ph2?6:3+f,'#ffffff');
