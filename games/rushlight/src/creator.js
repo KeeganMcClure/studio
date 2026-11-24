@@ -144,7 +144,7 @@ V.title=()=>({rows:[
  ...(ledgerHas()?[R_('Ledger',{a:()=>{S.ledgerOpen={company:0,from:'title'};goto('ledger')}})]:[]),
  R_('Import',{a:()=>{S.importIn='';S.importBad=false;goto('import')}}),
  ...(window.Studio&&Studio.fromShelf?[R_('Game shelf',{val:'◀',a:()=>Studio.toShelf()})]:[]),
- ST(`<div class="small" style="text-align:center;margin-top:6px">Keyboard: arrows · Z = A · X = B · Q/W = L/R · Enter = Start</div>`)],foot:'A: SELECT'});
+ ST(`<div class="small hint" style="text-align:center;margin-top:6px">Keyboard: arrows · Z = A · X = B · Q/W = L/R · Enter = Start</div>`)],foot:'A: SELECT'});
 function newRun(){
  const d=store.get(K('draft'),null);
  const fresh=()=>{if(runSaved())ask('This ends the run you have. The ledger stays.',()=>{abandonRun();toSeed()},()=>goto('title'),['End it','Keep it']);else toSeed()};
@@ -176,7 +176,8 @@ function seatCard(i){const d=S.draft,c=d.seats[i],tr=c&&tradeOf(c.trade),on=S.se
   ${pop?`<div class="acts">${acts.map((a,k)=>`<em class="${S.pop.sel===k?'on':''}" data-act="pop${k}">${a}</em>`).join('')}</div>`:''}</div></div>`}
 const seatRow=i=>8+i;
 V.company=()=>{const d=S.draft,tp=TEMPLATES.find(t=>t.id===d.tpl)||TEMPLATES[0],ready=d.seats.every(Boolean);
- const rows=TEMPLATES.map((t,i)=>R_(`<b class="${t.id===d.tpl?'hi':''}">${esc(t.name)}</b>`,{cls:'tpl',val:`<span class="small">${t.trades.length?t.trades.map(x=>tradeOf(x).short).join(' · '):'full creator, any trades'}</span>`,a:()=>{if(t.id!==d.tpl||t.id!=='blank')pickTemplate(i)}}));
+ // each company on one card: its name, then its three trades in full under it (bug batch, Nov 24: both were cut)
+ const rows=TEMPLATES.map((t,i)=>R_(`<b class="${t.id===d.tpl?'hi':'nm'}">${esc(t.name)}</b><div class="sub">${t.trades.length?t.trades.map(x=>tradeOf(x).name).join(' · '):'Full creator, any trades'}</div>`,{cls:'tpl two',a:()=>{if(t.id!==d.tpl||t.id!=='blank')pickTemplate(i)}}));
  rows.push(ST(`<div class="small">${esc(T(tp.line))}</div>`));
  [0,1,2].forEach(i=>rows.push(R_(seatCard(i),{cls:'seatrow',a:()=>seatA(i),left:S.pop&&S.pop.seat===i?()=>{S.pop.sel=(S.pop.sel+3)%4}:null,right:S.pop&&S.pop.seat===i?()=>{S.pop.sel=(S.pop.sel+1)%4}:null,pop:k=>{S.pop={seat:i,sel:k};seatA(i)}})));
  rows.push(R_(`START ▸ sign them on`,{cls:ready?'go':'dim',val:'30 gr · 9 rations',a:()=>{if(ready){S.review=0;goto('review')}}}));
@@ -220,7 +221,8 @@ function cStep(d){const i=CSTEPS.indexOf(S.step),j=i+d;if(j<0){if(S.ed.lock||!S.
 function stepWhy(st){const c=S.ed.c;if(st==='trade'&&!c.trade)return'PICK A TRADE';if(st==='stats'&&(!c.base||c.method==='buy'&&buyLeft(c)!==0))return c.base?'SPEND EXACTLY 72 POINTS':'ROLL OR BUY STATS';
  if(st==='identity'&&!c.name.trim())return'NAME THEM';if(st==='kin'&&!c.kin.name.trim())return'NAME THE KIN';if(st==='motives'&&c.mot.length!==2)return'PICK 2 MOTIVATIONS';return''}
 const stepFoot='L/R: STEP · A: PICK · B: BACK';
-V.trade=()=>({rows:TRADES.map(t=>R_(`${S.ed.c.trade===t.id?'<b class="hi">':''}${esc(t.name)}${S.ed.c.trade===t.id?'</b>':''}`,{val:`<span class="small">${t.strong.join(', ')} · ${t.backup.join(', ')} · ${t.key.join('/')}</span>`,cls:'wrap',
+// one row per trade from the top: the name, then its skills under it (bug batch, Nov 24: the skills sat on the name)
+V.trade=()=>({rows:TRADES.map(t=>R_(`<b class="${S.ed.c.trade===t.id?'hi':'nm'}">${esc(t.name)}</b><div class="sub">${t.strong.join(', ')} · ${t.backup.join(', ')} · ${t.key.join('/')}</div>`,{cls:'lwrap two',
  a:()=>{const c=S.ed.c;if(c.trade!==t.id){c.trade=t.id;c.picks={};c.back=`BK-${t.bk}-1`;c.backT=null}goto('stats')}})),foot:stepFoot,step:1});
 V.stats=()=>{const c=S.ed.c,sp=SPECIES[c.sp],rows=[
  R_('Method',{val:c.method==='roll'?'Roll 4d6':'Point buy (72)',left:()=>flipMethod(c),right:()=>flipMethod(c),a:()=>flipMethod(c)})];
@@ -274,7 +276,7 @@ V.muster=()=>{const c=S.ed.c,why=['trade','stats','identity','kin','motives'].ma
    [c.name,c.kin.name].forEach(n=>{if(!d.used.includes(n))d.used.push(n)});c.done=true;d.seats[S.ed.seat]=c;d.kept[S.ed.seat]=true;S.ed=null;goto('company')}})],foot:stepFoot,step:7}};
 // START: the Muster roll for the whole company, one page each, L/R to flip; Sign them on starts the run
 V.review=()=>{const d=S.draft,i=S.review,m=build(d.seats[i]);
- return {rows:[ST(`<div class="small">Page ${i+1} of 3 · L/R to flip</div>`+musterHTML(m,d.seed)),
+ return {rows:[ST(`<div class="small hint">Page ${i+1} of 3 · L/R to flip</div>`+musterHTML(m,d.seed)),
   ...(d.tpl==='blank'?[R_('Company name',{input:{bind:'cname',value:d.name||'',ph:'Name your company',max:22}})]:[]),
   R_('Sign them on ▶',{cls:'go',a:signOn})],foot:'L/R: FLIP · A: SIGN · B: BACK',back:()=>goto('company')}};
 // Sign them on: the run begins (spec 003, 7 and 10)

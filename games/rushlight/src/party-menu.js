@@ -10,6 +10,8 @@ function pW(s,size=16,font=VTf){cx.font=font(size);return cx.measureText(s).widt
 function pR(x,y,w,h,c){cx.fillStyle=c;cx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
 function pBox(x,y,w,h,fill,line,lw=1){pR(x,y,w,h,line);pR(x+lw,y+lw,w-2*lw,h-2*lw,fill)}
 function pFit(s,w,size=16,font=VTf){s=String(s);if(pW(s,size,font)<=w)return s;while(s.length>1&&pW(s+'…',size,font)>w)s=s.slice(0,-1);return s.replace(/\s+$/,'')+'…'}
+// a name always shows whole (ui, Screen craft): the largest size it fits at, or null when even the smallest is too wide
+function pSize(s,w,sizes=[16,15,14,13,12,11],font=VTf){for(const z of sizes)if(pW(String(s),z,font)<=w)return z;return null}
 function pWrap(s,w,size=16,max=9){const out=[];let line='';for(const word of String(s).split(/\s+/).filter(Boolean)){const t=line?line+' '+word:word;if(pW(t,size)<=w||!line)line=t;else{out.push(line);line=word}}if(line)out.push(line);
  if(out.length>max){out.length=max;out[max-1]=pFit(out[max-1]+' …',w,size)}return out}
 function pBar(x,y,w,frac,col){pR(x,y,w,5,PAL.peat);pR(x+1,y+1,w-2,3,PAL.soot);pR(x+1,y+1,Math.round((w-2)*clamp(frac,0,1)),3,col)}
@@ -37,7 +39,7 @@ function openParty(){return new Promise(res=>{
    {label:PW.give,dis:party.length<2||!party[i].slots.length,why:PW.giveWhy,run:()=>giveItem(i)}],
   paint:{header:paintHeader,card:paintCard,detail:paintDetail},
   colors:{box:PAL.soot,border:PAL.bone,shadow:'#0e0c0a',on:PAL.cardOn,text:PAL.bone,dim:PAL.ash,cursor:PAL.tallow},
-  font:VTf(16),headerH:18,cardH:50,gap:4,detailMin:44})};
+  font:VTf(16),headerH:18,cardH:56,gap:4,detailMin:40})};
  PM.list.reset(G.lead|0);ban.hidden=true;gEl.classList.add('menu');
 })}
 function closeParty(){const p=PM;PM=null;gEl.classList.remove('menu');if(p)p.done()}
@@ -52,21 +54,23 @@ function paintCard(c,i,r,st){
  pBox(x,y,w,h,st.blink?PAL.blood:st.on?PAL.cardOn:PAL.card,st.on?PAL.tallow:st.lead?PAL.bone:PAL.line);
  if(st.lead)pR(x+1,y+1,w-2,2,PAL.tallow);
  pBox(x+9,y+8,34,34,PAL.soot,st.lead?PAL.tallow:PAL.line);c.imageSmoothingEnabled=false;c.drawImage(RLSP.portrait(m.sp,m.look),0,0,64,64,x+10,y+9,32,32);
- const tagL=st.lead?leadTag(right,y+5):right,nm=m.name.toUpperCase()+(m.picks?' ▲':'')+(m.dead?' (gone)':'');
- pT(nm,x+48,y+3,st.lead?PAL.tallow:PAL.bone,18);const px=x+48+pW(nm+' ',18);
- const sub=[m.sp,m.trade].filter(Boolean).join(' · ');if(tagL-4-px>12)pT(pFit(sub,tagL-4-px,15),px,y+5,'#c4b99e',15);
+ // the name and the trade line each show whole (bug batch, Nov 24): the name on line 1, species · trade on its own line 2
+ const tagL=st.lead?leadTag(right,y+5):right,nm=m.name.toUpperCase()+(m.picks?' ▲':'')+(m.dead?' (gone)':''),nz=pSize(nm,tagL-4-(x+48),[18,16,15,14,13])||13;
+ pT(nm,x+48,y+3+(18-nz)/2,st.lead?PAL.tallow:PAL.bone,nz);
+ const sub=[m.sp,m.trade].filter(Boolean).join(' · '),sz=pSize(sub,right-(x+48),[15,14,13,12,11])||11;pT(sub,x+48,y+17,PAL.bone,sz);
  const hs=m.ko?'DOWN':`${m.hp}/${m.mhp}`,hw=pW(hs,15),lo=m.hp<=3;
- pT('HP',x+48,y+19,'#c4b99e',15);pBar(x+62,y+23,right-hw-6-(x+62),m.hp/m.mhp,lo?PAL.rust:PAL.rust);pT(hs,right-hw,y+19,lo||m.ko?PAL.rust:PAL.bone,15);
- const wp=`WP ${m.wp} · SAN `;pT(wp,x+48,y+33,'#c4b99e',15);const sx=x+48+pW(wp,15);pT(String(m.san),sx,y+33,m.san<40?PAL.pink:'#c4b99e',15);
+ pT('HP',x+48,y+28,'#c4b99e',15);pBar(x+62,y+32,right-hw-6-(x+62),m.hp/m.mhp,lo?PAL.rust:PAL.rust);pT(hs,right-hw,y+28,lo||m.ko?PAL.rust:PAL.bone,15);
+ const wp=`WP ${m.wp} · SAN `;pT(wp,x+48,y+40,PAL.bone,15);const sx=x+48+pW(wp,15);pT(String(m.san),sx,y+40,m.san<40?PAL.pink:PAL.bone,15);
+ // status chips, written out in full; the ones that don't fit are in the box under the cards
  const sts=statusChips(m);let cr=right;
- for(const s of sts.reverse()){const cw=pW(s,13)+6;if(cr-cw<sx+30)break;pR(cr-cw,y+35,cw,11,PAL.rust);pT(s,cr-cw+3,y+34,PAL.bone,13);cr-=cw+3}
+ for(const s of sts.reverse()){const cw=pW(s,13)+6;if(cr-cw<sx+30)break;pR(cr-cw,y+42,cw,11,PAL.rust);pT(s,cr-cw+3,y+41,PAL.bone,13);cr-=cw+3}
 }
-const statusChips=m=>(m.st||[]).map(s=>String(s).toUpperCase().slice(0,7));
+const statusChips=m=>(m.st||[]).map(s=>String(s).toUpperCase());
 function paintDetail(c,r,i,st){
  const m=party[i];pBox(r.x,r.y,r.w,r.h,PAL.card,PAL.bone,2);
  const x=r.x+6,av=st.avoid,w=av&&av.y<r.y+r.h&&av.y+av.h>r.y?av.x-x-6:r.w-12;let y=r.y+3;
  const lines=[];if(st.why)lines.push(st.why);else{const s=statusChips(m);lines.push(s.length?s.join(', '):PW.none);if(m.hp<=3)lines.push(PW.low)}
- lines.forEach(l=>pWrap(l,w,16,3).forEach(t=>{if(y<r.y+r.h-14){pT(t,x,y,'#c4b99e',16);y+=14}}));
+ lines.forEach(l=>pWrap(l,w,16,3).forEach(t=>{if(y<r.y+r.h-14){pT(t,x,y,PAL.bone,16);y+=14}}));
 }
 // Give item: one of the merc's slot items to another merc with a free slot (8 slots each; bible Items)
 async function giveItem(i){const m=party[i],I=RLS.ITEMS;
@@ -79,17 +83,20 @@ async function giveItem(i){const m=party[i],I=RLS.ITEMS;
 function drawMercCard(m){
  const I=RLS.ITEMS;pBox(2,2,VW-4,VH-4,PAL.card,PAL.bone,2);
  pBox(6,6,52,52,PAL.soot,PAL.tallow);cx.imageSmoothingEnabled=false;cx.drawImage(RLSP.portrait(m.sp,m.look),0,0,64,64,8,8,48,48);
- pT(pFit(m.name.toUpperCase(),VW-70,10,PXf),62,8,PAL.tallow,10,PXf);
- pT(`${RLS.SPECIES[m.sp].name} · ${m.trade} · L${m.lvl}`,62,20,PAL.bone,15);pT(`${m.size} · ${m.trait}`,62,33,'#c4b99e',14);
+ // the whole name: the pixel font if it fits, else the narrower text font (bug batch, Nov 24)
+ const NM=m.name.toUpperCase(),pz=pSize(NM,VW-70,[10,8,7],PXf);if(pz)pT(NM,62,8+(10-pz)/2,PAL.tallow,pz,PXf);else pT(NM,62,5,PAL.tallow,pSize(NM,VW-70,[16,15,14,13,12])||12);
+ const tl=`${RLS.SPECIES[m.sp].name} · ${m.trade} · L${m.lvl}`;pT(tl,62,20,PAL.bone,pSize(tl,VW-66,[15,14,13,12,11])||11);const sl=`${m.size} · ${m.trait}`;pT(sl,62,33,PAL.bone,pSize(sl,VW-66,[14,13,12,11])||11);
  if(G.run)pT(G.run.seed,VW-8-pW(G.run.seed,12),45,PAL.ash,12);
  let y=60;RLS.STATS.forEach((k,j)=>{const x=6+j*38;pBox(x,y,36,24,PAL.soot,PAL.line);pT(k,x+(36-pW(k,12))/2,y,'#c4b99e',12);const v=String(m.stats[k]);pT(v,x+(36-pW(v,16))/2,y+9,PAL.bone,16)});
  y+=27;[['HP',m.hp,m.mhp,PAL.rust],['WP',m.wp,m.mwp,PAL.dusk],['SAN',m.san,m.msan,PAL.tallow]].forEach(([l,v,mx,col],k)=>{const x=6+k*76;pT(l,x,y,'#c4b99e',14);pBar(x+22,y+5,30,v/mx,col);pT(`${v}`,x+55,y,l==='SAN'&&v<40?PAL.pink:PAL.bone,14)});
  y+=13;pT(`Breaking Point ${m.bp} · Luck 50%`,6,y,'#c4b99e',14);y+=13;
  const sk=Object.keys(RLS.SKILLS).filter(k=>m.sk[k]>RLS.SKILLS[k]).map(k=>`${k} ${m.sk[k]}`).join(' · ');
  pWrap(sk,VW-12,14,3).forEach(l=>{pT(l,6,y,PAL.bone,14);y+=12});y+=2;
- pT(pFit(`Kin: ${m.kin.name}, ${m.kin.type.toLowerCase()} · Bond ${m.kin.bond}`,VW-12,14),6,y,PAL.bone,14);y+=12;
- pT(pFit(`Motivations: ${m.mot.map((x,i)=>i===m.main?x+' (Main)':x).join(', ')}`,VW-12,14),6,y,PAL.bone,14);y+=12;
- const g=m.gear,nm=x=>x?I[x.id].name:'—';pWrap(`WPN 1 ${nm(g.w1)} · WPN 2 ${nm(g.w2)} · BODY ${nm(g.body)} · HEAD ${nm(g.head)}`,VW-12,14,2).forEach(l=>{pT(l,6,y,'#c4b99e',14);y+=12});
- pWrap(m.back||'',VW-12,14,2).forEach(l=>{if(y<VH-18){pT(l,6,y,PAL.ash,14);y+=12}});
+ // kin, motivations, gear and the backstory wrap whole, in Bone (bug batch, Nov 24: they were cut with … and the backstory was Ash)
+ pWrap(`Kin: ${m.kin.name}, ${m.kin.type.toLowerCase()} · Bond ${m.kin.bond}`,VW-12,14,9).forEach(l=>{pT(l,6,y,PAL.bone,14);y+=12});
+ pWrap(`Motivations: ${m.mot.map((x,i)=>i===m.main?x+' (Main)':x).join(', ')}`,VW-12,14,9).forEach(l=>{pT(l,6,y,PAL.bone,14);y+=12});
+ const g=m.gear,nm=x=>x?I[x.id].name:'—';pWrap(`WPN 1 ${nm(g.w1)} · WPN 2 ${nm(g.w2)} · BODY ${nm(g.body)} · HEAD ${nm(g.head)}`,VW-12,14,9).forEach(l=>{pT(l,6,y,PAL.bone,14);y+=12});
+ const bk=pWrap(m.back||'',VW-12,14,20),room=VH-18-y,bz=bk.length*12<=room?14:13,bl=bz===14?bk:pWrap(m.back||'',VW-12,13,20);
+ bl.forEach(l=>{pT(l,6,y,PAL.bone,bz);y+=bz===14?12:11});
  pT('B: back · ▲▼ merc',6,VH-16,PAL.ash,13);
 }

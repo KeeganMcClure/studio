@@ -1,7 +1,7 @@
 // Rushlight · species-art.js
 // The six slice species, drawn in code: the 64 × 64 portrait head, the 14 × 26 map sprite and the 30 × 40 battle back view.
 // The drawing is the approved species sheet (Asset Library rushlight-sprites-species-v1; code in mockups/29-species-sheet-rough-v3.html),
-// lifted unchanged apart from three hooks for the face parts (spec 003, 6; bible Art, Faces): coat shade (3 per species),
+// lifted unchanged apart from the lit backing and rim (bug batch, Nov 24) and three hooks for the face parts (spec 003, 6; bible Art, Faces): coat shade (3 per species),
 // a mark (none, scar, torn ear, grey muzzle) and neckwear (none, kerchief, hood). Exposes window.RLSP.
 //   RLSP.ORDER                     the six species
 //   RLSP.SP[k]                     the sheet's colours and height for species k
@@ -29,6 +29,9 @@ function grid(w,h){const g=[];for(let y=0;y<h;y++)g.push(Array(w).fill(null));re
   const s=(p,q,r)=>(p[0]-r[0])*(q[1]-r[1])-(q[0]-r[0])*(p[1]-r[1]);
   for(let y=miny;y<=maxy;y++)for(let x=minx;x<=maxx;x++){const P=[x+.5,y+.5];const d1=s(P,a,b),d2=s(P,b,d),d3=s(P,d,a);if(!((d1<0||d2<0||d3<0)&&(d1>0||d2>0||d3>0)))this.p(x,y,c)}},
  outline(){const o=[];for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(!this.g[y][x]){if([[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>{const v=this.g[y+dy]&&this.g[y+dy][x+dx];return v&&v!==PEAT}))o.push([x,y])}o.forEach(([x,y])=>this.g[y][x]=PEAT);return this},
+ // the lit edge (art-style, Quality bar): pixels on a shape's upper-left edge pulled toward light; run before outline()
+ rim(k){const pts=[];for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const v=this.g[y][x];if(!v||v===PEAT)continue;if(x>w*.62||y>h*.82)continue;
+  if(!this.g[y][x-1]||(!this.g[y-1][x]&&x<w*.5))pts.push([x,y,v])}pts.forEach(([x,y,v])=>this.g[y][x]=mixHex(v,'#fff4dc',k));return this},
  draw(ctx,ox,oy,s){for(let y=0;y<h;y++)for(let x=0;x<w;x++){const c=this.g[y][x];if(c){ctx.fillStyle=c;ctx.fillRect(ox+x*s,oy+y*s,s,s)}}}
 }}
 
@@ -104,11 +107,13 @@ function portrait(k,look){
  if(k==='hedgehog')F.r(cx-nw/2-2,ny,nw+4,6,S.spine);
  F.ell(32,64,26,13,S.coat,{c:S.coatD,k:.3});
  F.tri([[cx-9,51],[cx,58],[cx-1,51]],'#c4b99e');F.tri([[cx+1,51],[cx,58],[cx+9,51]],'#a89e86');
+ const pre=F.g.map(r=>r.slice());
  if(k==='mouse'){F.ell(cx-13,cy-11,9,9,S.fur,sh);F.ell(cx+13,cy-11,9,9,S.furD);F.ell(cx-13,cy-11,5.5,5.5,S.ear);F.ell(cx+13,cy-11,5.5,5.5,'#a87e70')}
  if(k==='rat'){F.ell(cx-11,cy-11,5.5,6,S.ear);F.ell(cx+11,cy-11,5.5,6,'#9a7466')}
  if(k==='hare'){F.ell(cx-7,cy-22,4.5,15,S.fur);F.ell(cx+7,cy-22,4.5,15,S.furD);F.ell(cx-7,cy-20,2,11,S.ear);F.ell(cx-7,cy-35,3.5,3,PEAT);F.ell(cx+7,cy-35,3.5,3,PEAT)}
  if(k==='badger'){F.ell(cx-12,cy-9,4,4,S.fur);F.ell(cx+12,cy-9,4,4,S.furD);F.r(cx-14,cy-13,4,1,BONE);F.r(cx+10,cy-13,4,1,BONE)}
  if(k==='fox'){F.tri([[cx-14,cy-1],[cx-11,cy-22],[cx-3,cy-9]],S.fur);F.tri([[cx+3,cy-9],[cx+11,cy-22],[cx+14,cy-1]],S.furD);F.tri([[cx-11,cy-5],[cx-10,cy-17],[cx-6,cy-9]],'#3a2a20');F.tri([[cx+6,cy-9],[cx+10,cy-17],[cx+11,cy-5]],'#3a2a20')}
+ const ear=new Set();for(let y=0;y<64;y++)for(let x=0;x<64;x++)if(F.g[y][x]!==pre[y][x])ear.add(x+','+y);  // the ears, so a hood can let them out
  if(k==='hedgehog'){ // a dome of spines over the crown and down the sides; the face sits low and pointed
   for(let y=cy-ry-9;y<=cy+ry;y++)for(let x=cx-rx-7;x<=cx+rx+7;x++){const ang=Math.atan2(y-cy,x-cx),jag=(Math.round(ang*9)%2)?1.5:0;
    const d=((x+.5-cx)/(rx+5+jag))**2+((y+.5-(cy-3))/(ry+7+jag))**2;
@@ -132,11 +137,13 @@ function portrait(k,look){
  F.r(cx-2,N[0],4,2,N[1]);F.r(cx-1,N[0]+2,2,1,'#3a2a20');F.r(cx-3,N[0]+3,2,1,'#3a2a20');F.r(cx+1,N[0]+3,2,1,'#3a2a20');
  if(k==='hare')F.r(cx-1,N[0]+2,2,2,'#3a2a20');
  if(k==='mouse'||k==='rat'){const y=N[0]+1;[0,2].forEach(d=>{for(let i=0;i<5;i++){F.p(cx-8-i,y+d-(i>2?1:0),'#cfc4ae');F.p(cx+7+i,y+d-(i>2?1:0),'#cfc4ae')}})}
- faceParts(F,k,look,S,cx,cy,rx,ry,E,N);
- F.outline();G.r(0,0,64,64,SOOT);
+ faceParts(F,k,look,S,cx,cy,rx,ry,E,N,ear);
+ F.rim(.45).outline();backing(G);
  return {draw(ctx,ox,oy,s){G.draw(ctx,ox,oy,s);F.draw(ctx,ox,oy,s)}};
 }
 
+// a lit backing the Peat outline reads against (ui, Screen craft): warm earth, lighter toward the upper left, as mockup 36 v3
+function backing(G){const top='#8a7458',bot='#4a3e30',hi='#a8906c';for(let y=0;y<64;y++)for(let x=0;x<64;x++){const b=mixHex(top,bot,y/63),d=Math.hypot(x-22,y-18);G.p(x,y,d<=24?mixHex(b,hi,(1-d/24)*.8):b)}}
 // ---- face parts (spec 003, 6) ----
 function mixHex(a,b,k){const A=parseInt(a.slice(1),16),Bb=parseInt(b.slice(1),16);const ch=s=>[s>>16,(s>>8)&255,s&255];const x=ch(A),y=ch(Bb);
  return '#'+x.map((v,i)=>Math.round(v+(y[i]-v)*k).toString(16).padStart(2,'0')).join('')}
@@ -144,15 +151,36 @@ function mixHex(a,b,k){const A=parseInt(a.slice(1),16),Bb=parseInt(b.slice(1),16
 function skin(k,look){const S0=SP[k],sh=look&&look.shade!=null?look.shade:1;const S=look&&look.coat?Object.assign({},S0,{coat:look.coat,coatD:mixHex(look.coat,PEAT,.3)}):S0;if(sh===1)return S;
  const to=sh===0?BONE:PEAT,amt=sh===0?.22:.28,o=Object.assign({},S);
  ['fur','furD','ear','spine','spineL'].forEach(c=>{if(o[c]&&o[c]!==PEAT&&o[c]!==BONE)o[c]=mixHex(o[c],to,amt)});return o}
-function faceParts(F,k,look,S,cx,cy,rx,ry,E,N){
+function faceParts(F,k,look,S,cx,cy,rx,ry,E,N,ear){
  const mark=look.mark|0,neck=look.neck|0;
  if(mark===1){for(let i=0;i<6;i++)F.p(cx+E[1]+2-i,E[0]-4+i+(i>3?1:0),'#d8c8b0');F.p(cx+E[1]-4,E[0]+3,'#d8c8b0')}  // scar across the brow and eye
  if(mark===2){const ex={mouse:[cx-13,cy-19],rat:[cx-11,cy-17],hare:[cx-7,cy-36],hedgehog:[cx-9,cy-ry-6],badger:[cx-12,cy-13],fox:[cx-11,cy-20]}[k];
   F.r(ex[0]-1,ex[1],3,3,null);F.p(ex[0]+2,ex[1]+3,null)}  // a torn ear: a notch bitten out of the left ear
  if(mark===3){F.ell(cx,N[0]+1,6,4,'#b8b2a6',{c:'#9c968a',k:.4});F.r(cx-2,N[0],4,2,N[1])}  // grey muzzle
  if(neck===1){F.tri([[cx-15,52],[cx,62],[cx+15,52]],RUST);F.tri([[cx,52],[cx,62],[cx+15,52]],RUSTD);F.r(cx-15,51,30,2,RUSTD)}  // kerchief
- if(neck===2){for(let y=cy-ry-2;y<64;y++)for(let x=cx-rx-6;x<=cx+rx+6;x++){const d=((x+.5-cx)/(rx+5))**2+((y+.5-cy)/(ry+6))**2;
-   if(F.g[y]&&!F.g[y][x]&&(d<=1||y>cy+4))if(Math.abs(x+.5-cx)<=rx+5)F.p(x,y,x>cx+rx*.3?MOSSD:MOSS)}}  // a hood round the head, ears out
+ if(neck===2)hood(F,cx,cy,rx,ry,ear);
+}
+// the hood: a real cowl (bug batch, Nov 24). Cloth over the crown and down both sides of the face, the ears out through slits,
+// a deep-tone inner edge round the face, folds onto the shoulders, hard shade on the right and the Peat outline.
+function hood(F,cx,cy,rx,ry,ear){
+ const R=[mixHex(MOSS,'#c8d49a',.28),MOSS,MOSSD,mixHex(MOSS,PEAT,.55)];
+ const ox=rx+5,oy=ry+6,oc=cy-1, fx=rx-1.5,fy=ry+2,fc=cy+3;   // the outer shell and the face opening
+ const chin=Math.round(fc+fy), hem=58;
+ const shell=(x,y)=>{if(y<=cy+4)return ((x+.5-cx)/ox)**2+((y+.5-oc)/oy)**2<=1;if(y>hem+((x*7)%3===0?1:0))return false;
+  const t=(y-cy-4)/(hem-cy-4),hw=ox+t*(27-ox);return Math.abs(x+.5-cx)<=hw};
+ const face=(x,y)=>((x+.5-cx)/fx)**2+((y+.5-fc)/fy)**2<=1;
+ const isEar=(x,y)=>ear.has(x+','+y);
+ const cloth=(x,y)=>shell(x,y)&&!face(x,y)&&!isEar(x,y);
+ for(let y=0;y<64;y++)for(let x=0;x<64;x++){if(!cloth(x,y))continue;
+  const nx=(x+.5-cx)/ox,ny=(y+.5-oc)/oy;let i=nx>.3?2:(-nx*.7-ny*.5)>.35?0:1;   // light from the upper left, hard shade on the right
+  if(y>chin+1){const f=[-14,-7,6,13].some(d=>{const fxp=cx+d*(1+(y-chin)/30);return Math.abs(x+.5-fxp)<.8});if(f)i=Math.min(3,i+1)}  // folds onto the shoulders
+  if(y>=chin-1&&y<=chin+1&&Math.abs(x+.5-cx)<4)i=2;   // where the two sides meet under the chin
+  const nearFace=[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>face(x+a,y+b)&&!isEar(x+a,y+b)&&y<chin);
+  const nearEar=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1]].some(([a,b])=>isEar(x+a,y+b));
+  if(nearFace)i=3;else if(nearEar)i=3;   // the deep inner edge round the face, and the slits the ears come through
+  F.p(x,y,R[i])}
+ // the hem's lower edge sits on the coat, so it gets its own Peat line
+ for(let x=0;x<64;x++)for(let y=63;y>chin;y--)if(cloth(x,y)){if(y<63&&!cloth(x,y+1))F.p(x,y+1,PEAT);break}
 }
 // the coin token: a brass coin a little from above, struck with the lead's head in Peat with its one strongest mark
 function coinGrid(k){const G=grid(15,16),BR='#b8913a',BRL='#d9b45a',BRD='#7a5e24';

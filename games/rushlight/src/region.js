@@ -109,7 +109,7 @@ function claws(x,y){for(let k=0;k<3;k++){pR(x+k*3,y,1,5,'#9a4528');pR(x+k*3+1,y+
 // the top strip: row 1 party heads (lead in Tallow), where, purse, day, rations and the days they cover
 function drawStrip(){const g=RG(),r=G.run;pR(0,0,VW,SH,'rgba(44,38,33,.97)');pR(0,SH-2,VW,2,'#e6dcc4');
  let x=3;party.forEach((m,i)=>{const on=i===(G.lead|0);pR(x-1,2,16,16,on?'#d9b45a':'#857e72');cx.drawImage(RLSP.portrait(m.sp,m.look),0,0,64,64,x,3,14,14);if(m.dead)pR(x,3,14,14,'rgba(28,24,20,.7)');x+=18});
- const where=(g.trip?'ON THE ROAD':'AT '+P_[g.at].name.toUpperCase());pT(pFit(where,92,13),x+2,3,'#e6dcc4',13);
+ const where=(g.trip?'ON THE ROAD':'AT '+P_[g.at].name.toUpperCase());{const z=pSize(where,92,[13,12,11]);if(z)pT(where,x+2,3+(13-z)/2,'#e6dcc4',z);else pWrap(where,92,11,2).forEach((l,k)=>pT(l,x+2,k*9,'#e6dcc4',11))}
  const live=Math.max(1,alive().length),days=Math.floor(r.rations/live),rs=`${r.rations}·${days}d`,ps=`${r.purse}gr`,ds=`DAY ${r.day}`;
  let rx=VW-3;[[ds,'#e6dcc4'],[rs,r.rations<live?'#c8603a':'#e6dcc4'],[ps,'#d9b45a']].forEach(([t,c])=>{rx-=pW(t,13);pT(t,rx,3,c,13);rx-=6});
  if((g.meat||[]).some(l=>l.d<=1))pT('MEAT ROTS TOMORROW',VW-3-pW('MEAT ROTS TOMORROW',11),13,'#c8603a',11);
@@ -127,13 +127,13 @@ function drawTabs(r,ox,oy){MAPV.tabs=[];Object.keys(P_).forEach(k=>{if(!knownPt(
  pR(tx,ty,w,12,'#1c1814');pT(t,tx+3,ty-1,'#e6dcc4',11);MAPV.tabs.push({x:tx,y:ty,w,h:12,k})})}
 // the road card: the point under the cursor, its days, rations needed against carried, event rolls, contract, threat
 function drawRoadCard(){const g=RG(),r=G.run,y=VH-50,c=MAPV.cur,p=P_[c];pBox(2,y,VW-4,48,PAL.soot,PAL.bone,2);
- if(MAPV.log.length&&(g.trip||G.busy)){MAPV.log.slice(-3).forEach((l,i)=>pT(pFit(l,VW-14,14),7,y+3+i*14,i===MAPV.log.slice(-3).length-1?PAL.bone:'#c4b99e',14));return}
+ if(MAPV.log.length&&(g.trip||G.busy)){MAPV.log.slice(-3).forEach((l,i)=>pT(pFit(l,VW-14,14),7,y+3+i*14,PAL.bone,14));return}
  pT(p.name.toUpperCase(),7,y+2,PAL.tallow,15);pT(p.type,VW-7-pW(p.type,13),y+3,'#c4b99e',13);
  if(c===g.at){pT('You are here. A: go in.',7,y+17,PAL.bone,14);pT('◀ ▶ ▲ ▼ pick a point · L key · R contracts',7,y+31,PAL.ash,12);return}
  const rt=route(g.at,c);if(!rt){pT('No known road there.',7,y+17,PAL.bone,14);return}
  const need=rationsNeed(rt.days);pT(`Road ${rt.days} day${rt.days>1?'s':''}`,7,y+17,PAL.bone,14);pT(`Food ${need} of ${r.rations}`,78,y+17,r.rations<need?'#c8603a':PAL.bone,14);
  const ev=`${rt.days} event roll${rt.days>1?'s':''}`;pT(ev,VW-7-pW(ev,14),y+17,PAL.bone,14);
- pT(`Threat ???`,7,y+31,'#c4b99e',14);pT('A go',VW-7-pW('A go',14),y+31,PAL.tallow,14);
+ pT(`Threat ???`,7,y+31,PAL.bone,14);pT('A go',VW-7-pW('A go',14),y+31,PAL.tallow,14);
 }
 function drawKey(){pR(0,0,VW,VH,'rgba(28,24,20,.7)');const w=200,h=168,x=(VW-w)/2,y=Math.max(8,(VH-h)/2);pBox(x,y,w,h,PAL.soot,PAL.bone,2);pT('KEY',x+8,y+4,PAL.tallow,8,PXf);
  const rows=[['town','Town'],['hamlet','Hamlet'],['site','Wild site'],['den','Den']];rows.forEach(([k,l],i)=>{const yy=y+26+i*18;pR(x+10,yy-4,24,16,PARCH);glyph(k,x+22,yy+4);pT(l,x+42,yy-2,PAL.bone,14)});
@@ -141,9 +141,9 @@ function drawKey(){pR(0,0,VW,VH,'rgba(28,24,20,.7)');const w=200,h=168,x=(VW-w)/
  pT('?',x+18,yy-3,PAL.bone,16);pT('Not yet known',x+42,yy-2,PAL.bone,14);yy+=16;claws(x+16,yy);pT('Roamer met here',x+42,yy-2,PAL.bone,14);yy+=16;
  cx.drawImage(RLSP.coin(lead().sp),x+14,yy-4);pT('The company (the lead)',x+42,yy-2,PAL.bone,14);pT('L or B: close',x+8,y+h-16,PAL.ash,13)}
 function drawContracts(){pR(0,0,VW,VH,PAL.peat);pBox(4,4,VW-8,18,PAL.soot,PAL.bone);pT('CONTRACTS',9,9,PAL.tallow,8,PXf);let y=28;
- const cs=(G.run.contracts||[]).filter(c=>!c.done);if(!cs.length){pT(RW.noContracts,8,y,'#c4b99e',15);y+=18}
- else cs.forEach((c,i)=>{if(typeof CP_SEL!=='undefined'&&i===CP_SEL%cs.length)pR(4,y-1,3,12,PAL.tallow);pT(pFit(c.title,VW-16,15),8,y,PAL.bone,15);pT(pFit('NEXT: '+(c.next||''),VW-16,13),8,y+13,'#c4b99e',13);y+=30});
- pT(RW.signs,8,y+4,PAL.tallow,8,PXf);y+=18;const sg=RG().signs;if(!sg.length){pT(RW.noSigns,8,y,'#c4b99e',15);y+=14}
+ const cs=(G.run.contracts||[]).filter(c=>!c.done);if(!cs.length){pT(RW.noContracts,8,y,PAL.bone,15);y+=18}
+ else cs.forEach((c,i)=>{if(typeof CP_SEL!=='undefined'&&i===CP_SEL%cs.length)pR(4,y-1,3,12,PAL.tallow);const tl=pWrap(c.title,VW-16,15,9);tl.forEach((l,k)=>pT(l,8,y+k*13,PAL.bone,15));let ny=y+tl.length*13;pWrap('NEXT: '+(c.next||''),VW-16,13,9).forEach(l=>{pT(l,8,ny,PAL.bone,13);ny+=11});y=ny+8});
+ pT(RW.signs,8,y+4,PAL.tallow,8,PXf);y+=18;const sg=RG().signs;if(!sg.length){pT(RW.noSigns,8,y,PAL.bone,15);y+=14}
  sg.forEach(id=>{pWrap(RLT(id),VW-16,14,3).forEach(l=>{pT(l,8,y,PAL.bone,14);y+=12});y+=3});
  if(typeof drawContractsExtra==='function')y=drawContractsExtra(y);
  pT(cs.length?'A: keep or drop · R or B: back':'R or B: back',8,VH-16,PAL.ash,13)}

@@ -179,7 +179,7 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
         for (let k = 0; k < 40; k++) { const t = await page.evaluate(() => (document.querySelector('#list .row.on') || {}).innerText || ''); if (new RegExp(re).test(t)) { await page.keyboard.press('z'); await page.waitForTimeout(30); return true; } await page.keyboard.press('ArrowUp'); }
         bad.push(`${how}: no row ${re} on ${await step()}`); return false;
       };
-      await choose('^\\s*▶?\\s*New run'); await choose('Random seed'); await choose('Blank company');
+      await choose('^\\s*▶?\\s*New run'); await choose('Random seed'); await choose('Blank company|BLANK COMPANY');
       for (let seat = 0; seat < 3; seat++) {
         await choose(seat === 0 ? 'EMPTY SEAT 1' : seat === 1 ? 'EMPTY SEAT 2' : 'EMPTY SEAT 3');
         await choose(['Halberdier', 'Crossbowman', 'Barber-surgeon'][seat]);
