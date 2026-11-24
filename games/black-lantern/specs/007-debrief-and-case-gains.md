@@ -35,7 +35,7 @@ The repo is public (`studio-bible/studio.md`, One repo). This spec gives only th
 | `games/black-lantern/bible.md` | Voice | Debrief lines and narration samples ("Fire marshal says bad wiring…") |
 | `games/black-lantern/bible.md` | Skills and menus → Quality of life | Case wrap-up card (clues found, victims saved, SAN lost per agent); Confirm what sticks before hiding evidence; Finish the box |
 | `games/black-lantern/bible.md` | Agents and items → Item list, Case-only items after the case; Item display | Big Hat sorts case-only items: ordinary kept as trophies, unnatural bagged unless hidden; same rows with the pin icon and detail box |
-| `games/black-lantern/bible.md` | Skills and menus → Overstepping and cover stories | 2–3 cover stories, skill rolls by the agent you pick, one weak Luck story always there, an easy one for quiet clean cases, Clean books' safe story; pass closes quietly, fail climbs one step; a held story drops it one step (two after a clean case), and a case that reached Federal agents ends at Local chief (Nov 24, 2026) |
+| `games/black-lantern/bible.md` | Skills and menus → Overstepping and cover stories | 2–3 cover stories, skill rolls by the agent you pick, one weak Luck story always there, an easy one for quiet clean cases, Clean books' safe story; pass closes quietly, fail climbs one step; a held story drops it one step (two after a clean case) (Nov 24, 2026) |
 | `games/black-lantern/bible.md` | Agents and items → Starting kit | Bodyguard's Zip ties (extra clue at the debrief); Small-town reporter's Camera (extra cover story) |
 | `games/black-lantern/bible.md` | Systems → Between cases | Carry-over; end-of-case improvement: heal up, +1d4% to each skill tried and failed, 99% cap |
 | `games/black-lantern/bible.md` | Skills and menus → Skill unlocks | Unlocks at 40, 75 and 90% |
@@ -94,10 +94,9 @@ The debrief plays in this order, right after the case's last scene. Each step au
   - Bureaucracy's **Clean books** safe story if any agent has that unlock (no roll, shows `SAFE`),
   - the Small-town reporter's **Camera** story, if their Camera photographed a clue this case (the case writes it).
 - **Who tells it:** under the list, the three agents' faces with each one's chance for the highlighted story, the best one preselected. Luck and safe stories skip this row (Luck is the same for everyone).
-- The detail box says what happens on a pass and on a fail, naming the step it would drop to and the step it would climb to. In a case that reached Feds, it says the step ends at Local chief either way. A tells it, B goes back to the story list.
+- The detail box says what happens on a pass and on a fail, naming the step it would drop to and the step it would climb to. A tells it, B goes back to the story list.
 - **The roll:** a pass closes the case quietly. A fail climbs overstepping one step and plays one line. At Feds, a fail can't climb any higher.
 - **The step drops** at the end of this step when the story held (Overstepping, Carry-over; changed Nov 24, 2026): one step if it climbed during the case, two if it never climbed. Never below Clean. A failed story doesn't drop it.
-- **After Feds:** if the step reached Feds at any point in the case, it ends this step at Local chief, whether the story held or failed, in open and quiet cases alike (the Federal agents row). The next case starts from there (Clean books still starts it a step lower).
 - **Failed skill tries:** a failed cover-story roll counts as a failed try for the teller (step 5), like any other skill roll.
 
 ### 5. Case gains (mockup screen 4)
@@ -165,5 +164,5 @@ The debrief is Black Lantern's own (`debrief.js`, a new part loaded after `case-
 
 ## Bible notes for the Designer (no change made here)
 
-- Skills and menus → Overstepping: the bible doesn't say what a failed cover story does at Feds, the top step. This spec holds it at Feds, since steps never skip and there's nothing above. Since Nov 24, 2026 the bible answers this: a case that reached Feds ends at Local chief either way.
+- Skills and menus → Overstepping: the bible doesn't say what a failed cover story does at Feds, the top step. This spec holds it at Feds, since steps never skip and there's nothing above. Since Nov 24, 2026 this rarely comes up: winning the Federal agents fight drops the step back to Local chief mid-case.
 - Agents and items → Case-only items: "Hiding has consequences for the agency" is defined nowhere public. If it's meant to be a visible rule, it needs a line in the bible.

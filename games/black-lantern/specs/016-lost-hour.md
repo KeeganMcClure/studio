@@ -70,7 +70,7 @@ The card's words live in `cases/lost-hour.js`'s text block (`caseCard`), as for 
 | The hard choice | The pitch's "hard choice about people who did nothing wrong" is a real choice with a stake, and the endings react to it. The case file sets what it is. Every option has a cost; none is a trap |
 | Overstepping | The cover is soft: the couple asked for help. A choice that treats them as evidence instead of patients, or a scene in town, marks someone saw. On the ridge at night, most choices are unseen. The **extreme case flag** for Local chief arriving as a fight with deputies is **off** |
 | Cover stories | 2 strong ones (Medicine and Bureaucracy) plus the weak Luck story. Since it's a quiet case, a clean run also offers the easy one (Overstepping and cover stories). Clean books adds its safe one as always |
-| Ending labels | `clean`, `costly`, `worst` (Federal agents' shutdown also plays `worst`) |
+| Ending labels | `clean`, `costly`, `worst` |
 | Lantern Boxes and loot | 1 Lantern Box (2–3 catalog items). A loot table of 5 field items that fit a small town and a clinic. Up to 3 case-only items, at least one unnatural, so bag or hide has a real choice. A **new generic item** (a sedative syringe or a road flare) is a candidate for the shared item list, if the case file uses it |
 | Requisition | As usual at the briefing |
 
