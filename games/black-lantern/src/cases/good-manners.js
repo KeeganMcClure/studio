@@ -298,7 +298,7 @@ const TEXT={
  call:['Your phone buzzes. Unknown number. You know who it is.',['BIG HAT','I am hearin\' about you on a Kansas police scanner, {first}. I didn\'t know Kansas had police scanners.'],['BIG HAT','Don\'t ask for anything next time. You won\'t get it.']],
  feds:['Black cars on the county road with their headlights off. Four doors open at the same time.',['CLEAN-UP','Black Lantern. You\'re done here. Hand over what you\'ve found.'],['CLEAN-UP','There\'s already two of us in this town who don\'t belong. Don\'t make it five.']],
  fedsIntro:'The clean-up crew draws down!',
- fedsWin:['The black cars leave the way they came, one short.','The fair\'s still coming. So is the case.'],
+ fedsWin:['The black cars leave the way they came, one short.'],
  crowd:'That was loud, on a midway full of people. Somebody\'s filming on a phone.',
  // ---- the ending ----
  end1:['The Graduate stops in the middle of a word. It tries the word again in four voices, and none of them fits.','It comes apart like a wet paper bag. Copybook pages, hundreds of them, drift down onto the folding chairs.','Above you, the crowd stamps for the welcome. Nobody up there heard a thing.'],
@@ -875,17 +875,14 @@ async function stepScene(){
  if(s==='Agency call'&&!F.call){F.call=1;await play(TEXT.call)}
  if(s==='Federal agents')F.fedsDue=1;
  checkpoint()}
-async function onArea(){
- const F=G.flags;if(!F.fedsDue||F.fedsDone)return;F.fedsDone=1;
- await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
- await play(TEXT.fedsWin);await fedsBeaten(F)}
+async function onArea(){await feds(TEXT,play)}
 
 // ================= ENDING =================
 // clean: the Graduate unmade, Tanner kept, nobody on the team lost this case, overstepping below Agency call.
-// costly: unmade any other way. worst: the clean-up crew shut the case down (old saves only; since Nov 24, 2026 the case goes on after them).
+// costly: unmade any other way. (worst: only in debrief saves from before Nov 24, 2026, when the clean-up crew shut a case down.)
 const lostHere=()=>(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case&&!x.done);
-function endingLabel(){const F=G.flags;if(F.shutDown)return'worst';
- return(F.kept&&!lostHere().length&&!stepAt('Agency call')&&!F.fedsBeat)?'clean':'costly'}
+function endingLabel(){const F=G.flags;
+ return(F.kept&&!lostHere().length&&!stepAt('Agency call'))?'clean':'costly'}
 function endingFacts(label){const F=G.flags;
  return{label,clues:G.clues.map(c=>c.id),saved:F.kept?1:0,overstep:stepName(),
   san:party.map(m=>({id:m.a.id,name:m.name,from:m.san0,to:m.san})),
@@ -893,12 +890,12 @@ function endingFacts(label){const F=G.flags;
   choices:{deduce:F.deduce||null,kept:!!F.kept,book:F.book||null,voss:F.voss||null,night:F.night||null,stake:!!F.stake,forced:!!F.forced,cuffSelf:!!F.cuffSelf,photo:!!F.photo,late:late(),county:!!F.county},
   tried:party.map(m=>({id:m.a.id,skills:m.tried||[]})),
   lost:lostHere().map(x=>({name:x.name,how:x.how}))}}
-async function ending(o={}){
+async function ending(){
  const F=G.flags;
- if(!o.worst){await play(TEXT.end1);if(!F.book){F.book='dropped';await said(TEXT.bookDrop);await pickup('copybook')}
-  if(!F.kept)await trigger('death')}
+ await play(TEXT.end1);if(!F.book){F.book='dropped';await said(TEXT.bookDrop);await pickup('copybook')}
+ if(!F.kept)await trigger('death')
  await fade(1);G.mode='scene';await fade(0);
- if(!o.worst){await said(TEXT.dawn);await said(F.kept?TEXT.dawnKept:TEXT.dawnLost);if(F.voss==='torn'||F.voss==='cuffed')await said(TEXT.dawnVoss)}
+ await said(TEXT.dawn);await said(F.kept?TEXT.dawnKept:TEXT.dawnLost);if(F.voss==='torn'||F.voss==='cuffed')await said(TEXT.dawnVoss)
  G.rescued=F.kept?1:0;
  const label=endingLabel();await debrief(label,endingFacts(label));  // Big Hat's debrief and the case gains (debrief.js)
 }

@@ -318,7 +318,7 @@ const TEXT={
  call:['Your phone buzzes. Unknown number. You know who it is.',['BIG HAT','I\'m hearin\' about Pecan Court on a police scanner, {first}. Bug men don\'t make the scanner.'],['BIG HAT','Don\'t ask for anything next time. You won\'t get it.']],
  feds:['Two black SUVs in the lot, nose to tail, engines running. Four doors open at the same time.',['CLEAN-UP','Black Lantern. You\'re done here. Hand over what you\'ve found.'],['CLEAN-UP','The building\'s ours now. So\'s the tent.']],
  fedsIntro:'The clean-up crew draws down!',
- fedsWin:['The black SUVs leave the way they came, one short.','The tent stays up. So do you.'],
+ fedsWin:['The black SUVs leave the way they came, one short.'],
  // ---- the ending ----
  end1:['The Lodger shudders all over, like a dog shaking off water, and then it just keeps shaking, smaller and smaller.','It goes still on the floor of the pump room. The eye goes from milk to water. The pipes stop ticking.','It\'s very quiet. Up top, the building is only a building.'],
  endWalt:['Walt sits up against the filter tank in his bathrobe. His arm is his arm again, mostly. It\'s going to need a doctor and a story.',['WALT','...I\'m so hungry. Is that weird? I\'m so hungry.']],
@@ -877,7 +877,7 @@ window.l83Boss=()=>bossFight({noEnd:true});  // the boss simulator's entry (tool
 // ================= OVERSTEPPING (Skills and menus, Overstepping and cover stories) =================
 // A quiet case: they came as the pest-control crew. Noticed first (Lorraine and Mrs. Ybarra clam up, Kenny films the
 // crew), then Local chief (Sgt. Ruiz's walk-through: the office locks for the day), Agency call (Big Hat), and the
-// clean-up crew at the next area change (Federal agents: a fight, then the case goes on). Inside the tent at night, nobody sees.
+// clean-up crew at the next area change (Federal agents: a fight, then back to Local chief). Inside the tent at night, nobody sees.
 async function overstepHere(seen){if(!(await overstep(seen)))return;await stepScene()}
 async function stepScene(){
  const F=G.flags,s=stepName();
@@ -886,18 +886,15 @@ async function stepScene(){
  if(s==='Agency call'&&!F.call){F.call=1;await play(TEXT.call)}
  if(s==='Federal agents')F.fedsDue=1;
  checkpoint()}
-async function onArea(){
- const F=G.flags;if(!F.fedsDue||F.fedsDone)return;F.fedsDone=1;
- await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
- await play(TEXT.fedsWin);await fedsBeaten(F)}
+async function onArea(){await feds(TEXT,play)}
 
 // ================= ENDING =================
 // clean: the Lodger ended, Walt alive, the nest burned, every jar accounted for (Unit 6's iced, the storage pair
 // brought back, the crawler's jar), overstepping didn't climb this case, no agent lost, and out before dawn (late < 4).
-// costly: ended any other way. worst: the clean-up crew shut the case down (old saves only; since Nov 24, 2026 the case goes on after them).
+// costly: ended any other way. (worst: only in debrief saves from before Nov 24, 2026, when the clean-up crew shut a case down.)
 const lostHere=()=>(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case&&!x.done);
 const jarsAll=()=>{const F=G.flags;return !!(F.iced&&F.bay&&F.crawler)};
-function endingLabel(){const F=G.flags;if(F.shutDown)return'worst';
+function endingLabel(){const F=G.flags;
  return(F.walt==='down'&&F.burn&&jarsAll()&&!G.fs.climbed&&!lostHere().length&&late()<4)?'clean':'costly'}
 function endingFacts(label){const F=G.flags;
  return{label,clues:G.clues.map(c=>c.id),saved:F.walt==='down'?1:0,overstep:stepName(),
@@ -906,18 +903,18 @@ function endingFacts(label){const F=G.flags;
   choices:{deduce:F.deduce||null,walt:F.walt||null,iced:!!F.iced,bay:!!F.bay,crawler:!!F.crawler,read:!!F.read,kenny:!!F.kenny,burn:F.burn||null,forced:!!F.forced,late:late(),jars:jarsAll()},
   tried:party.map(m=>({id:m.a.id,skills:m.tried||[]})),
   lost:lostHere().map(x=>({name:x.name,how:x.how}))}}
-async function ending(o={}){
+async function ending(){
  const F=G.flags,alive=F.walt==='down';
- if(!o.worst){await play(TEXT.end1);await play(alive?TEXT.endWalt:TEXT.endDead);if(!alive)await trigger('death');
-  const b=await ask('',TEXT.burnQ,TEXT.burnOpts,NOT_YET);
-  if(b===0){F.burn='burned';await play(TEXT.burnDo);if(F.deduce==='right')await said(TEXT.burnCrew);else{await said(TEXT.burnSeen);await overstepHere('seen')}}
-  else{F.burn=null;await said(TEXT.burnLeave)}
-  if(!has('ledger')&&!holderOf('ledger83')){await said(TEXT.ledgerDrop);await pickup('ledger83')}
-  // Zuri's drawing goes back to Denise: each Family holder's first Bond +1 (up to CHA)
-  const d=holderOf('drawing');if(alive&&d){spend(d.m,d.it);await said(TEXT.drawBack);
-   for(const m of holdersOf('Family')){const b0=(m.a.bonds||[])[0];if(b0){const cha=m.a.stats.CHA||10;b0.score=Math.min(cha,(b0.score??cha)+1)}}}}
+ await play(TEXT.end1);await play(alive?TEXT.endWalt:TEXT.endDead);if(!alive)await trigger('death');
+ const b=await ask('',TEXT.burnQ,TEXT.burnOpts,NOT_YET);
+ if(b===0){F.burn='burned';await play(TEXT.burnDo);if(F.deduce==='right')await said(TEXT.burnCrew);else{await said(TEXT.burnSeen);await overstepHere('seen')}}
+ else{F.burn=null;await said(TEXT.burnLeave)}
+ if(!has('ledger')&&!holderOf('ledger83')){await said(TEXT.ledgerDrop);await pickup('ledger83')}
+ // Zuri's drawing goes back to Denise: each Family holder's first Bond +1 (up to CHA)
+ const d=holderOf('drawing');if(alive&&d){spend(d.m,d.it);await said(TEXT.drawBack);
+  for(const m of holdersOf('Family')){const b0=(m.a.bonds||[])[0];if(b0){const cha=m.a.stats.CHA||10;b0.score=Math.min(cha,(b0.score??cha)+1)}}}
  await fade(1);G.mode='scene';await fade(0);
- if(!o.worst){await said(TEXT.dawn);await said(alive?TEXT.dawnWalt:TEXT.dawnDead);if(!F.kenny)await said(TEXT.dawnKenny);if(late()>=4)await said(TEXT.dawnLate)}
+ await said(TEXT.dawn);await said(alive?TEXT.dawnWalt:TEXT.dawnDead);if(!F.kenny)await said(TEXT.dawnKenny);if(late()>=4)await said(TEXT.dawnLate)
  G.rescued=alive?1:0;
  const label=endingLabel();await debrief(label,endingFacts(label));  // Big Hat's debrief and the case gains (debrief.js)
 }

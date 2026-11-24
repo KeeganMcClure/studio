@@ -1,0 +1,7 @@
+{
+  "id": "life-after",
+  "title": "Life After",
+  "savePrefix": "la.",
+  "cover": "cover.js",
+  "channels": ["dev"]
+}

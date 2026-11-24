@@ -150,7 +150,7 @@ const TEXT={
  call:['Your phone buzzes. Unknown number. You know who it is.',['BIG HAT','I am hearin\' about you on the police scanner, {first}.'],['BIG HAT','Don\'t ask for anything next time. You won\'t get it.']],
  feds:['Black cars at the edge of the light. Four doors open at the same time.',['CLEAN-UP','Black Lantern. You\'re done here. Hand over what you\'ve found.'],['CLEAN-UP','Or don\'t. Paperwork\'s the same either way.']],
  fedsIntro:'The clean-up crew draws down!',
- fedsWin:['The black cars leave the way they came, slower now, one short.','Nobody takes the maze off you. Not tonight.'],
+ fedsWin:['The black cars leave the way they came, slower now, one short.'],
  // ---- the maze ----
  track:'Drag marks',trackLook:'Two grooves in the dirt, like heels dragged backward. They lead deeper in.',
  trackOk:'The marks are easy once you see them. You follow them in your head, turn by turn.',trackFail:'The grooves split, cross, and give out in the corn.',
@@ -617,18 +617,14 @@ async function stepScene(){
  checkpoint();
 }
 // the case's area-change hook (field.js): the Federal agents arrive as a very hard human story fight; win and the case
-// goes on with overstepping back at Local chief (Nov 24, 2026; it used to shut the case down)
-async function onArea(){
- const F=G.flags;if(!F.fedsDue||F.fedsDone)return;F.fedsDone=1;
- await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
- await play(TEXT.fedsWin);await fedsBeaten(F);
-}
+// goes on with overstepping back at Local chief (feds() in field.js)
+async function onArea(){await feds(TEXT,play)}
 
 // ================= ENDING (spec 006 C6; Demo 6 plays the full debrief) =================
 // The ending label: clean (all three cut down, the right deduction, overstepping below Agency call), costly (the
-// Gleaner beaten any other way), worst (only old saves: the clean-up crew used to shut the case down; since Nov 24, 2026 they don't). Plus the facts Demo 6 needs.
-function endingLabel(){const F=G.flags;if(F.shutDown)return'worst';
- return(G.rescued===3&&F.deduce==='right'&&!stepAt('Agency call')&&!F.fedsBeat)?'clean':'costly'}
+// Gleaner beaten any other way). worst is only in debrief saves from before Nov 24, 2026, when the clean-up crew shut a case down. Plus the facts Demo 6 needs.
+function endingLabel(){const F=G.flags;
+ return(G.rescued===3&&F.deduce==='right'&&!stepAt('Agency call'))?'clean':'costly'}
 function endingFacts(label){const F=G.flags;
  return{label,clues:G.clues.map(c=>c.id),saved:G.rescued||0,overstep:stepName(),
   san:party.map(m=>({id:m.a.id,name:m.name,from:m.san0,to:m.san})),
@@ -637,16 +633,16 @@ function endingFacts(label){const F=G.flags;
    sutter:!!F.sutter,page:F.pageAloud?'aloud':F.page?'taken':null,rest:{cruiser:!!F.cruiserRest,church:!!F.churchRest},photo:!!F.photo},
   tried:party.map(m=>({id:m.a.id,skills:m.tried||[]})),
   lost:(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case&&!x.done).map(x=>({name:x.name,how:x.how}))}}
-async function ending(o={}){
+async function ending(){
  const F=G.flags;
- if(!o.worst){await play(TEXT.end1);
-  const lost=VICTIMS.filter(V=>!F['saved_'+V.id]);
-  if(lost.length){await said(TEXT.endLost,{n:lost.map(v=>v.name).join(' and '),v:lost.length>1?'are':'is'});await trigger('death')}}
+ await play(TEXT.end1);
+ const lost=VICTIMS.filter(V=>!F['saved_'+V.id]);
+ if(lost.length){await said(TEXT.endLost,{n:lost.map(v=>v.name).join(' and '),v:lost.length>1?'are':'is'});await trigger('death')}
  await fade(1);G.mode='scene';await fade(0);
  const n=G.rescued||0,L=lead();
- if(!o.worst){await said(TEXT.dawn);await said(n===3?TEXT.dawn3:n?fill(TEXT.dawnSome,{n}):TEXT.dawnNone);if(F.pellHeld)await said(TEXT.dawnPell);
-  // one sighting at dawn: the lead rolls, once ever per agent (saved on the agent, so it carries to the roster)
-  if(!L.a.sawTall){L.a.sawTall=1;await play(TEXT.cameo);await horror(HORRORS.cameo,{who:[L]})}}
+ await said(TEXT.dawn);await said(n===3?TEXT.dawn3:n?fill(TEXT.dawnSome,{n}):TEXT.dawnNone);if(F.pellHeld)await said(TEXT.dawnPell);
+ // one sighting at dawn: the lead rolls, once ever per agent (saved on the agent, so it carries to the roster)
+ if(!L.a.sawTall){L.a.sawTall=1;await play(TEXT.cameo);await horror(HORRORS.cameo,{who:[L]})}
  L.a.cur=Object.assign(L.a.cur||{},{ch1:true,saved:n});
  const label=endingLabel();await debrief(label,endingFacts(label));  // Big Hat's debrief and the case gains (debrief.js)
 }

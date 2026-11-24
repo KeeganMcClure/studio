@@ -265,7 +265,7 @@ const TEXT={
  call:['Your phone buzzes. You know who.',['BIG HAT','I said quiet, {first}. Astoria PD has a description of you now, and I don\'t have a description of me.'],['BIG HAT','Don\'t ask for nothin\' next time.']],
  feds:['Three black cars come up Marine Drive with their lights off and stop in the rain.',['CLEAN-UP','Black Lantern. Internal. You\'re done here.'],['CLEAN-UP','Agent Teague is a personnel matter. Step away from the personnel.']],
  fedsIntro:'The clean-up crew draws down!',
- fedsWin:['The black cars go back up Marine Drive, one short.','Nobody says personnel matter again. Agent Teague is still yours to find.'],
+ fedsWin:['The black cars go back up Marine Drive, one short.'],
  // ---- the ending ----
  end1:['The Tenant stops in the middle of a sentence. It tries the sentence again, politely, and it doesn\'t fit.','The water goes out of the room all at once, down the drain, out under the doors, back to the river, like a tide going out a year at a time.'],
  endClean:['Abel Teague is sitting in the wet, holding his own hands like they\'re new.',['TEAGUE','You\'re Hat\'s.'],['TEAGUE','Nineteen years. You know the average is four?'],['TEAGUE','Tell Hat I wrote.'],
@@ -273,8 +273,6 @@ const TEXT={
  endCostly:['Abel Teague lies face down in an inch of water that\'s only water now.','He doesn\'t wake up. Whatever was in him took the last of him on its way out the door.','You turn him over. He looks like a man who was very tired for a very long time.'],
  bookDrop:'On the retort room\'s floor, open and bone dry, the book he worked from. THE TIDEWATER PSALTER. You take it.',
  dawn:'Morning. Still raining. Ray raises the flag at nine sharp, and nobody comes for the mail.',
- worstEnd:['Nobody finds Abel Teague. On the third day the dog in the boots stops outside the post office and won\'t move.',
-  'Up the coast, a man in a long oilskin waits at a bus shelter in the rain, eyes open, polite, for a bus that hasn\'t run since October.'],
  // ---- the debrief (spec 007), in the wheelhouse: Big Hat's lines by ending ({x}/{t} clues), what he says about the
  // choices, the memo (every ending), and the cover stories ----
  db:{
@@ -769,16 +767,12 @@ async function stepScene(){
  if(s==='Agency call'&&!F.call){F.call=1;await play(TEXT.call)}
  if(s==='Federal agents')F.fedsDue=1;
  checkpoint()}
-async function onArea(){
- const F=G.flags;if(!F.fedsDue||F.fedsDone||F.boss)return;F.fedsDone=1;
- await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
- await play(TEXT.fedsWin);await fedsBeaten(F)}
+async function onArea(){if(G.flags.boss)return;await feds(TEXT,play)}
 
 // ================= ENDING =================
 // clean: the Tenant driven out with his name read and him spoken to, so he dies as himself. costly: driven out any
-// other way. worst: the clean-up crew shut the case down and it walks off wearing him (old saves only; since Nov 24, 2026 the case
-// goes on after them).
-function endingLabel(){const F=G.flags;if(F.shutDown)return'worst';return F.named&&F.talked?'clean':'costly'}
+// other way. (worst: only in debrief saves from before Nov 24, 2026, when the clean-up crew shut a case down.)
+function endingLabel(){const F=G.flags;return F.named&&F.talked?'clean':'costly'}
 const lostHere=()=>(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case&&!x.done);
 // what the debrief and later agency cases read (bl.season, the case's facts): offBooks marks the arc's next step open
 function endingFacts(label){const F=G.flags;
@@ -790,13 +784,13 @@ function endingFacts(label){const F=G.flags;
   offBooks:true,
   tried:party.map(m=>({id:m.a.id,skills:m.tried||[]})),
   lost:lostHere().map(x=>({name:x.name,how:x.how}))}}
-async function ending(o={}){
+async function ending(){
  const F=G.flags;
- if(!o.worst){await play(TEXT.end1);await play(endingLabel()==='clean'?TEXT.endClean:TEXT.endCostly);
-  if(!holdItem('psalter')&&!holdItem('flyleaf')){await said(TEXT.bookDrop);await pickup('psalter')}
-  if(endingLabel()!=='clean')await trigger('death')}
+ await play(TEXT.end1);await play(endingLabel()==='clean'?TEXT.endClean:TEXT.endCostly);
+ if(!holdItem('psalter')&&!holdItem('flyleaf')){await said(TEXT.bookDrop);await pickup('psalter')}
+ if(endingLabel()!=='clean')await trigger('death')
  await fade(1);G.mode='scene';await fade(0);
- if(o.worst)await play(TEXT.worstEnd);else await said(TEXT.dawn);
+ await said(TEXT.dawn);
  const label=endingLabel();await debrief(label,endingFacts(label));  // Big Hat's debrief and the case gains (debrief.js)
 }
 

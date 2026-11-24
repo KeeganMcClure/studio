@@ -1,0 +1,53 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Life After</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+/* Life After's shell paint (spec 001, 1): from the baseline frame's NIGHT and DAY sets and the approved look
+   mockups (05 builder v2): a muted teal body, a near-black bezel, a cyan LED, rust A and B. */
+:root{--page:#0e1012;--shell:#3e4f4c;--shell-hi:#56696a;--shell-lo:#2a3533;--bezel:#121518;--bezel-edge:#08090a;--brand-ink:#9aa6a0;
+  --led:#3ff0e8;--led-off:#22302e;--scr-bg:#0c0e10;--scr-fg:#e8dcc0;--scr-hi:#e8c88a;--btn:#1a2022;--label:#9aa6a0;
+  --btn-a:#b4582e;--btn-b:#6a3424;--btn-ink:#f2ead6;--px:"Press Start 2P",ui-monospace,Menlo,monospace;--vt:"VT323",ui-monospace,Menlo,monospace;color-scheme:dark}
+body{margin:0}
+</style>
+<link rel="stylesheet" href="../../../engine/shell.css">
+<style>
+#cv{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none}
+/* Typing (a name, a seed, a save code): a cardboard card over the screen, so the phone keyboard can be used. */
+#ovl{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(8,10,12,.72);padding:10px;box-sizing:border-box}
+#ovl.on{display:flex}
+#ovl .cb{width:100%;max-width:340px;box-sizing:border-box;background:#c09a64;background:radial-gradient(ellipse at 32% 25%,#d2ac74 0 38%,#c09a64 39%);
+  border:3px solid #a6824e;border-bottom-color:#86683c;border-right-color:#86683c;padding:12px;color:#1c1a18;box-shadow:3px 3px 0 rgba(0,0,0,.45);position:relative}
+#ovl .cb:before,#ovl .cb:after{content:"";position:absolute;top:-6px;width:34px;height:11px;background:#a8aca8;border-top:2px solid #c4c8c4;border-bottom:2px solid #868a86}
+#ovl .cb:before{left:-8px;transform:rotate(-8deg)}#ovl .cb:after{right:-8px;transform:rotate(7deg)}
+#ovl h2{font:9px/1.6 var(--px);color:#8a2a1e;margin:0 0 8px}
+#ovl p{font:20px/1 var(--vt);margin:0 0 8px}
+#ovl input,#ovl textarea{width:100%;box-sizing:border-box;font:22px/1 var(--vt);color:#1c1a18;background:#ece6d8;border:2px solid #86683c;padding:4px 6px;outline:none;
+  -webkit-user-select:text;user-select:text;border-radius:0}
+#ovl textarea{height:96px;resize:none;font-size:16px;word-break:break-all}
+#ovl input:focus,#ovl textarea:focus{border-color:#3ff0e8}
+#ovl .bt{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+#ovl button{flex:1;min-width:90px;font:8px var(--px);color:#1c1a18;background:#d2ac74;border:2px solid #86683c;padding:10px 6px}
+#ovl button.go{border-color:#3ff0e8;outline:1px solid #3ff0e8}
+#ovl .err{color:#8a2a1e;min-height:20px}
+</style>
+</head><body>
+<div class="screen" id="screen" data-brand="LIFE AFTER" data-brand-sub=""
+  data-label-l="L: bag" data-label-r="R: map" data-label-select="Select: orders" data-label-start="Start: menu">
+  <canvas id="cv" aria-label="Life After"></canvas>
+  <div id="ovl" role="dialog"></div>
+</div>
+<script src="../../../engine/shell.js"></script>
+<script src="../../../engine/studio.js"></script>
+<script src="../../../engine/input.js"></script>
+<script src="../../../engine/move.js"></script>
+<script src="../../../engine/clock.js"></script>
+<script src="../../../engine/seed.js"></script>
+<script src="../../../engine/party.js"></script>
+<script src="../../../engine/savecode.js"></script>
+<script src="../assets/look.js"></script>
+<script src="../assets/street.js"></script>
+<script src="data.js"></script>
+<script src="ui.js"></script>
+<script src="game.js"></script>
+</body></html>

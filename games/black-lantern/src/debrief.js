@@ -142,17 +142,17 @@ function dbStories(){
 const dbTellers=()=>live();
 function dbChance(m,o){return o.type==='safe'?100:o.type==='luck'?50:chanceOf(m,o.skill,o.mod||0)}
 function dbBest(o){const ms=dbTellers();let b=0;ms.forEach((m,i)=>{if(dbChance(m,o)>dbChance(ms[b],o))b=i});return b}
-// where a held story drops the step to (Overstepping, Carry-over): one down after a climb, two after a clean case
-function dbDropTo(cur){return Math.max(0,cur-(dbClimbed()?1:2))}
 function dbClimbed(){const cur=loadSeason().overstep|0;return!!G.fs.climbed||(G.fs.step0!=null?cur>G.fs.step0:cur>0)}
+// where a held story drops overstepping to (Overstepping, Carry-over; Nov 24, 2026): one step even if it climbed this
+// case, two if it never climbed; never below Clean
+function dbDropTo(cur){return Math.max(0,cur-(dbClimbed()?1:2))}
 function dbCover(){return new Promise(res=>{const st=dbStories();SCR={kind:'db',v:'cover',sel:0,who:dbBest(st[0]),focus:'list',hits:[],done:res};ban.hidden=true})}
 async function dbTell(){
  const s=SCR,o=dbStories()[s.sel],m=dbTellers()[s.who]||lead(),D=G.db,steps=stepsOf(),sv=loadSeason(),cur=sv.overstep|0;
  let x=null,ok=true;
  if(o.type==='luck')x=SR.luck(0);else if(o.type==='skill')x=SR.pct(dbChance(m,o));
  if(x){ok=x.ok;if(!ok&&o.type==='skill')tried(m,o.skill)}  // a failed cover-story roll is a failed try for the teller
- // a pass closes it quietly and drops overstepping: one step if it climbed this case, two if it never did (never below
- // Clean; Kinder overstepping, Nov 24, 2026); a fail climbs one (held at the top)
+ // a pass closes it quietly and drops overstepping (one step, two on a clean case); a fail climbs one (held at the top)
  let climb=false,drop=false;
  if(!ok){if(cur<steps.length-1){sv.overstep=cur+1;climb=true}}
  else if(cur>0){sv.overstep=dbDropTo(cur);drop=true}
@@ -200,8 +200,9 @@ function dbDrawCover(){
  // what happens on a pass and on a fail, naming the step it would drop to and the step it would climb to
  const dh=Math.max(30,Math.min(56,VH-y-3));pBox(4,y,232,dh,PC.deep,PC.cream,2);
  const lines=[];
- if(o.type==='safe')lines.push([DBW.safeLine,PC.cream]);
- else{lines.push([cur>0?fillT(DBW.passDrop,{s:steps[dbDropTo(cur)]}):DBW.passQuiet,PC.cream]);lines.push([cur<steps.length-1?fillT(DBW.failClimb,{s:steps[cur+1]}):fillT(DBW.failTop,{s:steps[cur]}),PC.cream])}
+ const pass=cur>0?fillT(DBW.passDrop,{s:steps[dbDropTo(cur)]}):DBW.passQuiet;
+ if(o.type==='safe')lines.push([DBW.safeLine+(cur>0?' '+fillT(DBW.safeDrop,{s:steps[dbDropTo(cur)]}):''),PC.cream]);
+ else{lines.push([pass,PC.cream]);lines.push([cur<steps.length-1?fillT(DBW.failClimb,{s:steps[cur+1]}):fillT(DBW.failTop,{s:steps[cur]}),PC.cream])}
  lines.push([pick&&s.focus==='who'?DBW.tellKeys:pick?DBW.coverKeys:DBW.tellKeys.replace(' · B: back',''),PC.lav]);
  const out=[];lines.forEach(([t,c])=>pWrap(t,220,13,3).forEach(l=>out.push([l,c])));
  out.slice(0,Math.floor((dh-4)/11)).forEach(([t,c],k)=>pT(t,10,y+2+k*11,c,13));
