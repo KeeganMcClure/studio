@@ -183,7 +183,7 @@ Phobia subject: **voices** (a voice you can't place that knows your name). Trigg
 | --- | --- |
 | `clean` | The Night Line is ended, Emile's name was said on the air, both missing (and Lucien) walk out of the circle, Odile is safe, and the tower's red light goes out at dawn. Odile asks the parish to dig up the circle, and they do. |
 | `costly` | The Night Line is ended, but someone in the circle was lost, or Odile was hurt, or the fish fry boiled and somebody's house burned. The tower comes down that spring. Nobody talks about it. |
-| `worst` | 3:33 comes first, or the team falls back: the show names the whole parish on the next night. Halcott's radios go quiet a week later, all at once. Also the Federal agents' shutdown. |
+| `worst` | 3:33 comes first, or the team falls back: the show names the whole parish on the next night. Halcott's radios go quiet a week later, all at once. |
 
 ## Big Hat's briefing
 
@@ -275,4 +275,4 @@ Keying a dead carrier: the crystal back in the transmitter on night 2 (the booth
 
 - `clean`: the Night Line ended, `name` said, nobody taken by the circle, Miss Odile's house standing, `fear` under 3, no agent lost, overstepping below Agency call.
 - `costly`: ended any other way.
-- `worst`: the Federal agents' shutdown.
+- `worst`: none since Nov 24, 2026 (the Federal agents used to shut the case down; now they're a fight and the case goes on).

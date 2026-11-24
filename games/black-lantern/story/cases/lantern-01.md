@@ -175,7 +175,7 @@ Phobia subject: **deep water**. Trigger tags: Teague is a liar (Paranoia); the c
 | --- | --- |
 | `clean` | Name read and Teague spoken to: the Tenant is driven out and Teague dies as himself, after a few words for Big Hat ("Tell Hat I wrote."). |
 | `costly` | The Tenant is driven out and Teague with it: he dies without waking. |
-| `worst` | The Tenant walks out into the rain wearing him (a party wipe at the boss that the case still closes as, a Federal agents' shutdown, or the boss fled). Season 2 seed. |
+| `worst` | The Tenant walks out into the rain wearing him (a party wipe at the boss that the case still closes as, or the boss fled). Season 2 seed. |
 
 ## Big Hat's briefing (and the debrief, same place)
 
@@ -206,6 +206,6 @@ What part B built, and where it settled what the file above left open (this file
 - **Fights:** the bull (24 HP, 2 skulls, avoidable with Survival's Track; a day fight oversteps seen, or public if Loud); the empty coat at dusk (24 HP, 2 skulls; Strangle costs a turn); roamers at night: gulls (12 HP) at the pier steps guarding the Lantern Box (road flare, first-aid kit, salt) and the piling (15 HP) at the brine barrel. Story fights were made Tough tier (24 HP) to meet the 20–35 story-fight total.
 - **Salt:** a can of brine (3 splashes, no roll: double damage and Stunned on anything brackish) from the van after the right deduction, the barrel (night; by day Craft on the padlock) or the cannery tanks (Craft or Science).
 - **Boss (tuned with tools/boss-sim.js):** 62 HP; −6 with the record in hand, −8 with the page burned, −6 for the right deduction (42 with all three). Phase 2 at half: a shield takes 1 off every hit until his name is read (the record, used in battle: History or Bureaucracy), and it heals 1 a turn unless the page burned. Talk to Abel is offered as phase 2 opens (sure with `mirror`, else best Empathy −20; costs the party a round, holds the Tenant a turn; Redemption holders regain SAN).
-- **Endings:** clean = name read and spoken to; costly = otherwise; worst = only the Federal agents' shutdown (a party wipe is a game over that reopens the case, per spec 014's Done when, not a worst close).
+- **Endings:** clean = name read and spoken to; costly = otherwise; worst = none since Nov 24, 2026 (it was only the Federal agents' shutdown, which is gone) (a party wipe is a game over that reopens the case, per spec 014's Done when, not a worst close).
 - **Arc touches:** the stamps, Dot's note, the flyleaf numbered 4 (it survives the burning), and the memo with "W." and "Not in my jurisdiction." at every debrief. The case's facts in `bl.season` carry `offBooks: true` for later cases to read; no save step was needed.
 - **Left out:** Teague's badge is part of the record item and gets a Big Hat line, but no +1 to the Duty agent's next roll (no hook for it yet). The six reports (Duty) cost a horror and restore SAN, plus a Big Hat line, not a numeric bonus.

@@ -160,7 +160,7 @@ Phobia subject: **grubs** (small soft crawling things). Trigger tags: Walt is a 
 | --- | --- |
 | `clean` | The Lodger is ended, Walt is pulled out alive, every jar is iced and burned, the tent comes down at dawn on a building that's only a building. Denise takes Walt to Houston. |
 | `costly` | The Lodger is ended, but Walt died in the nest, or a jar is unaccounted for, or a tenant saw. The building gets new drywall and a new manager. |
-| `worst` | Dawn comes first. The tent comes down and the building is quieter than it should be. Also the Federal agents' shutdown. |
+| `worst` | Dawn comes first. The tent comes down and the building is quieter than it should be. |
 
 ## Big Hat's briefing
 
@@ -229,7 +229,7 @@ Right ("one of the jars hatched; it's nesting with Walt") needs `count` plus `li
 
 ### Overstepping, as built
 
-Quiet case: Noticed, Local chief (Sgt. Ruiz's walk-through: the office key board locks; Credentials or Talk gets you in), Agency call, Federal agents (the clean-up crew at the next area change: `worst`). Noticed: Lorraine and Mrs. Ybarra clam up (their options at −20) and Kenny films the crew.
+Quiet case: Noticed, Local chief (Sgt. Ruiz's walk-through: the office key board locks; Credentials or Talk gets you in), Agency call, Federal agents (the clean-up crew at the next area change: a very hard fight, then the case goes on at Local chief). Noticed: Lorraine and Mrs. Ybarra clam up (their options at −20) and Kenny films the crew.
 
 ### Cover stories
 
@@ -243,4 +243,4 @@ Quiet case: Noticed, Local chief (Sgt. Ruiz's walk-through: the office key board
 
 - `clean`: the Lodger ended, Walt alive (`walt`), the nest burned, every jar accounted for (`iced`, `bay`, the crawler's jar), overstepping didn't climb this case, no agent lost, `late` under 4.
 - `costly`: the Lodger ended any other way.
-- `worst`: the Federal agents' shutdown.
+- `worst`: none since Nov 24, 2026 (the Federal agents used to shut the case down; now they're a fight and the case goes on).

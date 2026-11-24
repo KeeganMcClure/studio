@@ -190,7 +190,7 @@ Phobia subject: **medical procedures** (needles, surgery, exam tables). Trigger 
 | --- | --- |
 | `clean` | The Surveyor is put down or folds away, the carrier comes home, the Pruetts never call the paper. Ray and Donna sleep with one lamp on, then none. |
 | `costly` | The Surveyor is ended, but the carrier is changed (the tally cut out and the wedding gone from Ray, or an agent keeps the mark), or the paper ran a story nobody believed. |
-| `worst` | The Lamp takes the carrier. Or the Federal agents' shutdown. |
+| `worst` | The Lamp takes the carrier. |
 
 ## Big Hat's briefing
 
@@ -285,6 +285,6 @@ Medicine (explain it): a sleep study, a bad cyst and a reaction to a sedative. B
 
 ### Endings, as built
 
-- `worst`: the Lamp takes Ray or Donna, or the Federal agents' shutdown.
+- `worst`: the Lamp takes Ray or Donna.
 - `clean`: the Surveyor gone, the carrier Ray or Donna home, no cut and no stroke, the paper never called, no agent lost this case, overstepping below Agency call.
 - `costly`: any other win. An agent who carried it and came home makes a Severe helplessness SAN roll at the end (the hum).
