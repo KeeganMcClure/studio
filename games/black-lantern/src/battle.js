@@ -83,9 +83,14 @@ async function foeStatus(e,k,o={}){
 
 // ================= MESSAGES AND THE RESULT LINE =================
 // Battle lines show in the command box (the mockup keeps the scene clear). A or B moves on early.
+// a battle line stays until A, B or a tap clears it, like any dialog (Keegan, Nov 24: timed lines vanished before he could
+// read them). Fast battles keeps them timed, at half speed; so do the boss simulator and the automatic checks (window.__battleAuto).
 function bsay(text,ms=1000){if(!Bt)return Promise.resolve();Bt.msg=pWrap(fmt(String(text)),Math.min(226,VW-14),14,3);
+ const timed=fastOn()||window.__battleAuto,t0=performance.now();
  return new Promise(res=>{const done=()=>{clearTimeout(to);if(Bt&&Bt.ui&&Bt.ui.kind==='msg'){Bt.ui=null;Bt.msg=null}res()};
-  const to=setTimeout(done,fastOn()?Math.round(ms*.5):ms);Bt.ui={kind:'msg',res:done}})}
+  const to=timed?setTimeout(done,fastOn()&&!window.__battleAuto?Math.round(ms*.5):ms):0;
+  // a press in the first 150 ms is ignored, so a held or doubled A can't skip a line unread
+  Bt.ui={kind:'msg',res:()=>{if(timed||performance.now()-t0>150)done()}}})}
 function bres(word,o){if(!Bt)return;const w=o.crit?'CRIT':o.fumble?'FUMBLE':o.ok?'HIT':'MISS';
  Bt.res={text:`${word} ${o.target}% · rolled ${o.r} · `,word:w,col:o.ok?PC.gold:PC.pink,until:Bt.t+(fastOn()?50:95)}}
 function floatOn(x,txt,col){if(!Bt)return;const L=bLayout();let fx,fy;
