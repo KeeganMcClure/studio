@@ -9,7 +9,7 @@ const SB=StudioBattle;
 const PAL={peat:'#1c1814',soot:'#2c2621',duskD:'#3b4757',dusk:'#5c6c7c',moss:'#56623a',rust:'#9a4528',tallow:'#d9b45a',straw:'#c8a552',
  bone:'#e6dcc4',ash:'#857e72',blood:'#5e1a18',pink:'#ff4fa3',cyan:'#3ff0e8',card:'#231e1a',cardOn:'#3b3229',line:'#4d4134'};
 const VTf=s=>`${s}px "VT323",monospace`,PXf=s=>`${s}px "Press Start 2P",monospace`;
-const BT_THEME={font:VTf,ink:PAL.peat,dim:PAL.ash,gold:PAL.tallow,cream:PAL.bone,lav:'#c4b99e',line:PAL.bone,box:PAL.soot,boxOn:PAL.cardOn,
+const BT_THEME={font:VTf,ink:PAL.peat,dim:PAL.ash,gold:PAL.tallow,cream:PAL.bone,lav:PAL.bone,line:PAL.bone,box:PAL.soot,boxOn:PAL.cardOn,
  strip:PAL.peat,bar:PAL.rust,barBack:PAL.peat,shadow:'#0e0c0a',rule:PAL.line,colBack:'rgba(28,24,20,.92)',faceBack:PAL.soot,foeLine:PAL.rust};
 // Rushlight's words for the roll line and the box (Combat, Basics; Battle menu)
 const BW={cmds:['Fight','Skills','Items','Guard'],words:{hit:'HIT',miss:'MISS',crit:'CRIT',fumble:'FUMBLE'},
@@ -408,6 +408,7 @@ function drawBattle(){
  const L=SB.layout(VW,VH,{tallest:tall});Bt.hits=[];
  drawScene(L);
  // enemies, each with its nameplate under it
+ const plates=platesFor(L.enemyY+2);
  Bt.en.forEach((e,i)=>{
   if(e.dead)e.alpha=Math.max(0,e.alpha-.04);if(e.alpha<=0)return;
   const x=foeX(i),s=spriteOf(e),by=L.enemyY;cx.globalAlpha=e.alpha;
@@ -417,7 +418,7 @@ function drawBattle(){
   if(e.flash>0)e.flash--;cx.globalAlpha=1;
   const hov=Bt.ui&&Bt.ui.kind==='list'&&Bt.ui.hover&&Bt.ui.hover(Bt.ui.sel)===e;
   if(hov){const ay=by-(s?s.height:30)-8+Math.sin(t*.2)*2;bR(x-3,ay,7,2,PAL.tallow);bR(x-2,ay+2,5,2,PAL.tallow);bR(x-1,ay+4,3,2,PAL.tallow)}
-  if(!e.dead)plate(e,x,by+2+(e.group?(i%2)*24:0),i);
+  if(!e.dead&&plates.has(e))plate(e,plates.get(e));
  });
  // damage numbers
  Bt.floaties=Bt.floaties.filter(f=>f.t<50);Bt.floaties.forEach(f=>{f.t++;const i=Bt.en.indexOf(f.e),x=foeX(i),y=L.enemyY-30-f.t*.5;bT(f.txt,x-3+1,y+1,PAL.peat,16);bT(f.txt,x-3,y,PAL.bone,16)});
@@ -444,21 +445,35 @@ function drawBattle(){
 }
 function cmdDetail(m,sel){const w=weaponOf(m);return [`${w.name} · ${w.dmg}${wearOf(m)?'−'+wearOf(m):''} · ${hitChance(m,null)}%${canFire(m)?'':' · spanning'}`,`${m.wp} WP`,`${m.slots.length} in slots`,Bt.roamer?'Defend, Brace, Retch, Flee':'Defend, Brace, Retch'][sel]}
 // the nameplate: name, level, threat skulls, and an HP bar hatched and marked ??? until Identified
-function plate(e,x,y){
- const nm=`${e.name} L${e.lvl||1}`,sk=e.skulls||1,w=Math.min(VW-28,Math.max(Bt.en.length>2?40:54,bW(nm,13)+sk*7+8)),x0=Math.round(Math.max(26,Math.min(VW-2-w,x-w/2)));
+// Every living foe gets its own plate, wide enough for the whole name. With three foes or more every other plate drops a row
+// (spec 008, 8A), then plates on one row are pushed apart so there is always a gap and none runs off the screen (bug batch, Nov 24).
+const plateName=e=>`${e.name} L${e.lvl||1}`;
+function platesFor(y){
+ const live=Bt.en.filter(e=>!e.dead),rows=live.length>2?2:1,out=new Map(),GAP=3,L0=26,R0=VW-2;
+ for(let r=0;r<rows;r++){
+  const row=live.filter((e,k)=>k%rows===r).map(e=>{const w=Math.min(R0-L0,Math.max(54,bW(plateName(e),13)+(e.skulls||1)*7+8));return {e,w,x:foeX(Bt.en.indexOf(e))-w/2,y:y+r*24}});
+  row.forEach((p,k)=>{p.x=Math.max(L0,p.x);if(k)p.x=Math.max(p.x,row[k-1].x+row[k-1].w+GAP)});
+  for(let k=row.length-1;k>=0;k--){const lim=k===row.length-1?R0:row[k+1].x-GAP;if(row[k].x+row[k].w>lim)row[k].x=lim-row[k].w}
+  row.forEach(p=>out.set(p.e,{x:Math.round(Math.max(L0,p.x)),y:p.y,w:p.w}))}
+ return out}
+function plate(e,P){
+ const nm=plateName(e),sk=e.skulls||1,w=P.w,x0=P.x,y=P.y;
  SB.box(cx,x0,y,w,22,'rgba(28,24,20,.9)',PAL.line,1);bT(nm,x0+3,y-1,PAL.bone,13);
  for(let k=0;k<sk;k++)skull(x0+w-4-(k+1)*7,y+2);
  const bx=x0+3,bw=w-6,by=y+13;
  if(e.known){SB.hpBar(cx,BT_THEME,bx,by,bw,e.hp/e.mhp,4)}
  else{bR(bx,by,bw,6,PAL.peat);for(let k=0;k<bw-2;k+=3)bR(bx+1+k,by+1,1,4,PAL.rust);const q='???';bT(q,bx+bw/2-bW(q,11)/2,by-3,PAL.bone,11)}
 }
+function fitName(n,w){for(const z of [13,12,11])if(bW(n,z)<=w)return {s:n,z};const f=n.split(/[\s-]/)[0];return {s:bW(f,11)<=w?f:f.slice(0,Math.max(1,Math.floor(w/5))),z:11}}
 function skull(x,y){bR(x,y,5,4,PAL.bone);bR(x+1,y+4,3,1,PAL.bone);bR(x+1,y+1,1,1,PAL.peat);bR(x+3,y+1,1,1,PAL.peat)}
 // the one-row party strip: name, HP bar, WP and SAN (SAN pink under 40)
 function strip(r){
  bR(r.x,r.y,r.w,r.h,PAL.peat);const cw=Math.floor((r.w-4)/3);
  party.forEach((m,i)=>{const x=r.x+2+i*cw,on=Bt.active===m;SB.box(cx,x,r.y+1,cw-2,r.h-2,on?PAL.cardOn:PAL.card,on?PAL.tallow:m.ko?PAL.rust:PAL.line,1);
-  bT(SB.fit(cx,BT_THEME,m.name.toUpperCase(),cw-30,13),x+3,r.y,on?PAL.tallow:PAL.bone,13);
-  const hs=m.ko?'DOWN':String(m.hp);bT(hs,x+cw-5-bW(hs,13),r.y,m.ko?PAL.rust:PAL.bone,13);
-  SB.hpBar(cx,BT_THEME,x+3,r.y+12,cw-8,m.hp/m.mhp,3);
-  const s=`WP ${m.wp} SAN `;bT(s,x+3,r.y+16,PAL.ash,11);bT(String(m.san),x+3+bW(s,11),r.y+16,m.san<40?PAL.pink:PAL.ash,11)});
+  // the whole name, never cut (bug batch, Nov 24): the card's full width, a smaller size if it must, else the first name
+  const nm=fitName(m.name.toUpperCase(),cw-8);bT(nm.s,x+3,r.y+(13-nm.z),on?PAL.tallow:PAL.bone,nm.z);
+  // the HP number beside its bar; WP and SAN in Bone (Ash is for labels only)
+  const hs=m.ko?'DOWN':String(m.hp),hw=bW(hs,11);bT(hs,x+cw-5-hw,r.y+9,m.ko?PAL.rust:PAL.bone,11);
+  SB.hpBar(cx,BT_THEME,x+3,r.y+12,cw-12-hw,m.hp/m.mhp,3);
+  const s=`WP ${m.wp} SAN `;bT(s,x+3,r.y+16,PAL.bone,11);bT(String(m.san),x+3+bW(s,11),r.y+16,m.san<40?PAL.pink:PAL.bone,11)});
 }

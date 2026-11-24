@@ -130,13 +130,11 @@ function applySan(){const m=lead();if(!m)return;const fr=clamp(m.san/m.msan,0,1)
 // ================= WORLD =================
 const SITE_BLOCK=new Set('THDwfrc~bogWhksOpmuLa'.split(''));
 function passable(x,y){const M=G.M;if(x<0||y<0||x>=M.w||y>=M.h)return false;if((M.site?SITE_BLOCK:BLOCK).has(M.g[y][x]))return false;if(M.npcs.some(n=>(!n.on||n.on())&&n.x===x&&n.y===y))return false;return true}
-function goMap(name,x,y,dir){hud.hidden=true;gEl.classList.remove('battle','region','site','town');if(name.startsWith('site_'))gEl.classList.add('site');if(name.startsWith('town_'))gEl.classList.add('town');G.map=name;G.M=MAPS[name]();StudioMove.place(G,x,y,dir);G.trail=[];
+function goMap(name,x,y,dir){hud.hidden=true;gEl.classList.remove('battle','region','site','town');if(name.startsWith('site_'))gEl.classList.add('site');if(name.startsWith('town_'))gEl.classList.add('town');G.map=name;G.M=MAPS[name]();StudioMove.place(G,x,y,dir);
  banner(G.M.name);saveRun()}
 function update(){
  if(G.mode!=='world')return;
- const ox=G.x,oy=G.y;
  StudioMove.update(G,StudioMove.last(held),{passable,busy:()=>G.busy||dlg||menu||PM||IV||EX,arrive:()=>run(onStep)});
- if(G.x!==ox||G.y!==oy){G.trail=[[ox,oy],...(G.trail||[])].slice(0,2)}
 }
 async function onStep(){const M=G.M,k=G.x+','+G.y;if(M.warps&&M.warps[k]){held=[];return M.warps[k]()}if(M.onStep)await M.onStep()}
 async function interact(){
@@ -145,7 +143,6 @@ async function interact(){
  if(n){n.dir={up:'down',down:'up',left:'right',right:'left'}[G.dir];held=[];await n.talk(n);return}
  if(M.O[k]){held=[];await M.O[k]();return}
 }
-function others(){const l=G.lead|0;return party.filter((m,i)=>i!==l&&!m.dead)}
 function cam(){return StudioMove.camera(G,G.M.w,G.M.h,VW,VH)}
 function drawWorld(){
  const M=G.M,[camx,camy]=cam();cx.fillStyle='#0a0710';cx.fillRect(0,0,VW,VH);
@@ -153,8 +150,6 @@ function drawWorld(){
  if(M.town)drawStreet(M,camx,camy);else if(M.site)drawSiteTiles(M,camx,camy);else for(let ty=y0;ty<=y0+Math.ceil(VH/16)+1;ty++)for(let tx=x0;tx<=x0+Math.ceil(VW/16)+1;tx++){const ch=M.g[ty]&&M.g[ty][tx];if(!ch)continue;let v=(tx*7+ty*13)%4;if(ch==='V')v=M.vv[tx+','+ty];if(ch==='T')v=(tx*3+ty*5)%3;cx.drawImage(tile(ch,v),tx*16-camx,ty*16-camy)}
  const spr=[];
  M.npcs.forEach(n=>{if(n.on&&!n.on())return;spr.push({y:n.y*16,f:()=>cx.drawImage(RLSP.map(n.sp,n.look),n.x*16+1-camx,n.y*16+16-26-camy)})});
- // the other mercs follow the lead, a tile apart, along the lead's own steps (spec 003, 10)
- (G.trail||[]).forEach((t,k)=>{const m=others()[k];if(!m)return;spr.push({y:t[1]*16,f:()=>cx.drawImage(RLSP.map(m.sp,m.look),t[0]*16+1-camx,t[1]*16+16-26-camy)})});
  const moving=!!G.mv,fr=StudioMove.walkFrame(G);
  // Only the lead walks the map (Bible, Art, Maps). Agent sprites from agent-sprite.js; lantern at night only; a blink every few seconds.
  const blink=!moving&&(performance.now()%3400)<150?1:0;
@@ -192,7 +187,7 @@ function leave(){saveRun();G.active=false;PM=null;IV=null;cancelAnimationFrame(r
 function quit(){leave();B.goto('title');B.render()}
 // Sign them on: the company drops into the stand-in town (spec 003, 10; Part C replaces it with Harrowford)
 function begin(rn){
- G=Object.assign(G,{active:true,run:rn,lead:rn.lead|0,flags:{},busy:0,mode:'region',trail:[]});party=rn.party;useDice(rn.streams.dice);
+ G=Object.assign(G,{active:true,run:rn,lead:rn.lead|0,flags:{},busy:0,mode:'region'});party=rn.party;useDice(rn.streams.dice);
  if(!rn.region)rn.region=makeRegion(rn);
  enter();
  // a street or site the company stood in (Parts C and D), else the region map; a march saved mid-road picks up again
@@ -206,7 +201,7 @@ function begin(rn){
  else if(rn.region.trip)run(async()=>{await say('','On the road, where you left off.',{auto:900});await walk()});
 }
 function resume(){const r=store.get(B.key('run'),null);if(!r||r.ended||!r.party)return false;begin(r);return true}
-G.onLead=()=>{G.trail=[];saveRun()};
+G.onLead=()=>{saveRun()};
 
 // ================= THE MAP MENU =================
 async function pauseMenu(){
@@ -243,16 +238,19 @@ function itemsPress(k){const n=party.length;if(k==='l'||k==='up')IV.i=(IV.i+n-1)
 const WEAR=['Sound','Worn','Cracked','Broken'];
 function drawItems(){const m=party[IV.i],I=RLS.ITEMS,r=G.run;pR(0,0,VW,VH,PAL.peat);
  pBox(4,4,VW-8,18,PAL.soot,PAL.bone);pT('ITEMS',9,9,PAL.tallow,8,PXf);
- party.forEach((p,j)=>{const x=78+j*52;if(j===IV.i)pBox(x-2,5,50,16,PAL.cardOn,PAL.tallow);cx.drawImage(RLSP.portrait(p.sp,p.look),0,0,64,64,x,6,14,14);pT(pFit(p.name,32,13),x+16,6,j===IV.i?PAL.tallow:PAL.bone,13)});
- let y=26;const used=m.slots.length,sl=`SLOTS ${used}/8`,slx=VW-8-pW(sl,14);pT(`${m.name.toUpperCase()}`,8,y,PAL.tallow,16);const nx=8+pW(m.name.toUpperCase()+' ',16);pT(pFit(`${m.sp} · ${m.trade}${(G.lead|0)===IV.i?' · lead':''}`,slx-nx-4,14),nx,y+1,'#c4b99e',14);
- pT(sl,slx,y+1,'#c4b99e',14);y+=16;
+ party.forEach((p,j)=>{const x=78+j*52;if(j===IV.i)pBox(x-2,5,50,16,PAL.cardOn,PAL.tallow);cx.drawImage(RLSP.portrait(p.sp,p.look),0,0,64,64,x,6,14,14);const z=pSize(p.name,32,[13,12,11]);if(z)pT(p.name,x+16,6+(13-z)/2,j===IV.i?PAL.tallow:PAL.bone,z)});  // a tab shows the whole name or only the face
+ let y=26;const used=m.slots.length,sl=`SLOTS ${used}/8`,slx=VW-8-pW(sl,14);const NM=m.name.toUpperCase();pT(NM,8,y,PAL.tallow,pSize(NM,slx-12,[16,15,14,13,12])||12);pT(sl,slx,y+1,'#c4b99e',14);y+=13;
+ // species · trade on its own line, whole (bug batch, Nov 24)
+ const sub=`${m.sp} · ${m.trade}${(G.lead|0)===IV.i?' · lead':''}`;pT(sub,8,y,PAL.bone,pSize(sub,VW-16,[14,13,12,11])||11);y+=16;
  const g=m.gear;[['WPN 1',g.w1,g.hand==='w1'],['WPN 2',g.w2,g.hand==='w2'],['BODY',g.body],['HEAD',g.head]].forEach(([l,it,inHand])=>{pBox(4,y,VW-8,14,PAL.card,PAL.line);pT(l,8,y,'#c4b99e',14);
   if(inHand)pR(42,y+5,3,3,PAL.tallow);const nm=it?I[it.id].name+(I[it.id].dmg?' '+I[it.id].dmg:''):'—';pT(nm,48,y,PAL.bone,14);
-  if(it){const w=WEAR[it.wear|0];pT(w,VW-30-pW(w,13),y+1,it.wear?PAL.tallow:PAL.ash,13);for(let q=0;q<3;q++)pR(VW-24+q*6,y+5,4,4,q<3-(it.wear|0)?PAL.bone:PAL.soot)}y+=15});
- y+=2;for(let s=0;s<8;s++){const x=4+(s%4)*58,yy=y+Math.floor(s/4)*16,it=m.slots[s];pBox(x,yy,56,15,PAL.card,it?PAL.line:PAL.soot);
-  if(it){pT(pFit(I[it.id].name,40,13),x+3,yy,PAL.bone,13);if(it.n>1)pT('×'+it.n,x+54-pW('×'+it.n,13),yy,PAL.tallow,13);if(it.kit)pT('KIT',x+3,yy+8,PAL.ash,9)}}
- y+=36;pT('PACK',8,y,PAL.tallow,14);y+=13;
- const pack=r.pack||[];if(!pack.length){pT('Nothing in the pack.',8,y,PAL.ash,14);y+=13}
+  if(it){const w=WEAR[it.wear|0];pT(w,VW-30-pW(w,13),y+1,it.wear?PAL.tallow:PAL.bone,13);for(let q=0;q<3;q++)pR(VW-24+q*6,y+5,4,4,q<3-(it.wear|0)?PAL.bone:PAL.soot)}y+=15});
+ // the 8 slots in two columns, so every item's name fits whole (bug batch, Nov 24)
+ y+=2;const sw=Math.floor((VW-10)/2);for(let s=0;s<8;s++){const x=4+(s%2)*(sw+2),yy=y+Math.floor(s/2)*15,it=m.slots[s];pBox(x,yy,sw,14,PAL.card,it?PAL.line:PAL.soot);
+  if(it){const cn=it.n>1?'×'+it.n:'',kt=it.kit?'KIT':'',rw=(cn?pW(cn,13)+3:0)+(kt?pW(kt,9)+3:0),nm=I[it.id].name;pT(nm,x+3,yy+(13-(pSize(nm,sw-6-rw,[13,12,11])||11))/2,PAL.bone,pSize(nm,sw-6-rw,[13,12,11])||11);
+   let rx=x+sw-3;if(cn){rx-=pW(cn,13);pT(cn,rx,yy,PAL.tallow,13);rx-=3}if(kt){rx-=pW(kt,9);pT(kt,rx,yy+3,PAL.ash,9)}}}
+ y+=62;pT('PACK',8,y,PAL.tallow,14);y+=13;
+ const pack=r.pack||[];if(!pack.length){pT('Nothing in the pack.',8,y,PAL.bone,14);y+=13}
  pack.slice(0,Math.max(0,Math.floor((VH-28-y)/12))).forEach(p=>{pT(I[p.id]?I[p.id].name+(p.n>1?' ×'+p.n:''):p.id,8,y,PAL.bone,14);y+=12});
  pBox(4,VH-20,VW-8,16,PAL.soot,PAL.bone);const days=Math.floor((r.rations|0)/Math.max(1,party.filter(p=>!p.dead).length));
  pT(`PURSE ${r.purse} gr · RATIONS ${r.rations}/15 · ${days} days`,9,VH-19,PAL.bone,14);
