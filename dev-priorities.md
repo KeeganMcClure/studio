@@ -1,0 +1,28 @@
+# Dev priorities
+
+Studio-wide ranked list of Developer jobs across all games. Ranked Nov 24, 2026 from a review of the bibles, specs and changelogs. Copied here from the old "Game Dev Set Up" project before it was deleted.
+Keegan's call, Nov 24: work the list top to bottom, switching games as it goes. Tick an item when it's done and add one indented `Done <date>:` line under it.
+
+1. - [x] Black Lantern: Kinder overstepping (bible rule changed Nov 24).
+   Done Nov 24: built and merged.
+2. - [ ] Black Lantern: bigger agents in battle (spec 023), before more cases.
+3. - [ ] Rushlight: the look bug batch. Its dev prompt (`handoffs/rushlight-look-bugs-dev-prompt.md`) still has to be shared again by the Designer (see `designer-todo.md`).
+4. - [ ] Rushlight: look pass 8A to 8D (spec 008), one part per session. Dev prompt: `handoffs/rushlight-facelift-dev-prompt.md`. It assumes the look bug batch is done first. The seven CO-TAG rows need Keegan's OK before 8C releases.
+5. - [ ] Black Lantern: the later agency cases and the finale (spec 015).
+6. - [ ] Life After: the slice, parts A to D (specs 001 to 004) and the cover.
+   Part A and the cover merged Nov 24 (PR #216). Parts B to D wait for Keegan's Part A phone notes and the Designer's mockups for the "To draw" screens (Fights, Bag, Map screen, Notebook, Hideout, Attack, Death).
+7. - [x] Black Lantern: the Gleaner's 1 px sprite bug (cosmetic).
+   Done Nov 24: fixed and merged.
+
+## Open flags
+
+- Rushlight: the slice's missed tuning checks (spec 006 D2) have no To do line yet. That's on `designer-todo.md`.
+- Rushlight: the bible's Art line from Nov 20 gives a battle back-view size of 16–20 × 20–24 px. Keegan chose spec 008's sizes (party 2×, foes 1.5×) on Nov 24; the Designer still has to update that bible line.
+- Black Lantern: an optional question is open on whether Federal agents should rule out a clean ending (asked while building Kinder overstepping).
+
+## How the work goes
+
+- One job per session, from the top of this list. The Developer follows `CLAUDE.md`; the Designer keeps `designer-todo.md`.
+- Questions to Keegan are multiple choice, 2 to 4 options, one marked (Recommended) with a one-line reason. He prefers tappable cards and short answers, since he reads on his phone.
+- Check every suggestion against the bibles' locked decisions. Flag a conflict and ask whether to change the decision.
+- After a batch of jobs finishes, post one summary: what was done, the next step, any dev handoffs, and how big each remaining dev job is.
