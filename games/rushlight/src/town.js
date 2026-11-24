@@ -244,7 +244,7 @@ function contractsPress(k){const cs=G.run.contracts.filter(c=>!c.done);if(!cs.le
  else if(k==='a'||k==='select'){const c=cs[CP_SEL];MAPV.page=null;run(async()=>{const x=await choose([`Keep ${c.title}`,`Drop ${c.title}`],{cancel:true,title:'CONTRACT'});if(x===1)await dropJob(c.id)})}}
 // the givers (spec 005, 3): name, archetype, faction and its step, a showing quirk, and the job; haggling; Read
 async function giverPlace(gk){const r=G.run,gv=r.givers[gk],G_=GIVERS[gk],k=G_.town;
- PORTRAITS[gv.name.toUpperCase()]=(c,f)=>{c.imageSmoothingEnabled=false;c.drawImage(RLSP.portrait(gv.sp,gv.look),0,0)};
+ PORTRAITS[gv.name.toUpperCase()]=(c,f)=>{c.imageSmoothingEnabled=false;c.drawImage(RLSP.portrait(gv.sp,gv.look,1,f?'talk':null),0,0)};
  if(!gv.met){gv.met=true;await say(gv.name.toUpperCase(),RLT(G_.line))}
  for(;;){const jobs=r.boards.posted.filter(j=>JOBS[j].by==='giver'&&JOBS[j].giver===gk),wary=facStep(G_.faction)<=1;
   const head=`${gv.name}, ${G_.title} · ${FACS[G_.faction]} ${facWord(G_.faction)}${['Tight-fisted','Desperate','Pious','Grieving'].includes(gv.quirk)?' · '+gv.quirk:''}`;
@@ -271,7 +271,7 @@ async function hireCorner(k){const r=G.run;
   const c=await choose(rows,{cancel:true,title:open?'MERCS FOR HIRE':'MERCS FOR HIRE · NO SEAT OPEN'});if(c<0||c>=pool.length)return;
   const m=pool[c],E=best('Empathy');
   const card=`${m.name}, ${m.sp}, ${m.trade}. ${Object.keys(m.sk).sort((a,b)=>m.sk[b]-m.sk[a]).slice(0,3).map(s=>s+' '+m.sk[s]).join(', ')}. Main: ${m.mot[m.main]}. Kin: ${m.kin.name}, ${m.kin.type.toLowerCase()}. ${m.back}${m.readDone&&m.weak?' Weak-willed: they won\'t stay hungry long.':''}`;
-  PORTRAITS[m.name.toUpperCase()]=(cc)=>{cc.imageSmoothingEnabled=false;cc.drawImage(RLSP.portrait(m.sp,m.look),0,0)};
+  PORTRAITS[m.name.toUpperCase()]=(cc,f)=>{cc.imageSmoothingEnabled=false;cc.drawImage(RLSP.portrait(m.sp,m.look,1,f?'talk':null),0,0)};
   const x=await ask(m.name.toUpperCase(),card,[open?`Hire (${m.fee} gr)`:'Hire (no seat open)',`Read (Empathy · ${odds(E,'Empathy')})`,'Back']);
   if(x===0){if(!open){await say('','No seat open.');continue}if(r.purse<m.fee){await say('','Not enough in the purse.');continue}
    r.purse-=m.fee;pool.splice(c,1);const seat=party.findIndex(p=>p.dead);m.bonds={};party.filter(p=>!p.dead).forEach(p=>{p.bonds[m.id]=1;m.bonds[p.id]=1});

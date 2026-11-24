@@ -17,7 +17,7 @@ const T=(id,o)=>window.RLT(id,o);
 const RLP=window.Studio?Studio.savePrefix('rl.'):'rl.',K=k=>RLP+k;
 // battle-only links between mercs and enemies (who hurt whom, who holds whom) never go into a save: they point at each
 // other and would make the save unwritable
-const TRANSIENT=new Set(['lastBy','lastHurt','wrung','wring','carried','carry','grapple','grappled','blockT','shk','bsel']);
+const TRANSIENT=new Set(['lastBy','lastHurt','wrung','wring','carried','carry','grapple','grappled','blockT','shk','bsel','anim']);
 const saveJSON=v=>JSON.stringify(v,(k,x)=>TRANSIENT.has(k)?undefined:x);
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,saveJSON(v))}catch(e){console.error('save failed: '+k,e)}}};
 // The save version (studio-bible/saves.md): each change to what a save holds adds a step here. Old steps never change.

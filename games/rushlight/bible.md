@@ -112,7 +112,8 @@ One item per chat, in order, biggest open decisions first. Claude ticks the item
   Scope (set Nov 21, lean): the Withy March cut to about 8 points and 2 towns; a pool of 6 (the Noonwife hunt, the Counter hunt, one beast job (Severa the owl, set Nov 21), the Withy Hag, 2 people jobs (Pell the poacher, the wool buyer)) and the Hollow Monk. In: food, camp and inn, Hue and cry, XP, hiring, trophies, the bestiary. Out: the feud and war contracts, magic, bargainers, debt, the Crown's people, retiring, Quarters, arcs. The run ends at the Monk's death on a ledger screen.
 
 - [ ] Look pass (spec 008, `specs/008-look-pass.md`): every screen and sprite brought up to the studio's Screen craft and Quality bar, in four builds. Build the look bug batch first (project files, `handoffs/rushlight-look-bugs-dev-prompt.md`).
-  - [ ] 8A Sprites: the six species from the reference code, folk enemies front-on, five creatures redrawn and four touched up, the animation rig and the contact sheet
+  - [x] 8A Sprites: the six species from the reference code, folk enemies front-on, five creatures redrawn and four touched up, the animation rig and the contact sheet
+    Done Nov 24: the six species, folk front views and all nine creatures redrawn to the Quality bar and filed in the Asset Library; the battle screen at the new sizes with a backdrop for each kind of place; the shared animation rig; the contact sheet in every check.
   - [ ] 8B Streets, sites and the HUD cards
   - [ ] 8C Menus: parchment panels and Pick a company in two steps
   - [ ] 8D The check against Screen craft and the Quality bar

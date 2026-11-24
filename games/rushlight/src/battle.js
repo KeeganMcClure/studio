@@ -145,6 +145,7 @@ async function pickFoe(m,o){const f=aliveFoes();if(f.length===1&&!o.list)return 
  const r=await blist('TARGET',rows,{hover:i=>f[i]});return r<0?null:f[r]}
 // a weapon attack: the roll, crits and fumbles, damage after wear, STR and armor, and the weapon's extras
 async function attack(m,e,o){
+ StudioRig.start(m,'attack');  // the three-frame attack (art-style, Animation)
  const w=weaponOf(m),p=hitChance(m,e,o),r=o.sure?{ok:true,crit:false,fumble:false,r:0,target:99}:R_.pct(p);
  if(!o.sure)showRes(R_.line(BW.skill[w.skill]||w.skill.toUpperCase(),r,BW.words),r);
  if(w.skill==='Shooting')m.lastShot=Bt.round;if(w.loud){Bt.loud++;Bt.loudest=m;if(G.site)G.site.loud=1}
@@ -170,7 +171,7 @@ const addSt=(x,s)=>{x.st=x.st||[];if(!x.st.includes(s))x.st.push(s)};
 // damage to a foe; breaking at 75%, 50% and 25% for Folk and Beasts (Nerve: Steady half, Skittish 1.5×)
 async function hurtFoe(e,d,by,o={}){
  if(e.pool){d=Math.min(d,e.hp)}
- Bt.stats.dealt+=Math.min(d,e.hp);e.hp=Math.max(0,e.hp-d);e.flash=16;floaty(e,d);e.lastHurt=by||e.lastHurt;e.hitOnce=1;
+ Bt.stats.dealt+=Math.min(d,e.hp);e.hp=Math.max(0,e.hp-d);StudioRig.start(e,'hit');floaty(e,d);e.lastHurt=by||e.lastHurt;e.hitOnce=1;
  if(e.hp<=0){if(e.onZero&&await FOE_AI[e.ai].onZero(e,by))return;e.dead=true;Bt.stats.killed.push(e.base);if(e.great&&by&&G.run)G.run.monkKiller=by.id;
   if(by&&e.kind==='Folk'){await sanRoll('Disturbing','violence',{who:[by],quiet:false,label:`${by.name} killed a man`})}
   if(Bt.o.onKill)await Bt.o.onKill(e,by);return}
@@ -349,6 +350,7 @@ function pickTarget(e,o={}){let alive=party.filter(m=>!m.ko&&!m.dead&&!m.vanish&
 // one enemy attack: its roll (Veteran +10, Shaken −20, Drunk), Defend, Slip and Riposte, armor (floor 1; crits through),
 // the kettle hat's first crit, shields, wear, spines, caltrops and tripwires
 async function foeAttack(e,t,o={}){
+ StudioRig.start(e,'attack');
  let p=e.hit+(Bt.round===1&&Bt.o.foesFirstBonus?Bt.o.foesFirstBonus:0)+(e.quirk==='Veteran'?10:0)+((e.quirk==='Sworn'&&Bt.en.some(x=>x.dead))?10:0)-((e.st||[]).includes('Shaken')?20:0)-(Bt.smoke?20:0)+(o.mod|0)+(e.quirk==='Maneater'&&t.st.includes('Bleeding')?10:0);
  const r=R_.pct(p);showRes(R_.line(e.name.toUpperCase(),r,BW.words),r);
  if(!r.ok){await bsay(`${e.name} misses ${t.name}.`,800);return false}
@@ -373,7 +375,7 @@ async function foeAttack(e,t,o={}){
 async function areaAttack(e,label,o={}){await bsay(label,1000);for(const m of party.filter(x=>!x.dead&&!x.ko)){let d=o.dmg?rollDice(o.dmg):die(3);const body=m.gear.body;if(!o.throughArmor&&body)d-=({jack:1,mail:2,plate:3}[body.id]|0);d=Math.max(1,d);if(m.defend)d=Math.max(1,Math.floor(d/2));hurtMerc(m,d,e)}}
 async function grappleTurn(e){const g=e.grappled;if(!g||g.dead||g.ko){e.grappled=null;return foeTurn(e)}
  const a=R_.pct(e.hit),b=R_.pct(skillOf(g,'Melee'));if(a.ok&&(!b.ok||a.r>b.r)){e.grappled=null;g.grapple=null;await bsay(`${e.name} breaks free.`,800);return foeTurn(e)}await bsay(`${e.name} can't get loose.`,800)}
-function hurtMerc(m,d,by){if(m.dead)return;if(by&&by.foe)m.lastBy=by;Bt.stats.taken+=Math.min(d,m.hp);m.hp=Math.max(0,m.hp-d);m.shk=10;
+function hurtMerc(m,d,by){if(m.dead)return;if(by&&by.foe)m.lastBy=by;Bt.stats.taken+=Math.min(d,m.hp);m.hp=Math.max(0,m.hp-d);StudioRig.start(m,'hit');
  if(m.hp<=0&&!m.ko){m.ko=true;m.koT=0;m.downs=(m.downs|0)+1;Bt.stats.downs=(Bt.stats.downs|0)+1;Bt.downed.add(m);Bt.log=`${m.name} goes down.`;if(m.grapple){m.grapple.grappled=null;m.grapple=null}}}
 const later=ms=>G.auto?Promise.resolve():sleep(fastOn()?Math.round(ms*.45):ms);
 function showRes(text,o){Bt.res={text:text.replace(/ (HIT|MISS|CRIT|FUMBLE)$/,' '),word:o.crit?'CRIT':o.fumble?'FUMBLE':o.ok?'HIT':'MISS',col:o.ok?PAL.tallow:PAL.ash,until:Bt.t+90}}
@@ -392,47 +394,163 @@ function battleTap(x,y){if(!Bt)return;for(let i=Bt.hits.length-1;i>=0;i--){const
 function bR(x,y,w,h,c){cx.fillStyle=c;cx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
 function bT(s,x,y,col,size=14,font=VTf){cx.font=font(size);cx.fillStyle=col;cx.textBaseline='top';cx.fillText(s,Math.round(x),Math.round(y))}
 function bW(s,size=14,font=VTf){cx.font=font(size);return cx.measureText(s).width}
-const SCENES={noon:['#e0c47a','#c8a552','#a88a3e'],dusk:['#5c6c7c','#7a6a5a','#4a3a2a'],night:['#1c2230','#2a3040','#1c1814']};
+// ---- the backdrop (spec 008, 8A; mockup 39 with the 41 readability pass): a lit, dressed scene for each kind of place,
+// relit for the time of day. Far things paler and hazier so the foes' dark outlines stand out; no grass speckle behind the party;
+// a warm grade by day. Places: road, field, wood, village, town, marsh, mine, barn (the loft).
+const SITE_PLACE={camp:'wood',hollin:'field',sallow:'village',cause:'marsh',crook:'village',pit:'mine'};
+function placeOf(){const o=Bt.o;if(o.place)return o.place;if(o.rafters)return 'barn';
+ const j=G.site&&G.run&&G.run.job;if(j&&SITE_PLACE[j.site])return SITE_PLACE[j.site];if(G.M&&G.M.town)return 'town';return 'road'}
+// the light for each time of day: sky top, middle and horizon, the sun or moon (x, y as fractions of the horizon), far hills,
+// the near ground top and foot, the grade over everything, and which way shadows fall (+1 right, 0 straight down)
+const TOD={
+ noon:{sky:['#9aa8ac','#d4ceb2','#efe2b8'],sun:[.16,.15,'rgba(255,248,220,.8)'],hills:['#b4ae98','#a29c86'],ground:['#b4a468','#8a7c4a'],grade:'rgba(255,220,140,.06)',cast:0,hedge:['#8a8c5e','#a0a26c']},
+ dusk:{sky:['#3a4256','#8a7a76','#e0a868'],sun:[.16,.86,'rgba(255,220,150,.9)'],hills:['#a8969a','#928488'],ground:['#8a8258','#46422c'],grade:'rgba(255,170,90,.08)',cast:1,hedge:['#6e7050','#8e9068']},
+ overcast:{sky:['#7c8084','#a4a49c','#bcb8aa'],sun:null,hills:['#9a988e','#8a887e'],ground:['#7a7656','#4e4a36'],grade:'rgba(120,130,140,.06)',cast:0,hedge:['#6a6c56','#7e806a']},
+ night:{sky:['#10141e','#1c2232','#2e3446'],sun:[.14,.3,'rgba(190,210,235,.55)'],hills:['#343a4a','#2c3240'],ground:['#30322a','#1c1c18'],grade:'rgba(40,60,110,.16)',cast:1,hedge:['#2a3028','#3a4234']}};
+const sceneCache={};
 function drawScene(L){
- const s=SCENES[Bt.bg]||SCENES.dusk,h=L.scene.h,hz=Math.round(h*.42);
- const g=cx.createLinearGradient(0,0,0,hz);g.addColorStop(0,s[0]);g.addColorStop(1,s[1]);cx.fillStyle=g;cx.fillRect(0,0,VW,hz);
- bR(0,hz,VW,h-hz,s[2]);for(let x=0;x<VW;x+=6)bR(x+(x/6%2)*3,hz+4+((x*7)%9),2,1,PAL.peat);
- bR(0,hz,VW,1,PAL.peat);
+ const tod=TOD[Bt.bg]||TOD.dusk,place=placeOf(),W=VW,h=L.scene.h,key=place+Bt.bg+W+'x'+h;
+ if(!sceneCache[key]){const c=document.createElement('canvas');c.width=W;c.height=h;paintScene(c.getContext('2d'),W,h,tod,place,Bt.bg==='night');sceneCache[key]=c}
+ cx.drawImage(sceneCache[key],0,0);
+ // shadows under the foes: soft, cast away from the light (straight down at noon). The Noonwife casts none (her rule break),
+ // and the Corpse-candle's falls toward the light (bible, creature batch 2)
+ Bt.en.forEach((e,i)=>{if(e.alpha<=0||e.sprite==='noonwife'||e.group&&Bt.en.find(f=>f.group===e.group)!==e)return;const s=spriteOf(e),w=s?s.width:20;
+  const dir=(e.sprite==='candle'?-1:1)*tod.cast,x=e.group?groupX(e):foeX(i);cx.globalAlpha=(e.alpha??1)*(Bt.bg==='night'?.55:.42);cx.fillStyle=PAL.peat;
+  cx.beginPath();cx.ellipse(x+dir*w*.18,L.enemyY-1,w*(tod.cast?.46:.34),3,0,0,7);cx.fill();cx.globalAlpha=1});
 }
-const folkCache={};
-function spriteOf(e){if(e.sprite)return RLArt.sprite(e.sprite);if(e.group)return RLArt.sprite(e.group);
- if(e.sp){const k=e.sp+(e.look?e.look.shade:1);if(!folkCache[k]){const s=RLSP.map(e.sp,e.look),c=document.createElement('canvas');c.width=28;c.height=52;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(s,0,0,28,52);folkCache[k]=c}return folkCache[k]}return null}
+function paintScene(x,W,h,T,place,night){
+ const R=(a,b,c,d,col)=>{x.fillStyle=col;x.fillRect(Math.round(a),Math.round(b),Math.round(c),Math.round(d))};
+ const hz=Math.round(h*.42),inside=place==='barn'||place==='mine'&&false;
+ if(place==='barn'){paintBarn(x,R,W,h,night);return}
+ const sky=x.createLinearGradient(0,0,0,hz);sky.addColorStop(0,T.sky[0]);sky.addColorStop(.55,T.sky[1]);sky.addColorStop(1,T.sky[2]);x.fillStyle=sky;x.fillRect(0,0,W,hz);
+ if(night)for(let i=0;i<40;i++)R((i*97)%W,(i*53)%Math.round(hz*.7),1,1,i%5?'#5a6274':'#a8b0c0');
+ if(T.sun){const sx=W*T.sun[0],sy=hz*T.sun[1],g=x.createRadialGradient(sx,sy,2,sx,sy,night?40:90);g.addColorStop(0,T.sun[2]);g.addColorStop(.18,T.sun[2].replace(/[\d.]+\)$/,'.35)'));g.addColorStop(1,'rgba(255,240,200,0)');x.fillStyle=g;x.fillRect(0,0,W,hz+10);
+  if(night){R(sx-4,sy-4,8,8,'#dfe6ee');R(sx-2,sy-5,4,1,'#dfe6ee');R(sx+1,sy-3,3,6,'#b8c2cc')}else if(Bt.bg==='dusk'){R(sx-5,sy-4,10,6,'#fff0c8');R(sx-3,sy-6,6,2,'#fff0c8')}}
+ // two bands of far hills, cool and hazy
+ [[hz-16,T.hills[0],6,.045],[hz-9,T.hills[1],5,.07]].forEach(([y0,col,amp,f])=>{x.fillStyle=col;x.beginPath();x.moveTo(0,hz);for(let i=0;i<=W;i+=2)x.lineTo(i,Math.round(y0+Math.sin(i*f+y0)*amp+Math.sin(i*f*2.7)*2));x.lineTo(W,hz);x.fill()});
+ // the ground: lit near the horizon, darker toward us
+ const gr=x.createLinearGradient(0,hz,0,h);gr.addColorStop(0,T.ground[0]);gr.addColorStop(.35,mixC(T.ground[0],T.ground[1],.5));gr.addColorStop(1,T.ground[1]);x.fillStyle=gr;x.fillRect(0,hz,W,h-hz);
+ const back=PLACE_BACK[place]||PLACE_BACK.road;back(x,R,W,h,hz,T,night);
+ // grass tufts and stones in the far half only (nothing busy behind the party), three specks a tile at most
+ if(place!=='mine'&&place!=='marsh')for(let i=0;i<40;i++){const gx=(i*53)%W,gy=hz+3+((i*37)%Math.max(1,Math.round((h-hz)*.55)));if(PLACE_CLEAR[place]&&PLACE_CLEAR[place](gx,gy,W,h,hz))continue;
+  R(gx,gy,1,2,mixC(T.ground[0],'#3a4228',.35));R(gx+1,gy-1,1,3,mixC(T.ground[0],'#56603a',.3))}
+ x.fillStyle=T.grade;x.fillRect(0,0,W,h);
+ if(night){const v=x.createRadialGradient(W*.5,h*.55,20,W*.5,h*.55,W*.8);v.addColorStop(0,'rgba(10,12,20,0)');v.addColorStop(1,'rgba(10,12,20,.45)');x.fillStyle=v;x.fillRect(0,0,W,h)}
+}
+function mixC(a,b,k){return RLSP.mixHex(a,b,k)}
+const onRoad=(gx,gy,W,h,hz)=>gx>W*.2+(gy-hz)*.1&&gx<W*.9;
+const PLACE_CLEAR={road:onRoad,village:onRoad,town:(gx,gy,W,h,hz)=>gy>hz+4};
+// the hedge line along the horizon, and pollard willows (a fat trunk, a crown of rods), lit on the left
+function hedge(R,W,hz,T,trees){for(let i=-4;i<W;i+=3){const hh=5+((i*7)%5);R(i,hz-hh+2,4,hh,(i*13)%3?T.hedge[0]:mixC(T.hedge[0],T.hedge[1],.4));R(i,hz-hh+2,1,2,T.hedge[1])}
+ (trees||[70,150,212]).forEach(tx=>{const tr=mixC(T.hills[1],'#3a3024',.5);R(tx,hz-16,4,16,tr);R(tx,hz-16,1,16,mixC(tr,'#ffffff',.15));
+  for(let r=0;r<13;r++){const a=-Math.PI*(.3+r*.031),len=6+(r%3)*2;for(let s=0;s<len;s++)R(Math.round(tx+2+Math.cos(a)*s*1.1),Math.round(hz-16+Math.sin(a)*s),1,1,s>len-3?T.hedge[1]:T.hedge[0])}
+  R(tx-1,hz-17,6,2,mixC(tr,'#1c1814',.3))})}
+// the road toward us: a paler band, ruts, and puddles that catch the sky
+function road(x,R,W,h,hz,T,col){x.fillStyle=col;x.beginPath();x.moveTo(W*.45,hz);x.lineTo(W*.58,hz);x.lineTo(W*1.05,h);x.lineTo(W*.05,h);x.fill();
+ x.fillStyle='rgba(255,220,160,.1)';x.beginPath();x.moveTo(W*.45,hz);x.lineTo(W*.5,hz);x.lineTo(W*.3,h);x.lineTo(W*.05,h);x.fill();
+ [[.49,.32],[.54,.74]].forEach(([a,b])=>{x.strokeStyle=mixC(col,'#1c1814',.3);x.lineWidth=2;x.beginPath();x.moveTo(W*a,hz+2);x.lineTo(W*b,h);x.stroke()});
+ [[96,.7,18],[150,.82,24],[118,.58,10]].forEach(([px,py,pw])=>{const y=Math.round(hz+(h-hz)*py);R(px,y,pw,3,T.sky[2]);R(px+2,y+1,pw-4,1,T.sky[1]);R(px,y+3,pw,1,mixC(col,'#1c1814',.45))})}
+const stone=(R,sx,y)=>{R(sx,y,5,3,'#8a8478');R(sx,y,3,1,'#b4ae9e');R(sx,y+3,5,1,'#3a3630')};
+// a cottage or house front far off: a 3/4 roof (thatch or slate), a lit front, the far side in shade
+function house(R,x0,base,w,hgt,T,o={}){const wall=o.wall||'#b8aa88',roof=o.roof||'#8a7448',hz=base;
+ R(x0,hz-hgt,w,hgt,mixC(wall,T.hills[1],.35));R(x0+w-3,hz-hgt,3,hgt,mixC(wall,'#1c1814',.35));
+ for(let i=0;i<5;i++)R(x0-2+i,hz-hgt-5+i,w+4-i*2,1,mixC(roof,T.hills[0],.2));R(x0-2,hz-hgt,w+4,1,mixC(roof,'#1c1814',.4));
+ if(o.lit)R(x0+3,hz-hgt+3,2,2,'#e0b45a');else R(x0+3,hz-hgt+3,2,2,mixC(wall,'#1c1814',.45));
+ if(o.chimney){R(x0+w-5,hz-hgt-8,2,4,mixC(roof,'#1c1814',.3))}}
+const PLACE_BACK={
+ road(x,R,W,h,hz,T){hedge(R,W,hz,T);road(x,R,W,h,hz,T,mixC(T.ground[0],'#c8a878',.25));
+  [[24,.5],[210,.66]].forEach(([sx,sy])=>stone(R,sx,Math.round(hz+(h-hz)*sy)));
+  R(198,hz+8,6,9,'#9a9488');R(198,hz+8,2,9,'#c4bead');R(199,hz+7,4,1,'#9a9488');R(198,hz+17,7,1,'#2a2620');R(200,hz+11,2,1,'#5a564e')},
+ // Hollin's rye: one quiet mass with a lit top edge and a dark lip, stooks standing in the stubble
+ field(x,R,W,h,hz,T){hedge(R,W,hz,T,[40,190]);house(R,120,hz-2,16,8,T,{chimney:1});house(R,148,hz-2,12,7,T,{});
+  const rye=mixC(T.ground[0],'#d8b860',.45),top=hz+3;R(0,top,W*.38,Math.round((h-hz)*.32),rye);R(W*.62,top,W*.38,Math.round((h-hz)*.32),rye);
+  for(let i=0;i<W;i+=2){if(i>W*.38&&i<W*.62)continue;R(i,top-1-(i%4?0:1),1,2,mixC(rye,'#fff4c8',.35))}
+  R(0,top+Math.round((h-hz)*.32),W*.38,1,mixC(rye,'#1c1814',.5));R(W*.62,top+Math.round((h-hz)*.32),W*.38,1,mixC(rye,'#1c1814',.5));
+  for(let k=0;k<70;k++){const sx=(k*61)%W,sy=top+2+((k*29)%Math.round((h-hz)*.28));if(sx>W*.38&&sx<W*.62)continue;R(sx,sy,1,2,mixC(rye,'#8a6a30',.35))}
+  [[W*.44,.42],[W*.53,.3]].forEach(([sx,sy])=>{const y=Math.round(hz+(h-hz)*sy);x.fillStyle=mixC(rye,'#fff0c0',.2);x.beginPath();x.moveTo(sx,y-10);x.lineTo(sx+5,y);x.lineTo(sx-5,y);x.fill();R(sx,y-9,4,9,mixC(rye,'#5a4420',.3));R(sx-5,y,11,1,'#3a3020')})},
+ // the charcoal camp: a dark wood line, a smoking clamp, leaf litter
+ wood(x,R,W,h,hz,T,night){const tr=mixC(T.hills[1],'#1c2418',.55);
+  for(let i=-6;i<W;i+=11){const th=24+((i*7)%9);x.fillStyle=mixC(tr,T.sky[1],.18+((i*3)%4)*.04);x.beginPath();x.moveTo(i,hz+1);x.lineTo(i+7,hz-th);x.lineTo(i+14,hz+1);x.fill();R(i+6,hz-4,2,5,mixC(tr,'#2a2018',.4))}
+  R(0,hz,W,2,mixC(tr,'#1c1814',.3));
+  const cx0=60,cy0=hz+12;x.fillStyle=mixC(T.ground[0],'#3a3026',.5);x.beginPath();x.ellipse(cx0,cy0,22,7,0,Math.PI,0);x.fill();R(cx0-22,cy0,44,1,'#2a2420');x.fillStyle=mixC(T.ground[0],'#6a5a44',.4);x.beginPath();x.ellipse(cx0-6,cy0-4,9,2,0,Math.PI,0);x.fill();
+  for(let k=0;k<6;k++){x.fillStyle=`rgba(200,196,188,${.28-k*.04})`;x.beginPath();x.arc(cx0+k*3,cy0-10-k*6,4+k*1.5,0,7);x.fill()}
+  if(night){const g=x.createRadialGradient(cx0,cy0-2,1,cx0,cy0-2,26);g.addColorStop(0,'rgba(240,140,60,.5)');g.addColorStop(1,'rgba(240,140,60,0)');x.fillStyle=g;x.fillRect(cx0-30,cy0-30,60,40)}
+  for(let k=0;k<50;k++){const sx=(k*47)%W,sy=hz+4+((k*31)%Math.round((h-hz)*.55));R(sx,sy,2,1,k%3?mixC(T.ground[0],'#8a4a24',.35):mixC(T.ground[0],'#b07a34',.3))}},
+ // a hamlet or village street: cottages along the horizon, a church tower, a mud lane
+ village(x,R,W,h,hz,T,night){house(R,8,hz,22,12,T,{chimney:1,lit:night});house(R,40,hz,18,10,T,{roof:'#6a6a70',lit:false});
+  const tw=mixC('#9a9488',T.hills[0],.35);R(150,hz-30,12,30,tw);R(159,hz-30,3,30,mixC(tw,'#1c1814',.35));x.fillStyle=mixC('#6a6a70',T.hills[0],.25);x.beginPath();x.moveTo(148,hz-30);x.lineTo(156,hz-42);x.lineTo(164,hz-30);x.fill();R(154,hz-24,3,4,'#2a2620');
+  house(R,180,hz,24,12,T,{chimney:1,lit:night});house(R,212,hz,20,9,T,{roof:'#6a6a70'});
+  for(let i=0;i<W;i+=7)R(i,hz,4,2,mixC(T.hedge[0],'#4a4434',.3));
+  road(x,R,W,h,hz,T,mixC(T.ground[0],'#6a5434',.3));stone(R,24,Math.round(hz+(h-hz)*.5))},
+ // a town street: timber fronts close along the horizon, a hanging sign, cobbles
+ town(x,R,W,h,hz,T,night){for(let i=0;i<W;i+=30){const hg=16+((i*7)%8);house(R,i+2,hz,26,hg,T,{wall:i%60?'#c8b890':'#b8a888',roof:i%90?'#7a5a3a':'#5a5a62',chimney:i%60===0,lit:night&&i%60===30});
+   R(i+2,hz-hg+6,26,1,mixC('#4a3424',T.hills[1],.3));R(i+14,hz-hg,1,hg,mixC('#4a3424',T.hills[1],.3))}
+  R(118,hz-12,1,6,'#3a2a1c');R(114,hz-8,9,5,mixC('#8a6a3a',T.hills[1],.2));
+  const cob=mixC(T.ground[0],'#8a8070',.4);R(0,hz,W,h-hz,cob);for(let y=hz+2;y<hz+(h-hz)*.5;y+=4)for(let i=(y%8?0:3);i<W;i+=7)R(i,y,5,3,mixC(cob,(i+y)%3?'#a49a88':'#6a6254',.25))},
+ // the osier causeway: flooded beds of cut osier stools with red withies, the causeway across the water
+ marsh(x,R,W,h,hz,T,night){hedge(R,W,hz,T,[30,170]);const wat=mixC(T.sky[1],'#2a3440',.45);R(0,hz+1,W,h-hz,wat);
+  for(let y=hz+3;y<h;y+=5)for(let i=((y*7)%9);i<W;i+=17)R(i,y,6,1,mixC(wat,T.sky[2],.35));
+  x.fillStyle=mixC(T.ground[0],'#6a5a40',.35);x.beginPath();x.moveTo(W*.46,hz+1);x.lineTo(W*.56,hz+1);x.lineTo(W*.9,h);x.lineTo(W*.15,h);x.fill();
+  for(let y=hz+4;y<h;y+=5){const t=(y-hz)/(h-hz),a=W*(.46-.31*t),b=W*(.56+.34*t);R(a,y,b-a,1,mixC(T.ground[0],'#3a3020',.35))}
+  [[14,.2],[40,.45],[196,.25],[222,.5]].forEach(([sx,sy])=>{const y=Math.round(hz+(h-hz)*sy);R(sx,y,8,3,'#3a3024');for(let r=0;r<7;r++)R(sx+r,y-6-(r%3)*2,1,6+(r%3)*2,r%2?'#9a3a2a':'#b8584a')})},
+ // Lowmoor Pit: the pithead frame against the sky, one quiet spoil heap with a lit top edge, a tram road
+ mine(x,R,W,h,hz,T,night){const fr=mixC('#3a3024',T.hills[0],.25);R(150,hz-34,3,34,fr);R(170,hz-34,3,34,fr);R(148,hz-36,28,3,fr);x.strokeStyle=fr;x.lineWidth=2;x.beginPath();x.moveTo(152,hz-10);x.lineTo(171,hz-34);x.moveTo(171,hz-10);x.lineTo(152,hz-34);x.stroke();
+  x.fillStyle=fr;x.beginPath();x.arc(161,hz-37,5,Math.PI,0);x.fill();
+  house(R,186,hz,30,10,T,{roof:'#5a5a62',lit:night});
+  const sp=mixC(T.ground[0],'#4a4440',.5);x.fillStyle=sp;x.beginPath();x.moveTo(0,hz+1);x.quadraticCurveTo(50,hz-26,110,hz+1);x.fill();x.strokeStyle=mixC(sp,T.sky[2],.35);x.lineWidth=1;x.beginPath();x.moveTo(8,hz-2);x.quadraticCurveTo(50,hz-24,100,hz-2);x.stroke();
+  R(0,hz,W,1,mixC(sp,'#1c1814',.5));
+  for(const yy of [.3,.36]){const y=Math.round(hz+(h-hz)*yy);R(0,y,W,1,'#5a564e')}for(let i=4;i<W;i+=9)R(i,Math.round(hz+(h-hz)*.3),2,Math.round((h-hz)*.06)+1,'#4a3a2a');
+  R(30,Math.round(hz+(h-hz)*.22),12,6,'#4a4034');R(30,Math.round(hz+(h-hz)*.22),12,1,'#6a5e4c')},
+};
+// the loft (Severa's barn): dark boards, a tie beam, light through the gaps
+function paintBarn(x,R,W,h,night){R(0,0,W,h,night?'#14120e':'#2a2218');for(let i=0;i<W;i+=9){R(i,0,8,h,night?'#1c1812':'#3a3022');R(i+8,0,1,h,'#14100c')}
+ if(!night)for(const gx of [40,118,190]){const g=x.createLinearGradient(gx,0,gx+40,h);g.addColorStop(0,'rgba(255,220,150,.28)');g.addColorStop(1,'rgba(255,220,150,0)');x.fillStyle=g;x.beginPath();x.moveTo(gx,0);x.lineTo(gx+3,0);x.lineTo(gx+48,h);x.lineTo(gx+38,h);x.fill()}
+ R(0,Math.round(h*.18),W,5,'#4a3a28');R(0,Math.round(h*.18),W,1,'#6a5438');R(0,Math.round(h*.18)+5,W,1,'#14100c');
+ const fl=Math.round(h*.62);R(0,fl,W,h-fl,night?'#221c14':'#3e3222');for(let i=0;i<60;i++)R((i*37)%W,fl+((i*13)%(h-fl)),3,1,night?'#3a3020':'#8a7448')}
+// ---- the fighters (spec 008, 8A; mockup 39): folk enemies front-on from the species art at 1.5×, creatures at 1.5× from the
+// Asset Library, the party's back views at 2×, all drawn natively at that size. Hit and attack play three frames from the
+// shared rig (engine/rig.js): folk and mercs move their parts; a creature drawn in one piece takes the rig's whole-sprite pose.
+// Two folk of one kind never look the same (Craft, No twins): each gets face parts from its place in the fight, unless its card sets
+// a look. The look is kept off the saved fight, so saves don't change.
+const nameHash=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return h};
+function folkLook(e){if(e.look)return e.look;if(!e._look){const i=Math.max(0,Bt.en.indexOf(e)),h=nameHash(e.base||e.name)%3;
+  Object.defineProperty(e,'_look',{value:{shade:(i+h)%3,mark:(i*3+h)%4,neck:(i+1+h)%3},enumerable:false,configurable:true})}return e._look}
+const roleOf=e=>e.armor?'arms':'bandit';
+function spriteOf(e,fr){if(e.sprite)return RLArt.sprite(e.sprite);if(e.group)return RLArt.sprite(e.group);
+ if(e.sp)return RLSP.front(e.sp,roleOf(e),folkLook(e),fr||null);return null}
 function foeX(i){const n=Bt.en.length;return Math.round(26+(VW-26)/(n+1)*(i+1))}
+function groupX(e){const g=Bt.en.filter(f=>f.group===e.group);return Math.round((foeX(Bt.en.indexOf(g[0]))+foeX(Bt.en.indexOf(g[g.length-1])))/2)}
 function drawBattle(){
- Bt.t++;const t=Bt.t,tall=Math.max(0,...Bt.en.map(e=>{const s=spriteOf(e);return s?s.height:40}));
+ Bt.t++;const t=Bt.t,now=performance.now(),tall=Math.max(0,...Bt.en.map(e=>{const s=spriteOf(e);return s?s.height:40}));
  const L=SB.layout(VW,VH,{tallest:tall});Bt.hits=[];
- drawScene(L);
- // enemies, each with its nameplate under it
- const plates=platesFor(L.enemyY+2);
+ // the whole screen first: the row between the strip and the command box is drawn by neither, and showed what was there before
+ bR(0,0,VW,VH,PAL.peat);drawScene(L);cx.imageSmoothingEnabled=false;
+ // enemies
  Bt.en.forEach((e,i)=>{
   if(e.dead)e.alpha=Math.max(0,e.alpha-.04);if(e.alpha<=0)return;
-  const x=foeX(i),s=spriteOf(e),by=L.enemyY;cx.globalAlpha=e.alpha;
-  const lead=e.group&&Bt.en.find(f=>f.group===e.group);
-  if(!(e.flash>0&&e.flash%4<2)){if(e.group){if(lead===e&&s){const gx=Math.round((foeX(Bt.en.indexOf(Bt.en.filter(f=>f.group===e.group)[0]))+foeX(Bt.en.lastIndexOf(Bt.en.filter(f=>f.group===e.group).slice(-1)[0])))/2);cx.globalAlpha=Math.max(.3,Bt.en.filter(f=>f.group===e.group&&!f.dead).length/Bt.en.filter(f=>f.group===e.group).length);cx.drawImage(s,Math.round(gx-s.width/2),by-s.height)}}
-   else if(s){cx.imageSmoothingEnabled=false;cx.drawImage(s,Math.round(x-s.width/2),by-s.height)}else bR(x-10,by-30,20,30,PAL.ash)}
-  if(e.flash>0)e.flash--;cx.globalAlpha=1;
-  const hov=Bt.ui&&Bt.ui.kind==='list'&&Bt.ui.hover&&Bt.ui.hover(Bt.ui.sel)===e;
+  const by=L.enemyY;cx.globalAlpha=e.alpha;
+  if(e.group){const g=Bt.en.filter(f=>f.group===e.group);if(g[0]===e){const s=spriteOf(e),fr=g.map(f=>StudioRig.frame(f,now)).find(Boolean),P=StudioRig.shift(fr,1);
+    if(s){cx.globalAlpha=Math.max(.3,g.filter(f=>!f.dead).length/g.length);cx.drawImage(StudioRig.tinted(s,P.tint,P.k),groupX(e)-Math.round(s.width/2)+P.dx,by-s.height+P.dy)}}}
+  else{const fr=StudioRig.frame(e,now),x=foeX(i);
+   if(e.sp){const s=spriteOf(e,fr);cx.drawImage(s,x-Math.round(s.width/2),by-s.height)}
+   else{const s=spriteOf(e),P=StudioRig.shift(fr,1);if(s)cx.drawImage(StudioRig.tinted(s,P.tint,P.k),x-Math.round(s.width/2)+P.dx,by-s.height+P.dy);else bR(x-10,by-30,20,30,PAL.ash)}}
+  cx.globalAlpha=1;
+  const s=spriteOf(e),x=e.group?groupX(e):foeX(i),hov=Bt.ui&&Bt.ui.kind==='list'&&Bt.ui.hover&&Bt.ui.hover(Bt.ui.sel)===e;
   if(hov){const ay=by-(s?s.height:30)-8+Math.sin(t*.2)*2;bR(x-3,ay,7,2,PAL.tallow);bR(x-2,ay+2,5,2,PAL.tallow);bR(x-1,ay+4,3,2,PAL.tallow)}
-  if(!e.dead&&plates.has(e))plate(e,plates.get(e));
  });
+ // the party from behind, waist up, at 2×, standing on the strip; whose turn it is shows on the strip card, not over the merc
+ party.forEach((m,i)=>{const b=RLSP.back(m.sp,m.look,StudioRig.frame(m,now)),x=Math.round(VW/2+8+(i-1)*66-b.width/2);
+  cx.globalAlpha=m.ko?.45:1;cx.drawImage(b,x,L.agentY-b.height);cx.globalAlpha=1});
+ // nameplates after the party, so no name is ever covered
+ const plates=platesFor(L.enemyY+2);Bt.en.forEach(e=>{if(!e.dead&&e.alpha>0&&plates.has(e))plate(e,plates.get(e))});
  // damage numbers
  Bt.floaties=Bt.floaties.filter(f=>f.t<50);Bt.floaties.forEach(f=>{f.t++;const i=Bt.en.indexOf(f.e),x=foeX(i),y=L.enemyY-30-f.t*.5;bT(f.txt,x-3+1,y+1,PAL.peat,16);bT(f.txt,x-3,y,PAL.bone,16)});
- // the party from behind, waist up, standing on the strip
- party.forEach((m,i)=>{const b=RLSP.back(m.sp,m.look),x=Math.round(VW/2+(i-1)*62-15),sh=m.shk>0?(m.shk--%2?1:-1):0;
-  cx.globalAlpha=m.ko?.45:1;cx.drawImage(b,x+sh,L.agentY-b.height);cx.globalAlpha=1;
-  if(Bt.active===m){bR(x+12,L.agentY-b.height-7,7,2,PAL.tallow);bR(x+13,L.agentY-b.height-5,5,2,PAL.tallow);bR(x+14,L.agentY-b.height-3,3,2,PAL.tallow)}});
  strip(L.strip);
  // turn column down the left (a blank face for a creature whose rule break is having no face)
  const faces=(Bt.queue.length?Bt.queue:turnOrder()).filter(a=>a.foe?!a.dead:!a.ko).slice(0,6).map(a=>({img:a.foe?(a.faceless?null:spriteOf(a)):RLSP.portrait(a.sp,a.look),foe:!!a.foe}));
- SB.turnColumn(cx,BT_THEME,L.col.x,L.col.y+30,faces,L.agentY-30-60);
- // the log line across the top, and the countdown under it
- SB.box(cx,26,2,VW-28,14,PAL.soot,PAL.bone,1);bT(SB.fit(cx,BT_THEME,Bt.log||'',VW-36,14),30,2,PAL.bone,14);
- if(Bt.count){const s=`${Bt.count.label} · ${Bt.count.n}`;const w=bW(s,13)+10;SB.box(cx,VW-2-w,17,w,12,PAL.peat,PAL.tallow,1);bT(s,VW-2-w+5,16,PAL.tallow,13)}
+ const logH=logBar();
+ SB.turnColumn(cx,BT_THEME,L.col.x,L.col.y+30+(logH-14),faces,L.agentY-30-60);
+ if(Bt.count){const s=`${Bt.count.label} · ${Bt.count.n}`;const w=bW(s,13)+10;SB.box(cx,VW-2-w,logH+3,w,12,PAL.peat,PAL.tallow,1);bT(s,VW-2-w+5,logH+2,PAL.tallow,13)}
  if(Bt.res&&t<Bt.res.until)SB.result(cx,BT_THEME,VW/2+12,Math.min(L.enemyY+22,L.agentY-56),Bt.res.text,Bt.res.word,Bt.res.col);
  // the command box: the row and its info line, or a list box over the scene
  const u=Bt.ui;
@@ -466,14 +584,23 @@ function plate(e,P){
 }
 function fitName(n,w){for(const z of [13,12,11])if(bW(n,z)<=w)return {s:n,z};const f=n.split(/[\s-]/)[0];return {s:bW(f,11)<=w?f:f.slice(0,Math.max(1,Math.floor(w/5))),z:11}}
 function skull(x,y){bR(x,y,5,4,PAL.bone);bR(x+1,y+4,3,1,PAL.bone);bR(x+1,y+1,1,1,PAL.peat);bR(x+3,y+1,1,1,PAL.peat)}
-// the one-row party strip: name, HP bar, WP and SAN (SAN pink under 40)
+// the one-row party strip (spec 008, mockup 39): each card has the merc's face on its lit backing, the whole name, the HP number
+// beside its bar, WP and SAN in Bone (SAN pink under 40); the active merc's card has the Tallow border
 function strip(r){
  bR(r.x,r.y,r.w,r.h,PAL.peat);const cw=Math.floor((r.w-4)/3);
  party.forEach((m,i)=>{const x=r.x+2+i*cw,on=Bt.active===m;SB.box(cx,x,r.y+1,cw-2,r.h-2,on?PAL.cardOn:PAL.card,on?PAL.tallow:m.ko?PAL.rust:PAL.line,1);
-  // the whole name, never cut (bug batch, Nov 24): the card's full width, a smaller size if it must, else the first name
-  const nm=fitName(m.name.toUpperCase(),cw-8);bT(nm.s,x+3,r.y+(13-nm.z),on?PAL.tallow:PAL.bone,nm.z);
-  // the HP number beside its bar; WP and SAN in Bone (Ash is for labels only)
-  const hs=m.ko?'DOWN':String(m.hp),hw=bW(hs,11);bT(hs,x+cw-5-hw,r.y+9,m.ko?PAL.rust:PAL.bone,11);
-  SB.hpBar(cx,BT_THEME,x+3,r.y+12,cw-12-hw,m.hp/m.mhp,3);
-  const s=`WP ${m.wp} SAN `;bT(s,x+3,r.y+16,PAL.bone,11);bT(String(m.san),x+3+bW(s,11),r.y+16,m.san<40?PAL.pink:PAL.bone,11)});
+  const f=18,fy=r.y+4,g=cx.createLinearGradient(0,fy,0,fy+f);g.addColorStop(0,'#8a7458');g.addColorStop(1,'#5a4a38');cx.fillStyle=g;cx.fillRect(x+3,fy,f,f);
+  cx.drawImage(RLSP.portrait(m.sp,m.look),10,8,44,44,x+3,fy,f,f);bR(x+3,fy+f,f,1,PAL.peat);if(m.ko)bR(x+3,fy,f,f,'rgba(28,24,20,.55)');
+  const tx=x+f+6,tw=cw-f-10,nm=fitName(m.name.toUpperCase(),tw);bT(nm.s,tx,r.y+(12-nm.z),on?PAL.tallow:PAL.bone,nm.z);
+  const hs=m.ko?'DOWN':String(m.hp),hw=bW(hs,11);bT(hs,x+cw-5-hw,r.y+7,m.ko?PAL.rust:PAL.bone,11);
+  SB.hpBar(cx,BT_THEME,tx,r.y+11,Math.max(8,cw-f-15-hw),m.hp/m.mhp,3);
+  const s=`WP ${m.wp} SAN `;bT(s,tx,r.y+15,PAL.bone,11);bT(String(m.san),tx+bW(s,11),r.y+15,m.san<40?PAL.pink:PAL.bone,11)});
+}
+// the one-line log across the top. Never ends in "…" (ui, Screen craft): a long line takes a smaller size, then a second line.
+// Returns the bar's height, so the countdown and the turn column sit under it.
+function logBar(){
+ const s=Bt.log||'',w=VW-36;let z=0;for(const k of [14,13,12])if(bW(s,k)<=w){z=k;break}
+ if(z){SB.box(cx,26,2,VW-28,14,PAL.soot,PAL.bone,1);bT(s,30,2+(14-z)/2,PAL.bone,z);return 14}
+ const lines=[];let line='';s.split(/\s+/).forEach(wd=>{const t2=line?line+' '+wd:wd;if(!line||bW(t2,13)<=w)line=t2;else{lines.push(line);line=wd}});if(line)lines.push(line);
+ const h=2+lines.length*11;SB.box(cx,26,2,VW-28,h+1,PAL.soot,PAL.bone,1);lines.forEach((l,k)=>bT(l,30,2+k*11,PAL.bone,13));return h+1
 }

@@ -140,20 +140,27 @@ async function onStep(){const M=G.M,k=G.x+','+G.y;if(M.warps&&M.warps[k]){held=[
 async function interact(){
  const [tx,ty]=StudioMove.ahead(G),M=G.M,k=tx+','+ty;
  const n=M.npcs.find(n=>(!n.on||n.on())&&n.x===tx&&n.y===ty);
- if(n){n.dir={up:'down',down:'up',left:'right',right:'left'}[G.dir];held=[];await n.talk(n);return}
+ if(n){n.dir={up:'down',down:'up',left:'right',right:'left'}[G.dir];held=[];talker=n;try{await n.talk(n)}finally{talker=null}return}
  if(M.O[k]){held=[];await M.O[k]();return}
 }
+// who is talking on the map, so their sprite flaps while the line types (art-style, Animation: Talk)
+let talker=null;
+function mouthOpen(){if(!box||box.typed>=box.text.length)return false;const T=BLD.TIMING,n=Math.floor(performance.now()/T.flapMs),p=n%(T.burst+T.rest);return p<T.burst&&p%2===0}
+// a map sprite's frame from the shared rig: the talk flap, else a blink or an idle breath now and then (each person out of step)
+function idleFrame(seed,now){return StudioRig.blink(now,seed)?'blink':StudioRig.idle(now,seed)||'stand'}
 function cam(){return StudioMove.camera(G,G.M.w,G.M.h,VW,VH)}
 function drawWorld(){
  const M=G.M,[camx,camy]=cam();cx.fillStyle='#0a0710';cx.fillRect(0,0,VW,VH);
  const x0=Math.floor(camx/16),y0=Math.floor(camy/16);
  if(M.town)drawStreet(M,camx,camy);else if(M.site)drawSiteTiles(M,camx,camy);else for(let ty=y0;ty<=y0+Math.ceil(VH/16)+1;ty++)for(let tx=x0;tx<=x0+Math.ceil(VW/16)+1;tx++){const ch=M.g[ty]&&M.g[ty][tx];if(!ch)continue;let v=(tx*7+ty*13)%4;if(ch==='V')v=M.vv[tx+','+ty];if(ch==='T')v=(tx*3+ty*5)%3;cx.drawImage(tile(ch,v),tx*16-camx,ty*16-camy)}
  const spr=[];
- M.npcs.forEach(n=>{if(n.on&&!n.on())return;spr.push({y:n.y*16,f:()=>cx.drawImage(RLSP.map(n.sp,n.look),n.x*16+1-camx,n.y*16+16-26-camy)})});
- const moving=!!G.mv,fr=StudioMove.walkFrame(G);
- // Only the lead walks the map (Bible, Art, Maps). Agent sprites from agent-sprite.js; lantern at night only; a blink every few seconds.
- const blink=!moving&&(performance.now()%3400)<150?1:0;
- spr.push({y:G.py,f:()=>{const s=RLSP.map(lead().sp,lead().look);cx.drawImage(s,Math.round(G.px+1-camx),Math.round(G.py+16-26-camy+(moving&&fr%2?-1:0)))}});
+ const now=performance.now();
+ M.npcs.forEach(n=>{if(n.on&&!n.on())return;const fr=n===talker&&mouthOpen()?'talk':idleFrame(n.x*31+n.y*17,now);
+  spr.push({y:n.y*16,f:()=>cx.drawImage(RLSP.map(n.sp,n.look,fr),n.x*16+1-camx,n.y*16+16-26-camy)})});
+ // Only the lead walks the map (Bible, Art, Maps). The walk is four beats, step, pass, step, pass, one beat per half tile
+ // (art-style, Animation); standing, the lead breathes and blinks like everyone else
+ const moving=!!G.mv,lfr=moving?StudioRig.WALK[StudioRig.walkBeat(G.anim,StudioMove.STEPF/2)]:idleFrame(7,now);
+ spr.push({y:G.py,f:()=>{const s=RLSP.map(lead().sp,lead().look,lfr);cx.drawImage(s,Math.round(G.px+1-camx),Math.round(G.py+16-26-camy))}});
  spr.sort((a,b)=>a.y-b.y).forEach(s=>s.f());
  if(M.site){drawSiteOver(M,camx,camy);siteLight(M,camx,camy);drawSiteStrip()}else{lights(M,camx,camy);if(M.town)drawTownStrip()}
 }
