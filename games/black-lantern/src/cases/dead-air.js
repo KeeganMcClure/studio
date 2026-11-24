@@ -386,7 +386,7 @@ const TEXT={
  call:[['BIG HAT','I am hearin\' about you on a Louisiana police scanner, {first}. In French.'],['BIG HAT','Don\'t ask me for anything next time. You won\'t get it.']],
  feds:['Black cars on the parish road with their headlights off. Four doors open at the same time.',['CLEAN-UP','Black Lantern. You\'re done here. Hand over what you\'ve found.'],['CLEAN-UP','Whatever\'s on the radio, it\'s ours now.']],
  fedsIntro:'The clean-up crew draws down!',
- fedsWin:['The black cars leave the way they came, one short.','By morning KHLT has a fence around it and a sign that says FCC · DO NOT ENTER.','The show comes on again that Friday. And the Friday after.'],
+ fedsWin:['The black cars leave the way they came, one short.'],
  cane:'Out in the cane at night, nobody saw that but the cane.',
  // ---- the ending ----
  end1:['The Night Line stops in the middle of a word. The word goes on without it, smaller and smaller, like a station you\'re driving away from.','The microphone falls in the dirt. The cords go slack. The radios in the circle click off one by one, without anybody touching them.',
@@ -1090,18 +1090,15 @@ async function stepScene(){
  if(s==='Agency call'&&!F.call){F.call=1;await play(TEXT.call)}
  if(s==='Federal agents')F.fedsDue=1;
  checkpoint()}
-async function onArea(){
- const F=G.flags;if(!F.fedsDue||F.fedsDone)return;F.fedsDone=1;
- await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
- await play(TEXT.fedsWin);F.shutDown=1;await ending({worst:true})}
+async function onArea(){await feds(TEXT,play)}
 
 // ================= ENDING =================
 // clean: the Night Line ended, Emile's name said, nobody taken by the circle, Miss Odile's house standing, the town's
-// fear under 3, no agent lost this case, overstepping below Agency call. costly: ended any other way. worst: the
-// clean-up crew shut the case down.
+// fear under 3, no agent lost this case, overstepping below Agency call. costly: ended any other way. (worst: only in
+// debrief saves from before Nov 24, 2026, when the clean-up crew shut a case down.)
 const lostHere=()=>(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case&&!x.done);
-const savedN=()=>G.flags.shutDown?0:inCircle().filter(id=>G.flags.taken!==id).length;
-function endingLabel(){const F=G.flags;if(F.shutDown)return'worst';
+const savedN=()=>inCircle().filter(id=>G.flags.taken!==id).length;
+function endingLabel(){const F=G.flags;
  return(F.name&&!F.taken&&F.porch!=='burned'&&fear()<3&&!lostHere().length&&!stepAt('Agency call'))?'clean':'costly'}
 function endingFacts(label){const F=G.flags;
  return{label,clues:G.clues.map(c=>c.id),saved:savedN(),overstep:stepName(),
@@ -1112,17 +1109,17 @@ function endingFacts(label){const F=G.flags;
   tried:party.map(m=>({id:m.a.id,skills:m.tried||[]})),
   lost:lostHere().map(x=>({name:x.name,how:x.how}))}}
 const WHO={darlene:'Darlene Achord',wade:'Wade Hebert',lucien:'Lucien Arceneaux'};
-async function ending(o={}){
+async function ending(){
  const F=G.flags;
- if(!o.worst){await play(TEXT.end1);if(F.taken)await trigger('death')}
+ await play(TEXT.end1);if(F.taken)await trigger('death')
  await fade(1);G.mode='scene';await fade(0);
- if(!o.worst){await said(TEXT.dawn);
-  for(const id of inCircle())await said(F.taken===id?TEXT.dawnTaken:TEXT.dawnSaved,{n:WHO[id]});
-  if(F.porch==='burned'||F.porch==='fought')await said(F.porch==='burned'?TEXT.dawnBurned:'Miss Odile\'s steps have a scorch mark on them now. She paints over it with porch paint the color of the old paint, almost.');
-  await said(endingLabel()==='clean'?TEXT.dawnClean:TEXT.dawnCostly);
-  // Emile's headphones, for Miss Odile: +1 to a Bond of each Protect the innocent holder
-  const hp=holderOf('headphones');if(hp&&F.porch!=='burned'){await play(TEXT.headphones);spend(hp.m,hp.it);
-   for(const m of holdersOf('Protect the innocent')){const a=m.a;if((a.bonds||[]).length){a.bondDmg=a.bondDmg||[];a.bondDmg[0]=(a.bondDmg[0]||0)-1}}}}
+ await said(TEXT.dawn);
+ for(const id of inCircle())await said(F.taken===id?TEXT.dawnTaken:TEXT.dawnSaved,{n:WHO[id]});
+ if(F.porch==='burned'||F.porch==='fought')await said(F.porch==='burned'?TEXT.dawnBurned:'Miss Odile\'s steps have a scorch mark on them now. She paints over it with porch paint the color of the old paint, almost.');
+ await said(endingLabel()==='clean'?TEXT.dawnClean:TEXT.dawnCostly);
+ // Emile's headphones, for Miss Odile: +1 to a Bond of each Protect the innocent holder
+ const hp=holderOf('headphones');if(hp&&F.porch!=='burned'){await play(TEXT.headphones);spend(hp.m,hp.it);
+  for(const m of holdersOf('Protect the innocent')){const a=m.a;if((a.bonds||[]).length){a.bondDmg=a.bondDmg||[];a.bondDmg[0]=(a.bondDmg[0]||0)-1}}}
  G.rescued=savedN();
  const label=endingLabel();await debrief(label,endingFacts(label));  // Big Hat's debrief and the case gains (debrief.js)
 }

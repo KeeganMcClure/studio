@@ -367,7 +367,8 @@ const MAPMENU={title:'MENU',rows:['Party','Skills','Items','Case file','Log','Se
  hunchAsk:'{n} has a hunch. Roll INT for a hint? (INT × 5: {p}%)',hunchYes:'Follow the hunch',hunchNo:'Not now',hunchFail:'Nothing comes. Not yet.'};
 // Overstepping steps (Skills and menus, Overstepping and cover stories; set Nov 20). Quiet cases start at Noticed.
 const OVERSTEP={open:['Clean','Local chief','Agency call','Federal agents'],quiet:['Clean','Noticed','Local chief','Agency call','Federal agents'],
- climb:{Noticed:'Word gets around: strangers are asking questions.','Local chief':'Somebody called the chief.','Agency call':'Your phone buzzes. Big Hat.','Federal agents':'Black cars at the edge of town.'}};
+ climb:{Noticed:'Word gets around: strangers are asking questions.','Local chief':'Somebody called the chief.','Agency call':'Your phone buzzes. Big Hat.','Federal agents':'Black cars at the edge of town.'},
+ fedsBack:'Nobody else comes. The case is still yours, and the heat is back down to the local chief.'};
 // ---------- ROAMERS, LOOT, LANTERN BOXES, REQUISITION (spec 006 part C; Gameplay loop, Where items come from) ----------
 // A case can supply its own wording for a few of these shared lines with registerCase({words:{slipped, crackers,
 // recruit, gameOverSan}}) (field.js caseWord): Still Harvest keeps its corn. The defaults here fit any case.
@@ -431,8 +432,8 @@ const DEBRIEF={
  safeStory:'Already filed: nothing happened',
  cover:'COVER STORY',coverHint:'What do locals hear?',who:'WHO TELLS IT?',luck:'Luck',safe:'SAFE',weak:'Weak story',
  stepShort:{Clean:'CLEAN',Noticed:'NOTICED','Local chief':'CHIEF','Agency call':'CALL','Federal agents':'FEDS'},
- passDrop:'Pass: the case closes quiet, and overstepping drops a step.',passQuiet:'Pass: the case closes quiet.',
- failClimb:'Fail: it climbs to {s}.',failTop:'Fail: it can\'t climb past {s}.',safeLine:'No roll. Clean books: it always holds.',
+ passDrop:'Pass: the case closes quiet, and it drops to {s}.',passQuiet:'Pass: the case closes quiet.',
+ failClimb:'Fail: it climbs to {s}.',failTop:'Fail: it can\'t climb past {s}.',safeLine:'No roll. Clean books: it always holds.',safeDrop:'It drops to {s}.',
  coverKeys:'A: pick · B: back',tellKeys:'A: tell it · B: back',
  held:'The story holds.',heldDrop:'The story holds. Overstepping drops to {s}.',
  broke:'Nobody buys it. Overstepping climbs to {s}.',brokeTop:'Nobody buys it. It can\'t get any worse than {s}.',
