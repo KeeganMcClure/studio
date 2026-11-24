@@ -176,6 +176,7 @@ function installPage() {
   window.__log = [];
   const note = t => { if (window.__trace) window.__log.push(String(t)); };
   say = (name, text) => { note((name ? name + ': ' : '') + text); return Promise.resolve(); };
+  window.__battleAuto = 1;  // battle lines clear on their own here (they wait for A in play)
   const bs = bsay; bsay = (t, ms) => { note('  ' + t); return bs(t, ms); };
   ask = async (name, text, opts) => (window.__ai && window.__ai.ask ? window.__ai.ask(name, text, opts) : opts.length - 1);
   choose = async () => 0;
