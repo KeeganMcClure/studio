@@ -90,7 +90,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
 Problems found in playtests. Each line: what happened · where · how to make it happen again. Claude ticks a bug when it's fixed and notes the fix in the Changelog.
 
 - [x] Backspace acts as B, not Select · keyboard, every screen · press Backspace on the map: it backs out instead of cycling the lead. The Bible and CLAUDE.md say Backspace = Select; the game maps Select to Shift. Fixed Nov 21 by spec 001 (studio PR #14): Backspace = Select, Shift stays a second Select key, X stays B.
-- [ ] The Gleaner's head shape starts 1 px above its own sprite box, so one row of the art is lost · battle, the Gleaner · read its sprite code (you can't see it in play). Cosmetic and low; fixing it means redrawing the sprite (logged Nov 23, 2026)
+- [x] The Gleaner's head shape starts 1 px above its own sprite box, so one row of the art is lost · battle, the Gleaner · read its sprite code (you can't see it in play). Cosmetic and low; fixing it means redrawing the sprite (logged Nov 23, 2026)
+  Done Nov 24, 2026: the Gleaner's head now sits fully inside its sprite box, so no part of it is cut off at the top.
 
 ## Ideas inbox
 
