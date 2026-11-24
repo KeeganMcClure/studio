@@ -283,12 +283,12 @@ function drawItems(){const m=party[IV.i],I=RLS.ITEMS,r=G.run;pR(0,0,VW,VH,PAL.pe
   const z=pSize(p.name,tw-20,[14,13,12,11]);pT(z?p.name:p.name.split(/\s/)[0],x+17,y+(15-(z||11))/2,on?IK.peat:PAL.bone,z||11)});y+=20;
  // the worn gear: the slot written out, the item and its dice, wear as pips
  const g=m.gear,rows=[['Weapon 1',g.w1,g.hand==='w1'],['Weapon 2',g.w2,g.hand==='w2'],['Body',g.body],['Head',g.head]];
- parch(4,y,VW-8,13+rows.length*13);const NM=m.name.toUpperCase();pT(NM,10,y+3,IK.peat,pSize(NM,120,[8,7],PXf)||7,PXf);pT(m.trade,VW-10-pW(m.trade,14),y+1,IK.rust,14);let yy=y+14;
+ parch(4,y,VW-8,17+rows.length*13);const NM=m.name.toUpperCase();pT(NM,10,y+3,IK.peat,pSize(NM,120,[8,7],PXf)||7,PXf);pT(m.trade,VW-10-pW(m.trade,14),y+1,IK.rust,14);let yy=y+14;
  rows.forEach(([l,it,hand])=>{pT(l,10,yy-1,IK.dim,14);if(hand)pR(58,yy+4,3,3,PAL.tallow);const nm=it?I[it.id].name+(I[it.id].dmg?' '+I[it.id].dmg:''):'—';
   pT(nm,63,yy-1,IK.peat,pSize(nm,VW-63-40,[14,13,12])||12);if(it){for(let q=0;q<3;q++)pR(VW-30+q*6,yy+3,4,5,q<3-(it.wear|0)?IK.moss:'rgba(90,62,43,.3)');const w=WEAR[it.wear|0];if(it.wear)pT(w,VW-34-pW(w,12),yy,IK.rust,12)}yy+=13});
- y=yy+5;
+ y=yy+8;
  // what the merc carries: a row per thing with its count, the picked one's use under the list
- const sl=m.slots,c=Math.min(IV.c|0,Math.max(0,sl.length-1)),it=sl[c],dsc=it?pWrap(I[it.id].desc||'',VW-22,14,3):[],h=14+Math.max(1,sl.length)*13+(dsc.length?dsc.length*12+4:0);
+ const sl=m.slots,c=Math.min(IV.c|0,Math.max(0,sl.length-1)),it=sl[c],dsc=it?pWrap(I[it.id].desc||'',VW-22,14,3):[],h=17+Math.max(1,sl.length)*13+(dsc.length?dsc.length*12+7:0);
  parch(4,y,VW-8,h);pT('CARRIED',10,y+3,IK.peat,7,PXf);const sc=`slots ${sl.length} of 8`;pT(sc,VW-10-pW(sc,13),y+1,IK.dim,13);yy=y+14;
  if(!sl.length){pT('Nothing carried.',10,yy-1,IK.soot,14);yy+=13}
  sl.forEach((s2,k)=>{const on=k===c;if(on){pR(6,yy-1,VW-12,13,'rgba(217,180,90,.35)');StudioParch.seal(cx,13,yy+5,PT_)}const nm=I[s2.id].name+(s2.kit?'  (kit)':'');pT(nm,22,yy-1,IK.peat,pSize(nm,VW-60,[14,13,12])||12);
