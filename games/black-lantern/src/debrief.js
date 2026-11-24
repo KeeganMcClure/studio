@@ -107,7 +107,13 @@ function dbSort(rows){
 function dbDrawItems(){
  const s=SCR,rows=dbItemRows(),n=rows.length+1;s.sel=clamp(s.sel,0,n-1);s.hits=[];
  pR(0,0,VW,VH,PC.navy);dbHeader(DBW.items,DBW.itemsHint);
- const RH=24,detH=48,top=26,avail=Math.max(2,Math.floor((VH-top-detH-24)/RH));
+ // the detail box fits the longest item's whole text (no cut-off lines; Keegan, Nov 24), sized once for all rows so it
+ // doesn't jump as the cursor moves; the list gets the room that's left (at least one row, scrolling as before)
+ const detOf=r=>{if(!r)return pWrap(DBW.itemKeys,220,15,9).map(t=>[t,PC.lav]);const d=itemDef(r.it.k),un=unnatural(r.it),who=firstOf((r.m||lead()).a.name);
+  const st=un?(r.it.hidden?fillT(DBW.hideLine,{n:who}):DBW.bagLine):DBW.keepLine,sc=un&&r.it.hidden?PC.pink:PC.lav;
+  return[...pWrap(d.desc,220,15,9).map(t=>[t,PC.cream]),...pWrap(st,220,15,4).map(t=>[t,sc])]};
+ const RH=24,top=26,maxL=Math.max(1,...rows.map(r=>detOf(r).length),detOf(null).length),
+  detH=Math.min(8+maxL*13,VH-top-RH-24),avail=Math.max(1,Math.floor((VH-top-detH-24)/RH));
  if(s.sel<s.top)s.top=s.sel;if(s.sel>=s.top+avail)s.top=s.sel-avail+1;
  for(let k=0;k<avail&&s.top+k<n;k++){const j=s.top+k,y=top+k*RH,on=j===s.sel,r=rows[j];
   pBox(4,y,232,RH-3,on?PC.cardOn:PC.card,on?PC.gold:PC.dim);if(on)pT('▶',7,y+3,PC.gold,15);
@@ -119,10 +125,7 @@ function dbDrawItems(){
   const cw=StudioChip.width(cx,chip,{font:PXf(6),pad:4});StudioChip.draw(cx,229-cw,y+5,chip,{font:PXf(6),pad:4,h:11,fill:PC.deep,ink:col,line:col,dy:3});
  }
  const dy=top+avail*RH+2,r=rows[s.sel];pBox(4,dy,232,detH,PC.deep,PC.cream,2);
- if(r){const d=itemDef(r.it.k),un=unnatural(r.it),who=firstOf((r.m||lead()).a.name);
-  const lines=pWrap(d.desc,220,15,2).map(t=>[t,PC.cream]);lines.push([un?(r.it.hidden?fillT(DBW.hideLine,{n:who}):DBW.bagLine):DBW.keepLine,un&&r.it.hidden?PC.pink:PC.lav]);
-  lines.slice(0,3).forEach(([t,c],k)=>pT(pFit(t,220,15),10,dy+3+k*13,c,15))}
- else pT(DBW.itemKeys,10,dy+3,PC.lav,15);
+ detOf(r).slice(0,Math.floor((detH-6)/13)).forEach(([t,c],k)=>pT(pFit(t,220,15),10,dy+3+k*13,c,15));
 }
 
 // ---------- 4. The cover story (mockup screen 3) ----------
