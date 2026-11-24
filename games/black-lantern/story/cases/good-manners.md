@@ -86,7 +86,7 @@ Wrong answers cost time or a better ending, never progress: night 2 opens either
 - **`voss`** what you do with Voss on night 2: let him sit it out, cuff him (Toft), or make him tear up his copy of the deal (needs `deal`; History/Occult: speak the debt aloud; weakens the boss −6 HP).
 - **`photo` / overstepping** as below.
 
-## Overstepping (open case: Local chief first, then Agency call, then Federal agents' shutdown; extreme flag off)
+## Overstepping (open case: Local chief first, then Agency call, then Federal agents; extreme flag off)
 
 Each mark says how public it is. Toft watching makes most of them **seen**.
 
@@ -100,7 +100,7 @@ Each mark says how public it is. Toft watching makes most of them **seen**.
 | Fire in the fairground crowd (night 2) | Seen | 1 step |
 | Cuff Voss without Toft | Seen | 1 step |
 
-Local chief here: Toft takes the badge talk off the table for the rest of the day (Persuade at −20 in town). Agency call: Big Hat. Federal agents: the clean-up crew, `worst`, as in Still Harvest.
+Local chief here: Toft takes the badge talk off the table for the rest of the day (Persuade at −20 in town). Agency call: Big Hat. Federal agents: the clean-up crew, a very hard fight, then the case goes on at Local chief, as in every case.
 
 ## Fights
 
@@ -158,7 +158,7 @@ Local chief here: Toft takes the badge talk off the table for the rest of the da
 | --- | --- |
 | `clean` | The Graduate is unmade, Tanner wakes up Monday and laughs his own laugh, nobody else dies. The fair closes on time. Voss resigns from the fair board. |
 | `costly` | The Graduate is unmade, but Tanner didn't wake up, or the agents lost someone, or the crowd saw the fight. The sign stays at 900 a while longer than it should. |
-| `worst` | The men graduate: two new residents move into Odessa Flats, with faces the town knows. Also the Federal agents' shutdown. |
+| `worst` | The men graduate: two new residents move into Odessa Flats, with faces the town knows. |
 
 ## Big Hat's briefing
 
@@ -224,4 +224,4 @@ Town clues for the threshold: `dead`, `watch`, `room7`, `car`, `roll`, `lesson`.
 
 - `clean`: the Graduate unmade, `kept`, no agent lost this case, overstepping below Agency call.
 - `costly`: the Graduate unmade any other way.
-- `worst`: the Federal agents' shutdown.
+- `worst`: none since Nov 24, 2026 (the Federal agents used to shut the case down; now they're a fight and the case goes on).

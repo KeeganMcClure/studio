@@ -318,7 +318,7 @@ const TEXT={
  call:['Your phone buzzes. Unknown number. You know who it is.',['BIG HAT','I\'m hearin\' about Pecan Court on a police scanner, {first}. Bug men don\'t make the scanner.'],['BIG HAT','Don\'t ask for anything next time. You won\'t get it.']],
  feds:['Two black SUVs in the lot, nose to tail, engines running. Four doors open at the same time.',['CLEAN-UP','Black Lantern. You\'re done here. Hand over what you\'ve found.'],['CLEAN-UP','The building\'s ours now. So\'s the tent.']],
  fedsIntro:'The clean-up crew draws down!',
- fedsWin:['The black SUVs leave the way they came, one short.','By morning the tent has a second tent around it and a sign that says HAZMAT. The tenants spend a month at the motel on the owners\' dime.','Nobody asks what you found. Nobody ever will.'],
+ fedsWin:['The black SUVs leave the way they came, one short.','The tent stays up. So do you.'],
  // ---- the ending ----
  end1:['The Lodger shudders all over, like a dog shaking off water, and then it just keeps shaking, smaller and smaller.','It goes still on the floor of the pump room. The eye goes from milk to water. The pipes stop ticking.','It\'s very quiet. Up top, the building is only a building.'],
  endWalt:['Walt sits up against the filter tank in his bathrobe. His arm is his arm again, mostly. It\'s going to need a doctor and a story.',['WALT','...I\'m so hungry. Is that weird? I\'m so hungry.']],
@@ -877,7 +877,7 @@ window.l83Boss=()=>bossFight({noEnd:true});  // the boss simulator's entry (tool
 // ================= OVERSTEPPING (Skills and menus, Overstepping and cover stories) =================
 // A quiet case: they came as the pest-control crew. Noticed first (Lorraine and Mrs. Ybarra clam up, Kenny films the
 // crew), then Local chief (Sgt. Ruiz's walk-through: the office locks for the day), Agency call (Big Hat), and the
-// clean-up crew at the next area change (Federal agents: worst). Inside the tent at night, nobody sees.
+// clean-up crew at the next area change (Federal agents: a fight, then the case goes on). Inside the tent at night, nobody sees.
 async function overstepHere(seen){if(!(await overstep(seen)))return;await stepScene()}
 async function stepScene(){
  const F=G.flags,s=stepName();
@@ -889,12 +889,12 @@ async function stepScene(){
 async function onArea(){
  const F=G.flags;if(!F.fedsDue||F.fedsDone)return;F.fedsDone=1;
  await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
- await play(TEXT.fedsWin);F.shutDown=1;await ending({worst:true})}
+ await play(TEXT.fedsWin);await fedsBeaten(F)}
 
 // ================= ENDING =================
 // clean: the Lodger ended, Walt alive, the nest burned, every jar accounted for (Unit 6's iced, the storage pair
 // brought back, the crawler's jar), overstepping didn't climb this case, no agent lost, and out before dawn (late < 4).
-// costly: ended any other way. worst: the clean-up crew shut the case down.
+// costly: ended any other way. worst: the clean-up crew shut the case down (old saves only; since Nov 24, 2026 the case goes on after them).
 const lostHere=()=>(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case&&!x.done);
 const jarsAll=()=>{const F=G.flags;return !!(F.iced&&F.bay&&F.crawler)};
 function endingLabel(){const F=G.flags;if(F.shutDown)return'worst';

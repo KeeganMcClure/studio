@@ -268,6 +268,13 @@ async function overstep(seen){
  const o=luck(seen==='public'?-40:seen?-20:0);if(o.ok)return false;
  const s=loadSeason(),steps=stepsOf();s.overstep=Math.min(steps.length-1,(s.overstep|0)+1);store.set(seasonKey(),s);G.fs.climbed=1;  // the debrief's drop needs it (spec 007)
  await say('',BLS.OVERSTEP.climb[steps[s.overstep]]||'');return true}
+// Federal agents beaten (Overstepping, the Federal agents row; Nov 24, 2026): the case goes on, and overstepping drops
+// straight back to Local chief in open and quiet cases alike. It can climb again from there, and the crew comes back
+// if it reaches the top again. F.fedsBeat keeps a case's clean ending out of reach, since it did reach the top.
+async function fedsBeaten(F){
+ const s=loadSeason(),steps=stepsOf(),i=steps.indexOf('Local chief');
+ if(i>=0&&(s.overstep|0)>i){s.overstep=i;store.set(seasonKey(),s)}
+ F.fedsDue=0;F.fedsDone=0;F.fedsBeat=1;await say('',fillT(BLS.OVERSTEP.fedsGone,{s:steps[loadSeason().overstep|0]}));checkpoint()}
 function stepsOf(){const c=caseById(G.case);return c&&c.quiet?BLS.OVERSTEP.quiet:BLS.OVERSTEP.open}
 function noise(){roamLoud();const M=G.M;if(M&&M.onLoud)run(M.onLoud)}
 
@@ -763,4 +770,4 @@ function drawLeadIcons(x,y,cw,ch){
 // the lead can't be someone whose phobia is flaring (Disorders, Phobia)
 const canLeadField=m=>!flaring(m,'phobia');
 
-window.BLF={horror,trigger,addStatus,clearStatus,pickup,hunch,overstep,luck,holdersOf,motivate,rest,recruitBuilt,itemDef,gearOf,live};
+window.BLF={horror,trigger,addStatus,clearStatus,pickup,hunch,overstep,fedsBeaten,luck,holdersOf,motivate,rest,recruitBuilt,itemDef,gearOf,live};

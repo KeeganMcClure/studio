@@ -298,7 +298,7 @@ const TEXT={
  call:['Your phone buzzes. Unknown number. You know who it is.',['BIG HAT','I am hearin\' about you on a Kansas police scanner, {first}. I didn\'t know Kansas had police scanners.'],['BIG HAT','Don\'t ask for anything next time. You won\'t get it.']],
  feds:['Black cars on the county road with their headlights off. Four doors open at the same time.',['CLEAN-UP','Black Lantern. You\'re done here. Hand over what you\'ve found.'],['CLEAN-UP','There\'s already two of us in this town who don\'t belong. Don\'t make it five.']],
  fedsIntro:'The clean-up crew draws down!',
- fedsWin:['The black cars leave the way they came, one short.','By morning the fairground has a fence around it and a sign that says SEVERE WEATHER CLOSURE.','Nobody asks what you found. Nobody ever will.'],
+ fedsWin:['The black cars leave the way they came, one short.','The fair\'s still coming. So is the case.'],
  crowd:'That was loud, on a midway full of people. Somebody\'s filming on a phone.',
  // ---- the ending ----
  end1:['The Graduate stops in the middle of a word. It tries the word again in four voices, and none of them fits.','It comes apart like a wet paper bag. Copybook pages, hundreds of them, drift down onto the folding chairs.','Above you, the crowd stamps for the welcome. Nobody up there heard a thing.'],
@@ -878,14 +878,14 @@ async function stepScene(){
 async function onArea(){
  const F=G.flags;if(!F.fedsDue||F.fedsDone)return;F.fedsDone=1;
  await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
- await play(TEXT.fedsWin);F.shutDown=1;await ending({worst:true})}
+ await play(TEXT.fedsWin);await fedsBeaten(F)}
 
 // ================= ENDING =================
 // clean: the Graduate unmade, Tanner kept, nobody on the team lost this case, overstepping below Agency call.
-// costly: unmade any other way. worst: the clean-up crew shut the case down.
+// costly: unmade any other way. worst: the clean-up crew shut the case down (old saves only; since Nov 24, 2026 the case goes on after them).
 const lostHere=()=>(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case&&!x.done);
 function endingLabel(){const F=G.flags;if(F.shutDown)return'worst';
- return(F.kept&&!lostHere().length&&!stepAt('Agency call'))?'clean':'costly'}
+ return(F.kept&&!lostHere().length&&!stepAt('Agency call')&&!F.fedsBeat)?'clean':'costly'}
 function endingFacts(label){const F=G.flags;
  return{label,clues:G.clues.map(c=>c.id),saved:F.kept?1:0,overstep:stepName(),
   san:party.map(m=>({id:m.a.id,name:m.name,from:m.san0,to:m.san})),

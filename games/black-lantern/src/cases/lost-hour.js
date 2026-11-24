@@ -358,7 +358,7 @@ const TEXT={
  call:['Your phone buzzes. Unknown number. You know who it is.',['BIG HAT','{first}. A sheriff in Page County called a number he shouldn\'t have had about a sleep study he shouldn\'t have heard of.'],['BIG HAT','Don\'t ask for anything next time. You won\'t get it.']],
  feds:['Black cars on Main Street with their headlights off. Four doors open at the same time.',['CLEAN-UP','Black Lantern. You\'re done here. Hand over what you\'ve found.'],['CLEAN-UP','The Pruetts are coming with us. For their own good.']],
  fedsIntro:'The clean-up crew draws down!',
- fedsWin:['The black cars leave the way they came, one short.','By morning the Pruett house has a For Sale sign on the lawn and nobody in it.','Nobody asks what you found. Nobody ever will.'],
+ fedsWin:['The black cars leave the way they came, one short.','The Pruetts stay put. So do you.'],
  paper:['Ray calls the Page Valley Courier. You find out because Mae turns the radio up: the morning show\'s already got it.','"LOCAL COUPLE SAYS THEY WERE TAKEN." The host laughs. Then he plays a song about a truck.'],
  // ---- the debrief (spec 007): Big Hat's lines by ending ({x}/{t} timeline boxes, {v}/{n} brought home), what he says
  // about the choices, and the cover stories ----
@@ -1117,15 +1117,16 @@ async function callPaper(){const F=G.flags;if(F.paper)return;F.paper=1;await pla
 async function onArea(){
  const F=G.flags;if(!F.fedsDue||F.fedsDone)return;F.fedsDone=1;
  await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
- await play(TEXT.fedsWin);F.shutDown=1;await ending({worst:true})}
+ await play(TEXT.fedsWin);await fedsBeaten(F)}
 
 // ================= ENDING =================
-// worst: the Lamp took Ray or Donna, or the clean-up crew shut the case down. clean: the Surveyor gone, Ray or Donna
+// worst: the Lamp took Ray or Donna, or the clean-up crew shut the case down (old saves only;
+// since Nov 24, 2026 the case goes on after them). clean: the Surveyor gone, Ray or Donna
 // carried it and came home, no cut and no stroke, the paper never called, no agent lost, overstepping below Agency call.
 // costly: any other win.
 const lostHere=()=>(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case&&!x.done);
 function endingLabel(){const F=G.flags;if(F.shutDown||F.taken)return'worst';
- return(['ray','donna'].includes(F.carrier)&&!F.taken&&!F.stroke&&!F.paper&&!lostHere().length&&!stepAt('Agency call'))?'clean':'costly'}
+ return(['ray','donna'].includes(F.carrier)&&!F.taken&&!F.stroke&&!F.paper&&!lostHere().length&&!stepAt('Agency call')&&!F.fedsBeat)?'clean':'costly'}
 function endingFacts(label){const F=G.flags;
  return{label,clues:G.clues.map(c=>c.id),saved:F.taken?0:1,overstep:stepName(),
   san:party.map(m=>({id:m.a.id,name:m.name,from:m.san0,to:m.san})),

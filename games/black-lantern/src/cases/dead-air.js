@@ -386,7 +386,7 @@ const TEXT={
  call:[['BIG HAT','I am hearin\' about you on a Louisiana police scanner, {first}. In French.'],['BIG HAT','Don\'t ask me for anything next time. You won\'t get it.']],
  feds:['Black cars on the parish road with their headlights off. Four doors open at the same time.',['CLEAN-UP','Black Lantern. You\'re done here. Hand over what you\'ve found.'],['CLEAN-UP','Whatever\'s on the radio, it\'s ours now.']],
  fedsIntro:'The clean-up crew draws down!',
- fedsWin:['The black cars leave the way they came, one short.','By morning KHLT has a fence around it and a sign that says FCC · DO NOT ENTER.','The show comes on again that Friday. And the Friday after.'],
+ fedsWin:['The black cars leave the way they came, one short.','KHLT is still on the air. So are you.'],
  cane:'Out in the cane at night, nobody saw that but the cane.',
  // ---- the ending ----
  end1:['The Night Line stops in the middle of a word. The word goes on without it, smaller and smaller, like a station you\'re driving away from.','The microphone falls in the dirt. The cords go slack. The radios in the circle click off one by one, without anybody touching them.',
@@ -1093,16 +1093,16 @@ async function stepScene(){
 async function onArea(){
  const F=G.flags;if(!F.fedsDue||F.fedsDone)return;F.fedsDone=1;
  await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
- await play(TEXT.fedsWin);F.shutDown=1;await ending({worst:true})}
+ await play(TEXT.fedsWin);await fedsBeaten(F)}
 
 // ================= ENDING =================
 // clean: the Night Line ended, Emile's name said, nobody taken by the circle, Miss Odile's house standing, the town's
 // fear under 3, no agent lost this case, overstepping below Agency call. costly: ended any other way. worst: the
-// clean-up crew shut the case down.
+// clean-up crew shut the case down (old saves only; since Nov 24, 2026 the case goes on after them).
 const lostHere=()=>(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case&&!x.done);
 const savedN=()=>G.flags.shutDown?0:inCircle().filter(id=>G.flags.taken!==id).length;
 function endingLabel(){const F=G.flags;if(F.shutDown)return'worst';
- return(F.name&&!F.taken&&F.porch!=='burned'&&fear()<3&&!lostHere().length&&!stepAt('Agency call'))?'clean':'costly'}
+ return(F.name&&!F.taken&&F.porch!=='burned'&&fear()<3&&!lostHere().length&&!stepAt('Agency call')&&!F.fedsBeat)?'clean':'costly'}
 function endingFacts(label){const F=G.flags;
  return{label,clues:G.clues.map(c=>c.id),saved:savedN(),overstep:stepName(),
   san:party.map(m=>({id:m.a.id,name:m.name,from:m.san0,to:m.san})),

@@ -265,7 +265,7 @@ const TEXT={
  call:['Your phone buzzes. You know who.',['BIG HAT','I said quiet, {first}. Astoria PD has a description of you now, and I don\'t have a description of me.'],['BIG HAT','Don\'t ask for nothin\' next time.']],
  feds:['Three black cars come up Marine Drive with their lights off and stop in the rain.',['CLEAN-UP','Black Lantern. Internal. You\'re done here.'],['CLEAN-UP','Agent Teague is a personnel matter. Step away from the personnel.']],
  fedsIntro:'The clean-up crew draws down!',
- fedsWin:['The black cars go back up Marine Drive, one short.','By noon there\'s a fence around the cannery and a sign: STRUCTURALLY UNSOUND. Nobody asks you what you found.'],
+ fedsWin:['The black cars go back up Marine Drive, one short.','Nobody says personnel matter again. Agent Teague is still yours to find.'],
  // ---- the ending ----
  end1:['The Tenant stops in the middle of a sentence. It tries the sentence again, politely, and it doesn\'t fit.','The water goes out of the room all at once, down the drain, out under the doors, back to the river, like a tide going out a year at a time.'],
  endClean:['Abel Teague is sitting in the wet, holding his own hands like they\'re new.',['TEAGUE','You\'re Hat\'s.'],['TEAGUE','Nineteen years. You know the average is four?'],['TEAGUE','Tell Hat I wrote.'],
@@ -772,11 +772,12 @@ async function stepScene(){
 async function onArea(){
  const F=G.flags;if(!F.fedsDue||F.fedsDone||F.boss)return;F.fedsDone=1;
  await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
- await play(TEXT.fedsWin);F.shutDown=1;await ending({worst:true})}
+ await play(TEXT.fedsWin);await fedsBeaten(F)}
 
 // ================= ENDING =================
 // clean: the Tenant driven out with his name read and him spoken to, so he dies as himself. costly: driven out any
-// other way. worst: the clean-up crew shut the case down and it walks off wearing him.
+// other way. worst: the clean-up crew shut the case down and it walks off wearing him (old saves only; since Nov 24, 2026 the case
+// goes on after them).
 function endingLabel(){const F=G.flags;if(F.shutDown)return'worst';return F.named&&F.talked?'clean':'costly'}
 const lostHere=()=>(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case&&!x.done);
 // what the debrief and later agency cases read (bl.season, the case's facts): offBooks marks the arc's next step open

@@ -337,7 +337,7 @@ const TEXT={
  call:['Your phone buzzes. Unknown number. You know who it is.',['BIG HAT','I am hearin\' about you on a Reno police scanner, {first}. Reno. They don\'t even listen to their own scanners.'],['BIG HAT','Don\'t ask for anything next time. You won\'t get it.']],
  feds:['Black cars at the curb with their headlights off. Four doors open at the same time.',['CLEAN-UP','Black Lantern. You\'re done here. Hand over the tapes.'],['CLEAN-UP','Everybody on this street\'s already seen too much. Don\'t make it five more.']],
  fedsIntro:'The clean-up crew draws down!',
- fedsWin:['The black cars leave the way they came, one short.','By morning Club Satin has a fence around it and a sign that says ASBESTOS ABATEMENT.','Nobody asks what was on the tape. Nobody ever will.'],
+ fedsWin:['The black cars leave the way they came, one short.','You still have the tapes. Nobody else gets them tonight.'],
  overpay:'Big Hat said once he could fix. He fixes it: nobody hears about the money.',
  // ---- the ending ----
  end1:['She stops. The screens stop. For the first time since you came down the stairs, the room is quiet enough to hear the furnace.','Where she was dancing, there\'s a heap of tape ribbon and a pair of shoes, very small, side by side.'],
@@ -925,15 +925,15 @@ async function stepScene(){
 async function onArea(){
  const F=G.flags;if(!F.fedsDue||F.fedsDone)return;F.fedsDone=1;
  await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
- await play(TEXT.fedsWin);F.shutDown=1;await ending({worst:true})}
+ await play(TEXT.fedsWin);await fedsBeaten(F)}
 
 // ================= ENDING =================
 // clean: Vesper ended, the master erased, no copy out in the world, Wes saved, nobody on the team lost this case,
 // overstepping below Agency call. costly: ended any other way. worst: Kettering got the master first, or the clean-up
-// crew shut the case down.
+// crew shut the case down (old saves only; since Nov 24, 2026 the case goes on after them).
 const lostHere=()=>(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case&&!x.done);
 function endingLabel(){const F=G.flags;if(F.shutDown||F.masterGone)return'worst';
- return(!outCopies()&&F.wes&&!lostHere().length&&!stepAt('Agency call'))?'clean':'costly'}
+ return(!outCopies()&&F.wes&&!lostHere().length&&!stepAt('Agency call')&&!F.fedsBeat)?'clean':'costly'}
 function endingFacts(label){const F=G.flags;
  return{label,clues:G.clues.map(c=>c.id),saved:F.wes?1:0,overstep:stepName(),
   san:party.map(m=>({id:m.a.id,name:m.name,from:m.san0,to:m.san})),

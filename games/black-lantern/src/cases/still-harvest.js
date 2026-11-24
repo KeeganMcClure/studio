@@ -150,7 +150,7 @@ const TEXT={
  call:['Your phone buzzes. Unknown number. You know who it is.',['BIG HAT','I am hearin\' about you on the police scanner, {first}.'],['BIG HAT','Don\'t ask for anything next time. You won\'t get it.']],
  feds:['Black cars at the edge of the light. Four doors open at the same time.',['CLEAN-UP','Black Lantern. You\'re done here. Hand over what you\'ve found.'],['CLEAN-UP','Or don\'t. Paperwork\'s the same either way.']],
  fedsIntro:'The clean-up crew draws down!',
- fedsWin:['The black cars leave the way they came, slower now, one short.','By dawn, the maze has a fence around it and a sign that says GAS LEAK.','Nobody asks what you found. Nobody ever will.'],
+ fedsWin:['The black cars leave the way they came, slower now, one short.','Nobody takes the maze off you. Not tonight.'],
  // ---- the maze ----
  track:'Drag marks',trackLook:'Two grooves in the dirt, like heels dragged backward. They lead deeper in.',
  trackOk:'The marks are easy once you see them. You follow them in your head, turn by turn.',trackFail:'The grooves split, cross, and give out in the corn.',
@@ -617,18 +617,18 @@ async function stepScene(){
  checkpoint();
 }
 // the case's area-change hook (field.js): the Federal agents arrive as a very hard human story fight; win and the case
-// shuts down on its worst ending
+// goes on with overstepping back at Local chief (Nov 24, 2026; it used to shut the case down)
 async function onArea(){
  const F=G.flags;if(!F.fedsDue||F.fedsDone)return;F.fedsDone=1;
  await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
- await play(TEXT.fedsWin);F.shutDown=1;await ending({worst:true});
+ await play(TEXT.fedsWin);await fedsBeaten(F);
 }
 
 // ================= ENDING (spec 006 C6; Demo 6 plays the full debrief) =================
 // The ending label: clean (all three cut down, the right deduction, overstepping below Agency call), costly (the
-// Gleaner beaten any other way), worst (the clean-up crew shut the case down). Plus the facts Demo 6 needs.
+// Gleaner beaten any other way), worst (only old saves: the clean-up crew used to shut the case down; since Nov 24, 2026 they don't). Plus the facts Demo 6 needs.
 function endingLabel(){const F=G.flags;if(F.shutDown)return'worst';
- return(G.rescued===3&&F.deduce==='right'&&!stepAt('Agency call'))?'clean':'costly'}
+ return(G.rescued===3&&F.deduce==='right'&&!stepAt('Agency call')&&!F.fedsBeat)?'clean':'costly'}
 function endingFacts(label){const F=G.flags;
  return{label,clues:G.clues.map(c=>c.id),saved:G.rescued||0,overstep:stepName(),
   san:party.map(m=>({id:m.a.id,name:m.name,from:m.san0,to:m.san})),

@@ -176,7 +176,7 @@ Phobia subject: **eyes** (being watched). Trigger tags: Wes is in a paranoid spi
 | --- | --- |
 | `clean` | The master is erased, every copy found is destroyed, Kettering's working broken: Darlene stops dancing and the club is just a club. Wes takes the foil down. |
 | `costly` | Vesper is ended but a copy is still out there (sold, kept, or with Kettering), or Wes was lost. |
-| `worst` | Dawn comes first, or the master survives: the tape keeps traveling. Also the Federal agents' shutdown. |
+| `worst` | Dawn comes first, or the master survives: the tape keeps traveling. |
 
 ## Big Hat's briefing (part A draws the place; part B the full lines)
 
@@ -266,5 +266,5 @@ Quiet: Noticed, Local chief, Agency call, Federal agents. Marks: an overpay (see
 
 - `clean`: Vesper ended, the master erased, no copy out in the world (every copy burned or carried home), Wes saved, no agent lost this case, overstepping below Agency call.
 - `costly`: Vesper ended any other way.
-- `worst`: Kettering got the master first, or the Federal agents' shutdown.
+- `worst`: Kettering got the master first.
 - The master's sleeve (the Satin tape, the page) always reaches Big Hat: picked up after the fight.
