@@ -7,6 +7,7 @@ Games are web games with GBA-style on-screen controls, played from the iPhone ho
 
 ```
 studio/
+  designer-todo.md     Designer jobs not yet on a game's To do
   studio-bible/        house rules for every game
     studio.md          platform, repo, roles, Design Inbox
     controls.md        GBA layout, button sizes
