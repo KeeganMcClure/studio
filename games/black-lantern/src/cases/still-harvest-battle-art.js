@@ -411,3 +411,6 @@ function portrait(ctx,open){const k=open?1:0;if(!pc[k]){const c=document.createE
  ctx.clearRect(0,0,64,64);ctx.drawImage(pc[k],0,0)}
 return{B,sprite,size:SZ,portrait,backdrop};
 })();
+
+// other cases borrow the clean-up agent from here (window.SHB); a top-level const alone isn't on window
+window.SHB=SHB;

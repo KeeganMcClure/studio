@@ -361,3 +361,5 @@ for(const name of Object.keys(PORT))portraits[name]=(ctx,open)=>{ctx.clearRect(0
 
 return{paint,props,folk,portraits,FOLK,PORT,portraitCanvas,pieces:{SCARECROW,VICTIM,CRUISER,CIDER,BOARD,SIGN,GATE,PODIUM,PACK,PAGE}};
 })();
+
+window.SHA=SHA;
