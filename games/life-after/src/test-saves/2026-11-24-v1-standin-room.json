@@ -1,0 +1,15 @@
+{
+ "about": "Save version 1, slice part A: Dale the garage owner (template), seed 2026, Fall, Standard, a few steps into the stand-in room after the first note. Opening it lands on the title with Continue; Continue drops you back on the same tile.",
+ "version": 1,
+ "keys": {
+  "la.version": "1",
+  "la.run": "{\"v\":1,\"seed\":2026,\"typedSeed\":true,\"preset\":\"standard\",\"seasonPick\":\"Fall\",\"season\":\"Fall\",\"startSeason\":\"Fall\",\"clock\":{\"day\":1,\"min\":420},\"surv\":{\"name\":\"Dale\",\"job\":\"mechanic\",\"template\":\"Dale\",\"skills\":{\"melee\":1,\"guns\":0,\"sneak\":0,\"medicine\":0,\"fixing\":4,\"outdoors\":1,\"cooking\":0,\"talk\":0},\"uses\":{\"melee\":0,\"guns\":0,\"sneak\":0,\"medicine\":0,\"fixing\":0,\"outdoors\":0,\"cooking\":0,\"talk\":0},\"free\":{},\"traits\":{\"good\":[\"steadyHands\"],\"bad\":[\"badKnee\"]},\"want\":\"last\",\"looks\":{\"body\":2,\"skin\":0,\"face\":2,\"hairStyle\":2,\"hairColor\":5,\"colors\":0,\"age\":2},\"needs\":{\"hunger\":70,\"health\":100,\"sleep\":80,\"san\":70},\"wounds\":[],\"bag\":{\"pockets\":4,\"worn\":null,\"items\":[{\"id\":\"ducttape\",\"n\":1},{\"id\":\"hammer\",\"n\":1}]},\"recipes\":[\"torch\",\"weaponFix\"],\"notes\":[]},\"map\":{\"name\":\"standin\",\"x\":6,\"y\":7,\"dir\":\"down\"},\"seen\":{\"intro\":true},\"dice\":{\"seed\":1142743224,\"a\":1142743224,\"n\":0}}",
+  "la.record": "{\"gentle\":[],\"standard\":[],\"harsh\":[]}"
+ },
+ "expect": {
+  "scr": "room",
+  "name": "Dale",
+  "x": 6,
+  "y": 7
+ }
+}
