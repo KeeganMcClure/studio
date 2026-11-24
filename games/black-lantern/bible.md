@@ -82,7 +82,8 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
 - [x] Dead Air part B (spec 020): the secret case file first, then its story, the two broadcasts, the fish fry, fights, boss and endings
   Done Nov 23: Dead Air plays start to finish: its full briefing, both broadcasts, the fish fry, clues, a deduction, two story fights, the cane at night, the boss and all three endings, with the debrief on Big Hat's bait shop porch.
 - [ ] Later agency cases and the finale (spec 015): every agency case after the first, built one at a time in arc order, each in a part A and a part B like the first, ending with the finale and the season end screen. Tick this when the season data file has them all and a Dev playtest runs from New game to Season 2's board
-- [ ] Kinder overstepping (bible, Skills and menus → Overstepping and cover stories, Nov 24, 2026; spec 007 step 4): a held cover story drops overstepping one step even if it climbed, a clean case with a held story drops two, and Federal agents no longer end the case: they're a very hard fight, then the case goes on with overstepping back at Local chief. Old saves keep their current step
+- [x] Kinder overstepping (bible, Skills and menus → Overstepping and cover stories, Nov 24, 2026; spec 007 step 4): a held cover story drops overstepping one step even if it climbed, a clean case with a held story drops two, and Federal agents no longer end the case: they're a very hard fight, then the case goes on with overstepping back at Local chief. Old saves keep their current step
+  Done Nov 24: the Federal agents are now a hard fight that doesn't end the case (win it and overstepping drops back to Local chief), and a held cover story drops overstepping one step, or two after a clean case. The cover story box names both steps.
 
 ## Bugs
 

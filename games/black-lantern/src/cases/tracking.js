@@ -337,7 +337,7 @@ const TEXT={
  call:['Your phone buzzes. Unknown number. You know who it is.',['BIG HAT','I am hearin\' about you on a Reno police scanner, {first}. Reno. They don\'t even listen to their own scanners.'],['BIG HAT','Don\'t ask for anything next time. You won\'t get it.']],
  feds:['Black cars at the curb with their headlights off. Four doors open at the same time.',['CLEAN-UP','Black Lantern. You\'re done here. Hand over the tapes.'],['CLEAN-UP','Everybody on this street\'s already seen too much. Don\'t make it five more.']],
  fedsIntro:'The clean-up crew draws down!',
- fedsWin:['The black cars leave the way they came, one short.','By morning Club Satin has a fence around it and a sign that says ASBESTOS ABATEMENT.','Nobody asks what was on the tape. Nobody ever will.'],
+ fedsWin:['The black cars leave the way they came, one short.'],
  overpay:'Big Hat said once he could fix. He fixes it: nobody hears about the money.',
  // ---- the ending ----
  end1:['She stops. The screens stop. For the first time since you came down the stairs, the room is quiet enough to hear the furnace.','Where she was dancing, there\'s a heap of tape ribbon and a pair of shoes, very small, side by side.'],
@@ -922,35 +922,31 @@ async function stepScene(){
  if(s==='Agency call'&&!F.call){F.call=1;await play(TEXT.call)}
  if(s==='Federal agents')F.fedsDue=1;
  checkpoint()}
-async function onArea(){
- const F=G.flags;if(!F.fedsDue||F.fedsDone)return;F.fedsDone=1;
- await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
- await play(TEXT.fedsWin);F.shutDown=1;await ending({worst:true})}
+async function onArea(){await feds(TEXT,play)}
 
 // ================= ENDING =================
 // clean: Vesper ended, the master erased, no copy out in the world, Wes saved, nobody on the team lost this case,
-// overstepping below Agency call. costly: ended any other way. worst: Kettering got the master first, or the clean-up
-// crew shut the case down.
+// overstepping below Agency call. costly: ended any other way. worst: Kettering got the master first.
 const lostHere=()=>(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case&&!x.done);
-function endingLabel(){const F=G.flags;if(F.shutDown||F.masterGone)return'worst';
+function endingLabel(){const F=G.flags;if(F.masterGone)return'worst';
  return(!outCopies()&&F.wes&&!lostHere().length&&!stepAt('Agency call'))?'clean':'costly'}
 function endingFacts(label){const F=G.flags;
  return{label,clues:G.clues.map(c=>c.id),saved:F.wes?1:0,overstep:stepName(),
   san:party.map(m=>({id:m.a.id,name:m.name,from:m.san0,to:m.san})),
   items:party.flatMap(m=>gearOf(m).it.filter(it=>it.pin).map(it=>it.k)).concat((G.fs.pack||[]).filter(it=>it.pin).map(it=>it.k)),
   choices:{deduce:F.deduce||null,watched:F.trk|0,burned:burned(),out:outCopies(),cut:F.cut||null,wes:F.wes||null,royce:F.royce||null,lights:!!F.lights,darlene:!!F.darlene,read:!!F.read,
-   masterGone:!!F.masterGone,forced:!!F.forced,nephews:F.nephews||null,late:late(),shutDown:!!F.shutDown},
+   masterGone:!!F.masterGone,forced:!!F.forced,nephews:F.nephews||null,late:late()},
   tried:party.map(m=>({id:m.a.id,skills:m.tried||[]})),
   lost:lostHere().map(x=>({name:x.name,how:x.how}))}}
-async function ending(o={}){
+async function ending(){
  const F=G.flags;
- if(!o.worst){await play(F.read?TEXT.end1Read:TEXT.end1);
-  if(!F.masterGone)await said(holderOf('eraser')?TEXT.erase:TEXT.eraseHand);
-  await said(TEXT.sleeve);await pickup('satin');
-  if(!F.wes)await trigger('death')}
+ await play(F.read?TEXT.end1Read:TEXT.end1);
+ if(!F.masterGone)await said(holderOf('eraser')?TEXT.erase:TEXT.eraseHand);
+ await said(TEXT.sleeve);await pickup('satin');
+ if(!F.wes)await trigger('death')
  await fade(1);G.mode='scene';await fade(0);
- if(!o.worst){await said(TEXT.dawn);await said(F.wes?TEXT.dawnWes:TEXT.dawnWesLost);
-  if(F.masterGone)await said(TEXT.dawnWorst);else if(outCopies())await said(TEXT.dawnOut);else await said(TEXT.dawnClean)}
+ await said(TEXT.dawn);await said(F.wes?TEXT.dawnWes:TEXT.dawnWesLost);
+ if(F.masterGone)await said(TEXT.dawnWorst);else if(outCopies())await said(TEXT.dawnOut);else await said(TEXT.dawnClean)
  G.rescued=F.wes?1:0;
  const label=endingLabel();await debrief(label,endingFacts(label));  // Big Hat's debrief and the case gains (debrief.js), in the buffet
 }

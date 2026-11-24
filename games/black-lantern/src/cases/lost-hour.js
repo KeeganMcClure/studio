@@ -358,7 +358,7 @@ const TEXT={
  call:['Your phone buzzes. Unknown number. You know who it is.',['BIG HAT','{first}. A sheriff in Page County called a number he shouldn\'t have had about a sleep study he shouldn\'t have heard of.'],['BIG HAT','Don\'t ask for anything next time. You won\'t get it.']],
  feds:['Black cars on Main Street with their headlights off. Four doors open at the same time.',['CLEAN-UP','Black Lantern. You\'re done here. Hand over what you\'ve found.'],['CLEAN-UP','The Pruetts are coming with us. For their own good.']],
  fedsIntro:'The clean-up crew draws down!',
- fedsWin:['The black cars leave the way they came, one short.','By morning the Pruett house has a For Sale sign on the lawn and nobody in it.','Nobody asks what you found. Nobody ever will.'],
+ fedsWin:['The black cars leave the way they came, one short.'],
  paper:['Ray calls the Page Valley Courier. You find out because Mae turns the radio up: the morning show\'s already got it.','"LOCAL COUPLE SAYS THEY WERE TAKEN." The host laughs. Then he plays a song about a truck.'],
  // ---- the debrief (spec 007): Big Hat's lines by ending ({x}/{t} timeline boxes, {v}/{n} brought home), what he says
  // about the choices, and the cover stories ----
@@ -369,7 +369,6 @@ const TEXT={
   takenRay:[['BIG HAT','I got a call from Cullen Gap. A lady wants to know when her husband\'s comin\' back from visitin\' his brother.'],['SHOUT','HE DON\'T HAVE A BROTHER.']],
   takenDonna:[['BIG HAT','Ray Pruett called me. Don\'t ask me how he got the number. He wanted to know if his wife\'s comin\' home.'],['BIG HAT','I said I\'d look into it. I don\'t lie to people, as a rule. I made an exception.']],
   takenAgent:[['BIG HAT','{c} went up into the light and didn\'t come down. I\'m puttin\' it on the plaque as "on assignment."'],['SHOUT','IT IS NOT AN ASSIGNMENT.']],
-  shut:[['BIG HAT','Black cars in Cullen Gap. The Pruetts are in a house in Maryland now with a man outside it. Nobody asked me.']],
   wrong:['BIG HAT','You told me they wanted a greetin\' card. I\'m still thinkin\' about it.'],
   pushed:['BIG HAT','Dr. Rao sent me a letter. Handwritten. It says "never again." That\'s all it says.'],
   dutyTold:['BIG HAT','Pruett girl knows. She\'s keepin\' it. I can tell from here she\'s the kind that keeps things.'],
@@ -1114,17 +1113,14 @@ async function stepScene(){
  checkpoint()}
 // the soft clock's last step: the Pruetts call the paper (public)
 async function callPaper(){const F=G.flags;if(F.paper)return;F.paper=1;await play(TEXT.paper);await overstepHere('public')}
-async function onArea(){
- const F=G.flags;if(!F.fedsDue||F.fedsDone)return;F.fedsDone=1;
- await cut('feds',()=>play(TEXT.feds));const r=await battle(['fed','fed','fed'],{story:true,intro:TEXT.fedsIntro});if(r==='lose')return gameOver();
- await play(TEXT.fedsWin);F.shutDown=1;await ending({worst:true})}
+async function onArea(){await feds(TEXT,play)}
 
 // ================= ENDING =================
-// worst: the Lamp took Ray or Donna, or the clean-up crew shut the case down. clean: the Surveyor gone, Ray or Donna
+// worst: the Lamp took Ray or Donna. clean: the Surveyor gone, Ray or Donna
 // carried it and came home, no cut and no stroke, the paper never called, no agent lost, overstepping below Agency call.
 // costly: any other win.
 const lostHere=()=>(store.get(B.key('memorial'),[])||[]).filter(x=>x&&x.case===G.case&&!x.done);
-function endingLabel(){const F=G.flags;if(F.shutDown||F.taken)return'worst';
+function endingLabel(){const F=G.flags;if(F.taken)return'worst';
  return(['ray','donna'].includes(F.carrier)&&!F.taken&&!F.stroke&&!F.paper&&!lostHere().length&&!stepAt('Agency call'))?'clean':'costly'}
 function endingFacts(label){const F=G.flags;
  return{label,clues:G.clues.map(c=>c.id),saved:F.taken?0:1,overstep:stepName(),
@@ -1132,29 +1128,28 @@ function endingFacts(label){const F=G.flags;
   items:party.flatMap(m=>gearOf(m).it.filter(it=>it.pin).map(it=>it.k)).concat((G.fs.pack||[]).filter(it=>it.pin).map(it=>it.k)),
   choices:{deduce:F.deduce||null,carrier:F.carrier||null,taken:F.taken||null,stroke:!!F.stroke,push:!!F.push,unfolded:!!F.unfolded,light:F.light||null,revenge:F.revenge||null,folded:!!F.folded,
    duty:F.jennaTold?'told':F.dutyHeld?'held':F.duty?'failed':null,paper:!!F.paper,late:late(),scanStolen:!!F.scanStolen,leaned:!!F.leaned,m2:F.m2||null,
-   shut:!!F.shutDown,takenCode:F.taken==='agent'?(F.takenName||'').split(' ')[0].toUpperCase():null,
+   takenCode:F.taken==='agent'?(F.takenName||'').split(' ')[0].toUpperCase():null,
    agent:F.carrier==='agent'&&!F.taken?(party.find(m=>m.a.id===F.carrierId)||{a:{}}).a.code||null:null},
   tried:party.map(m=>({id:m.a.id,skills:m.tried||[]})),
   lost:lostHere().map(x=>({name:x.name,how:x.how}))}}
-async function ending(o={}){
+async function ending(){
  const F=G.flags,ag=carrierAgent();
- if(!o.worst){
-  await play(TEXT.end1);
-  if(!haveCard())await pickup('lhcard');
-  if(!F.unfolded){F.unfolded=1;await said(TEXT.cardLets)}
-  if(F.taken)await trigger('death')}
+ await play(TEXT.end1);
+ if(!haveCard())await pickup('lhcard');
+ if(!F.unfolded){F.unfolded=1;await said(TEXT.cardLets)}
+ if(F.taken)await trigger('death')
  await fade(1);G.mode='scene';await fade(0);
- if(!o.worst){const c=F.carrier||'ray';
-  if(F.taken)await said(TEXT.dawn['taken'+F.taken],{n:F.takenName||''});
-  else if(c==='cut')await said(F.stroke?TEXT.dawn.stroke:TEXT.dawn.cut);
-  else if(c==='agent'&&ag)await said(TEXT.dawn.agent,{n:ag.name});
-  else await said(TEXT.dawn[c]||TEXT.dawn.ray);
-  if(!F.taken&&!F.paper)await said(TEXT.dawnSleep);
-  if(F.paper)await said(TEXT.dawnPaper);
-  // the agent who carried it keeps a hum behind the ear (Severe helplessness, their own roll)
-  if(ag&&!F.taken){await said(TEXT.hum,{n:ag.name});await horror(HORRORS.hum,{who:[ag]})}
-  // Ray's tester: a gift when the cover held (overstepping below Local chief) and Ray came home
-  if(F.taken!=='ray'&&!stepAt('Local chief')){await play(TEXT.tester);await pickup('lhtester')}}
+ const c=F.carrier||'ray';
+ if(F.taken)await said(TEXT.dawn['taken'+F.taken],{n:F.takenName||''});
+ else if(c==='cut')await said(F.stroke?TEXT.dawn.stroke:TEXT.dawn.cut);
+ else if(c==='agent'&&ag)await said(TEXT.dawn.agent,{n:ag.name});
+ else await said(TEXT.dawn[c]||TEXT.dawn.ray);
+ if(!F.taken&&!F.paper)await said(TEXT.dawnSleep);
+ if(F.paper)await said(TEXT.dawnPaper);
+ // the agent who carried it keeps a hum behind the ear (Severe helplessness, their own roll)
+ if(ag&&!F.taken){await said(TEXT.hum,{n:ag.name});await horror(HORRORS.hum,{who:[ag]})}
+ // Ray's tester: a gift when the cover held (overstepping below Local chief) and Ray came home
+ if(F.taken!=='ray'&&!stepAt('Local chief')){await play(TEXT.tester);await pickup('lhtester')}
  G.rescued=F.taken?0:1;
  const label=endingLabel();await debrief(label,endingFacts(label));  // Big Hat's debrief and the case gains (debrief.js)
 }
@@ -1168,7 +1163,7 @@ const DEBRIEF_DATA={
  clues:TL.slice(),victims:1,
  lines:{clean:DB.clean,costly:DB.costly,worst:DB.worst},
  react:F=>{const c=F.choices||{},out=[];
-  if(c.shut)out.push(...DB.shut);else if(c.taken==='ray')out.push(...DB.takenRay);else if(c.taken==='donna')out.push(...DB.takenDonna);else if(c.taken==='agent')out.push(...DB.takenAgent.map(l=>[l[0],l[1].replace('{c}',c.takenCode||'Your agent')]));
+  if(c.taken==='ray')out.push(...DB.takenRay);else if(c.taken==='donna')out.push(...DB.takenDonna);else if(c.taken==='agent')out.push(...DB.takenAgent.map(l=>[l[0],l[1].replace('{c}',c.takenCode||'Your agent')]));
   if(F.label==='worst')return out;
   if(c.revenge==='held')out.push(DB.revenge);else if(c.folded)out.push(DB.folded);
   if(c.carrier==='cut'&&!c.taken)out.push(DB.cut);
