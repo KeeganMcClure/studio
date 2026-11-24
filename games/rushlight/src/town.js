@@ -88,9 +88,8 @@ function townMap(k){const T=TOWNS[k],g=mk(T.w,T.h,',');rect(g,0,0,T.w,4,'H');rec
  if(D.beggar){const [x,y]=D.beggar;npcs.push({x,y,sp:'rat',look:{shade:2,mark:3,neck:0,coat:'#5a5048'},dir:'down',talk:()=>say('BEGGAR','A groat for a soldier of the Grey Summer? No? A groat for the rest of us, then.')})}
  return {name:T.name,w:T.w,h:T.h,g,npcs,O,vv:{},town:k,warps:{},onStep:async()=>{if(G.x<=0||G.x>=T.w-1)await leaveTown()}}}
 // the town strip (Art, Town street): party heads with the lead in Tallow, the town's name and type, purse, day
-function drawTownStrip(){const r=G.run,T=TOWNS[G.town];if(!T)return;pR(0,0,VW,18,'rgba(44,38,33,.96)');pR(0,17,VW,1,'#e6dcc4');
- let x=3;party.forEach((m,i)=>{if(m.dead)return;const on=i===(G.lead|0);pR(x-1,2,14,14,on?'#d9b45a':'#857e72');cx.drawImage(RLSP.portrait(m.sp,m.look),0,0,64,64,x,3,12,12);x+=16});
- pT(T.name,x+2,2,'#e6dcc4',13);pT(T.type,x+6+pW(T.name,13),4,'#857e72',11);const ds=`DAY ${r.day}`,ps=`${r.purse} gr`;pT(ds,VW-3-pW(ds,13),2,'#e6dcc4',13);pT(ps,VW-9-pW(ds,13)-pW(ps,13),2,'#d9b45a',13)}
+// the town's HUD (spec 008, 8B; mockup 34): the lead card and the place card (the town, the purse, the day)
+function drawTownStrip(){const r=G.run,T=TOWNS[G.town];if(!T)return;leadCard();placeCard([[T.name,'#e6dcc4',13],[`${r.purse} gr`,'#d9b45a',13],[`DAY ${r.day}`,'#e6dcc4',12]])}
 const propLine=k=>({cart:'A handcart with something under a sheet. The sheet is the wrong shape.',pillory:'A rat in the pillory. Somebody threw a turnip and missed.',well:'The well. A bucket, a chain, a smell.',gibbet:'The gibbet outside the wall. Its man has been there since Lent.'})[k]||'';
 async function leaveTown(){const r=G.run;G.town=null;saveRun();enterRegion();}
 // townsfolk: one line each on A, from the Voice pools (barks, the March's tic, sayings, texture)

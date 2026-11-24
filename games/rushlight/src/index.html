@@ -68,6 +68,8 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 .squad .m{border:2px solid var(--scr-line);padding:5px;text-align:center;font-size:16px;background:#231e1a;min-width:0}
 .squad .m .p{color:var(--scr-hi);font-size:15px;overflow-wrap:anywhere}
 .scan{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.18) 2px 3px);mix-blend-mode:multiply}
+/* the shell's scanlines fade over parchment, so the chart and menus don't read as ruled paper (spec 008) */
+#game.region~.scan,#game.parch~.scan{opacity:.35}
 .vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(94,26,24,.85));opacity:0;transition:opacity .4s}
 .toast{position:absolute;left:8px;right:8px;bottom:34px;background:#d9b45a;color:#1c1814;font:8px/1.5 var(--px);padding:6px 8px;border:2px solid #1c1814;opacity:0;transform:translateY(6px);transition:all .18s;pointer-events:none}
 .toast.show{opacity:1;transform:none}
@@ -162,6 +164,7 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 <script src="../../../engine/patrol.js"></script>
 <script src="../../../engine/pixgrid.js"></script>
 <script src="../../../engine/rig.js"></script>
+<script src="../../../engine/hud.js"></script>
 <script src="content/text-library.js"></script>
 <script src="strings.js"></script>
 <script src="species-art.js"></script>

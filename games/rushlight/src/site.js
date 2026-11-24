@@ -59,25 +59,17 @@ function chunkMap(job,i,key){const C=CHUNKS[key],JS=JOB_SCRIPTS[job.id],h=C.rows
 // the site's own drawing: tiles, then hotspot diamonds and fight plates (drawn by engine.js's drawWorld)
 function drawSiteOver(M,camx,camy){
  const job=G.run.job;if(!job)return;
- M.hot.forEach(h=>{if(h.when&&!h.when(job))return;const used=job.used[h.id]==='done',x=h.x*16+8-camx,y=h.y*16+4-camy,near=Math.abs(G.x-h.x)+Math.abs(G.y-h.y)<=1;
-  const col=used?SA.ash:SA.tallow,s=near&&!used?4:3;if(near&&!used){cx.fillStyle='rgba(217,180,90,.25)';cx.beginPath();cx.arc(x,y,9,0,7);cx.fill()}
-  for(let k=0;k<=s;k++)pR(x-k,y-s+k,2*k+1,1,col);for(let k=s-1;k>=0;k--)pR(x-k,y+s-k,2*k+1,1,col)});
+ hotDiamonds(M,camx,camy,job);
  M.fights.forEach(f=>{if(job.fights[f.id]||f.when&&!f.when(job))return;const x=f.x*16+8-camx,y=f.y*16-camy;
   (f.show||[]).forEach((sp,k)=>{const s=RLSP.map(sp.sp||'rat',sp.look);cx.drawImage(s,x-14+k*16,y-10)});
   const t=f.plate,w=pW(t,12)+8;pR(x-w/2,y-24,w,12,'rgba(28,24,20,.9)');pR(x-w/2,y-24,w,1,SA.rust);pT(t,x-w/2+4,y-25,SA.bone,12)});
 }
 // The site strip: heads, the site's whole name and the day; its kind and shape; then the NEXT line, wrapped rather than cut
 // (bug batch, Nov 24: names and NEXT ended in …). It grows a line when it must; 8B replaces it with the HUD cards.
-function drawSiteStrip(){if(!G.site)return;const r=G.run;
- let x=3;const heads=[];party.forEach((m,i)=>{if(!m.dead)heads.push([m,i])});const hx=3+heads.length*16;
- const ds=`DAY ${r.day}`,dw=pW(ds,13),nw=VW-hx-8-dw,nz=pSize(G.site.name,nw,[13,12,11]),nl=nz?[G.site.name]:pWrap(G.site.name,nw,11,3);
- const ks=`${G.site.kind} · ${G.site.shape}`,side=nz&&pW(G.site.name,nz)+6+pW(ks,11)<=nw,kl=side?[]:pWrap(ks,VW-6,11,3),nx=pWrap(r.job?r.job.next:'',VW-34,12,3);
- const top=nz?14:2+nl.length*10,h=top+kl.length*10+nx.length*11+3;
- pR(0,0,VW,h,'rgba(44,38,33,.96)');pR(0,h-1,VW,1,'#e6dcc4');
- heads.forEach(([m,i])=>{const on=i===(G.lead|0);pR(x-1,2,14,14,on?'#d9b45a':'#857e72');cx.drawImage(RLSP.portrait(m.sp,m.look),0,0,64,64,x,3,12,12);x+=16});
- if(nz)pT(G.site.name,hx+2,2+(13-nz)/2,'#e6dcc4',nz);else nl.forEach((l,k)=>pT(l,hx+2,k*10,'#e6dcc4',11));pT(ds,VW-3-dw,2,'#e6dcc4',13);if(side)pT(ks,hx+8+pW(G.site.name,nz),4,'#857e72',11);
- let y=top+2;kl.forEach(l=>{pT(l,3,y-2,'#857e72',11);y+=10});
- pT('NEXT',3,y-1,'#d9b45a',12);nx.forEach(l=>{pT(l,30,y-1,'#e6dcc4',12);y+=11})}
+// the site's HUD (spec 008, 8B; mockups 40 and 41): the lead card and a place card (the site's whole name, its kind, the day),
+// then the NEXT line under the cards: one line, or a second when it won't fit, never cut
+function drawSiteStrip(){if(!G.site)return;const r=G.run;const h=Math.max(leadCard(),placeCard([[G.site.name,'#e6dcc4',13],[G.site.kind,'#c8bea8',12],[`DAY ${r.day}`,'#e6dcc4',12]]));
+ const nx=pWrap(r.job?r.job.next:'',VW-36,12,3);pR(0,h,VW,nx.length*11+3,'rgba(28,24,20,.88)');pT('NEXT',4,h,'#d9b45a',12);nx.forEach((l,k)=>pT(l,32,h+k*11,'#e6dcc4',12))}
 function tickStatuses(){for(const m of party.filter(x=>!x.dead)){if(m.st.includes('Bleeding')){m.hp=Math.max(1,m.hp-1);if(m.sp==='badger')m.st=m.st.filter(s=>s!=='Bleeding')}
  if(m.st.includes('Poisoned')){m.pt=(m.pt|0)+1;if(m.pt%2===0)m.hp=Math.max(1,m.hp-1)}
  ['Drunk','High'].forEach(s=>{if(m.st.includes(s)){m[s+'T']=(m[s+'T']|0)+1;if(m[s+'T']>=4){m.st=m.st.filter(x=>x!==s&&x!=='Fire-root');m[s+'T']=0;if(s==='High'&&m.st.includes('Fire-root'))m.wp=Math.max(0,m.wp-StudioRoll.die(4))}}})}}

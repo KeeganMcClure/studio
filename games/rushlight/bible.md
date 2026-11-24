@@ -114,7 +114,8 @@ One item per chat, in order, biggest open decisions first. Claude ticks the item
 - [ ] Look pass (spec 008, `specs/008-look-pass.md`): every screen and sprite brought up to the studio's Screen craft and Quality bar, in four builds. Build the look bug batch first (project files, `handoffs/rushlight-look-bugs-dev-prompt.md`).
   - [x] 8A Sprites: the six species from the reference code, folk enemies front-on, five creatures redrawn and four touched up, the animation rig and the contact sheet
     Done Nov 24: the six species, folk front views and all nine creatures redrawn to the Quality bar and filed in the Asset Library; the battle screen at the new sizes with a backdrop for each kind of place; the shared animation rig; the contact sheet in every check.
-  - [ ] 8B Streets, sites and the HUD cards
+  - [x] 8B Streets, sites and the HUD cards
+    Done Nov 24: both streets, every site, the den and the region map lit and dressed to the look mockups, with the lead and place HUD cards and the camera raised on the street.
   - [ ] 8C Menus: parchment panels and Pick a company in two steps
   - [ ] 8D The check against Screen craft and the Quality bar
 

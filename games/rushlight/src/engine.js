@@ -148,7 +148,21 @@ let talker=null;
 function mouthOpen(){if(!box||box.typed>=box.text.length)return false;const T=BLD.TIMING,n=Math.floor(performance.now()/T.flapMs),p=n%(T.burst+T.rest);return p<T.burst&&p%2===0}
 // a map sprite's frame from the shared rig: the talk flap, else a blink or an idle breath now and then (each person out of step)
 function idleFrame(seed,now){return StudioRig.blink(now,seed)?'blink':StudioRig.idle(now,seed)||'stand'}
-function cam(){return StudioMove.camera(G,G.M.w,G.M.h,VW,VH)}
+// ---- the HUD cards (spec 008, 8B; mockup 34): the lead card top left, the place card top right, on the shared frame ----
+const HUDT={outer:'#1c1814',line:'#e6dcc4',fill:'rgba(44,38,33,.97)',backTop:'#a8906c',backBot:'#6a5a44',bar:'#9a4528'};
+// the lead: a portrait on its lit backing, the name in Tallow, the HP bar, HP, WP and SAN (SAN pink under 40). Returns its bottom.
+function leadCard(){const m=party[G.lead|0];if(!m)return 0;StudioHUD.card(cx,2,2,108,44,HUDT);
+ StudioHUD.portrait(cx,RLSP.portrait(m.sp,m.look),4,0,56,60,5,5,34,37,HUDT);
+ const nm=m.name.toUpperCase(),z=pSize(nm,61,[14,13,12,11,10])||10;pT(nm,42,3+(14-z)/2,'#d9b45a',z);
+ StudioHUD.bar(cx,42,17,60,m.hp/m.mhp,HUDT);pT(`HP ${m.hp}/${m.mhp}`,42,20,'#e6dcc4',12);
+ let s=`WP ${m.wp} · SAN `;if(pW(s+m.san,12)>62)s=`WP ${m.wp} SAN `;const sz=pW(s+m.san,12)>62?11:12;pT(s,42,31,"#e6dcc4",sz);pT(String(m.san),42+pW(s,sz),31,m.san<40?"#ff4fa3":"#e6dcc4",sz);return 46}
+// the place: rows of [text, color, size]; the first is the name and wraps rather than being cut. As wide as it needs, up to the lead card.
+function placeCard(rows){const maxW=VW-116,need=Math.max(...rows.slice(1).map(([t,,z])=>pW(t,z)+10),pW(rows[0][0],rows[0][2])+10,78),w=Math.min(maxW,Math.ceil(need));
+ const name=pW(rows[0][0],rows[0][2])+10<=w?[rows[0][0]]:pWrap(rows[0][0],w-10,12,2),nz=name.length>1?12:rows[0][2],h=Math.max(44,6+name.length*(nz-1)+(rows.length-1)*12+2);
+ const x=VW-w-2;StudioHUD.card(cx,x,2,w,h,HUDT);let y=3;name.forEach(l=>{pT(l,x+5,y,rows[0][1],nz);y+=nz-1});y+=1;
+ rows.slice(1).forEach(([t,c,z])=>{pT(pFit(t,w-10,z),x+5,y,c,z);y+=12});return h+2}
+// on a town street the camera sits 34 px higher, so the rooftops and smoke show under the HUD cards (spec 008, 8B)
+function cam(){const c=StudioMove.camera(G,G.M.w,G.M.h,VW,VH);if(G.M&&G.M.town)c[1]-=34;return c}
 function drawWorld(){
  const M=G.M,[camx,camy]=cam();cx.fillStyle='#0a0710';cx.fillRect(0,0,VW,VH);
  const x0=Math.floor(camx/16),y0=Math.floor(camy/16);
@@ -162,7 +176,7 @@ function drawWorld(){
  const moving=!!G.mv,lfr=moving?StudioRig.WALK[StudioRig.walkBeat(G.anim,StudioMove.STEPF/2)]:idleFrame(7,now);
  spr.push({y:G.py,f:()=>{const s=RLSP.map(lead().sp,lead().look,lfr);cx.drawImage(s,Math.round(G.px+1-camx),Math.round(G.py+16-26-camy))}});
  spr.sort((a,b)=>a.y-b.y).forEach(s=>s.f());
- if(M.site){drawSiteOver(M,camx,camy);siteLight(M,camx,camy);drawSiteStrip()}else{lights(M,camx,camy);if(M.town)drawTownStrip()}
+ if(M.site){drawSiteOver(M,camx,camy);siteLight(M,camx,camy);drawSiteStrip()}else if(M.town){townLight(M,camx,camy);drawTownStrip()}else lights(M,camx,camy)
 }
 // Night and lamps on the shared light (engine/light.js): the dark from Peat, Tallow pools from the rushlight and lamps.
 // The rushlight's pool shrinks as the lead's SAN falls (the old rule), and below 40% SAN the picture sours.
