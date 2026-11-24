@@ -170,13 +170,19 @@ function dbDrawCover(){
  steps.forEach((k,i)=>{const tx=4+i*(tw+2),on=i===cur,t=DBW.stepShort[k]||k;pBox(tx,y,tw,10,on?'#5a2a18':PC.deep,on?PC.rust:PC.dim);pT(t,tx+(tw-pW(t,6,PXf))/2,y+2,on?PC.gold:PC.lav,6,PXf)});
  y+=13;
  // the stories, each with its skill and its best odds in the party
- const RH=Math.min(23,Math.max(18,Math.floor((VH-y-150)/st.length)));
- st.forEach((r,j)=>{const ry=y+j*RH,on=j===s.sel;pBox(4,ry,232,RH-2,on?PC.cardOn:PC.card,on?PC.gold:PC.dim);if(on)pT('▶',6,ry+1,PC.gold,14);
-  pT(pFit(r.name,170,15),16,ry-1,on?PC.gold:r.type==='luck'?PC.lav:PC.cream,15);
-  const sub=r.type==='luck'?`${DBW.weak} · ${DBW.luck}`:r.type==='safe'?`${r.skill} · ${r.verb}`:`${r.skill} · ${r.verb}`;if(RH>=21)pT(pFit(sub,170,11),16,ry+10,PC.lav,11);
-  const p=r.type==='safe'?DBW.safe:dbChance(ms[dbBest(r)],r)+'%';pT(p,229-pW(p,15),ry+(RH>=21?3:0),r.type==='safe'?PC.green:PC.cream,15);
-  s.hits.push({x:4,y:ry,w:232,h:RH-2,fn:()=>{if(s.sel===j)dbPress('a');else{s.sel=j;s.focus='list';s.who=dbBest(st[j])}}})});
- y+=st.length*RH+2;
+ // a long story name wraps onto a second line and its row grows to fit (no "…"; Keegan, Nov 24), as long as the faces
+ // and the pass / fail box still fit below; on a screen too short for that, the old one-line rows come back
+ const room=VH-y-(9+50+3+30+3),base=Math.min(23,Math.max(18,Math.floor((VH-y-150)/st.length)));
+ let nl=st.map(r=>Math.min(2,pWrap(r.name,170,15,2).length));
+ if(st.reduce((t,r,j)=>t+(base>=21?23:base)+(nl[j]-1)*12,0)>room)nl=nl.map(()=>1);
+ const rh=st.map((r,j)=>(base>=21?23:base)+(nl[j]-1)*12);let ry=y;
+ st.forEach((r,j)=>{const RH=rh[j],on=j===s.sel,wrap=nl[j]>1;pBox(4,ry,232,RH-2,on?PC.cardOn:PC.card,on?PC.gold:PC.dim);if(on)pT('▶',6,ry+1,PC.gold,14);
+  const col=on?PC.gold:r.type==='luck'?PC.lav:PC.cream;
+  if(wrap)pWrap(r.name,170,15,2).forEach((t,k)=>pT(k?pFit(t,170,15):t,16,ry-1+k*12,col,15));else pT(pFit(r.name,170,15),16,ry-1,col,15);
+  const sub=r.type==='luck'?`${DBW.weak} · ${DBW.luck}`:r.type==='safe'?`${r.skill} · ${r.verb}`:`${r.skill} · ${r.verb}`;if(RH>=21)pT(pFit(sub,170,11),16,ry+10+(nl[j]-1)*12,PC.lav,11);
+  const p=r.type==='safe'?DBW.safe:dbChance(ms[dbBest(r)],r)+'%';pT(p,229-pW(p,15),ry+(RH-2)/2-8,r.type==='safe'?PC.green:PC.cream,15);
+  const hy=ry;s.hits.push({x:4,y:hy,w:232,h:RH-2,fn:()=>{if(s.sel===j)dbPress('a');else{s.sel=j;s.focus='list';s.who=dbBest(st[j])}}});ry+=RH});
+ y=ry+2;
  // who tells it: each agent's face and chance for the highlighted story (not for Luck or a safe story)
  const pick=o.type==='skill';
  pT(DBW.who,6,y,pick?PC.lav:PC.dim,6,PXf);y+=9;
