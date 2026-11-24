@@ -288,10 +288,15 @@ const optDone=o=>o.once&&G.fs.used['opt:'+o.once];
 const teamHas=(skill,tier)=>live().some(m=>skillVal(m.a,skill)>=tier);
 const optReach=o=>!o.use||!SOPT[o.use]||teamHas(SOPT[o.use].skill,SOPT[o.use].tier);
 function hotOpts(h){return(typeof h.opts==='function'?h.opts():h.opts||[]).filter(o=>!optDone(o)&&(!o.show||o.show())&&optReach(o))}
-async function hotspot(h,key){
- const L=lead(),opts=hotOpts(h),rows=[],acts=[],desc=[];
+// In a scene (a menu opened after the script faded to black, or one a case marks {scene:true}) the lead can't be changed,
+// so each skill option is taken by whoever in the party has the best chance at it, named on the row (Keegan, Nov 24).
+// On the map it stays the lead's, greyed when the lead lacks it, so you know to swap leads.
+const bestFor=o=>{const S=SOPT[o.use],md=(typeof o.mod==='function'?o.mod():o.mod)||0,c=live().filter(m=>!m.ko&&skillVal(m.a,S.skill)>=S.tier);
+ return c.length?c.reduce((b,m)=>chanceOf(m,S.skill,md)>chanceOf(b,S.skill,md)?m:b):lead()};
+async function hotspot(h,key,ho={}){
+ const L=lead(),scene=!!(ho.scene||G.sceneRun),opts=hotOpts(h),rows=[],acts=[],desc=[];
  if(h.look){rows.push(SKW.look);acts.push(()=>lookAt(h,key));desc.push('')}
- opts.forEach(o=>{const r=optOf(o,L);rows.push({label:r.label,dis:r.dis});desc.push(r.why||'');acts.push(()=>runOpt(o,r,key))});
+ opts.forEach(o=>{const m=scene&&o.use&&SOPT[o.use]?bestFor(o):L,r=optOf(o,m);r.m=m;if(m!==L&&!r.dis)r.label+=' · '+m.name;rows.push({label:r.label,dis:r.dis});desc.push(r.why||'');acts.push(()=>runOpt(o,r,key))});
  if(!rows.length)return;
  if(rows.length===1&&!rows[0].dis)return acts[0]();
  const i=await choose(rows,{cancel:true,title:h.name||'',desc});if(i<0)return;await acts[i]();
@@ -299,11 +304,11 @@ async function hotspot(h,key){
 async function lookAt(h,key){G.fs.used[h.id||key]=1;if(typeof h.look==='function')await h.look();else await say('',h.look)}
 async function runOpt(o,r,key){
  if(o.once)G.fs.used['opt:'+o.once]=1;
- if(o.use){const L=lead(),S=r.S,v=skillVal(L.a,S.skill);let x=SR.pct(r.p),perk='';
+ if(o.use){const L=r.m||lead(),S=r.S,v=skillVal(L.a,S.skill);let x=SR.pct(r.p),perk='';
   if(!x.ok&&S.skill==='Persuade'&&v>=90&&!G.fs.perk.retry){G.fs.perk.retry=1;await say('',SKW.retry,{auto:900});x=SR.pct(r.p)}
   if(!x.ok&&o.official&&badge(L))x=Object.assign({},x,{ok:true,fumble:false});  // Badge (an arc perk, spec 008)
   if(!x.ok&&v>=90&&BLS.AUTOPERK[S.skill]&&!G.fs.perk[S.skill]){G.fs.perk[S.skill]=1;perk=fillT(SKW.perk,{p:BLS.AUTOPERK[S.skill]});x=Object.assign({},x,{ok:true,fumble:false})}
-  await say('',resultLine(`${(o.label||S.label).toUpperCase()} · ${S.skill.toUpperCase()}`,x)+(perk?' '+perk:''),{auto:1300});
+  await say('',(L!==lead()?L.name+': ':'')+resultLine(`${(o.label||S.label).toUpperCase()} · ${S.skill.toUpperCase()}`,x)+(perk?' '+perk:''),{auto:1300});
   if(r.loud)noise();if(!x.ok)tried(L,S.skill);
   const f=x.crit&&o.crit?o.crit:x.ok?o.ok:x.fumble&&o.fumble?o.fumble:o.fail;if(f)await f(x);return}
  if(o.item){spend(r.h.m,r.h.it);if(o.run)await o.run(r.h.m);return}
