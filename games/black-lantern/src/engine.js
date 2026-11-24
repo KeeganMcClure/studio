@@ -128,8 +128,10 @@ const NOT_YET={sel:-1};
 async function ask(name,text,opts,o={}){await say(name,text,{keep:true,instant:false});const s=o.sel==null?undefined:o.sel<0?opts.length+o.sel:o.sel;
  const r=await choose(opts,{cancel:true,inBox:true,sel:s});hideTB();return r<0?opts.length-1:r}
 function banner(t,ms=2200){ban.textContent=t;ban.hidden=false;clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,ms)}
-function fade(on){fadeEl.style.opacity=on?1:0;return sleep(340)}
-async function run(fn){G.busy=(G.busy||0)+1;try{await fn()}catch(e){console.error(e)}finally{G.busy=Math.max(0,(G.busy||0)-1)}}  // never below 0: a case's ending opens the board, which resets it
+// a fade to black inside a script marks the rest of that script as a scene: its skill choices go to the party's best
+// agent, since the lead can't be changed mid-scene (Keegan, Nov 24; field.js hotspot)
+function fade(on){if(on&&G.busy)G.sceneRun=1;fadeEl.style.opacity=on?1:0;return sleep(340)}
+async function run(fn){G.busy=(G.busy||0)+1;try{await fn()}catch(e){console.error(e)}finally{G.busy=Math.max(0,(G.busy||0)-1);if(!G.busy)G.sceneRun=0}}  // never below 0: a case's ending opens the board, which resets it
 function clue(id,text){if(G.clues.some(c=>c.id===id))return;G.clues.push({id,text});banner('NOTEBOOK UPDATED')}
 
 // ================= SANITY =================
