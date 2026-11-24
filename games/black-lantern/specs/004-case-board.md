@@ -26,7 +26,7 @@ Two things in the mockup are not to copy:
 | `games/black-lantern/bible.md` | Art → Reference mockups | The approved case board mockup, option A |
 | `games/black-lantern/bible.md` | Systems → Gameplay loop | Game over: build a new team, the case reopens, the agency arc keeps its progress |
 | `games/black-lantern/bible.md` | Systems → Losing an agent | The memorial list lives on the case board screen |
-| `games/black-lantern/bible.md` | Skills and menus → Overstepping and cover stories | Overstepping carries between cases; each new season starts at Clean; Federal agents shut a case down but it counts as closed |
+| `games/black-lantern/bible.md` | Skills and menus → Overstepping and cover stories | Overstepping carries between cases; each new season starts at Clean; Federal agents are a very hard fight, then the case goes on (changed Nov 24, 2026; they used to shut it down) |
 | `games/black-lantern/bible.md` | Tech → File and code | One file per case in `cases/`; where text lives (case text in the case's text block, menus and names in `strings.js`) |
 | `games/black-lantern/bible.md` | Tech → Saving | `bl.season` holds the season number, the case board (open or closed, and how each ended), cases closed and the overstepping step; `bl.memorial` holds fallen and retired agents. Save upgrades. Season length and unlock counts live only in the secret arc file |
 | `games/black-lantern/bible.md` | Tech → Screen and controls | iPhone SE first, nothing cut off, test at 375 × 550 and 320 × 480 |

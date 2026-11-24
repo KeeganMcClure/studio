@@ -71,7 +71,7 @@ The card's words live in `cases/dead-air.js`'s text block (`caseCard`), as for S
 | Horrors | About 3–4 Unsettling or Disturbing, 1–2 Severe, 0–1 Shattering, and the Boss, inside the case budget (6–10 net SAN). Kinds: mostly unnatural, plus helplessness. A **phobia subject** fits the voice; the case file names it |
 | Overstepping | Many choices overstep, and most are seen: the town talks and the sheriff watches. Each says how public it is. Pulling every radio in town, or a scene at the fish fry, marks it fast. In the cane fields at night, most choices are unseen. The **extreme case flag** for Local chief arriving as a fight with deputies is **off** |
 | Cover stories | 2 strong ones (Bureaucracy and Persuade) plus the weak Luck story. Clean books adds its safe one as always |
-| Ending labels | `clean`, `costly`, `worst` (Federal agents' shutdown also plays `worst`) |
+| Ending labels | `clean`, `costly`, `worst` |
 | Lantern Boxes and loot | 1 Lantern Box (2–3 catalog items). A loot table of 5 field items that fit a small parish town, a bait shop and a radio station. Up to 3 case-only items, at least one unnatural, so bag or hide has a real choice. A **new generic item** (a handheld radio direction finder) is a candidate for the shared item list, if the case file uses it |
 | Requisition | As usual at the briefing |
 

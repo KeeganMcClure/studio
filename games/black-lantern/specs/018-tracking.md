@@ -70,7 +70,7 @@ The card's words live in `cases/tracking.js`'s text block (`caseCard`), as for S
 | Addiction | The case's people and the tape both lean on Addiction. Any choice that offers a drug or a drink follows Disorders → Addiction and Statuses as written; the case adds no new rule |
 | Overstepping | The cover is cheap and easy to keep in a city that doesn't look twice, but money is loud: paying too much, or forcing a door, marks someone saw. Inside the club at night, most choices are unseen. The **extreme case flag** for Local chief arriving as a fight with officers is **off** |
 | Cover stories | 2 strong ones (Bureaucracy and Persuade) plus the weak Luck story. Since it's a quiet case, a clean run also offers the easy one (Overstepping and cover stories). Clean books adds its safe one as always |
-| Ending labels | `clean`, `costly`, `worst` (Federal agents' shutdown also plays `worst`) |
+| Ending labels | `clean`, `costly`, `worst` |
 | Lantern Boxes and loot | 1 Lantern Box (2–3 catalog items). A loot table of 5 field items that fit a pawn shop, a motel and a city street. Up to 3 case-only items, at least one unnatural (a copy of the tape counts), so bag or hide has a real choice |
 | Requisition | As usual at the briefing |
 

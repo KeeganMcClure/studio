@@ -212,7 +212,7 @@ Still Harvest rewritten under the new rules, from its private case file.
 **C5. Choices, branches and the clock** (Systems → Gameplay loop; Skills and menus → Overstepping)
 
 - Choices mostly branch and rejoin. Each is remembered for the boss and the debrief (saved in the checkpoint).
-- **Overstepping:** the case file sets open or quiet case and marks which choices overstep, with how public each is. Each calls the Luck roll; failures climb the step, play the climb line and show in the Case file. Steps act as the table says. Federal agents is in scope if the case can reach it; its "worst ending" is an ending label for Demo 6.
+- **Overstepping:** the case file sets open or quiet case and marks which choices overstep, with how public each is. Each calls the Luck roll; failures climb the step, play the climb line and show in the Case file. Steps act as the table says. Federal agents is in scope if the case can reach it: a very hard fight, then the case goes on with the step back at Local chief (changed Nov 24, 2026; it used to end the case on its worst ending).
 - **Motivation moments:** 1–2, for different motivation types, each with a real cost (time, risk, a clue or a better route).
 - **Time of day:** story beats can turn the town to night (`light` per map, spec 005, step 2). If they do, the case file says which townsfolk change at night and how (Art → Townsfolk at night), and Part C draws them.
 - **Healing:** a full rest at a few story safe spots (HP and WP refill, Sleep disorder triggers), plus meds and First Aid.
