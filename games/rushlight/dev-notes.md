@@ -172,7 +172,8 @@ buyer and Severa; level 2 for the hunts, with 2 level picks to their strong skil
     skipping the prep can lose, as the check asks.
 - **The death line:** the Text Library's only VO-NARR-DEATH row is the winter one ("...at the crossroads. The priest
   charged extra for the frost."). The slice is autumn, so the build plays its first sentence and drops the frost one.
-  The pool could use autumn rows (for the Designer).
+  Autumn rows VO-NARR-DEATH-2 to -6 are in the Text Library as Draft (Nov 24); copy them in once approved.
+  (Was: the pool could use autumn rows, for the Designer.)
 - **Burial's SAN** (1d4 to each survivor) and **the ditch's** (a Disturbing helplessness roll) follow the spec's calls.
 - **A body is left in a ditch** at the pay screen of the next contract, or at the slice's end.
 - **The best company** on the ledger is the one with the most contracts done plus 3 for each great creature killed
@@ -184,9 +185,10 @@ buyer and Severa; level 2 for the hunts, with 2 level picks to their strong skil
 - **Not built (outside the slice, as the spec says):** the road out of the March, Quarters, retiring by choice, Hope,
   and the cast remembering the dead.
 
-## Art still to file in the Asset Library (for the Designer)
+## Art filed in the Asset Library (Nov 24)
 
-All drawn in code; none is filed yet, since filing means republishing the 5.5 MB library page, which I didn't do unasked.
+Filed Nov 24 as drafts: rushlight-portraits-faces-v1, rushlight-icons-coins-v1, rushlight-ui-chart-v1, rushlight-tiles-streets-v1
+and rushlight-tiles-sites-v1. The list it covered:
 - Face parts (3 coat shades per species, scar, torn ear, grey muzzle, kerchief, hood) and the six coin tokens:
   `src/species-art.js`.
 - The region map's chart, glyphs, claws, wax seal and Key: `src/region.js`.
