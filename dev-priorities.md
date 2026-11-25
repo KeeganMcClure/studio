@@ -9,7 +9,8 @@ Keegan's call, Nov 24: work the list top to bottom, switching games as it goes. 
    Done Nov 25: built on Dev, waiting for review and merge.
 3. - [ ] Rushlight: the look bug batch. Its dev prompt (`handoffs/rushlight-look-bugs-dev-prompt.md`) still has to be shared again by the Designer (see `designer-todo.md`).
 4. - [ ] Rushlight: look pass 8A to 8D (spec 008), one part per session. Dev prompt: `handoffs/rushlight-facelift-dev-prompt.md`. It assumes the look bug batch is done first. The seven CO-TAG rows need Keegan's OK before 8C releases.
-5. - [ ] Black Lantern: the later agency cases and the finale (spec 015).
+5. - [x] Black Lantern: the later agency cases and the finale (spec 015).
+   Done Nov 25: built on Dev, waiting for Keegan's playtest and release.
 6. - [ ] Life After: the slice, parts A to D (specs 001 to 004) and the cover.
    Part A and the cover merged Nov 24 (PR #216). Parts B to D wait for Keegan's Part A phone notes and the Designer's mockups for the "To draw" screens (Fights, Bag, Map screen, Notebook, Hideout, Attack, Death).
 7. - [x] Black Lantern: the Gleaner's 1 px sprite bug (cosmetic).

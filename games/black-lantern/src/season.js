@@ -41,10 +41,10 @@ function offBooksOpen(s=loadSeason()){return Object.values(s.cases||{}).some(e=>
 function arcTally(s=loadSeason()){const arc={};Object.values(s.cases||{}).forEach(e=>{if(e&&e.state==='closed'&&e.facts&&e.facts.arc)Object.assign(arc,e.facts.arc)});
  return{kept:(s.kept||[]).length,hidden:(s.hidden||[]).length,arc}}
 // An agency case that was walked away from leaves a mark (facts.arc.nine): until the finale, every other case opens with
-// one extra SAN roll, once. The finale itself uses it instead (its own file).
+// one extra SAN roll, once (saved straight away, so a reload doesn't lose it). The finale itself uses it instead (its own file).
 async function arcNine(){const T=arcTally();if(!T.arc.nine||!G.active||G.flags.nine||isFinaleCase(G.case)||isAgencyId(loadSeason(),G.case)&&T.arc.nineFrom===G.case)return;
- G.flags.nine=1;const W=BLS.NINE;if(!W)return;await say('',W.see[(G.case||'').length%W.see.length]);
- await BLF.horror({id:'nine',tier:'unsettling',kind:'unnatural',label:W.label,all:true})}
+ G.flags.nine=1;const W=BLS.NINE;if(!W)return;await say('',W.see[(loadSeason().closed|0)%W.see.length]);  // cases closed so far picks the sighting, so two cases in a row never share one
+ await BLF.horror({id:'nine',tier:'unsettling',kind:'unnatural',label:W.label,all:true});checkpoint()}
 
 // ---- what the board plays when it opens: the closed card's slide, an agency unlock, the season's end ----
 async function boardIntro(){

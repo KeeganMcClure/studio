@@ -415,7 +415,7 @@ const BOARD={
  season:'SEASON',title:'CASE BOARD',closed:'CLOSED',briefing:'BRIEFING',back:'BACK',stamp:'CLOSED',file:'FILE',
  sticky:['NOBODY','TOUCH MY','CRULLERS.','—BH'],  // Big Hat's sticky note on the cork (mockup)
  stickyMore:['MORE ON','THE WAY.','—BH'],  // a season with no data file yet (spec 009, step 5)
- lantern:'LANTERN',finale:'FINALE',devQ:'Dev menu.',devPin:'Dev: pin {n} now',devClose:'Close',devNone:'NO AGENCY CASE TO PIN',agencyPlace:'AGENCY CASE',finalePlace:'SEASON FINALE',files:'{n} files',file1:'1 file',closedFiles:'CLOSED FILES',
+ lantern:'LANTERN',finale:'FINALE',empty:'No cases pinned yet.',devQ:'Dev menu.',devPin:'Dev: pin {n} now',devClose:'Close',devNone:'NO AGENCY CASE TO PIN',agencyPlace:'AGENCY CASE',finalePlace:'SEASON FINALE',files:'{n} files',file1:'1 file',closedFiles:'CLOSED FILES',
  endTitle:'SEASON {n} CLOSED',endRegular:'Cases closed',endAgency:'Agency cases',endLost:'Agents lost',endStep:'Overstepping',endKeys:'A: next season',
  // New game with a closed case (Skills and menus, Quality of life: Confirm what sticks)
  sure:'Can\'t be undone. Sure?',resetLine:'This starts Season 1 over. Your roster stays.',yes:'Yes, start over',no:'No, back to the title'
@@ -429,7 +429,7 @@ const DEBRIEF={
  closed:'CASE CLOSED',clues:'Clues',saved:'Saved',fights:'Fights',overstep:'Overstep',
  items:'CASE ITEMS',itemsHint:'Big Hat sorts',keep:'KEEP',bag:'BAG',hide:'HIDE',ordinary:'Ordinary',unnatural:'Unnatural',done:'Done',
  keepLine:'Ordinary: you keep it.',bagLine:'Unnatural: bagged as evidence unless hidden.',hideLine:'Hidden: stays with {n}. Big Hat never sees it.',
- hideAsk:'Hide the {i} from Big Hat? Can\'t be undone.',hideYes:'Hide it',hideNo:'Bag it',
+ hideAsk:'Hide {i} from Big Hat? Can\'t be undone.',hideYes:'Hide it',hideNo:'Bag it',
  itemKeys:'A: flip · Done: sort them',
  safeStory:'Already filed: nothing happened',
  offAsk:'And the page. Records wants it by Monday.',offFile:'File it',offKeep:'Keep it off the books',offFiled:'He clips it to the folder. It goes upstairs with the rest.',

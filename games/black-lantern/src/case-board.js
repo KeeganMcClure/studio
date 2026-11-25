@@ -256,9 +256,12 @@ function drawBoard(){
  const sel=t[CB.sel];if(sel)drawCursor(sel.kind==='card'?sel.r:Object.assign({},sel.r,{y:sel.r.y-Math.max(0,20-sel.r.h/2)}),now);
  pBox(h.x,h.y,h.w,h.h,'rgba(27,31,51,.95)',PC.cream);
  pT(`${BW.season} ${s.season} · ${BW.title}`,h.x+6,h.y+3,PC.gold,15);pT(cl,h.x+h.w-6-pW(cl,15),h.y+3,PC.lav,15);
- if(!sel){CB.hits=[];return}
+ if(!sel){drawEmptyDesc(L);return}
  if(sel.kind==='plaque')drawPlaqueDesc(L);else if(sel.kind==='pile')drawPileDesc(L,s);else drawDesc(L,sel);
 }
+// nothing on the board yet (a new season with nothing carried over): the box still shows, with B BACK
+function drawEmptyDesc(L){const right=VW-3;pBox(3,L.descY,VW-6,L.boxH,PC.navy,PC.cream);pT(BW.empty,10,L.descY+6,PC.cream,14);
+ const ky=L.descY+L.boxH-13,kx=right-7-pW(BW.back,12);pT(BW.back,kx,ky-1,CB_COL.hint,12);drawKey(kx-13,ky,'B');CB.hits=[{k:'b',x:kx-15,y:ky-3,w:right-kx+15,h:16}]}
 function drawPileDesc(L,s){
  const right=VW-3,fs=closedList(s),tw=pW(BW.closedFiles,14)+10;
  pR(6,L.tabY,tw,13,PC.cream);pR(7,L.tabY+1,tw-2,13,PC.navy);pT(BW.closedFiles,11,L.tabY,PC.gold,14);

@@ -112,8 +112,8 @@ const TEXT={
  // ---- Intake ----
  intakeArr:['INTAKE. A small office that smells like tea and wool. Every surface has a stack of paper on it, squared off neat.','A woman at the desk is knitting a gray scarf. It goes off the desk and onto the floor and across the floor and under the filing cabinet.'],
  wren1:[['MS. HOLLIS','Oh! Field. On a Sunday.'],['MS. HOLLIS','Sit, sit. Move the... yes, anywhere. I\'m catching up on filing.'],'She has not filed anything. She has been knitting.'],
- wrenHidden:[['MS. HOLLIS','You kept the {i}.'],['MS. HOLLIS','{w} did, I think. It never came down to Records. Records noticed.'],['MS. HOLLIS','I didn\'t tell anyone. I know what it\'s like to want to keep something.']],
- wrenKept:[['MS. HOLLIS','Pages have gone missing this season. {n} of them.'],['MS. HOLLIS','Upstairs thinks it\'s me.']],
+ wrenHidden:[['MS. HOLLIS','You kept {i}.'],['MS. HOLLIS','{w} did, I think. It never came down to Records. Records noticed.'],['MS. HOLLIS','I didn\'t tell anyone. I know what it\'s like to want to keep something.']],
+ wrenKept:[['MS. HOLLIS','Pages have gone missing this season. {n}.'],['MS. HOLLIS','Upstairs thinks it\'s me.']],
  wrenDay:[['MS. HOLLIS','I do the Sunday intake. Nobody else wants it. It\'s quiet. The boxes come in, I sign for them.'],'She smiles at the scarf.'],
  wrenAsk:'Ask about the scarf',wrenScarf:[['MS. HOLLIS','Eleven years, this scarf. I don\'t know who it\'s for anymore. I just don\'t want to stop.']],
  wrenKnow:[['WREN','So he called you. Of course he called you.'],['WREN','Then you know what I did.'],'She keeps knitting. Her hands know how to do it without her.'],
@@ -384,7 +384,7 @@ const CASE_ITEMS={
    await bsay(fill(TEXT.nameRead,{n:m.name}),1500);
    if(!o.ok){tried(m,sk);await bsay(TEXT.nameFail,1000);return true}
    F.named=1;await bsay(TEXT.nameHit,1200);await foeStatus(t,'stun');if(t.ph2)await bsay(TEXT.bossCalm,1400);return true}},
- wrenpage:{name:'Wren\'s page',type:'Evidence',kind:'unnatural',pin:1,passive:1,desc:'An old page, soft as cloth, torn in four: "Wren Hollis, for Lily." Numbered in the corner, in faded ink.'},
+ wrenpage:{name:'Wren\'s page',noun:'Wren\'s page',type:'Evidence',kind:'unnatural',pin:1,passive:1,desc:'An old page, soft as cloth, torn in four: "Wren Hollis, for Lily." Numbered in the corner, in faded ink.'},
  lbox:{name:'Empty Lantern Box',type:'Tool',kind:'ordinary',pin:1,passive:1,desc:'The agency\'s own box, lead-lined, a lantern on the lid. Empty. It wants to be closed on something.'},
  boxed:{name:'The sealed box',type:'Evidence',kind:'unnatural',pin:1,passive:1,desc:'A Lantern Box, lid down, warm to the touch. Something inside it turns a page now and then.'}
 };
@@ -543,8 +543,8 @@ async function teaRest(){const F=G.flags;if(F.tea)return;F.tea=1;await fade(1);a
 // the kept pages. After the call she knows. At midnight she's afraid, and she can be turned.
 async function talkWren(){const F=G.flags;await trigger('liar');
  if(!F.wren1){F.wren1=1;await play(TEXT.wren1);
-  const H=hiddenList();if(H.length){const h=H[(G.clues.length+H.length)%H.length],nm=String(itemDef(h.k).name||'thing').toLowerCase(),w=String(h.who||'One of you').split(' ')[0];await play(TEXT.wrenHidden,{i:nm,w})}
-  const k=tally().kept|0;if(k)await play(TEXT.wrenKept,{n:String(k)});checkpoint()}
+  const H=hiddenList();if(H.length){const h=H[(G.clues.length+H.length)%H.length],nm=itemNoun(h.k,h.case),w=String(h.who||'One of you').split(' ')[0];await play(TEXT.wrenHidden,{i:nm,w})}
+  const k=tally().kept|0;if(k)await play(TEXT.wrenKept,{n:k===1?'One of them':k+' of them'});checkpoint()}
  if(F.wrenDone){await play(F.wren==='turned'?TEXT.wrenAfter:TEXT.wrenAfterNo);return}
  if(isNight())return turnWren();
  if(F.deduce){if(!F.wrenTold){F.wrenTold=1;await play(TEXT.wrenKnow)}await play(TEXT.wrenMid);

@@ -89,7 +89,7 @@ async function dbItemAct(){
  if(s.sel>=rows.length){dbSort(rows);return}
  const r=rows[s.sel];if(!unnatural(r.it)||r.it.hidden)return;
  s.lock=1;try{
-  const i=await ask('',fillT(DBW.hideAsk,{i:itemDef(r.it.k).name.toLowerCase()}),[DBW.hideYes,DBW.hideNo]);
+  const i=await ask('',fillT(DBW.hideAsk,{i:itemNoun(r.it.k)}),[DBW.hideYes,DBW.hideNo]);
   // Confirm what sticks: a hide saves at once and can't be undone
   if(i===0){r.it.hidden=1;r.it.by=(r.m||lead()).a.name;checkpoint()}
  }finally{s.lock=0}

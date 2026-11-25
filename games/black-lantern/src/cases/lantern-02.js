@@ -450,9 +450,9 @@ const HORRORS={
 // this case's own items (case-only: the pin icon; Big Hat sorts them at the debrief). The diary is the key evidence.
 const holdItem=k=>holderOf(k)||(G.fs.pack||[]).some(it=>it.k===k);
 const CASE_ITEMS={
- diary:{name:'Agnes\'s diary',type:'Evidence',kind:'unnatural',pin:1,passive:1,
+ diary:{name:'Agnes\'s diary',noun:'Agnes\'s diary',type:'Evidence',kind:'unnatural',pin:1,passive:1,
   desc:'Blue cloth, a library sticker on the spine, seven entries. The back pages are older paper, ruled in red, numbered in the corner: 7.'},
- page:{name:'Agnes\'s page',type:'Evidence',kind:'unnatural',pin:1,passive:1,desc:'Old paper, ruled in red. Her name in her hand, nearly: the A closed at the top. Warm, the way paper isn\'t.'},
+ page:{name:'Agnes\'s page',noun:'Agnes\'s page',type:'Evidence',kind:'unnatural',pin:1,passive:1,desc:'Old paper, ruled in red. Her name in her hand, nearly: the A closed at the top. Warm, the way paper isn\'t.'},
  hand:{name:'Her own hand',type:'Evidence',kind:'ordinary',pin:1,desc:'Agnes\'s real signature, the A open at the top like a tent. Battle: show it to her (History or Empathy).',
   battleUse:async m=>{const F=G.flags;if(F.shown){await bsay(TEXT.handDone,900);return false}
    const t=aliveFoes().find(e=>e.t==='agnes');if(!t){await bsay('There\'s nobody here who needs to see it.',900);return false}
