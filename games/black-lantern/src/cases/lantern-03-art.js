@@ -86,10 +86,10 @@ const STILL={
   for(let i=0;i<10;i++){const x=T+hsh(i,1,709)*(W-3*T),y=3.5*T+hsh(i,2,709)*(H-5*T);g.fillStyle='rgba(20,30,34,.5)';g.beginPath();g.ellipse(x,y,5+hsh(i,3,709)*8,2,0,0,6.283);g.fill()}}
 };
 const DECOR={
- lobby(g,M,glows){F(g,3*T,.6*T,1.4*T,1.6*T,'#2a2e36');F(g,3*T+2,.6*T+2,1.4*T-4,10,'#e8e4d8');K.signText(g,'FLOOR',3*T+3,.6*T+4,'#2a2030');for(let i=0;i<4;i++)F(g,3*T+3,.6*T+15+i*4,1.4*T-6,1,'#8a8e96')},
+ lobby(g,M,glows){F(g,3*T,.6*T,1.4*T,1.6*T,'#2a2e36');F(g,3*T+1,.6*T+2,1.4*T-2,10,'#e8e4d8');K.signText(g,'FLOOR',3*T+2,.6*T+4,'#2a2030');for(let i=0;i<4;i++)F(g,3*T+3,.6*T+15+i*4,1.4*T-6,1,'#8a8e96')},
  intake(g,M,glows){F(g,9.4*T,.5*T,1.3*T,1.3*T,'#e8e4d8');F(g,9.4*T,.5*T,1.3*T,3,'#a8323e');for(let i=0;i<3;i++)for(let j=0;j<4;j++)F(g,9.4*T+3+j*5,.5*T+6+i*5,3,3,'#8a8070');
   F(g,9.4*T+4,.5*T+14,3,3,'#ff3a2a')},  // a wall calendar: November, Sundays ringed
- stacks(g,M,glows){F(g,13*T,.4*T,3*T,.8*T,'#2a2e36');K.signText(g,'RECORDS',13*T+4,.4*T+4,'#c8c0a8');K.signText(g,'STACKS B',13*T+4,.4*T+11,'#c8c0a8')}
+ stacks(g,M,glows){F(g,13*T,.4*T,3*T,1.1*T,'#2a2e36');K.signText(g,'RECORDS',13*T+4,.4*T+4,'#c8c0a8');K.signText(g,'STACKS B',13*T+4,.4*T+11,'#c8c0a8')}
 };
 
 // ================= STANDING PIECES (design units: 2 per screen pixel) =================
