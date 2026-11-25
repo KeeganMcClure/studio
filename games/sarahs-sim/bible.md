@@ -143,6 +143,7 @@ What keeps her coming back beyond designing. Set Nov 25, 2026 (Keegan), in the G
   - He's a big cuddler but very picky about it. Some laps and moments are right and some aren't, and he'll leave if it's wrong.
   - He hates loud noises. When the vacuum, the blender or the mower starts, he slowly leaves the room. The game has no sound, so this shows on screen.
   - He moves slowly and on purpose, never in a rush.
+  - He loves lying on his pile of toys, and feathers are his favorite. A feather wand is his best toy, and toys she gives him join the pile.
 - *Claude default:* in Sandbox the cats wander, nap and react, with no needs.
 
 ### Garden
