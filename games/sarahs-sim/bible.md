@@ -27,11 +27,13 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [ ] Building: lot size, walls, doors, windows, floors, stairs or not, how the view scrolls and zooms over a home bigger than the screen, and the build screen mockup.
 - [x] Gameplay: what keeps her coming back beyond designing (Nov 25). See Play.
 - [ ] Life mode: prices, coin pay for gigs and chores, and the special sets (the day, needs, job and unlocks are set, see Play).
-- [ ] Cat personalities: Keegan and the Designer work out Louie's and Ralph's personalities, which shape how each one wanders, naps, nudges and reacts (Keegan, Nov 25).
+- [x] Cat personalities: Keegan and the Designer work out Louie's and Ralph's personalities, which shape how each one wanders, naps, nudges and reacts (Keegan, Nov 25).
+  Done Nov 25: in Play, The cats.
 - [ ] Keegan's notes: Keegan writes the hidden notes, including the one under the Christmas tree, and says where and when each one shows up (Keegan, Nov 25).
 - [ ] Idle life: Keegan writes more things the two of them are busy doing when she opens the game, on top of the first ones (see Play) (Keegan, Nov 25).
 - [x] Recipes: Keegan lists the dishes he really cooks for Sarah, with what goes in each, for the cooking minigame.
   Done Nov 25: nine dishes, in Play, Cooking.
+- [ ] More recipes: one more look at Keegan's Recipe Cards doc for dishes to add, before the cooking spec (Keegan, Nov 25).
 - [ ] Bong reference: Keegan sends a photo of his bong, drawn for the reference sheet with their other real things.
 - [ ] Real people: Keegan sends the list of friends and family to draw in as visitors, with a photo or a few notes on each. They join the reference sheet.
 - [ ] Neighbors: the made-up neighbor cast, each one's personality, and each visitor's short story and special set.
@@ -131,7 +133,16 @@ What keeps her coming back beyond designing. Set Nov 25, 2026 (Keegan), in the G
 - **Full pet care:** Louie and Ralph wander the home, nap on furniture she places, knock things over, sit in boxes and react when tapped. She can pet them, give them treats and give them toys. Some of their moments go in the memory book.
 - **In Life mode** they also have hunger, play and a litter box for her to look after.
 - **Never bad:** when she forgets, the cats only nudge her: they sit by the bowl, meow, or look grumpy. They never get sick, get hurt or run off.
-- **Personalities:** each cat gets his own, worked out later (To do).
+- **Louie's personality** (Keegan, Nov 25): a sleepy grump.
+  - He naps most of the day, always in the coziest spot, gives a slow blink when petted, and grumbles if Ralph steals his bed.
+  - He gets very chatty when he wants something, with lots of speech bubbles, and he has no sense of personal space. He walks right up to you and sits in the way.
+  - He isn't a big cuddler, but he'll sit right next to you.
+  - He loves sitting on the edge of the bathtub when someone is taking a bath.
+- **Ralph's personality** (Keegan, Nov 25): a goofy food lover.
+  - He shows up in the kitchen whenever Keegan cooks, flops over in the middle of the floor, and steals Louie's warm spot.
+  - He's a big cuddler but very picky about it. Some laps and moments are right and some aren't, and he'll leave if it's wrong.
+  - He hates loud noises. When the vacuum, the blender or the mower starts, he slowly leaves the room. The game has no sound, so this shows on screen.
+  - He moves slowly and on purpose, never in a rush.
 - *Claude default:* in Sandbox the cats wander, nap and react, with no needs.
 
 ### Garden
