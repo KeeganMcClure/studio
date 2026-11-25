@@ -1,0 +1,17 @@
+{
+ "about": "Save version 2, slice part B: Dale the garage owner (template), seed 2026, Fall, Standard. Woke in a house on Day 1, searched one spot, took what was there and stepped out the front door (7:09 AM). Opening it lands on the title with Continue; Continue drops you back on the same tile outside, with the spot still searched.",
+ "version": 2,
+ "keys": {
+  "la.version": "2",
+  "la.run": "{\"v\":2,\"seed\":2026,\"typedSeed\":true,\"preset\":\"standard\",\"seasonPick\":\"Fall\",\"season\":\"Fall\",\"startSeason\":\"Fall\",\"clock\":{\"day\":1,\"min\":429},\"surv\":{\"name\":\"Dale\",\"job\":\"mechanic\",\"template\":\"Dale\",\"skills\":{\"melee\":1,\"guns\":0,\"sneak\":0,\"medicine\":0,\"fixing\":4,\"outdoors\":1,\"cooking\":0,\"talk\":0},\"uses\":{\"melee\":0,\"guns\":0,\"sneak\":0,\"medicine\":0,\"fixing\":0,\"outdoors\":0,\"cooking\":0,\"talk\":0},\"free\":{},\"traits\":{\"good\":[\"steadyHands\"],\"bad\":[\"badKnee\"]},\"want\":\"last\",\"looks\":{\"body\":2,\"skin\":0,\"face\":2,\"hairStyle\":2,\"hairColor\":5,\"colors\":0,\"age\":2},\"needs\":{\"hunger\":69.6875,\"health\":100,\"sleep\":79.45,\"san\":70},\"wounds\":[],\"bag\":{\"pockets\":4,\"worn\":null,\"items\":[{\"id\":\"ducttape\",\"n\":1},{\"id\":\"hammer\",\"n\":1}]},\"recipes\":[\"torch\",\"weaponFix\"],\"notes\":[{\"id\":\"wake\",\"day\":1,\"min\":420,\"sec\":\"houses\",\"text\":\"Weeks since it started. It's quiet out there.\"}]},\"town\":{\"sec\":\"houses\",\"inside\":-1,\"x\":6,\"y\":25,\"dir\":\"down\",\"spots\":{\"hs66\":[]},\"locks\":{},\"bike\":null,\"marks\":{\"hp10\":\"promising\"},\"seen\":{\"houses\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPD/BwAAAAAA/38AAAAAAPD/BwAAAAAA/38AAAAAAPD/BwAAAAAA/38AAAAAAPD/BwAAAAAA/38AAAAAAPD/BwAAAAAA/38AAAAAAPD/BwAAAAAA/38AAAAAAPD/BwAAAAAA/38AAAAAAPD/BwAAAAAA/38AAAAAAPD/BwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"},\"seenPlaces\":{\"hp10\":1},\"roads\":{\"strip\":false},\"flash\":false,\"woke\":true},\"seen\":{\"intro\":false},\"dice\":{\"seed\":1142743224,\"a\":1142743224,\"n\":0}}",
+  "la.record": "{\"gentle\":[],\"standard\":[],\"harsh\":[]}"
+ },
+ "expect": {
+  "scr": "map",
+  "name": "Dale",
+  "x": 6,
+  "y": 25,
+  "sec": "houses",
+  "day": 1
+ }
+}

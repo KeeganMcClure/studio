@@ -1,0 +1,11 @@
+{
+ "about": "Look pass (spec 008, Keegan's pick Nov 25), save version 6: no run, and a ledger with one wiped company whose lines keep each merc's species, look and trade, so the roll and the death screen show their faces.",
+ "version": 6,
+ "expect": {
+  "companies": 1
+ },
+ "keys": {
+  "rl.version": "6",
+  "rl.ledger": "{\"bestiary\":{},\"dead\":[],\"companies\":[{\"name\":\"Free Company\",\"seed\":\"2580-L\",\"end\":\"wipe\",\"regions\":0,\"contracts\":0,\"great\":0,\"days\":1,\"where\":\"Harrowford\",\"mercs\":[{\"name\":\"Valence\",\"nick\":[],\"end\":\"LG-END-FIGHT\",\"place\":\"Harrowford\",\"killer\":\"\",\"owed\":\"\",\"sp\":\"rat\",\"look\":{\"shade\":1,\"mark\":1,\"neck\":2},\"trade\":\"Halberdier\"},{\"name\":\"Jordan\",\"nick\":[\"Long-Knife\"],\"end\":\"LG-END-FIGHT\",\"place\":\"Crookback\",\"killer\":\"The Counter\",\"owed\":\"Left in a ditch. Nobody went back.\",\"sp\":\"fox\",\"look\":{\"shade\":2,\"mark\":3,\"neck\":1},\"trade\":\"Crossbowman\"},{\"name\":\"Lucius\",\"nick\":[],\"end\":\"LG-END-FIGHT\",\"place\":\"Harrowford\",\"killer\":\"\",\"owed\":\"\",\"sp\":\"mouse\",\"look\":{\"shade\":0,\"mark\":2,\"neck\":2},\"trade\":\"Barber-surgeon\"}]}]}"
+ }
+}

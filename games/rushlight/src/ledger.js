@@ -72,8 +72,10 @@ async function monkKilled(job){const r=G.run,killer=Bt&&Bt.active||null,last=(G.
 
 // ================= DEATH, BURIAL AND THE DITCH =================
 // called by sanity.js's mercGone for every merc who leaves the company for good
+// what the ledger keeps of a merc's look, so the roll can show their face and trade (save version 6, Keegan's pick Nov 25)
+const faceOf=m=>m&&m.sp?{sp:m.sp,look:{shade:m.look?m.look.shade|0:1,mark:m.look?m.look.mark|0:0,neck:m.look?m.look.neck|0:0},trade:m.trade||''}:{};
 async function onMercGone(m,end,o){const r=G.run;
- const line={name:m.name,nick:(m.nick||[]).slice(),end,place:m.endPlace||'',killer:m.killer||'',owed:''};
+ const line=Object.assign({name:m.name,nick:(m.nick||[]).slice(),end,place:m.endPlace||'',killer:m.killer||'',owed:''},faceOf(m));
  r.lines=r.lines||{};r.lines[m.id]=line;
  if(end==='LG-END-FIGHT'||end==='LG-END-BLEED'||end==='LG-END-SNAP'||end==='LG-END-STARVE'){
   if(end!=='LG-END-SNAP'){await say('',RLT('VO-NARR-DEATH-1',{merc:m.name}).replace(/ The priest charged extra for the frost\./,''));
@@ -109,7 +111,7 @@ function lineText(l){const nm=l.nick&&l.nick.length?RLT('LG-NAME',{name:l.name,n
  const end=RLT(l.end||'LG-LIVING',{killer,place:l.place||'the road'});return `${nm} ${end}${l.owed?' '+l.owed:''}`}
 function companyEntry(how){const r=G.run;r.lines=r.lines||{};
  const mercs=(r.joined||[]).map(j=>{const m=party.find(p=>p.id===j.id)||{};const l=r.lines[j.id]||{name:j.name,nick:(m.nick||[]).slice(),end:how==='end'?'LG-LIVING':how==='abandoned'?'LG-END-LEFT':'LG-END-FIGHT',place:placeName(),killer:m.lastBy?m.lastBy.base:'',owed:''};
-  if(!r.lines[j.id]&&m.nick)l.nick=m.nick.slice();return l});
+  if(!r.lines[j.id]&&m.nick)l.nick=m.nick.slice();if(!l.sp)Object.assign(l,faceOf(m));return l});
  return {name:r.company&&r.company.name||'The company',seed:r.seed,end:how,regions:0,contracts:r.done|0,great:r.great|0,days:r.day|0,where:placeName(),mercs}}
 async function endRun(how){const r=G.run,L=ledger();L.companies=L.companies||[];
  // bodies still waiting are left (the company leaves the March)
