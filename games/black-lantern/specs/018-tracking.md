@@ -1,6 +1,6 @@
 # Spec 018: Tracking
 
-Status: proposed, waiting for Keegan's merge · Written 2026-11-23 by the Game Designer · Game: Black Lantern · To do: Tracking part A and part B
+Status: approved and built (status updated Nov 25, 2026; see the bible's To do and the changelog) · Written 2026-11-23 by the Game Designer · Game: Black Lantern · To do: Tracking part A and part B
 
 ## In plain words
 
@@ -118,6 +118,10 @@ A new case file needs no new save version on its own (spec 004, step 6). The tra
 - Old saves keep opening, every test save included.
 - No real brand names or logos anywhere in the case, including casino names.
 - Nothing a player could only learn by playing appears in this spec, the changelog, the bible or a commit message.
+
+## As built (Keegan's call, Nov 25, 2026)
+
+- The club's watchers treat the team the same whether or not anyone has watched a tape. Watching still costs SAN and adds tracking lines as above.
 
 ## Done when
 

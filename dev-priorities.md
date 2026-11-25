@@ -11,6 +11,7 @@ Keegan's call, Nov 24: work the list top to bottom, switching games as it goes. 
    Done Nov 24: built and merged (studio PR #219).
 4. - [ ] Rushlight: look pass 8A to 8D (spec 008), one part per session. Dev prompt: `handoffs/rushlight-facelift-dev-prompt.md`. It assumes the look bug batch is done first. The seven CO-TAG rows need Keegan's OK before 8C releases.
    Done Nov 24: all four parts built and merged (studio PR #220). The seven CO-TAG rows still need Keegan's OK before 8C releases.
+   Done Nov 25: Keegan approved all seven CO-TAG rows (Text Library revision 22), so 8C can release.
 5. - [x] Black Lantern: the later agency cases and the finale (spec 015).
    Done Nov 25: built and merged; waiting for Keegan's playtest and release.
 6. - [ ] Life After: the slice, parts A to D (specs 001 to 004) and the cover.
@@ -21,7 +22,7 @@ Keegan's call, Nov 24: work the list top to bottom, switching games as it goes. 
 
 ## Open flags
 
-- Rushlight: the slice's missed tuning checks (spec 006 D2) have no To do line yet. That's on `designer-todo.md`.
+- Rushlight: the slice's missed tuning checks (spec 006 D2) now have a To do line in the bible (set Nov 25): retune the fights to spec 006's pass marks. Ready to build.
 - Black Lantern: an optional question is open on whether Federal agents should rule out a clean ending (asked while building Kinder overstepping).
 
 ## How the work goes

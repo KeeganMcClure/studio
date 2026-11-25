@@ -1,6 +1,6 @@
 # Spec 012: Art kits for Good Manners and Lot 83
 
-Status: proposed, waiting for Keegan's merge · Written 2026-11-22 by the Game Designer · Game: Black Lantern · To do: Season readiness, step 6 (first part)
+Status: approved and built (status updated Nov 25, 2026; see the bible's To do and the changelog) · Written 2026-11-22 by the Game Designer · Game: Black Lantern · To do: Season readiness, step 6 (first part)
 
 ## In plain words
 
