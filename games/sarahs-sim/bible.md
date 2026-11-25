@@ -80,8 +80,8 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Visitor chat | A visitor talks and asks for a gig | No spec yet | **To draw** |
 | Gig | See what a visitor wants, design it, hand it in, get paid | `specs/006-life-mode.md` | **To draw** |
 | Neighborhood | Walk to a neighbor's home to help redo it | No spec yet | **To draw** |
-| Memory book | Flip through moments, notes and photos | No spec yet | **To draw** |
-| Note found | Read a note from Keegan she found in the home | No spec yet | **To draw** |
+| Memory book | Flip through moments, notes and photos | `specs/007-memory-book-and-notes.md` | **To draw** |
+| Note found | Read a note from Keegan she found in the home | `specs/007-memory-book-and-notes.md` | **To draw** |
 | Favorites | Save and reuse whole rooms and outfits | No spec yet | **To draw** |
 | Camera | Take a clean picture of a room or outfit | No spec yet | **To draw** |
 | Challenges | Pick a challenge and see how you did | No spec yet | **To draw** |
