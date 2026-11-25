@@ -77,9 +77,9 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Yard (garden) | Lay out beds, paths, fences and a patio, plant seeds, water and weed | `specs/005-garden-and-yard.md` | **To draw** |
 | Minigame | One of the eight chores (mow, weed, water, rake, shovel snow, dishes, vacuum, fold laundry), all in one shared frame | `specs/005-garden-and-yard.md` | **To draw** |
 | Cooking | Chop, stir and plate one of Keegan's dishes with him | `specs/006-life-mode.md` | **To draw** |
-| Visitor chat | A visitor talks and asks for a gig | No spec yet | **To draw** |
+| Visitor chat | A visitor talks and asks for a gig | `specs/008-visitors-and-neighborhood.md` | **To draw** |
 | Gig | See what a visitor wants, design it, hand it in, get paid | `specs/006-life-mode.md` | **To draw** |
-| Neighborhood | Walk to a neighbor's home to help redo it | No spec yet | **To draw** |
+| Neighborhood | Walk to a neighbor's home to help redo it | `specs/008-visitors-and-neighborhood.md` | **To draw** |
 | Memory book | Flip through moments, notes and photos | `specs/007-memory-book-and-notes.md` | **To draw** |
 | Note found | Read a note from Keegan she found in the home | `specs/007-memory-book-and-notes.md` | **To draw** |
 | Favorites | Save and reuse whole rooms and outfits | No spec yet | **To draw** |
