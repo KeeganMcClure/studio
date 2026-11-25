@@ -36,7 +36,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [ ] More recipes: one more look at Keegan's Recipe Cards doc for dishes to add, before the cooking spec (Keegan, Nov 25).
 - [ ] Bong reference: Keegan sends a photo of his bong, drawn for the reference sheet with their other real things.
 - [ ] Real people: Keegan sends the list of friends and family to draw in as visitors, with a photo or a few notes on each. They join the reference sheet.
-- [ ] Neighbors: the made-up neighbor cast, each one's personality, and each visitor's short story and special set.
+- [x] Neighbors: the made-up neighbor cast, each one's personality, and each visitor's short story and special set.
+  Done Nov 25: four neighbors with stories, in Play, Visitors. Real people's stories wait on Keegan's list.
 - [x] Garden: the plant list, how long each takes to grow in real days, how plants change with the seasons, and the mow, weed and water minigames. Plus the house upkeep minigames.
   Done Nov 25: in Play, Garden (the plant list is a starter list Keegan can change).
 - [ ] Memory book: screen mockup (moments approved and rewards set in steps, Nov 25).
@@ -216,6 +217,18 @@ Sarah has a major green thumb and loves her back yard (Keegan, Nov 25).
 - **Visits:** a visitor drops by, chats and asks for a gig. Friendship grows with every gig and chat.
 - **Stories:** each visitor tells a short story over a few visits, ending with their special set.
 - **Their homes:** she can walk over to a visitor's home and help redo it, so there's a small neighborhood.
+
+**The block** (Keegan, Nov 25): four made-up neighbors on a cozy Philly-style street, cast approved Nov 25. Each story is four visits. Every visit is a chat and one gig, friendship grows with each one, and the last visit opens their home for Sarah to redo. The set unlocks in steps like the memory book: a piece at visit 2, and the rest when their home is done. The beats are a *Claude draft*.
+
+| Neighbor | Who they are | Story in four visits | Their home | Special set |
+| --- | --- | --- | --- | --- |
+| Dot | Retired florist in her 70s across the street. Best garden on the block, sharp but warm, and sneaks the cats treats | 1. Admires Sarah's garden and asks for a flower arrangement. 2. Trades plant tips, gig: a window box. 3. Her granddaughter is coming to stay, gig: an outfit for the train station. 4. Asks for help with the dusty sunroom | Sunroom into a guest room with plants everywhere | Vintage florist: a potting bench, a flower cart, a wicker chair, a big fern |
+| Marco and Jules | Young couple who just moved in next door, with a baby on the way. Still living out of boxes | 1. Say hi from behind a wall of boxes, gig: a cozy corner to sit in. 2. Gig: a "we live here now" living room. 3. Gig: comfy maternity outfits for Jules and a dad look for Marco. 4. The baby is coming soon, so they ask for help with the nursery | The nursery, plus the rest of the boxes unpacked | Soft nursery: a crib, a mobile, a rocking chair, a cloud rug |
+| Theo | Shy painter in a tiny studio on the corner. Talks to his plants more than to people | 1. Asks for help picking an outfit to sell paintings at a market. 2. Gig: a spot by his window to paint in. 3. Gets into his first art show, gig: an outfit for opening night. 4. Asks for help turning the mess into a loft fit to show off | Studio into a gallery-ready loft | Artist loft: an easel, paint-splattered rugs, a hanging gallery wall, a daybed |
+| Priya | ER nurse on night shifts, with a goofy rescue dog named Biscuit. Can never relax at home | 1. Biscuit gets loose and runs into Sarah's yard, gig: a dog bed. 2. Gig: off-duty clothes that aren't scrubs. 3. Gig: a calm corner for her morning wind-down after a night shift. 4. Asks for a whole calm bedroom and a reading nook | Bedroom and reading nook | Cozy calm: blackout curtains, a reading chair, a tea cart, a dog bed for Biscuit |
+
+- **After the story:** each neighbor keeps dropping by now and then with an ordinary gig, and comes to Sarah's holiday parties.
+- **Biscuit** is the first animal besides the cats, as a neighbor's dog that visits. He's never Sarah's to look after (Ideas inbox: other animals later).
 
 ### Romance
 
