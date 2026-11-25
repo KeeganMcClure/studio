@@ -73,12 +73,12 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Style (outfits) | Dress a person in the big view: pick pieces, recolor, paint, add patterns and tee prints, spin to see the back | No spec yet | `style-v1` (UI approved Nov 25, 2026) |
 | Creator | Make a new person: parts, fine tuning, age, gender and extras | No spec yet | `creator-v1` (approved Nov 25, 2026) |
 | Build | Draw rooms, walls, doors, windows, floors and stairs on an empty lot, up to 3 floors | No spec yet | `build-v1` (approved Nov 25, 2026) |
-| Life mode top bar | Day, time and coins over the home | No spec yet | `look-iso-v1` (top bar) |
+| Life mode top bar | Day, time and coins over the home | `specs/006-life-mode.md` | `look-iso-v1` (top bar) |
 | Yard (garden) | Lay out beds, paths, fences and a patio, plant seeds, water and weed | `specs/005-garden-and-yard.md` | **To draw** |
 | Minigame | One of the eight chores (mow, weed, water, rake, shovel snow, dishes, vacuum, fold laundry), all in one shared frame | `specs/005-garden-and-yard.md` | **To draw** |
-| Cooking | Chop, stir and plate one of Keegan's dishes with him | No spec yet | **To draw** |
+| Cooking | Chop, stir and plate one of Keegan's dishes with him | `specs/006-life-mode.md` | **To draw** |
 | Visitor chat | A visitor talks and asks for a gig | No spec yet | **To draw** |
-| Gig | See what a visitor wants, design it, hand it in, get paid | No spec yet | **To draw** |
+| Gig | See what a visitor wants, design it, hand it in, get paid | `specs/006-life-mode.md` | **To draw** |
 | Neighborhood | Walk to a neighbor's home to help redo it | No spec yet | **To draw** |
 | Memory book | Flip through moments, notes and photos | No spec yet | **To draw** |
 | Note found | Read a note from Keegan she found in the home | No spec yet | **To draw** |
