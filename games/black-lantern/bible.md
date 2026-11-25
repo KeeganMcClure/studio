@@ -84,6 +84,15 @@ Finished items move to `todo-archive.md` next to this file (since Nov 23, 2026),
 - [ ] Later agency cases and the finale (spec 015): every agency case after the first, built one at a time in arc order, each in a part A and a part B like the first, ending with the finale and the season end screen. Tick this when the season data file has them all and a Dev playtest runs from New game to Season 2's board
 - [x] Kinder overstepping (bible, Skills and menus → Overstepping and cover stories, Nov 24, 2026; spec 007 step 4): a held cover story drops overstepping one step even if it climbed, a clean case with a held story drops two, and Federal agents no longer end the case: they're a very hard fight, then the case goes on with overstepping back at Local chief. Old saves keep their current step
   Done Nov 24: the Federal agents are now a hard fight that doesn't end the case (win it and overstepping drops back to Local chief), and a held cover story drops overstepping one step, or two after a clean case. The cover story box names both steps.
+- [ ] Season 2 readiness (Keegan, Nov 25, 2026): design work for Season 2, an original King in Yellow season (Story → Season 2). Paper first, now; nothing in Season 2 is built until "Later agency cases and the finale" is done. One item per chat, in order; tick this when all seven are done
+  - [x] Season 2 readiness 1 of 7: Season 2 section in the bible (Story → Season 2)
+    Done Nov 25: the Season 2 section is in Story, with Keegan's seven calls from Nov 25.
+  - [ ] Season 2 readiness 2 of 7: spec for how cases mark each other (what a closed case carries into later ones, in any order) and the save fields it needs
+  - [ ] Season 2 readiness 3 of 7: spec for the reality shift tools any case can use (rooms that change, wrong doors, scenes out of order, garbled names and faces), with the rule that a shift never strands the party
+  - [ ] Season 2 readiness 4 of 7: art direction for the yellow creep and Carcosa, with a mockup Keegan approves, and the palette accents added to Art
+  - [ ] Season 2 readiness 5 of 7: the Developer writes Season 2's secret story (agency arc, 9 personal arcs, home scene touches) in `story/`, from Keegan's notes, and reports only "fits" or what's needed
+  - [ ] Season 2 readiness 6 of 7: pitch rounds and a case spec for each of Season 2's regular cases, plus the agency case frames
+  - [ ] Season 2 readiness 7 of 7: art kits for the picked cases and Carcosa, Shared Shelf first
 
 ## Bugs
 
@@ -338,6 +347,18 @@ Big Hat is the only character who appears in every case; his 64 × 64 calm and s
 - **Big Hat:** legally doesn't exist; nobody learns his backstory. His thick country accent may be fake, and agents suspect the huge hats keep anyone from describing his face. He hands out gear in absurd packaging, like pink Walmart gift bags. His look stays as set in Cast.
 
 **Case board.** You pick a case from a board, which opens Big Hat's briefing for it. Each case is a self-contained module. The board is a cork board of pinned case cards (decided Nov 21; mockup listed in Art, Reference mockups). Each card shows its file number, title and town; the D-pad moves a cursor between cards, and the selected card opens a description box at the bottom (place, a two-line hook, A for the briefing, B to back out). A closed case is stamped CLOSED, then moves to a CLOSED pile in the board's corner; A on the pile lists every closed case (set Nov 22, spec 009, replacing "closed cases stay pinned"). The board always shows six open regular cases: the rest of the season's cases wait in a hidden queue, in the season data file's order with no randomness (Keegan, Nov 23, after the demo playtest), and when one closes the next pins into its spot, until the queue runs out (Keegan, Nov 22). An open agency case pins in the bottom row, over Big Hat's sticky note, one at a time, beside the pile and the memorial plaque. The board always fits, so there is no plain list. When a case closes, the next case from the queue takes its spot and the other cards stay put (the season save keeps which case sits in each spot), and the agency folder pins in the bottom row's right spot (accepted Nov 23, 2026 from the Developer's logged calls). Finishing a case goes straight to the board.
+
+### Season 2: The King in Yellow (set Nov 25, 2026)
+
+Keegan's call: Season 2 is inspired by the Delta Green campaign *Impossible Landscapes*, built as our own King in Yellow season.
+
+- **Sources:** Robert W. Chambers' *The King in Yellow* (1895) and Ambrose Bierce's Carcosa are public domain and free to use: the play, the Yellow Sign, Carcosa, Hastur as Chambers and Bierce wrote them. From *Impossible Landscapes* we take only its tone: reality that bends, time that slips, people losing who they are. Its plot, people, places, text and part structure stay out, as do later authors' and Chaosium's additions (see Rename flags). This repo is public, so nothing of it is quoted here or anywhere.
+- **One season, one story:** every case builds on the others, and the agency arc is the spotlight. Cases still play in any order on the board as in Season 1; what you find and choose in one case leaves a mark on later ones, and the agency cases pull it together.
+- **Secret story:** Keegan stays surprised, as in Season 1. The Developer writes the agency arc and the season's personal arcs in `story/`, drawing on Keegan's own notes from running the campaign (kept in the project's private files, never in this repo).
+- **Losing yourself:** no new meter. It runs on SAN, Bonds and disorders (Systems), with the screen garbling names and faces, as pillar 6 already allows. Text, the HUD and usable things stay readable.
+- **Reality shifts:** entirely story dependent. Each case decides whether and how its maps and time shift, and its spec says so. A shift never strands the party (Gameplay loop, Deduction; `studio-bible/play.md`).
+- **The look:** in regular cases a tarnished yellow creeps into the base palette; Carcosa itself (twin suns, black stars, tatters) shows where the story calls for it. Exact colors come with Season 2 readiness 4.
+- **When:** design work now; building after Season 1's agency cases and finale.
 
 The demo case, "Operation Still Harvest," is built and playable. It's the test build, not a chapter one.
 
