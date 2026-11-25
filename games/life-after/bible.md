@@ -61,11 +61,11 @@ Every screen you can see, in play order (studio rule: `studio-bible/studio.md`, 
 | Survivor builder | Make your survivor | 001 (4, 5) | `05`, sprites to `06` |
 | Map | Walk the town's sections, with the top bar, search, locks and night | 002 (1 to 7) | `04` |
 | Fights on the map | Turns, zombies, attacks, noise, sneaking, fleeing | 003 (1 to 8) | **To draw** (`01` is an old placeholder) |
-| Bag (L) | Your items, crafting | 002 (8, 10) | **To draw** |
-| Map screen (R) | The map of what you've found | 002 (12) | **To draw** |
+| Bag (L) | Your items, crafting | 002 (8, 10) | `07-bag-rough-v2` (approved Nov 25, 2026) |
+| Map screen (R) | The map of what you've found | 002 (12) | `08-map-screen-rough-v2` (approved Nov 25, 2026) |
 | Start menu | Party, Notebook, Wait, Sleep, Claim this place, Save code, Quit to title | 001 (wiring), 002, 004 (wiring) | `05` (same surface) |
 | Party card | You and your companions | 001 (6), `studio-bible/ui.md` | `05` (the taped photo and cards) |
-| Notebook | What you've learned | 002 (11) | **To draw** |
+| Notebook | What you've learned | 002 (11) | `09-notebook-v1` (approved Nov 25, 2026; its Recipes page is also the Bag's) |
 | Hideout | Claim a place, build, cook, sleep, store | 004 (1 to 4, 8) | **To draw** |
 | Attack on the hideout | Defend it when something comes | 004 (5, 6) | **To draw** |
 | Death screen | Your run ends: days survived | 004 (9) | **To draw** |
@@ -93,7 +93,7 @@ Every screen you can see, in play order (studio rule: `studio-bible/studio.md`, 
 5. **Every system has a stake.** No mechanics for mechanics' sake.
 6. **Short phone sittings.** One in-game day fits one sitting.
 
-**Mature content.** Violence, gore, infection, starvation, cruelty and hard choices about other people are on the table, shown plainly and never lingered on for shock. Romance fades to black (Claude's call, for review). Hard line: nothing sexual involving minors, ever. Children are harmed only off screen or as aftermath.
+**Mature content.** Violence, gore, infection, starvation, cruelty and hard choices about other people are on the table, shown plainly and never lingered on for shock. Romance fades to black (Claude's call, confirmed by Keegan Nov 25, 2026). Hard line: nothing sexual involving minors, ever. Children are harmed only off screen or as aftermath.
 
 **Open questions.** See To do.
 
@@ -260,7 +260,7 @@ Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
   - **Low bond has teeth** (set Nov 21): a companion treated badly may walk out, steal supplies, or side with raiders.
   - **Hard choices:** a bitten companion can be treated, locked away to see if they turn, or put down. Traders may offer a deal for one of your people.
 - **Personal arcs** (set Nov 21): small generated arcs built from parts (a missing sister, a past they hide), with a few scenes as bond grows.
-- **Romance** (set Nov 21): optional, a slow build over evening talks with an adult companion. Each companion has their own attraction (to men, to women, both, or not interested), so not everyone is open to you, and some are put off by flirting, which lowers bond. It fades to black, lifts SAN, and makes losing them hit much harder.
+- **Romance** (set Nov 21; pace changed Nov 25): optional, built over evening talks with an adult companion. How fast it goes depends on the person (Keegan, Nov 25): some fall quickly, some take a long time, so it isn't the same for everyone (see `companions.md`, Romance). Each companion has their own attraction (to men, to women, both, or not interested), so not everyone is open to you, and some are put off by flirting, which lowers bond. It fades to black, lifts SAN, and makes losing them hit much harder.
 
 ## Other survivors and trade
 
@@ -333,6 +333,11 @@ Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
 | `06-sprite-reference-rough-v1` | Rough, Nov 23: the sprite reference and day palette. Keegan, Nov 23: the direction is right; necks too long, shading read as stubble, cars didn't read as cars. |
 | `06-sprite-reference-rough-v2` | Rough, Nov 23: v1 with shorter necks, clean faces lit from the side (no stubble look), and real cars (side view with the roof showing, wheels in arches, glass, lights). Approved Nov 23 (Keegan): this is the look. |
 | `06-sprite-reference-rough-v3` | Rough, Nov 23: v2 with Scared redrawn, because Keegan found it read as surprised. Now the inner brows are pulled up and together, the eyes are wide and dart to one side, the mouth is a tight grimace and there's a sweat bead. Approved Nov 23 (Keegan): this is the sprite reference. |
+| `07-bag-rough-v1` | Rough, Nov 25: the Bag (L) on the cardboard surface: 4 pocket slots and a school backpack's 6, each square with its icon, count and wear marks; In hand, slots used and walk speed on the right; the picked item's card with its actions as buttons (after A); L/R flip to Recipes. Keegan approved it as is, Nov 25. |
+| `07-bag-rough-v2` | Nov 25, finished quality: v1's layout with 20 × 20 item icons, shaded from the upper left and drawn with the game's selective outline, in bigger 30 px slots. Keegan approved it Nov 25; build to this one. |
+| `09-notebook-v1` | Nov 25, finished quality: the Notebook (Start → Notebook) with its two pages. Notes: a ruled spiral-pad page taped to the cardboard, your survivor's lines in marker with the day and time, the newest in red, scrolling up. Recipes (shared with the Bag): one card per known recipe; one you can make now is white with a Make button and what it uses; one you can't shows its parts as chips, the missing ones crossed out in red, and a Missing line. Keegan approved it Nov 25. |
+| `08-map-screen-rough-v1` | Rough, Nov 25: the Map screen's first pass. Keegan, Nov 25: the vibe is right but it looked too rough; since the build copies the mockup, screen mockups are now drawn at finished quality. |
+| `08-map-screen-rough-v2` | Nov 25, finished quality: the Map screen (R), page 1 This section. Your survivor's own map in black and red marker on cardboard: houses with gable roofs, drives and yard trees, the school's flat roof, gym and playground, the church's steeple, streets with curbs and a center line, unseen ground as bare cardboard behind a hatched edge. Place names on taped paper tags; marks on paper discs (looted a cross, promising a circle, danger a red triangle); a red pin for you and your bike in its drive. The view scrolls over the 60 × 60 section. The picked place's card shows its mark, and A changes it. Page 2, the Road map, uses the same style. Keegan approved it Nov 25. |
 
 ## Tech
 

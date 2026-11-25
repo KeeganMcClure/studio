@@ -21,7 +21,7 @@ const TRANSIENT=new Set(['lastBy','lastHurt','wrung','wring','carried','carry','
 const saveJSON=v=>JSON.stringify(v,(k,x)=>TRANSIENT.has(k)?undefined:x);
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,saveJSON(v))}catch(e){console.error('save failed: '+k,e)}}};
 // The save version (studio-bible/saves.md): each change to what a save holds adds a step here. Old steps never change.
-const VERSION=5;
+const VERSION=6;
 const newLedger=()=>({bestiary:{},dead:[],companies:[]});
 // Each step takes the save as one object {run, ledger, draft, legacy} and returns it at the next version.
 const STEPS_UP={
@@ -41,7 +41,10 @@ const STEPS_UP={
  // 4 → 5 (spec 007): the den's state, the dead waiting for burial, the ledger lines and the ended flag; Part D's dead move
  // into one company entry for the run they served in; everything else kept
  5:o=>{const r=o.run;if(r){r.den=r.den||null;r.bodies=r.bodies||[];r.lines=r.lines||{};r.ended=!!r.ended;r.great=r.great|0}
-  const L=o.ledger;if(L&&L.dead&&L.dead.length){L.companies.unshift({name:r&&r.company?r.company.name:'The company',seed:r?r.seed:'',end:'current',regions:0,contracts:r?r.done|0:0,great:0,days:r?r.day|0:0,mercs:L.dead.map(d=>({name:d.name,nick:d.nick||[],end:d.end||'LG-END-FIGHT',place:d.place||'',killer:d.killer||'',owed:''}))});L.dead=[]}return o}
+  const L=o.ledger;if(L&&L.dead&&L.dead.length){L.companies.unshift({name:r&&r.company?r.company.name:'The company',seed:r?r.seed:'',end:'current',regions:0,contracts:r?r.done|0:0,great:0,days:r?r.day|0:0,mercs:L.dead.map(d=>({name:d.name,nick:d.nick||[],end:d.end||'LG-END-FIGHT',place:d.place||'',killer:d.killer||'',owed:''}))});L.dead=[]}return o},
+ // 5 → 6 (spec 008 look pass, Keegan's pick Nov 25): new ledger lines keep each merc's species, look and trade, so the roll
+ // and the death screen show their faces. Lines already written have none to keep and show a plain square; nothing else changes
+ 6:o=>{if(o.ledger&&!o.ledger.companies)o.ledger.companies=[];return o},
 };
 function upgradeSave(o,from){for(let v=from+1;v<=VERSION;v++)o=STEPS_UP[v](o);o.version=VERSION;return o}
 // On open: back up older saves first (all rl.* keys in one block), then run each step above the stored version.
@@ -155,7 +158,7 @@ function toSeed(){S.seedIn=randomSeed();S.seedBad=false;S.typed='';goto('seed')}
 // A run ended by a new one is abandoned: its mercs go into the ledger as having left the company (spec 003, 1)
 function abandonRun(){const r=runSaved();if(!r)return;const L=store.get(K('ledger'),null)||newLedger();L.companies=L.companies||[];
  L.companies.unshift({name:r.company&&r.company.name||'The company',seed:r.seed,end:'abandoned',contracts:r.done|0,great:0,days:r.day|0,
-  mercs:(r.joined||r.party||[]).map(m=>({name:m.name,nick:m.nick||[],end:'LG-END-LEFT'}))});
+  mercs:(r.joined||r.party||[]).map(m=>{const p=(r.party||[]).find(x=>x.id===m.id)||m;return Object.assign({name:m.name,nick:m.nick||[],end:'LG-END-LEFT'},p.sp?{sp:p.sp,look:{shade:p.look.shade|0,mark:p.look.mark|0,neck:p.look.neck|0},trade:p.trade||''}:{})})});
  store.set(K('ledger'),L);store.set(K('run'),null)}
 V.seed=()=>({rows:[
  ST('<h3>THE RUN SEED</h3><div>The same seed gives the same first company and the same March.</div>'),
@@ -303,10 +306,11 @@ const lineOf=l=>window.lineText?lineText(l):l.name;
 // the death screen (spec 008, 8C; mockup 44): the company's name with STRUCK FROM THE ROLL stamped in Blood, where and on what day;
 // every merc greyed, with how each one ended (their faces while the game still has them: the ledger stores no faces); contracts
 // done, great creatures killed and regions crossed; what they learned stays in the bestiary. A goes on to the ledger.
+const lineFace=(l,px)=>l.sp&&l.look?`<canvas class="face grey" data-sp="${l.sp}" data-look="${l.look.shade|0}${l.look.mark|0}${l.look.neck|0}" width="${px||30}" height="${px||30}"></canvas>`:liveFace(l.name);
 const liveFace=name=>{const p=window.RLG&&RLG._t&&RLG._t.party?RLG._t.party().find(m=>m.name===name):null;return p?`<canvas class="face grey" data-sp="${p.sp}" data-look="${p.look.shade}${p.look.mark}${p.look.neck}" width="30" height="30"></canvas>`:`<span class="noface"></span>`};
 V.death=()=>{const L=store.get(K('ledger'),null)||newLedger(),c=L.companies[0];if(!c)return V.title();
  return {rows:[ST(`<div class="parch dcard"><div class="nm">${esc(c.name.toUpperCase())}</div><div class="stamp2">STRUCK FROM THE ROLL</div><div class="d">${esc(c.where||'the road')} · day ${c.days}</div><div class="it">${esc(T('DS-WIPE'))}</div></div>`),
-  ST(`<div class="parch droll">${c.mercs.map(l=>`<div class="dm">${liveFace(l.name)}<div>${esc(lineOf(l))}</div></div>`).join('')}</div>`),
+  ST(`<div class="parch droll">${c.mercs.map(l=>`<div class="dm">${lineFace(l)}<div>${l.trade?`<span class="tr">${esc(l.trade)}</span> · `:''}${esc(lineOf(l))}</div></div>`).join('')}</div>`),
   ST(`<div class="parch droll"><div class="kvr"><span>Contracts done</span><b>${c.contracts}</b></div><div class="kvr"><span>Great creatures killed</span><b>${c.great}</b></div><div class="kvr"><span>Regions crossed</span><b>${c.regions|0}</b></div><div class="it">What they learned stays in the bestiary.</div></div>`),
   R_('To the ledger ▶',{cls:'go',a:()=>{S.ledgerOpen={company:0,from:'death'};goto('ledger')}})],title:'NOBODY GETS UP',seed:c.seed,foot:'A: TO THE LEDGER',back:()=>{S.ledgerOpen={company:0,from:'death'};goto('ledger')}}};
 // the ledger screen: one row per company, newest first; the best so far marked with the Tallow dot; A opens its page
@@ -315,7 +319,10 @@ V.ledger=()=>{const L=store.get(K('ledger'),null)||newLedger(),cs=L.companies||[
  const rows=cs.length?cs.map((c,i)=>R_(`${i===best?'<span class="hi">●</span> ':''}${esc(c.name)}`,{val:`<span class="small">${esc(c.seed)} · ${END[c.end]||c.end} · ${c.contracts} jobs${c.great?' · '+c.great+' great':''}</span>`,a:()=>{S.ledgerOpen={company:i,from:S.ledgerOpen&&S.ledgerOpen.from};goto('ledgerco')}})):[ST('Nothing in the ledger yet.')];
  return {rows:[ST('<h3>THE LEDGER</h3>'),...rows],foot:'A: OPEN · B: BACK',back:()=>goto('title')}};
 V.ledgerco=()=>{const L=store.get(K('ledger'),null)||newLedger(),c=(L.companies||[])[S.ledgerOpen?S.ledgerOpen.company:0];if(!c)return V.ledger();
- return {rows:[ST(`<div class="muster"><b class="hi">${esc(c.name)}</b><div class="small">Seed ${esc(c.seed)} · ${c.days} days · ${c.contracts} contracts · ${c.great} great creatures</div>${c.mercs.map(l=>`<div class="bk">${esc(lineOf(l))}</div>`).join('')}</div>`),R_('Back',{a:()=>goto('ledger')})],foot:'B: BACK',back:()=>goto('ledger')}};
+ // a company's page in the ledger (spec 008, 8C; mockup 42): its card, then the roll: every merc who served with their face, name,
+// trade and how they ended, a dead merc's nicknames and what they were owed in italic ink
+ return {rows:[ST(`<div class="parch dcard"><div class="nm">${esc(c.name.toUpperCase())}</div><div class="d">Seed ${esc(c.seed)} · ${c.days} days · ${c.contracts} contracts · ${c.great} great creatures</div></div>`),
+  ST(`<div class="parch droll">${c.mercs.map(l=>`<div class="dm">${lineFace(l)}<div>${l.trade?`<span class="tr">${esc(l.trade)}</span> · `:''}<span class="it">${esc(lineOf(l))}</span></div></div>`).join('')}</div>`),R_('Back',{a:()=>goto('ledger')})],title:'A COMPANY',foot:'B: BACK',back:()=>goto('ledger')}};
 V.confirm=()=>{const c=S.confirm;return {rows:[ST(`<div style="padding:8px 0">${esc(c.q)}</div>`),R_(c.labels[0],{cls:'go',a:()=>{S.confirm=null;c.yes()}}),R_(c.labels[1],{a:()=>{S.confirm=null;c.no()}})],foot:'A: PICK',back:()=>{S.confirm=null;c.no()}}};
 V.import=()=>({rows:[ST('Paste a save code.'),R_('Code',{input:{bind:'import',value:S.importIn,ph:'RL1:…',max:200000}}),
  R_('Read it ▶',{cls:'go',a:()=>{const o=readCode(S.importIn);if(!o){S.importBad=true;return}ask('Replace your run and ledger with this one?',()=>{applyCode(o);toast('LOADED');goto('title')},()=>goto('title'))}}),
