@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Furniture sample sheet v1</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+<style>
+body{margin:0;background:#22171f;color:#fff1e2;font:10px "Press Start 2P",monospace;padding:24px;width:1640px}
+h1{font-size:14px;margin:0 0 6px} .sub{font-size:9px;color:#e8b8b0;margin:0 0 18px;line-height:1.7}
+.grid{display:grid;grid-template-columns:repeat(5,312px);gap:16px}
+.cell canvas{display:block;width:312px;height:300px;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:8px}
+.cell div{margin-top:8px;font-size:10px;color:#ffd56b}
+h2{font-size:12px;margin:26px 0 12px}
+</style></head><body>
+<h1>SARAH'S SIM · RICH FURNITURE, ONE PIECE PER TAB</h1>
+<p class="sub">Shown 3x. Each piece comes dressed with props; the switch hides them (bottom row). Lamp, plant, mug steam, record and tree lights move.</p>
+<div class="grid" id="g"></div>
+<h2>PROPS SWITCHED OFF</h2>
+<div class="grid" id="g2"></div>
+<script src="furniture-sheet-v1.js"></script>
+<script>
+var t=+(new URLSearchParams(location.search).get('t')||3),cv=[];
+SHEET_CELLS.forEach(function(n,i){var d=document.createElement('div');d.className='cell';d.innerHTML='<canvas width="104" height="100"></canvas><div>'+n+'</div>';document.getElementById('g').appendChild(d);cv.push([d.querySelector('canvas'),i,false]);});
+[0,1,2,3,9].forEach(function(i){var d=document.createElement('div');d.className='cell';d.innerHTML='<canvas width="104" height="100"></canvas><div>'+SHEET_CELLS[i]+', BARE</div>';document.getElementById('g2').appendChild(d);cv.push([d.querySelector('canvas'),i,true]);});
+function draw(){cv.forEach(function(k){drawCell(k[0].getContext('2d'),k[1],t,k[2]);});}
+document.fonts.ready.then(draw);
+if(!new URLSearchParams(location.search).get('still'))setInterval(function(){t++;draw()},250);
+</script></body></html>

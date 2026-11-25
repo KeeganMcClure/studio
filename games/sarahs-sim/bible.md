@@ -21,10 +21,15 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [x] Holidays: which holidays get decorations and items (Nov 25). See Homes and people.
 - [x] Decorating: catalog categories, how many pieces at launch, color variants, rotate, stack and wall items. Screen mockup for the catalog.
   Done Nov 25: set with Keegan and drawn in `mockups/decorate-v1`. See Decorating.
-- [ ] Item sprites: Keegan and the Designer work out how furniture and decor pieces are drawn, so all 80 match (Keegan, Nov 25: later).
-- [ ] Outfits: what she designs (pick parts, recolor, patterns), the clothing list, and the Style screen mockup.
-- [ ] Creator: the parts for making new people (face, hair, skin, body), and its screen mockup.
-- [ ] Building: lot size, walls, doors, windows, floors, stairs or not, how the view scrolls and zooms over a home bigger than the screen, and the build screen mockup.
+- [x] Item sprites: Keegan and the Designer work out how furniture and decor pieces are drawn, so all 80 match (Keegan, Nov 25: later).
+  Done Nov 25: Rich detail, props both ways, some pieces move. Drawn in `mockups/furniture-detail-v1` and `mockups/furniture-sheet-v1`. See Decorating, Furniture art. Their real furniture stays on the Reference sheet item (photos after Keegan is home, Nov 30).
+- [x] Outfits: what she designs (pick parts, recolor, patterns), the clothing list, and the Style screen mockup.
+  Done Nov 25: set with Keegan, drawn in `mockups/style-v1`, and a starting list of 60 pieces. See Outfits.
+- [ ] More outfit references: Keegan sends more photos of the two of them, and the clothing list grows from them (Keegan, Nov 25).
+- [x] Creator: the parts for making new people (face, hair, skin, body), and its screen mockup.
+  Done Nov 25: set with Keegan and drawn in `mockups/creator-v1`. See Creator.
+- [x] Building: lot size, walls, doors, windows, floors, stairs or not, how the view scrolls and zooms over a home bigger than the screen, and the build screen mockup.
+  Done Nov 25: set with Keegan and drawn in `mockups/build-v1`. See Building.
 - [x] Gameplay: what keeps her coming back beyond designing (Nov 25). See Play.
 - [x] Life mode: prices, coin pay for gigs and chores, and the special sets (the day, needs, job and unlocks are set, see Play).
   Done Nov 25: coins and prices drafted in Play, Life mode, sets in Memory book and Visitors.
@@ -65,9 +70,9 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | --- | --- | --- | --- |
 | Title | Pick a mode, continue, import a save | No spec yet | **To draw** |
 | Home (decorate) | Open the catalog, drag pieces into the room, stack small things, turn, move, recolor and paint them | No spec yet | `decorate-v1` (UI approved Nov 25, 2026), on the `look-iso-v1` room |
-| Style (outfits) | Design and change outfits | No spec yet | **To draw** |
-| Creator | Make a new person | No spec yet | **To draw** |
-| Build | Draw walls, doors, windows and floors on an empty lot | No spec yet | **To draw** |
+| Style (outfits) | Dress a person in the big view: pick pieces, recolor, paint, add patterns and tee prints, spin to see the back | No spec yet | `style-v1` (UI approved Nov 25, 2026) |
+| Creator | Make a new person: parts, fine tuning, age, gender and extras | No spec yet | `creator-v1` (approved Nov 25, 2026) |
+| Build | Draw rooms, walls, doors, windows, floors and stairs on an empty lot, up to 3 floors | No spec yet | `build-v1` (approved Nov 25, 2026) |
 | Life mode top bar | Day, time and coins over the home | No spec yet | `look-iso-v1` (top bar) |
 | Yard (garden) | Lay out beds, paths, fences and a patio, plant seeds, water and weed | `specs/005-garden-and-yard.md` | **To draw** |
 | Minigame | One of the eight chores (mow, weed, water, rake, shovel snow, dishes, vacuum, fold laundry), all in one shared frame | `specs/005-garden-and-yard.md` | **To draw** |
@@ -327,11 +332,11 @@ Set Nov 25, 2026 (Keegan): weed is part of their cozy life, in the same light to
   - **Clothes:** their real outfits from Keegan's photos are references for the Style catalog. One must-have: the **ORANGE ROCKS tee**, from Sarah's childhood shirt. Bright orange with white rounded letters, "ORANGE ROCKS" on the front and "AND SO DO I" on the back.
   - **Creator:** lets her make extra people for other homes.
 - **Other homes** (Keegan, Nov 25): she builds them from scratch on empty lots: walls, doors and rooms, then furniture.
-- **Room size:** rooms and homes can be much bigger than one screen. The approved mockup shows one 10 × 10 tile room only because it fits the screen; the view scrolls over bigger homes. How it scrolls and zooms is part of the Building item on To do.
+- **Room size:** rooms and homes can be much bigger than one screen. The approved mockup shows one 10 × 10 tile room only because it fits the screen; the view scrolls over bigger homes. How it scrolls and zooms is set in Building.
 
 ## Decorating
 
-Set Nov 25 (Keegan). Mockup: `mockups/decorate-v1` (UI approved; the furniture in it is a stand-in until item sprites are worked out).
+Set Nov 25 (Keegan). Mockup: `mockups/decorate-v1` (UI approved; the furniture in it is a stand-in, and Furniture art below sets the real look).
 
 - **Catalog size:** about 80 furniture and decor pieces at launch, with more added as needed.
 - **Catalog tabs:** sorted by type: seating, tables, beds, storage, lights, plants, rugs, wall and decor. Two more tabs: **Ours**, holding their real things from Keegan's photos, and **Holiday**. Each card shows small dots for its color choices.
@@ -339,6 +344,129 @@ Set Nov 25 (Keegan). Mockup: `mockups/decorate-v1` (UI approved; the furniture i
 - **Picking a placed piece:** tap it for turn, move and put-away buttons over it. The tray shows its name, its swatches, Paint, Put away, Move and Done.
 - **Colors:** both quick and free. Each piece has 4 to 6 hand-picked swatches that always look good together. Paint mode lets her color each part (for example fabric, wood, cushion) with any color from a 24-color cozy palette.
 - **Sandbox top bar:** shows the mode and the home's name instead of the day, time and coins.
+
+### Furniture art
+
+Set Nov 25 (Keegan). Mockups: `mockups/furniture-detail-v1` (the three detail levels; C is the pick) and `mockups/furniture-sheet-v1` (one approved piece per tab, the style guide for all ~80).
+
+- **Rich detail:** outlines, 3 to 4 tones, fabric texture, wood grain, piping, patterns and little props. Same isometric grid and light as the approved room (light from the upper left).
+- **Texture works under any color:** fabric texture is light shading only, so it shows under any swatch or paint color. A pattern replaces the texture on the part it's painted on.
+- **Props, both ways:** each piece comes dressed (mugs, books, pillows, a throw). A switch on the piece hides its props. Props are also their own catalog pieces she can stack anywhere.
+- **Some pieces move:** lamps glow and flicker, plants sway, mugs steam, fires crackle, TVs flicker, records spin, tree lights twinkle. Everything else sits still.
+- **Chairs and sofas** (Keegan, Nov 25): arms sit higher than the seat cushion, a solid front panel closes the base under the seat, and rolled arms end in round scrolls up at the top front of the arm.
+
+## Outfits
+
+Set Nov 25 (Keegan). Mockup: `mockups/style-v1` (UI approved).
+
+- **Wardrobe size:** about 60 clothing pieces at launch: their real outfits from Keegan's photos, everyday basics and Christmas clothes.
+- **Wardrobe tabs:** hair, tops, bottoms, dresses, shoes, extras (hats, glasses, jewelry), plus **Ours** and **Holiday**. Hearts mark pieces from their real clothes.
+- **Big dress-up view:** the Style screen shows the person large, about 3 times map size, in front of a standing mirror. Arrows spin them to see the back. Tap the name to dress someone else. The heart saves a favorite and the camera takes a picture (see Play).
+- **Designing a piece:** each piece has hand-picked swatches, a paint mode for each part, and patterns: plain, stripes, plaid, floral, leopard and dots.
+- **Her own prints:** she can write on tees, front or back, in 2 short lines of up to 6 letters, and pick the letter color. The ORANGE ROCKS tee is built this way.
+- **Coats** sit under the Tops tab, so the 8 tabs stay as they are. Ralph's bowtie is a cat outfit and isn't counted here. More holiday clothes come with each holiday set after Christmas.
+
+### Clothing list
+
+The starting list, approved by Keegan on Nov 25 (60 pieces). ♥ marks a piece from Keegan's photos, which also shows in the Ours tab. More are added as Keegan sends more photos (see To do).
+
+#### Tops (16)
+1. ♥ ORANGE ROCKS tee (front: ORANGE ROCKS, back: AND SO DO I)
+2. ♥ Rose crochet-flower cardigan over a cream top
+3. ♥ Leopard spot sweater
+4. ♥ Lilac hoodie
+5. ♥ Cream turtleneck sweater
+6. ♥ Slate-blue puffer vest
+7. ♥ Mauve-pink tee
+8. ♥ Green tartan flannel over a white tee
+9. ♥ Navy plaid cardigan
+10. ♥ Camp shirt, red floral
+11. ♥ Camp shirt, white with a blue print
+12. ♥ Camp shirt, purple and pink stripes
+13. ♥ White button-down with a navy tie
+14. Plain tee (blank for her own prints)
+15. Cozy cable-knit sweater
+16. Tank top
+
+#### Bottoms (9)
+17. ♥ Straight blue jeans
+18. ♥ Light cuffed jeans
+19. ♥ Light-wash jean shorts
+20. ♥ Blue chino shorts
+21. Wide-leg trousers
+22. Pleated skirt
+23. Overalls
+24. Soft joggers
+25. Leggings
+
+#### Dresses (7)
+26. ♥ White eyelet floral sundress
+27. ♥ Pink satin slip dress
+28. ♥ Burgundy long-sleeve mini dress
+29. Wrap dress
+30. Sweater dress
+31. Overall dress
+32. Party dress with a full skirt
+
+#### Coats (4)
+33. ♥ Floral puffer
+34. ♥ Denim sherpa jacket with pins
+35. Long wool coat
+36. Raincoat
+
+#### Shoes (8)
+37. ♥ Tan suede boots
+38. ♥ Converse high-tops
+39. ♥ Strappy heels
+40. Slippers
+41. Sneakers
+42. Rain boots
+43. Sandals
+44. Socks only (cozy socks)
+
+#### Extras (11)
+45. ♥ Glasses, clear frames
+46. ♥ Glasses, tortoiseshell
+47. ♥ Gold hoops
+48. ♥ Gold claw clip
+49. ♥ Pink cap
+50. ♥ Cream cap with a brown brim
+51. ♥ Black cap with a green underbrim
+52. ♥ Dark sunglasses
+53. Beanie
+54. Scarf
+55. Tote bag
+
+#### Holiday (5)
+56. ♥ Red tartan Christmas pajamas with lace trim and puffed sleeves
+57. Ugly Christmas sweater
+58. Santa hat
+59. Halloween witch hat
+60. Valentine's heart sweater
+
+## Creator
+
+Set Nov 25 (Keegan: "she LOVES a character creator", so it gets lots of room to play). Mockup: `mockups/creator-v1` (approved).
+
+- **Same mirror view as Style.** When she taps Done, the new person goes to Style to get dressed.
+- **Tabs:** age, face, eyes, nose, lips, hair, body, skin and more.
+- **Parts from lists, plus fine tuning:** each part has a list of shapes and a row of colors, with Random and Undo buttons. Sliders and switches fine-tune things like eye spacing, eye size, height, build, freckles and dimples.
+- **Ages:** kid, teen, adult and elder, each with its own body size. People don't age on their own. Babies may come in a later update.
+- **Gender:** woman, man or nonbinary sets a starting body and pronouns, and she can edit the pronouns. Nothing is locked: every body shape, hairstyle and outfit works for anyone.
+- **Extras, all of them:** makeup, freckles and blush, facial hair, glasses, piercings, tattoos (pick a design, a spot and a color) and birthmarks. Any hair color, with highlights.
+- Sarah's own hair is always ginger (see People). That rule is only for her.
+
+## Building
+
+Set Nov 25 (Keegan). Mockup: `mockups/build-v1` (approved; Keegan asked for better stairs, and the redrawn straight flight is the approved look).
+
+- **Lots:** small 16 × 16, medium 24 × 24 or large 32 × 32 tiles. Other homes start as an empty lot.
+- **Floors:** up to 3, joined by stairs. The 1/2/3 buttons switch floors; the floor below shows dimmed under the one she's on.
+- **Stairs:** straight, L-turn, spiral and ladder. A flight leaves an open stairwell in the floor above, with a banister on its open sides.
+- **Walls:** a room tool (drag a box to make a whole room, with a size tag while dragging) and a wall tool (drag a line). Doors and windows snap onto any wall they're dragged to.
+- **Floors and walls:** a floor tool and a wallpaper tool, plus erase.
+- **View:** pinch to zoom, two-finger drag (or the D-pad) to pan over a home bigger than the screen. A walls button cycles walls up, cut away (back walls up, front walls low) and down. No whole-home rotation; furniture still turns 4 ways.
+- **Tray:** the same Home / Style / Build tabs as the other screens. The 8 tools are icons only, and the picked tool's name shows below them with a hint. Below that, cards for the picked tool (wall styles, doors, stair types).
 
 ## Controls and screen
 
