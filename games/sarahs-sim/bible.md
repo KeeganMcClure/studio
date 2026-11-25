@@ -28,6 +28,7 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [ ] Cat personalities: Keegan and the Designer work out Louie's and Ralph's personalities, which shape how each one wanders, naps, nudges and reacts (Keegan, Nov 25).
 - [ ] Keegan's notes: Keegan writes the hidden notes, including the one under the Christmas tree, and says where and when each one shows up (Keegan, Nov 25).
 - [ ] Idle life: Keegan writes more things the two of them are busy doing when she opens the game, on top of the first ones (see Play) (Keegan, Nov 25).
+- [ ] Bong reference: Keegan sends a photo of his bong, drawn for the reference sheet with their other real things.
 - [ ] Real people: Keegan sends the list of friends and family to draw in as visitors, with a photo or a few notes on each. They join the reference sheet.
 - [ ] Neighbors: the made-up neighbor cast, each one's personality, and each visitor's short story and special set.
 - [ ] Garden: the plant list, how long each takes to grow in real days, how plants change with the seasons, and the mow, weed and water minigames. Plus the house upkeep minigames.
@@ -151,6 +152,15 @@ Set Nov 25, 2026 (Keegan): flirty, with a fade to black. Tasteful, never explici
 - Keegan and Sarah flirt, kiss and cuddle in everyday play.
 - Now and then a small playful moment, such as a wink, a few hearts or an "oh?", leads into a fade to black.
 - Romance is only between Keegan and Sarah. The details live in the Game Designer project files, not in this repo.
+
+### Winding down
+
+Set Nov 25, 2026 (Keegan): weed is part of their cozy life, in the same light tone as everything else.
+
+- Items: joints, Keegan's bong (drawn from his reference photo, a piece of their own) and weed brownies.
+- Keegan and Sarah can smoke a joint or the bong, or eat a brownie, as a relaxing moment together. It's played light and giggly, never as a problem.
+- *Claude default:* it fills fun and makes them a bit hungry (the munchies). It never makes anything go wrong.
+- No real brands or strain names (`studio-bible/studio.md`, No real brands).
 
 ### Keeping designs
 
