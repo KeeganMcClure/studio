@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Furniture detail levels v1</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+<style>
+body{margin:0;background:#22171f;color:#fff1e2;font:10px "Press Start 2P",monospace;padding:24px}
+.row{display:flex;gap:24px;flex-wrap:wrap}
+.cell{width:510px}
+canvas{display:block;width:510px;height:471px;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:8px}
+h2{font-size:13px;margin:14px 0 8px;color:#ffd56b}
+p{font-size:9px;line-height:1.7;margin:0;color:#e8b8b0}
+h1{font-size:14px;margin:0 0 18px}
+</style></head><body>
+<h1>SARAH'S SIM · HOW DETAILED IS THE FURNITURE?</h1>
+<div class="row">
+<div class="cell"><canvas id="c0" width="132" height="122"></canvas><h2>A · SIMPLE</h2><p>Flat shapes in 3 tones, no outlines inside. Fastest to draw, so the most pieces.</p></div>
+<div class="cell"><canvas id="c1" width="132" height="122"></canvas><h2>B · COZY</h2><p>Outlines, cushions, pillows, a throw, lamp glow. The approved room's level.</p></div>
+<div class="cell"><canvas id="c2" width="132" height="122"></canvas><h2>C · RICH</h2><p>Cozy plus fabric texture, wood grain, piping, patterns and little props.</p></div>
+</div>
+<script src="furniture-detail-v1.js"></script>
+<script>
+var t=+(new URLSearchParams(location.search).get('t')||3);
+function draw(){for(var i=0;i<3;i++)drawDetail(document.getElementById('c'+i).getContext('2d'),i,t);}
+document.fonts.ready.then(draw);
+if(!new URLSearchParams(location.search).get('still'))setInterval(function(){t++;draw()},250);
+</script></body></html>

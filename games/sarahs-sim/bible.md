@@ -21,7 +21,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [x] Holidays: which holidays get decorations and items (Nov 25). See Homes and people.
 - [x] Decorating: catalog categories, how many pieces at launch, color variants, rotate, stack and wall items. Screen mockup for the catalog.
   Done Nov 25: set with Keegan and drawn in `mockups/decorate-v1`. See Decorating.
-- [ ] Item sprites: Keegan and the Designer work out how furniture and decor pieces are drawn, so all 80 match (Keegan, Nov 25: later).
+- [x] Item sprites: Keegan and the Designer work out how furniture and decor pieces are drawn, so all 80 match (Keegan, Nov 25: later).
+  Done Nov 25: Rich detail, props both ways, some pieces move. Drawn in `mockups/furniture-detail-v1` and `mockups/furniture-sheet-v1`. See Decorating, Furniture art. Their real furniture stays on the Reference sheet item (photos after Keegan is home, Nov 30).
 - [x] Outfits: what she designs (pick parts, recolor, patterns), the clothing list, and the Style screen mockup.
   Done Nov 25: set with Keegan, drawn in `mockups/style-v1`, and a starting list of 60 pieces. See Outfits.
 - [ ] More outfit references: Keegan sends more photos of the two of them, and the clothing list grows from them (Keegan, Nov 25).
@@ -283,7 +284,7 @@ Set Nov 25, 2026 (Keegan): weed is part of their cozy life, in the same light to
 
 ## Decorating
 
-Set Nov 25 (Keegan). Mockup: `mockups/decorate-v1` (UI approved; the furniture in it is a stand-in until item sprites are worked out).
+Set Nov 25 (Keegan). Mockup: `mockups/decorate-v1` (UI approved; the furniture in it is a stand-in, and Furniture art below sets the real look).
 
 - **Catalog size:** about 80 furniture and decor pieces at launch, with more added as needed.
 - **Catalog tabs:** sorted by type: seating, tables, beds, storage, lights, plants, rugs, wall and decor. Two more tabs: **Ours**, holding their real things from Keegan's photos, and **Holiday**. Each card shows small dots for its color choices.
@@ -291,6 +292,16 @@ Set Nov 25 (Keegan). Mockup: `mockups/decorate-v1` (UI approved; the furniture i
 - **Picking a placed piece:** tap it for turn, move and put-away buttons over it. The tray shows its name, its swatches, Paint, Put away, Move and Done.
 - **Colors:** both quick and free. Each piece has 4 to 6 hand-picked swatches that always look good together. Paint mode lets her color each part (for example fabric, wood, cushion) with any color from a 24-color cozy palette.
 - **Sandbox top bar:** shows the mode and the home's name instead of the day, time and coins.
+
+### Furniture art
+
+Set Nov 25 (Keegan). Mockups: `mockups/furniture-detail-v1` (the three detail levels; C is the pick) and `mockups/furniture-sheet-v1` (one approved piece per tab, the style guide for all ~80).
+
+- **Rich detail:** outlines, 3 to 4 tones, fabric texture, wood grain, piping, patterns and little props. Same isometric grid and light as the approved room (light from the upper left).
+- **Texture works under any color:** fabric texture is light shading only, so it shows under any swatch or paint color. A pattern replaces the texture on the part it's painted on.
+- **Props, both ways:** each piece comes dressed (mugs, books, pillows, a throw). A switch on the piece hides its props. Props are also their own catalog pieces she can stack anywhere.
+- **Some pieces move:** lamps glow and flicker, plants sway, mugs steam, fires crackle, TVs flicker, records spin, tree lights twinkle. Everything else sits still.
+- **Chairs and sofas** (Keegan, Nov 25): arms sit higher than the seat cushion, a solid front panel closes the base under the seat, and rolled arms end in round scrolls up at the top front of the arm.
 
 ## Outfits
 
