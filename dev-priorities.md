@@ -23,7 +23,6 @@ Keegan's call, Nov 24: work the list top to bottom, switching games as it goes. 
 ## Open flags
 
 - Rushlight: the slice's missed tuning checks (spec 006 D2) now have a To do line in the bible (set Nov 25): retune the fights to spec 006's pass marks. Ready to build.
-- Black Lantern: an optional question is open on whether Federal agents should rule out a clean ending (asked while building Kinder overstepping).
 
 ## How the work goes
 
