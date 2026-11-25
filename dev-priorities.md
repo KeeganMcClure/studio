@@ -6,8 +6,10 @@ Keegan's call, Nov 24: work the list top to bottom, switching games as it goes. 
 1. - [x] Black Lantern: Kinder overstepping (bible rule changed Nov 24).
    Done Nov 24: built and merged.
 2. - [ ] Black Lantern: bigger agents in battle (spec 023), before more cases.
-3. - [ ] Rushlight: the look bug batch. Its dev prompt (`handoffs/rushlight-look-bugs-dev-prompt.md`) still has to be shared again by the Designer (see `designer-todo.md`).
+3. - [x] Rushlight: the look bug batch. Its dev prompt (`handoffs/rushlight-look-bugs-dev-prompt.md`) still has to be shared again by the Designer (see `designer-todo.md`).
+   Done Nov 24: built and merged (studio PR #219).
 4. - [ ] Rushlight: look pass 8A to 8D (spec 008), one part per session. Dev prompt: `handoffs/rushlight-facelift-dev-prompt.md`. It assumes the look bug batch is done first. The seven CO-TAG rows need Keegan's OK before 8C releases.
+   Done Nov 24: all four parts built and merged (studio PR #220). The seven CO-TAG rows still need Keegan's OK before 8C releases.
 5. - [ ] Black Lantern: the later agency cases and the finale (spec 015).
 6. - [ ] Life After: the slice, parts A to D (specs 001 to 004) and the cover.
    Part A and the cover merged Nov 24 (PR #216). Parts B to D wait for Keegan's Part A phone notes and the Designer's mockups for the "To draw" screens (Fights, Bag, Map screen, Notebook, Hideout, Attack, Death).
@@ -17,7 +19,6 @@ Keegan's call, Nov 24: work the list top to bottom, switching games as it goes. 
 ## Open flags
 
 - Rushlight: the slice's missed tuning checks (spec 006 D2) have no To do line yet. That's on `designer-todo.md`.
-- Rushlight: the bible's Art line from Nov 20 gives a battle back-view size of 16–20 × 20–24 px. Keegan chose spec 008's sizes (party 2×, foes 1.5×) on Nov 24; the Designer still has to update that bible line.
 - Black Lantern: an optional question is open on whether Federal agents should rule out a clean ending (asked while building Kinder overstepping).
 
 ## How the work goes
