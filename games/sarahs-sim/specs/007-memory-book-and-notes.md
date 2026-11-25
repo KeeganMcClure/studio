@@ -128,7 +128,7 @@ Note texts are Keegan's private words to Sarah, so they never go in this public 
 
 - They live in the project files (Notes for Sarah sheet and `gift-life-sim/`).
 - The build copies them into the finished game only. The repo holds a placeholder data file with the same shape and dummy text, so the game builds and tests without them.
-- How the build reads them is Keegan's call (pending, Nov 25). The Developer asks before building part C if it isn't set by then.
+- Set by Keegan, Nov 25 (bible, Overview, Private data): the private files stay in project files, and only the build copies them in. The Developer keeps the real data file out of git (ignored) and checks that a build with only the placeholder still passes `npm run check`.
 
 ## Saves
 
