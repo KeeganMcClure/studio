@@ -94,7 +94,7 @@ function bsay(text,ms=1000){if(!Bt)return Promise.resolve();Bt.msg=pWrap(fmt(Str
 function bres(word,o){if(!Bt)return;const w=o.crit?'CRIT':o.fumble?'FUMBLE':o.ok?'HIT':'MISS';
  Bt.res={text:`${word} ${o.target}% · rolled ${o.r} · `,word:w,col:o.ok?PC.gold:PC.pink,until:Bt.t+(fastOn()?50:95)}}
 function floatOn(x,txt,col){if(!Bt)return;const L=bLayout();let fx,fy;
- if(isFoe(x)){fx=x.x;fy=L.enemyY-Math.min(70,spriteH(x))-2}else{const i=party.indexOf(x);fx=VW/6*(2*i+1);fy=L.agentY-50}
+ if(isFoe(x)){fx=x.x;fy=L.enemyY-Math.min(70,spriteH(x))-2}else{const i=party.indexOf(x);fx=VW/6*(2*i+1);fy=L.agentY-BLB.BODY_H-2}
  Bt.floaties.push({x:fx,y:fy,txt:String(txt),t:0,col:col||PC.gold})}
 
 // ================= THE BATTLE MENUS =================
@@ -470,7 +470,10 @@ const faceC=new Map();
 function foeFace(e){const k=e.t;let f=faceC.get(k);if(f)return f;const c=caseById(G.case),img=c&&c.sprite?c.sprite(e.t,0):null;f=document.createElement('canvas');f.width=f.height=16;
  if(img){const x=f.getContext('2d'),fc=e.face||[0,0,Math.min(img.width,img.height)];x.imageSmoothingEnabled=false;x.drawImage(img,fc[0],fc[1],fc[2],fc[2],0,0,16,16)}faceC.set(k,f);return f}
 // the layout for this fight: the baseline drops for a tall enemy so its head stays on screen
-function bLayout(){if(Bt.tall==null)Bt.tall=Math.max(0,...Bt.en.map(spriteH));return SB.layout(VW,VH,{tallest:Bt.tall,detailLines:2})}  // a move's whole line shows (Nov 23 playtest)
+// Black Lantern's agents are 60 px tall (spec 023): the enemies' baseline keeps 82 px for them (their 60 px plus the
+// enemy's bar and name under its feet), and on a short screen they sink behind the party strip, up to 14 px, until the
+// enemy's name and bar (16 px under its feet) clear their heads; only past that do the bar and name draw over them
+function bLayout(){if(Bt.tall==null)Bt.tall=Math.max(0,...Bt.en.map(spriteH));return SB.layout(VW,VH,{tallest:Bt.tall,detailLines:2,agentRoom:82,agentH:BLB.BODY_H,sink:14,barH:16})}  // a move's whole line shows (Nov 23 playtest)
 // the battle backdrop (Combat, Basics, Backgrounds, Nov 23 playtest): the case paints one per kind of place it fights in,
 // head-on at battle scale, from where the fight started (Bt.place, the map's id) and its light ('day', 'dusk', 'night').
 // case.backdrop(place, {w, h, light, low, feet}) -> a canvas, or null for a place it has none for. low: the lead is
@@ -522,20 +525,20 @@ function drawBattle(){
  });
  // the three agents along the bottom, backs to the camera, waist up
  party.forEach((m,i)=>{const cxm=VW/6*(2*i+1),act=Bt.active===m,img=BLB.back(m.a,{lantern:i===(G.lead|0)&&!m.ko,downed:m.ko||m.dead});
-  const sx=m.shk>0?(m.shk--%2?2:-2):0,dy=m.ko||m.dead?12:act?-3:0;
+  const sx=m.shk>0?(m.shk--%2?2:-2):0,dy=m.ko||m.dead?16:act?-3:0;  // Downed: lowered 16 px on top of any sink; acting: lifted 3
   if(!m.gone)cx.drawImage(img,Math.round(cxm-BLB.AX+sx),L.agentY-BLB.AY+dy);
   if(tgt===m||(act&&u&&u.kind==='cmd')){const ay=L.agentY-BLB.H+2+dy+Math.round(Math.sin(t*.2)*2);if(tgt===m){pR(cxm-3,ay,7,2,PC.gold);pR(cxm-2,ay+2,5,2,PC.gold);pR(cxm-1,ay+4,3,2,PC.gold)}}
-  if(u&&u.kind==='target'&&u.opts.includes(m))Bt.hits.push({x:cxm-40,y:L.agentY-46,w:80,h:46+L.strip.h,fn:()=>{u.sel=u.opts.indexOf(m);battlePress('a')}})});
+  if(u&&u.kind==='target'&&u.opts.includes(m))Bt.hits.push({x:cxm-40,y:L.agentY-BLB.BODY_H,w:80,h:L.strip.y+L.strip.h-(L.agentY-BLB.BODY_H),fn:()=>{u.sel=u.opts.indexOf(m);battlePress('a')}})});
  labels.forEach(f=>f());
  // the turn-order column down the left edge (Turn order, Nov 23 playtest): this round only, each fighter once, the one
  // acting now on top (bigger). A face drops off once that fighter has acted and the full order is back next round.
  // Enemies that die or flee leave; a Downed agent stays, greyed, since their bleed-out counts their turns.
  // Before the first round (the intro and any horror) it shows the round about to start.
  const faces=(Bt.queue.length?Bt.queue:turnOrder(Bt.first)).filter(x=>!x.dead&&!x.gone).map(x=>({img:x.a?headOf(x.a):foeFace(x),foe:!x.a,out:!!(x.a&&x.ko)}));
- SB.turnColumn(cx,BT_THEME,L.col.x,L.col.y,faces,L.agentY-56);
+ SB.turnColumn(cx,BT_THEME,L.col.x,L.col.y,faces,L.agentY-BLB.BODY_H-14);  // stops above the agents' heads (spec 023)
  // damage numbers, then the result line
  Bt.floaties=Bt.floaties.filter(f=>f.t<(fastOn()?30:50));Bt.floaties.forEach(f=>{f.t++;const s=f.txt,w=pW(s,18);pT(s,f.x-w/2+1,f.y-f.t*.5+1,PC.shadowInk||'#120e18',18);pT(s,f.x-w/2,f.y-f.t*.5,f.col,18)});
- if(Bt.res&&Bt.t<Bt.res.until)SB.result(cx,BT_THEME,VW/2+10,Math.min(L.enemyY+16,L.agentY-60),Bt.res.text,Bt.res.word,Bt.res.col);
+ if(Bt.res&&Bt.t<Bt.res.until)SB.result(cx,BT_THEME,VW/2+10,Math.min(L.enemyY+16,L.agentY-BLB.BODY_H-16),Bt.res.text,Bt.res.word,Bt.res.col);
  drawStrip(L);
  // the command box: the row (with the detail line), a list over the scene, or a battle line
  const am=Bt.active&&Bt.active.a?Bt.active:null;
@@ -545,7 +548,7 @@ function drawBattle(){
   const m=u.m||am,row=u.kind==='list'?u.rows[u.sel]:null;
   const det=u.kind==='list'?(row?row.desc:''):(u.info?u.info(u.opts[u.sel]):'');
   SB.commands(cx,BT_THEME,L.cmd,BTW.cmds,m&&m.bcur?m.bcur.cmd:0,det,{});
-  if(u.kind==='list'){const r={x:26,y:Math.max(4,L.agentY-118),w:VW-30,h:Math.min(118,L.agentY-6)};
+  if(u.kind==='list'){const r={x:26,y:Math.max(4,L.strip.y-118),w:VW-30,h:Math.min(118,L.strip.y-6)};
    const res=SB.list(cx,BT_THEME,r,u.rows,u.sel,u.top);u.top=res.top;res.hits.forEach(h=>Bt.hits.push({x:h.x,y:h.y,w:h.w,h:h.h,fn:()=>{if(u.sel!==h.i){u.sel=h.i}else battlePress('a')}}));
    if(u.flash&&Bt.t-u.flash<30){pR(L.cmd.x+4,L.cmd.y+22,L.cmd.w-8,1,PC.pink)}}}
  else{SB.commands(cx,BT_THEME,L.cmd,[],0,'',{msg:['']})}

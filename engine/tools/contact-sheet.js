@@ -6,7 +6,8 @@
 //   await sheet({ page: 'dist/index.html', draw: (opts) => canvas, opts, out: 'dist/contact-sheet.png', wait: () => promise });
 //     draw   a function that runs in the page and returns a canvas (it may be async)
 //     wait   optional, runs in the page first (e.g. until the game's art has loaded)
-// Resolves to {width, height, errors}. Errors thrown in the page are listed, and the sheet is still written if it drew.
+// Resolves to {width, height, errors, info}. Errors thrown in the page are listed, and the sheet is still written if it drew.
+// info: whatever the game hung on the canvas as canvas.info (plain data, e.g. measurements its check tests), or null.
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 module.exports = async function contactSheet({ page, draw, opts, out, wait }) {
@@ -18,10 +19,10 @@ module.exports = async function contactSheet({ page, draw, opts, out, wait }) {
     if (wait) await p.evaluate(wait);
     const res = await p.evaluate(async ([src, o]) => {
       const fn = (0, eval)('(' + src + ')'), c = await fn(o);
-      return { url: c.toDataURL('image/png'), width: c.width, height: c.height };
+      return { url: c.toDataURL('image/png'), width: c.width, height: c.height, info: c.info || null };
     }, [draw.toString(), opts || {}]);
     fs.mkdirSync(path.dirname(out), { recursive: true });
     fs.writeFileSync(out, Buffer.from(res.url.split(',')[1], 'base64'));
-    return { width: res.width, height: res.height, errors };
+    return { width: res.width, height: res.height, errors, info: res.info };
   } finally { await browser.close(); }
 };
