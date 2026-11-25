@@ -121,6 +121,10 @@ A new case file needs no new save version on its own (spec 004, step 6). The bro
 - No real brand names or logos anywhere in the case, and no real station's call letters.
 - Nothing a player could only learn by playing appears in this spec, the changelog, the bible or a commit message.
 
+## As built (Keegan's call, Nov 25, 2026)
+
+- The handheld radio direction finder stays a Dead Air-only item. It doesn't join the shared item list.
+
 ## Done when
 
 - `npm run check` passes at all three sizes.

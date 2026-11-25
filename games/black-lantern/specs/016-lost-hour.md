@@ -118,6 +118,10 @@ A new case file needs no new save version on its own (spec 004, step 6). The tim
 - No real brand names or logos anywhere in the case.
 - Nothing a player could only learn by playing appears in this spec, the changelog, the bible or a commit message.
 
+## As built (Keegan's call, Nov 25, 2026)
+
+- At night the fog is a darker violet haze over the map, in place of the night mockup's plain dark. It matches the case's fog-violet pin.
+
 ## Done when
 
 - `npm run check` passes at all three sizes.
