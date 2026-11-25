@@ -123,6 +123,15 @@ People have three soft needs (bible, Needs):
   - Winding down uses the joint, the bong or a brownie, and fills fun and lowers hunger a little (the munchies). The bong is drawn from Keegan's reference photo (bible To do).
 - **Busy:** if Keegan is in the middle of something he can't stop (on a call or in class), the bubble says so, and she can queue the action for when he's done.
 
+**Sarah's phone** (Keegan, Nov 25):
+
+- Doomscrolling on her phone is one of Sarah's idle activities, at any time of day. She's curled up somewhere and thumbing away.
+- **Always about to die:** her phone has a little battery that runs down while she scrolls, calls or takes photos (bible, Keeping designs). When it's low, a red low-battery icon pops over her head and she holds the phone up with a look of despair.
+  - Tapping her shows **Charge**, and she goes looking for the charger. The charger is never where she left it: it's under a couch cushion, in the bed sheets, or under Ralph. Finding it is a quick tap on the right spot, with the first spot glowing as a hint.
+  - Keegan may hand her his charger if he walks by, as a little together moment.
+  - A dead phone just means no calls or photos until it's charged, which takes a few minutes of play. Nothing else is lost (pillar 3).
+  - *Claude default:* the battery drains only while the game is open, like the needs, and the charger hides in a different spot each time, from a pool that doesn't repeat until it's used up (`studio-bible/play.md`).
+
 **The cats** (bible, The cats):
 
 | Cat need | Shows when low | She fixes it by |
