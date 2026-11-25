@@ -51,7 +51,7 @@ Nothing. `games/life-after/` holds only the bible, its parts, `changelog.md`, `m
 ### 2. Title screen
 
 - The title LIFE AFTER over a still night street drawn in code (a dead streetlight, a car, a neon motel sign flickering). It's a mood piece, not a menu screen.
-- Rows: **New world**, **Continue** (only when `la.run` exists), **Best runs**, **Import save**.
+- Rows: **New world**, **Continue** (only when `la.run` exists), **Best runs**, **Import save**, then the studio's **Game shelf** row (◀) back to the launcher, shown only when the game was opened from the shelf (added Nov 25, 2026, as built; Keegan's call).
 - Continue drops you back exactly where you were.
 - Best runs shows the best-runs list for each preset (Part D fills it; until then it says "No runs yet.").
 
@@ -74,11 +74,11 @@ One screen of rows, then the builder. L and R step between this screen and the b
 Steps, in order. L and R move between steps, A picks, B goes back a step. Every step has a Random row.
 
 1. **Start from:** one of the 12 templates (`survivor.md`, Templates) or **Blank**. A template fills every step below; you can change any of it.
-2. **Name:** type a first name, or Random from a list of about 60 1990s American first names.
-3. **Job:** the 12 jobs (`survivor.md`, The 12 jobs). Each row shows the skills it gives, the starting items and the extra.
-4. **Free points:** 3 points to put in any skills. No skill can start above 3, except that an older survivor's job skill can start at 4 (see Looks).
+2. **Name:** type a first name, or Random from a list of about 60 1990s American first names. You can't go on with the name empty (as built; Keegan's call, Nov 25, 2026).
+3. **Job:** the 12 jobs (`survivor.md`, The 12 jobs). Each row shows the skills it gives, the starting items and the extra. You can't go on without a job, and Start checks again (as built; Keegan's call, Nov 25, 2026).
+4. **Free points:** 3 points to put in any skills. You may leave some unspent; the Ready step says so (as built; Keegan's call, Nov 25, 2026). No skill can start above 3, except that an older survivor's job skill can start at 4 (see Looks).
 5. **Traits:** the good list and the bad list, with each trait's cost. The step shows "Good points X of Y" and won't let you go on if good points are more than bad points, if you have more than 3 good traits, or if you picked two opposites.
-6. **Want:** the 12 wants, or Random. In this slice the want only shows on the party card and the death screen. Rumors that tie to it come later.
+6. **Want:** the 12 wants, or Random. A Blank survivor with no want gets a random one at Start (as built; Keegan's call, Nov 25, 2026). In this slice the want only shows on the party card and the death screen. Rumors that tie to it come later.
 7. **Looks:** body type (3), skin tone (6), face (6), hair style (8) and color (6), outfit color set (4, the job sets the outfit), age range (3). The map sprite and the 64 × 64 portrait update as you change each one. Older: +1 in the job's main skill (it can reach 4), and the sleep bar drops 10% faster (`survivor.md`, Looks parts).
 8. **Ready:** the party card for your survivor, the world's preset, season and seed, and **Start**. Start asks once ("Start this world? You only get one life.") and then begins.
 
