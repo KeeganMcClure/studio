@@ -93,7 +93,7 @@ Every screen you can see, in play order (studio rule: `studio-bible/studio.md`, 
 5. **Every system has a stake.** No mechanics for mechanics' sake.
 6. **Short phone sittings.** One in-game day fits one sitting.
 
-**Mature content.** Violence, gore, infection, starvation, cruelty and hard choices about other people are on the table, shown plainly and never lingered on for shock. Romance fades to black (Claude's call, for review). Hard line: nothing sexual involving minors, ever. Children are harmed only off screen or as aftermath.
+**Mature content.** Violence, gore, infection, starvation, cruelty and hard choices about other people are on the table, shown plainly and never lingered on for shock. Romance fades to black (Claude's call, confirmed by Keegan Nov 25, 2026). Hard line: nothing sexual involving minors, ever. Children are harmed only off screen or as aftermath.
 
 **Open questions.** See To do.
 
@@ -260,7 +260,7 @@ Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
   - **Low bond has teeth** (set Nov 21): a companion treated badly may walk out, steal supplies, or side with raiders.
   - **Hard choices:** a bitten companion can be treated, locked away to see if they turn, or put down. Traders may offer a deal for one of your people.
 - **Personal arcs** (set Nov 21): small generated arcs built from parts (a missing sister, a past they hide), with a few scenes as bond grows.
-- **Romance** (set Nov 21): optional, a slow build over evening talks with an adult companion. Each companion has their own attraction (to men, to women, both, or not interested), so not everyone is open to you, and some are put off by flirting, which lowers bond. It fades to black, lifts SAN, and makes losing them hit much harder.
+- **Romance** (set Nov 21; pace changed Nov 25): optional, built over evening talks with an adult companion. How fast it goes depends on the person (Keegan, Nov 25): some fall quickly, some take a long time, so it isn't the same for everyone (see `companions.md`, Romance). Each companion has their own attraction (to men, to women, both, or not interested), so not everyone is open to you, and some are put off by flirting, which lowers bond. It fades to black, lifts SAN, and makes losing them hit much harder.
 
 ## Other survivors and trade
 
