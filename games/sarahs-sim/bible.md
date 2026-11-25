@@ -70,9 +70,9 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 
 | Screen | What you do there | Spec | Mockup |
 | --- | --- | --- | --- |
-| First open (gift) | Once only: pull the ribbon on a wrapped gift, which opens onto the home with Keegan's Christmas line | No spec yet | `title-v1` (approved Nov 25, 2026) |
-| Title | Pick a mode, continue, import a save, over the snowy home | No spec yet | `title-v1` (approved Nov 25, 2026) |
-| Home (decorate) | Open the catalog, drag pieces into the room, stack small things, turn, move, recolor and paint them | No spec yet | `decorate-v1` (UI approved Nov 25, 2026), on the `look-iso-v1` room |
+| First open (gift) | Once only: pull the ribbon on a wrapped gift, which opens onto the home with Keegan's Christmas line | `specs/001-home-and-decorating.md` | `title-v1` (approved Nov 25, 2026) |
+| Title | Pick a mode, continue, import a save, over the snowy home | `specs/001-home-and-decorating.md` | `title-v1` (approved Nov 25, 2026) |
+| Home (decorate) | Open the catalog, drag pieces into the room, stack small things, turn, move, recolor and paint them | `specs/001-home-and-decorating.md` | `decorate-v1` (UI approved Nov 25, 2026), on the `look-iso-v1` room |
 | Style (outfits) | Dress a person in the big view: pick pieces, recolor, paint, add patterns and tee prints, spin to see the back | No spec yet | `style-v1` (UI approved Nov 25, 2026) |
 | Creator | Make a new person: parts, fine tuning, age, gender and extras | No spec yet | `creator-v1` (approved Nov 25, 2026) |
 | Build | Draw rooms, walls, doors, windows, floors and stairs on an empty lot, up to 3 floors | No spec yet | `build-v1` (approved Nov 25, 2026) |
@@ -85,10 +85,10 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Neighborhood | Walk to a neighbor's home to help redo it | `specs/008-visitors-and-neighborhood.md` | **To draw** |
 | Memory book | Flip through moments, notes and photos | `specs/007-memory-book-and-notes.md` | **To draw** |
 | Note found | Read a note from Keegan she found in the home | `specs/007-memory-book-and-notes.md` | **To draw** |
-| Favorites | Save and reuse whole rooms and outfits | No spec yet | **To draw** |
-| Camera | Take a clean picture of a room or outfit | No spec yet | **To draw** |
+| Favorites | Save and reuse whole rooms and outfits | `specs/001-home-and-decorating.md` | **To draw** |
+| Camera | Take a clean picture of a room or outfit | `specs/001-home-and-decorating.md` | **To draw** |
 | Challenges | Pick a challenge and see how you did | No spec yet | **To draw** |
-| Start menu | Save, homes, people, quit to title | No spec yet | **To draw** |
+| Start menu | Save, homes, people, quit to title | `specs/001-home-and-decorating.md` | **To draw** |
 
 ## Overview
 
