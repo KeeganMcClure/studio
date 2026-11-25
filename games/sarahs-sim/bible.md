@@ -48,7 +48,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [x] Garden: the plant list, how long each takes to grow in real days, how plants change with the seasons, and the mow, weed and water minigames. Plus the house upkeep minigames.
   Done Nov 25: in Play, Garden (the plant list is a starter list Keegan can change).
 - [ ] Memory book: screen mockup (moments approved and rewards set in steps, Nov 25).
-- [ ] Saves: slots per mode, and save export and import (favorites and the camera are set, see Play).
+- [x] Saves: slots per mode, and save export and import (favorites and the camera are set, see Play).
+  Done Nov 25: set with Keegan. See Saves.
 - [x] Title and cover: the title screen and the 120 × 80 cover (`studio-bible/launcher.md`).
   Done Nov 25: set with Keegan and drawn in `mockups/title-v1` (winter). See Title and cover. Keegan writes the Christmas line.
 - [ ] Specs: one spec per build part, in this order: the Philly home and decorating (Sandbox), Outfits, Creator, Building, Garden and yard, Life mode (clock, needs, cat care, gigs, coins, idle life), Memory book and notes, Visitors and the neighborhood, Holidays, Challenges.
@@ -481,6 +482,16 @@ Set Nov 25 (Keegan: "I absolutely love it"). Mockup: `mockups/title-v1` (the gif
 - **First open, once only:** a wrapped gift fills the screen (pink polka-dot paper, a gold bow, a "To Sarah" tag). She taps to pull the ribbon, and it opens onto the snowy home. Ribbon bits drift down, and a short Christmas line from Keegan appears ("Merry Christmas, Sarah", signed Keegan). Keegan writes the real words. Tapping goes in. After this the gift never shows again.
 - **Title:** the game's name in gold over the scene, with "A cozy life" and a heart under it. The menu card has Continue (with her day), Sandbox, Life and Challenges, plus a small Import a save link.
 - **Cover (120 × 80):** a small version of the same scene with the title on it (`studio-bible/launcher.md`, Covers). It changes with the seasons too.
+
+## Saves
+
+Set Nov 25 (Keegan). The studio rules in `studio-bible/saves.md` apply (autosave, save on close, a save version with upgrade steps, test saves), with the two named exceptions below.
+
+- **One save per mode** (named exception to "one slot"): Sandbox, Life and Challenges each keep their own autosaved save with their own homes and people. Playing Sandbox never touches Life's coins or day.
+- **Shared across modes:** favorites (rooms and outfits) and the memory book's photos are kept once and work in every mode. The first-open gift is remembered once for the whole game, so it never shows again.
+- **Keys:** prefix `ss.`, one key per kind of data (for example one per mode, one for favorites, one for the version). The spec sets the exact names.
+- **Backups are a file** (named exception to the text code): one tap in the Start menu saves a backup file of all three modes and her favorites to her phone's Files. Import a save on the title screen reads one back. A text code would be far too long once her homes and outfits are in it.
+- **Reminders:** about once a month, and before a big update, a gentle note on the title screen offers a backup. One tap makes it, and it can be dismissed.
 
 ## Controls and screen
 
