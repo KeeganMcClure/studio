@@ -127,7 +127,7 @@ From `bible.md`, Bag; items.md, Bags.
 - **A** on an item opens its actions: Use or Eat, Equip (weapons), Drop, Read (books), and Craft for parts (opens the recipe it fits). **B** goes back.
 - **The duffel bag** slows you: each step costs 2 minutes instead of 1.
 - **Dropping** leaves the item on that tile as a small pile you can pick up again. Piles stay where they are.
-- **L and R inside the bag** flip between the bag page and the Recipes page.
+- **L and R inside the bag** flip between the bag page and the Recipes page. These are the first two pages of the bible's one row of pages: Recipes, your bag, then each companion's bag (Keegan, Nov 25, 2026). Companions' pages come with companions, not in this slice.
 
 ### 9. Items in this slice
 
