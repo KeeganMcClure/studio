@@ -27,7 +27,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [ ] More outfit references: Keegan sends more photos of the two of them, and the clothing list grows from them (Keegan, Nov 25).
 - [x] Creator: the parts for making new people (face, hair, skin, body), and its screen mockup.
   Done Nov 25: set with Keegan and drawn in `mockups/creator-v1`. See Creator.
-- [ ] Building: lot size, walls, doors, windows, floors, stairs or not, how the view scrolls and zooms over a home bigger than the screen, and the build screen mockup.
+- [x] Building: lot size, walls, doors, windows, floors, stairs or not, how the view scrolls and zooms over a home bigger than the screen, and the build screen mockup.
+  Done Nov 25: set with Keegan and drawn in `mockups/build-v1`. See Building.
 - [x] Gameplay: what keeps her coming back beyond designing (Nov 25). See Play.
 - [ ] Life mode: prices, coin pay for gigs and chores, and the special sets (the day, needs, job and unlocks are set, see Play).
 - [x] Cat personalities: Keegan and the Designer work out Louie's and Ralph's personalities, which shape how each one wanders, naps, nudges and reacts (Keegan, Nov 25).
@@ -67,7 +68,7 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Home (decorate) | Open the catalog, drag pieces into the room, stack small things, turn, move, recolor and paint them | No spec yet | `decorate-v1` (UI approved Nov 25, 2026), on the `look-iso-v1` room |
 | Style (outfits) | Dress a person in the big view: pick pieces, recolor, paint, add patterns and tee prints, spin to see the back | No spec yet | `style-v1` (UI approved Nov 25, 2026) |
 | Creator | Make a new person: parts, fine tuning, age, gender and extras | No spec yet | `creator-v1` (approved Nov 25, 2026) |
-| Build | Draw walls, doors, windows and floors on an empty lot | No spec yet | **To draw** |
+| Build | Draw rooms, walls, doors, windows, floors and stairs on an empty lot, up to 3 floors | No spec yet | `build-v1` (approved Nov 25, 2026) |
 | Life mode top bar | Day, time and coins over the home | No spec yet | `look-iso-v1` (top bar) |
 | Yard (garden) | Lay out beds, paths, fences and a patio, plant seeds, water and weed | No spec yet | **To draw** |
 | Minigame | A short lawn care or house upkeep game (one row per minigame once they're listed) | No spec yet | **To draw** |
@@ -278,7 +279,7 @@ Set Nov 25, 2026 (Keegan): weed is part of their cozy life, in the same light to
   - **Clothes:** their real outfits from Keegan's photos are references for the Style catalog. One must-have: the **ORANGE ROCKS tee**, from Sarah's childhood shirt. Bright orange with white rounded letters, "ORANGE ROCKS" on the front and "AND SO DO I" on the back.
   - **Creator:** lets her make extra people for other homes.
 - **Other homes** (Keegan, Nov 25): she builds them from scratch on empty lots: walls, doors and rooms, then furniture.
-- **Room size:** rooms and homes can be much bigger than one screen. The approved mockup shows one 10 × 10 tile room only because it fits the screen; the view scrolls over bigger homes. How it scrolls and zooms is part of the Building item on To do.
+- **Room size:** rooms and homes can be much bigger than one screen. The approved mockup shows one 10 × 10 tile room only because it fits the screen; the view scrolls over bigger homes. How it scrolls and zooms is set in Building.
 
 ## Decorating
 
@@ -391,6 +392,18 @@ Set Nov 25 (Keegan: "she LOVES a character creator", so it gets lots of room to 
 - **Gender:** woman, man or nonbinary sets a starting body and pronouns, and she can edit the pronouns. Nothing is locked: every body shape, hairstyle and outfit works for anyone.
 - **Extras, all of them:** makeup, freckles and blush, facial hair, glasses, piercings, tattoos (pick a design, a spot and a color) and birthmarks. Any hair color, with highlights.
 - Sarah's own hair is always ginger (see People). That rule is only for her.
+
+## Building
+
+Set Nov 25 (Keegan). Mockup: `mockups/build-v1` (approved; Keegan asked for better stairs, and the redrawn straight flight is the approved look).
+
+- **Lots:** small 16 × 16, medium 24 × 24 or large 32 × 32 tiles. Other homes start as an empty lot.
+- **Floors:** up to 3, joined by stairs. The 1/2/3 buttons switch floors; the floor below shows dimmed under the one she's on.
+- **Stairs:** straight, L-turn, spiral and ladder. A flight leaves an open stairwell in the floor above, with a banister on its open sides.
+- **Walls:** a room tool (drag a box to make a whole room, with a size tag while dragging) and a wall tool (drag a line). Doors and windows snap onto any wall they're dragged to.
+- **Floors and walls:** a floor tool and a wallpaper tool, plus erase.
+- **View:** pinch to zoom, two-finger drag (or the D-pad) to pan over a home bigger than the screen. A walls button cycles walls up, cut away (back walls up, front walls low) and down. No whole-home rotation; furniture still turns 4 ways.
+- **Tray:** the same Home / Style / Build tabs as the other screens. The 8 tools are icons only, and the picked tool's name shows below them with a hint. Below that, cards for the picked tool (wall styles, doors, stair types).
 
 ## Controls and screen
 
