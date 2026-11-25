@@ -1,6 +1,6 @@
 # Spec 002: Rushlight moves onto the shared engine
 
-Status: draft for Keegan's review · Written 2026-11-22 by the Game Designer · Game: Rushlight · To do: Development readiness, Ready 2 of 5
+Status: approved and built (status updated Nov 25, 2026; see the bible's To do and the changelog) · Written 2026-11-22 by the Game Designer · Game: Rushlight · To do: Development readiness, Ready 2 of 5
 
 ## In plain words
 

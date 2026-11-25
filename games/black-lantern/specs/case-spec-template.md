@@ -8,7 +8,7 @@ Copy this to `specs/NNN-<case-id>.md` once Keegan picks a pitch (Story → Addin
 
 # Spec NNN: <Case title>
 
-Status: proposed, waiting for Keegan's merge · Written <date> by the Game Designer · Game: Black Lantern · To do: <case> part A and part B
+Status: template (a new case spec copies it and writes its own status here) · Written <date> by the Game Designer · Game: Black Lantern · To do: <case> part A and part B
 
 ## In plain words
 

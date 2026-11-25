@@ -1,6 +1,6 @@
 # Spec 016: Lost Hour
 
-Status: proposed, waiting for Keegan's merge · Written 2026-11-22 by the Game Designer · Game: Black Lantern · To do: Lost Hour part A and part B
+Status: approved and built (status updated Nov 25, 2026; see the bible's To do and the changelog) · Written 2026-11-22 by the Game Designer · Game: Black Lantern · To do: Lost Hour part A and part B
 
 ## In plain words
 
