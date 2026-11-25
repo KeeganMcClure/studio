@@ -1,6 +1,6 @@
 # Spec 007: the debrief and case gains
 
-Status: proposed, waiting for Keegan's merge · Written 2026-11-22 by the Game Designer · Game: Black Lantern · To do: Demo 6 of 6 (and Season readiness, step 1)
+Status: approved and built (status updated Nov 25, 2026; see the bible's To do and the changelog) · Written 2026-11-22 by the Game Designer · Game: Black Lantern · To do: Demo 6 of 6 (and Season readiness, step 1)
 
 ## In plain words
 

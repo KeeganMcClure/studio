@@ -19,14 +19,26 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [ ] Photos: Keegan sends photos of their things and their cats. Photos stay in the Game Designer project files, never in this repo; only the drawn versions come here.
 - [ ] Reference sheet: Keegan, Sarah and the cats (drawn and approved Nov 25: `mockups/louie-v1`, `mockups/ralph-v1`, `mockups/people-v1`; real furniture to come) as map sprites and portraits, plus a first set of their real furniture, drawn from the photos (`studio-bible/art-style.md`, Before a game's first build).
 - [x] Holidays: which holidays get decorations and items (Nov 25). See Homes and people.
-- [ ] Decorating: catalog categories, how many pieces at launch, color variants, rotate, stack and wall items. Screen mockup for the catalog.
+- [x] Decorating: catalog categories, how many pieces at launch, color variants, rotate, stack and wall items. Screen mockup for the catalog.
+  Done Nov 25: set with Keegan and drawn in `mockups/decorate-v1`. See Decorating.
+- [ ] Item sprites: Keegan and the Designer work out how furniture and decor pieces are drawn, so all 80 match (Keegan, Nov 25: later).
 - [ ] Outfits: what she designs (pick parts, recolor, patterns), the clothing list, and the Style screen mockup.
 - [ ] Creator: the parts for making new people (face, hair, skin, body), and its screen mockup.
 - [ ] Building: lot size, walls, doors, windows, floors, stairs or not, how the view scrolls and zooms over a home bigger than the screen, and the build screen mockup.
-- [ ] Life mode: the day, the gentle needs, the job, coins and prices.
-- [ ] Saves: slots per mode, save export and import, and taking a picture of a room or outfit to keep.
+- [x] Gameplay: what keeps her coming back beyond designing (Nov 25). See Play.
+- [ ] Life mode: prices, coin pay for gigs and chores, and the special sets (the day, needs, job and unlocks are set, see Play).
+- [ ] Cat personalities: Keegan and the Designer work out Louie's and Ralph's personalities, which shape how each one wanders, naps, nudges and reacts (Keegan, Nov 25).
+- [ ] Keegan's notes: Keegan writes the hidden notes, including the one under the Christmas tree, and says where and when each one shows up (Keegan, Nov 25).
+- [ ] Idle life: Keegan writes more things the two of them are busy doing when she opens the game, on top of the first ones (see Play) (Keegan, Nov 25).
+- [ ] Recipes: Keegan lists the dishes he really cooks for Sarah, with what goes in each, for the cooking minigame.
+- [ ] Bong reference: Keegan sends a photo of his bong, drawn for the reference sheet with their other real things.
+- [ ] Real people: Keegan sends the list of friends and family to draw in as visitors, with a photo or a few notes on each. They join the reference sheet.
+- [ ] Neighbors: the made-up neighbor cast, each one's personality, and each visitor's short story and special set.
+- [ ] Garden: the plant list, how long each takes to grow in real days, how plants change with the seasons, and the mow, weed and water minigames. Plus the house upkeep minigames.
+- [ ] Memory book: the list of moments that make a page, and which pages unlock special sets. Screen mockup.
+- [ ] Saves: slots per mode, and save export and import (favorites and the camera are set, see Play).
 - [ ] Title and cover: the title screen and the 120 × 80 cover (`studio-bible/launcher.md`).
-- [ ] Specs: one spec per build part, in this order: the Philly home and decorating (Sandbox), Outfits, Creator, Building, Life mode, Challenges.
+- [ ] Specs: one spec per build part, in this order: the Philly home and decorating (Sandbox), Outfits, Creator, Building, Garden and yard, Life mode (clock, needs, cat care, gigs, coins, idle life), Memory book and notes, Visitors and the neighborhood, Holidays, Challenges.
 - [ ] Challenges mode: the challenge list, rewards and its screen mockup (built last).
 
 ### Bugs
@@ -45,11 +57,21 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Screen | What you do there | Spec | Mockup |
 | --- | --- | --- | --- |
 | Title | Pick a mode, continue, import a save | No spec yet | **To draw** |
-| Home (decorate) | Drag furniture from the tray into the room, turn it, recolor it | No spec yet | `look-iso-v1` (approved Nov 25, 2026) |
+| Home (decorate) | Open the catalog, drag pieces into the room, stack small things, turn, move, recolor and paint them | No spec yet | `decorate-v1` (UI approved Nov 25, 2026), on the `look-iso-v1` room |
 | Style (outfits) | Design and change outfits | No spec yet | **To draw** |
 | Creator | Make a new person | No spec yet | **To draw** |
 | Build | Draw walls, doors, windows and floors on an empty lot | No spec yet | **To draw** |
 | Life mode top bar | Day, time and coins over the home | No spec yet | `look-iso-v1` (top bar) |
+| Yard (garden) | Lay out beds, paths, fences and a patio, plant seeds, water and weed | No spec yet | **To draw** |
+| Minigame | A short lawn care or house upkeep game (one row per minigame once they're listed) | No spec yet | **To draw** |
+| Cooking | Chop, stir and plate one of Keegan's dishes with him | No spec yet | **To draw** |
+| Visitor chat | A visitor talks and asks for a gig | No spec yet | **To draw** |
+| Gig | See what a visitor wants, design it, hand it in, get paid | No spec yet | **To draw** |
+| Neighborhood | Walk to a neighbor's home to help redo it | No spec yet | **To draw** |
+| Memory book | Flip through moments, notes and photos | No spec yet | **To draw** |
+| Note found | Read a note from Keegan she found in the home | No spec yet | **To draw** |
+| Favorites | Save and reuse whole rooms and outfits | No spec yet | **To draw** |
+| Camera | Take a clean picture of a room or outfit | No spec yet | **To draw** |
 | Challenges | Pick a challenge and see how you did | No spec yet | **To draw** |
 | Start menu | Save, homes, people, quit to title | No spec yet | **To draw** |
 
@@ -78,8 +100,85 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 Set Nov 25 (Keegan). Daily life is totally optional, so the game has three modes.
 
 - **Sandbox:** free design. Everything is unlocked from the start. No days, needs or money.
-- **Life:** gentle days. A few soft needs and a small job earn coins for new furniture and clothes.
+- **Life:** gentle days on the real clock. A few soft needs, cats and a garden to look after, and design gigs that earn coins for new furniture and clothes. Unlocks only happen here (see Play).
 - **Challenges:** themed design jobs (for example "a winter cabin for a client") with a small reward. Built last.
+
+## Play
+
+What keeps her coming back beyond designing. Set Nov 25, 2026 (Keegan), in the Game Designer project. Lines marked *Claude default* are the Designer's fill-ins, open to change.
+
+### Reasons to come back
+
+- **Memory book:** a scrapbook that fills up with moments over time: the cats napping on something she placed, a holiday she decorated for, a room or outfit she finished, a note from Keegan she found, and her own photos. Some pages unlock special sets in Life mode.
+  - *Claude default:* one memory book shared across all modes.
+- **Visitors with stories:** see Visitors below.
+- **Real date:** holidays and seasons follow the date on her phone. Christmas comes in December and snow falls in winter. In Sandbox she can still put any holiday's pieces out any time.
+- **Keegan's notes:** notes Keegan writes are hidden in the home: in drawers, under pillows and inside gifts. One waits under the tree on Christmas, and more show up on holidays. Each note she finds goes in the memory book. Keegan writes them (To do).
+- **Idle life:** when she opens the game, the two of them are already busy living their lives. Sarah might be video-calling her mom, and Keegan might be doing school work or playing a video game. What they're doing fits the real time of day. Keegan writes more of these (To do). No real app or game names on screen (`studio-bible/studio.md`, No real brands), and picks don't repeat until the pool runs out (`studio-bible/play.md`, Picks from a pool don't repeat).
+
+### Life mode
+
+- **Clock:** Life mode runs on the real time of day. Morning light in her morning, lamps and a night sky in her evening. Plants and the cats' needs run on real time too.
+- **Needs:** people have three soft needs: energy, hunger and fun. A low need only makes them yawn or sigh and work a bit slower.
+- **Away from the game:** every need, for people and cats, pauses while she isn't playing. A month away comes back to the same home, just as she left it.
+- **Job: design gigs.** Visitors and neighbors pay her to style a room or an outfit. Gigs are small and quick and are there whenever she plays. Challenges stay the bigger themed jobs.
+- **Minigames:** short minigames for house upkeep and lawn care also earn coins.
+- **Unlocks:** Sandbox has every piece, clothing and design option from the start. In Life mode, coins from gigs and chores buy most pieces in the catalog, and memory book pages, visitor friendships and holidays unlock special sets coins can't buy.
+
+### The cats
+
+- **Full pet care:** Louie and Ralph wander the home, nap on furniture she places, knock things over, sit in boxes and react when tapped. She can pet them, give them treats and give them toys. Some of their moments go in the memory book.
+- **In Life mode** they also have hunger, play and a litter box for her to look after.
+- **Never bad:** when she forgets, the cats only nudge her: they sit by the bowl, meow, or look grumpy. They never get sick, get hurt or run off.
+- **Personalities:** each cat gets his own, worked out later (To do).
+- *Claude default:* in Sandbox the cats wander, nap and react, with no needs.
+
+### Garden
+
+Sarah has a major green thumb and loves her back yard (Keegan, Nov 25).
+
+- The yard is a design space like a room: garden beds, paths, fences and a patio.
+- She plants seeds that grow over real days and change with the seasons.
+- Mowing, weeding and watering are minigames.
+- *Claude default:* in Sandbox she can place plants fully grown.
+
+### Visitors
+
+- **Who:** a small cast of made-up neighbors with their own personalities, real friends and family that Keegan names (drawn from photos or notes), and anyone she makes in the creator.
+- **Visits:** a visitor drops by, chats and asks for a gig. Friendship grows with every gig and chat.
+- **Stories:** each visitor tells a short story over a few visits, ending with their special set.
+- **Their homes:** she can walk over to a visitor's home and help redo it, so there's a small neighborhood.
+
+### Romance
+
+Set Nov 25, 2026 (Keegan): flirty, with a fade to black. Tasteful, never explicit.
+
+- Keegan and Sarah flirt, kiss and cuddle in everyday play.
+- Now and then a small playful moment, such as a wink, a few hearts or an "oh?", leads into a fade to black.
+- Romance is only between Keegan and Sarah. The details live in the Game Designer project files, not in this repo.
+
+### Cooking
+
+Set Nov 25, 2026 (Keegan): Keegan cooks for Sarah all the time, so the game shows it.
+
+- **Idle life:** Keegan is often cooking when she opens the game, and the meal he makes fills hunger.
+- **Cook together:** she can jump in and cook with him in a little chop, stir and plate minigame.
+- **Their dishes:** the recipes are Keegan's real dishes (To do). Meals can use veggies from her garden.
+- *Claude default:* the first time they make a dish, it goes in the memory book.
+
+### Winding down
+
+Set Nov 25, 2026 (Keegan): weed is part of their cozy life, in the same light tone as everything else.
+
+- Items: joints, Keegan's bong (drawn from his reference photo, a piece of their own) and weed brownies.
+- Keegan and Sarah can smoke a joint or the bong, or eat a brownie, as a relaxing moment together. It's played light and giggly, never as a problem.
+- *Claude default:* it fills fun and makes them a bit hungry (the munchies). It never makes anything go wrong.
+- No real brands or strain names (`studio-bible/studio.md`, No real brands).
+
+### Keeping designs
+
+- **Favorites:** she saves outfits and whole rooms as favorites to reuse in any home or mode.
+- **Camera:** a camera button saves a clean picture of a room or outfit to her phone, and she can add it to the memory book.
 
 ## Homes and people
 
@@ -89,9 +188,21 @@ Set Nov 25 (Keegan). Daily life is totally optional, so the game has three modes
 - **People** (Keegan, Nov 25): Keegan and Sarah are drawn to look like themselves (`mockups/people-v1`, approved as a starting place), and she can restyle their hair and outfits.
   - **Sarah:** copper curls, freckles, grey-blue eyes, glasses on or off, gold hoops. She has several hairstyles (pinned up, loose bob, long curls, ponytail to start), but her hair is always ginger: restyle, never recolor.
   - **Keegan:** buzz cut, full beard trimmed to his jaw, open eyes (they only narrow when he grins), nose stud, cap on or off.
-  - **Clothes:** their real outfits from Keegan's photos are references for the Style catalog. One must-have: the **ORANGE ROCKS tee**, from Sarah's childhood shirt. Bright orange with white rounded letters, "ORANGE ROCKS" on the front and "AND SO DO I" on the back. A creator lets her make extra people for other homes.
+  - **Clothes:** their real outfits from Keegan's photos are references for the Style catalog. One must-have: the **ORANGE ROCKS tee**, from Sarah's childhood shirt. Bright orange with white rounded letters, "ORANGE ROCKS" on the front and "AND SO DO I" on the back.
+  - **Creator:** lets her make extra people for other homes.
 - **Other homes** (Keegan, Nov 25): she builds them from scratch on empty lots: walls, doors and rooms, then furniture.
 - **Room size:** rooms and homes can be much bigger than one screen. The approved mockup shows one 10 × 10 tile room only because it fits the screen; the view scrolls over bigger homes. How it scrolls and zooms is part of the Building item on To do.
+
+## Decorating
+
+Set Nov 25 (Keegan). Mockup: `mockups/decorate-v1` (UI approved; the furniture in it is a stand-in until item sprites are worked out).
+
+- **Catalog size:** about 80 furniture and decor pieces at launch, with more added as needed.
+- **Catalog tabs:** sorted by type: seating, tables, beds, storage, lights, plants, rugs, wall and decor. Two more tabs: **Ours**, holding their real things from Keegan's photos, and **Holiday**. Each card shows small dots for its color choices.
+- **Placing:** big pieces snap to the floor tiles and turn 4 ways. Small things stack on tables and shelves, and the spot glows green when a piece will stack there. Art and shelves hang on walls.
+- **Picking a placed piece:** tap it for turn, move and put-away buttons over it. The tray shows its name, its swatches, Paint, Put away, Move and Done.
+- **Colors:** both quick and free. Each piece has 4 to 6 hand-picked swatches that always look good together. Paint mode lets her color each part (for example fabric, wood, cushion) with any color from a 24-color cozy palette.
+- **Sandbox top bar:** shows the mode and the home's name instead of the day, time and coins.
 
 ## Controls and screen
 

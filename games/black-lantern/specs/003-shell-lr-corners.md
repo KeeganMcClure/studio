@@ -1,6 +1,6 @@
 # Spec 003: L and R in the top corners of the shell
 
-Status: proposed, waiting for Keegan's merge · Written 2026-11-21 by the Game Designer · Games: every game on the shared shell (Black Lantern, Rushlight, and Life After when it starts)
+Status: approved and built (status updated Nov 25, 2026; see the bible's To do and the changelog) · Written 2026-11-21 by the Game Designer · Games: every game on the shared shell (Black Lantern, Rushlight, and Life After when it starts)
 
 ## In plain words
 

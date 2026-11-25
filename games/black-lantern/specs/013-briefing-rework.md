@@ -1,6 +1,6 @@
 # Spec 013: Big Hat's briefing, reworked
 
-Status: proposed, waiting for Keegan's merge · Written 2026-11-22 by the Game Designer · Game: Black Lantern · To do: Big Hat's briefing rework
+Status: approved and built (status updated Nov 25, 2026; see the bible's To do and the changelog) · Written 2026-11-22 by the Game Designer · Game: Black Lantern · To do: Big Hat's briefing rework
 
 ## In plain words
 

@@ -1,6 +1,6 @@
 # Spec 022: the title screen and the agent creator
 
-Status: proposed, waiting for Keegan's merge · Written 2026-11-23 by the Game Designer · Game: Black Lantern · To do: Demo playtest fixes (the pronouns and code names lines)
+Status: approved and built (status updated Nov 25, 2026; see the bible's To do and the changelog) · Written 2026-11-23 by the Game Designer · Game: Black Lantern · To do: Demo playtest fixes (the pronouns and code names lines)
 
 ## In plain words
 

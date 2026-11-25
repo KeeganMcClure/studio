@@ -1,6 +1,6 @@
 # Spec 001: Rushlight's dialog box in its own colours
 
-Status: draft for Keegan's review · Written 2026-11-21 by the Game Designer · Game: Rushlight · Comes from the Black Lantern dialog box rules check (Nov 21)
+Status: approved and built (status updated Nov 25, 2026; see the bible's To do and the changelog) · Written 2026-11-21 by the Game Designer · Game: Rushlight · Comes from the Black Lantern dialog box rules check (Nov 21)
 
 ## In plain words
 
