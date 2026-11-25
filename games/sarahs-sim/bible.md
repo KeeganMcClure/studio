@@ -17,8 +17,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [ ] Sarah's phone: Keegan finds out the model. It sets the target screen size.
 - [ ] Shell space: with the phone known, Keegan picks between keeping L/R, dropping them, and a taller game screen (Keegan, Nov 25: maybe drop L/R for more room; a plain question, no mockup needed). The approved mockup uses today's shell with L/R.
 - [ ] Photos: Keegan sends photos of their things and their cats. Photos stay in the Game Designer project files, never in this repo; only the drawn versions come here.
-- [ ] Reference sheet: Keegan, Sarah and the cats as map sprites and portraits, plus a first set of their real furniture, drawn from the photos (`studio-bible/art-style.md`, Before a game's first build).
-- [ ] Holidays: which holidays get decorations and items.
+- [ ] Reference sheet: Keegan, Sarah and the cats (cats drawn Nov 25: `mockups/louie-v1`, `mockups/ralph-v1`; Keegan and Sarah to come) as map sprites and portraits, plus a first set of their real furniture, drawn from the photos (`studio-bible/art-style.md`, Before a game's first build).
+- [x] Holidays: which holidays get decorations and items (Nov 25). See Homes and people.
 - [ ] Decorating: catalog categories, how many pieces at launch, color variants, rotate, stack and wall items. Screen mockup for the catalog.
 - [ ] Outfits: what she designs (pick parts, recolor, patterns), the clothing list, and the Style screen mockup.
 - [ ] Creator: the parts for making new people (face, hair, skin, body), and its screen mockup.
@@ -83,7 +83,8 @@ Set Nov 25 (Keegan). Daily life is totally optional, so the game has three modes
 ## Homes and people
 
 - **Starter home** (Keegan, Nov 25): a prebuilt copy of Keegan and Sarah's place in Philly, with their cats. Their real furniture and things are drawn from Keegan's photos. No street address anywhere.
-- **Holiday things** (Keegan, Nov 25): holiday decorations and items are in for sure. Which holidays: see To do.
+- **Holiday things** (Keegan, Nov 25): year-round, Christmas first. The Christmas set is built first, then Valentine's, Halloween, Thanksgiving and more, each with its own decorations and items.
+- **The cats** (Keegan, Nov 25): Louie, a slim grey-and-white cat with a white blaze up his nose and sleepy yellow-green eyes (`mockups/louie-v1`), and Ralph, a big orange tabby with white socks and a white blaze, clearly bigger than Louie (`mockups/ralph-v1`). Ralph has an optional outfit: a red bowtie with a small silver bell.
 - **People** (Keegan, Nov 25): Keegan and Sarah are drawn to look like themselves, and she can restyle their hair and outfits. A creator lets her make extra people for other homes.
 - **Other homes** (Keegan, Nov 25): she builds them from scratch on empty lots: walls, doors and rooms, then furniture.
 - **Room size:** rooms and homes can be much bigger than one screen. The approved mockup shows one 10 × 10 tile room only because it fits the screen; the view scrolls over bigger homes. How it scrolls and zooms is part of the Building item on To do.
