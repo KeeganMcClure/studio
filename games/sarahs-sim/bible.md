@@ -28,6 +28,7 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [ ] Cat personalities: Keegan and the Designer work out Louie's and Ralph's personalities, which shape how each one wanders, naps, nudges and reacts (Keegan, Nov 25).
 - [ ] Keegan's notes: Keegan writes the hidden notes, including the one under the Christmas tree, and says where and when each one shows up (Keegan, Nov 25).
 - [ ] Idle life: Keegan writes more things the two of them are busy doing when she opens the game, on top of the first ones (see Play) (Keegan, Nov 25).
+- [ ] Recipes: Keegan lists the dishes he really cooks for Sarah, with what goes in each, for the cooking minigame.
 - [ ] Bong reference: Keegan sends a photo of his bong, drawn for the reference sheet with their other real things.
 - [ ] Real people: Keegan sends the list of friends and family to draw in as visitors, with a photo or a few notes on each. They join the reference sheet.
 - [ ] Neighbors: the made-up neighbor cast, each one's personality, and each visitor's short story and special set.
@@ -61,6 +62,7 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Life mode top bar | Day, time and coins over the home | No spec yet | `look-iso-v1` (top bar) |
 | Yard (garden) | Lay out beds, paths, fences and a patio, plant seeds, water and weed | No spec yet | **To draw** |
 | Minigame | A short lawn care or house upkeep game (one row per minigame once they're listed) | No spec yet | **To draw** |
+| Cooking | Chop, stir and plate one of Keegan's dishes with him | No spec yet | **To draw** |
 | Visitor chat | A visitor talks and asks for a gig | No spec yet | **To draw** |
 | Gig | See what a visitor wants, design it, hand it in, get paid | No spec yet | **To draw** |
 | Neighborhood | Walk to a neighbor's home to help redo it | No spec yet | **To draw** |
@@ -152,6 +154,15 @@ Set Nov 25, 2026 (Keegan): flirty, with a fade to black. Tasteful, never explici
 - Keegan and Sarah flirt, kiss and cuddle in everyday play.
 - Now and then a small playful moment, such as a wink, a few hearts or an "oh?", leads into a fade to black.
 - Romance is only between Keegan and Sarah. The details live in the Game Designer project files, not in this repo.
+
+### Cooking
+
+Set Nov 25, 2026 (Keegan): Keegan cooks for Sarah all the time, so the game shows it.
+
+- **Idle life:** Keegan is often cooking when she opens the game, and the meal he makes fills hunger.
+- **Cook together:** she can jump in and cook with him in a little chop, stir and plate minigame.
+- **Their dishes:** the recipes are Keegan's real dishes (To do). Meals can use veggies from her garden.
+- *Claude default:* the first time they make a dish, it goes in the memory book.
 
 ### Winding down
 
