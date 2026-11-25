@@ -37,7 +37,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [ ] Bong reference: Keegan sends a photo of his bong, drawn for the reference sheet with their other real things.
 - [ ] Real people: Keegan sends the list of friends and family to draw in as visitors, with a photo or a few notes on each. They join the reference sheet.
 - [ ] Neighbors: the made-up neighbor cast, each one's personality, and each visitor's short story and special set.
-- [ ] Garden: the plant list, how long each takes to grow in real days, how plants change with the seasons, and the mow, weed and water minigames. Plus the house upkeep minigames.
+- [x] Garden: the plant list, how long each takes to grow in real days, how plants change with the seasons, and the mow, weed and water minigames. Plus the house upkeep minigames.
+  Done Nov 25: in Play, Garden (the plant list is a starter list Keegan can change).
 - [ ] Memory book: the list of moments that make a page, and which pages unlock special sets. Screen mockup.
 - [ ] Saves: slots per mode, and save export and import (favorites and the camera are set, see Play).
 - [ ] Title and cover: the title screen and the 120 × 80 cover (`studio-bible/launcher.md`).
@@ -152,8 +153,43 @@ Sarah has a major green thumb and loves her back yard (Keegan, Nov 25).
 
 - The yard is a design space like a room: garden beds, paths, fences and a patio.
 - She plants seeds that grow over real days and change with the seasons.
-- Mowing, weeding and watering are minigames.
 - *Claude default:* in Sandbox she can place plants fully grown.
+
+**What she grows** (Keegan, Nov 25): flowers, veggies, herbs, shrubs and vines outdoors, and potted houseplants indoors that she waters and that grow over real days too. Veggies and herbs go into Keegan's cooking.
+
+**How fast** (Keegan, Nov 25): herbs and greens take 1 to 2 real days, veggies and flowers 3 to 5, and big shrubs and vines about a week, so there's something new almost every time she opens the game.
+
+- **Never dies:** a plant that goes unwatered droops, and perks up again when she waters it (pillar 3).
+- *Claude default:* growing keeps going while she's away, but thirst pauses, so she always comes back to a happy garden.
+
+**Seasons** (Keegan, Nov 25):
+
+- In winter the outdoor beds rest under snow, and she can decorate the yard for winter.
+- A small greenhouse and her houseplants keep growing all year.
+- Each season also has its own plants.
+
+*Claude default, a starter list to grow:*
+
+| Season | Plants |
+| --- | --- |
+| Spring | Tulips, daffodils, peas, lettuce, strawberries |
+| Summer | Sunflowers, roses, tomatoes, peppers, zucchini, basil |
+| Fall | Mums, pumpkins, kale, onions |
+| Winter | Holly, poinsettias, winter greens, a little potted pine |
+| Greenhouse and indoors, all year | Herbs (basil, mint, rosemary), greens, monstera, pothos, snake plant, succulents, a red mushroom planter |
+
+**Chore minigames** (Keegan, Nov 25): eight quick one-thumb games, each 30 to 60 seconds, that pay a few coins in Life mode. The seasonal ones only show up in their season.
+
+| Minigame | When | How it plays |
+| --- | --- | --- |
+| Mow | Spring to fall | Drag the mower in stripes across the lawn |
+| Weed | Spring to fall | Pull weeds up and out of the beds |
+| Water | All year | Hold over each plant until it perks up |
+| Rake leaves | Fall | Sweep leaves into a pile, and the cats might jump in |
+| Shovel snow | Winter | Clear the path to the door |
+| Dishes | All year | Scrub, rinse and stack |
+| Vacuum | All year | Drag over the floor. Ralph slowly leaves the room |
+| Fold laundry | All year | Fold and stack clothes from the basket |
 
 ### Visitors
 
