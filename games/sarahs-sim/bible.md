@@ -31,12 +31,13 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [x] Cat personalities: Keegan and the Designer work out Louie's and Ralph's personalities, which shape how each one wanders, naps, nudges and reacts (Keegan, Nov 25).
   Done Nov 25: in Play, The cats.
 - [ ] Keegan's notes: Keegan writes about 20 short notes in the [Notes for Sarah](https://claude.ai/artifact/Xez8onsWSjq7SKSSsnGk1o) sheet: one under the Christmas tree, one on her birthday, about 8 for holidays and their anniversary, and about 10 hidden around the home for her first month. Each slot says when and where she finds it (Keegan, Nov 25).
-- [ ] Idle life: Keegan writes more things the two of them are busy doing when she opens the game, on top of the first ones (see Play) (Keegan, Nov 25).
+- [x] Idle life: Keegan writes more things the two of them are busy doing when she opens the game, on top of the first ones (see Play) (Keegan, Nov 25).
+  Done Nov 25: about 25 activities across four times of day, in Play, Idle life (the full list is in the private project files).
 - [x] Recipes: Keegan lists the dishes he really cooks for Sarah, with what goes in each, for the cooking minigame.
   Done Nov 25: nine dishes, in Play, Cooking.
 - [ ] More recipes: one more look at Keegan's Recipe Cards doc for dishes to add, before the cooking spec (Keegan, Nov 25).
 - [ ] Bong reference: Keegan sends a photo of his bong, drawn for the reference sheet with their other real things.
-- [ ] Real people: Keegan sends the list of friends and family to draw in as visitors, with a photo or a few notes on each. They join the reference sheet.
+- [ ] Real people: Keegan sends the list of friends and family to draw in as visitors, with a photo or a few notes on each. They join the reference sheet. (Nov 25: family listed in the private project files; friends and the photos or notes still to come.)
 - [x] Neighbors: the made-up neighbor cast, each one's personality, and each visitor's short story and special set.
   Done Nov 25: four neighbors with stories, in Play, Visitors. Real people's stories wait on Keegan's list.
 - [x] Garden: the plant list, how long each takes to grow in real days, how plants change with the seasons, and the mow, weed and water minigames. Plus the house upkeep minigames.
@@ -120,7 +121,10 @@ What keeps her coming back beyond designing. Set Nov 25, 2026 (Keegan), in the G
 - **Visitors with stories:** see Visitors below.
 - **Real date:** holidays and seasons follow the date on her phone. Christmas comes in December and snow falls in winter. In Sandbox she can still put any holiday's pieces out any time.
 - **Keegan's notes:** notes Keegan writes are hidden in the home: in drawers, under pillows and inside gifts. One waits under the tree on Christmas, and more show up on holidays. Each note she finds goes in the memory book. Keegan writes them (To do).
-- **Idle life:** when she opens the game, the two of them are already busy living their lives. Sarah might be video-calling her mom, and Keegan might be doing school work or playing a video game. What they're doing fits the real time of day. Keegan writes more of these (To do). No real app or game names on screen (`studio-bible/studio.md`, No real brands), and picks don't repeat until the pool runs out (`studio-bible/play.md`, Picks from a pool don't repeat).
+- **Idle life:** when she opens the game, the two of them are already busy living their lives. Sarah might be video-calling her mom, and Keegan might be doing school work or playing a video game. What they're doing fits the real time of day.
+  - **Four times of day** (Keegan, Nov 25): morning (6 to 11 AM), daytime (11 AM to 5 PM), evening (5 to 10 PM) and late night (10 PM to 6 AM), with about 25 activities across them. They include cooking, school work, gaming, gardening, calls home, baths with Louie on the tub edge, couch time, winding down, reading, sleeping, and play with the cats. The full list lives in the private project files, since it is about their real life.
+  - **Crafts:** Sarah paints and does a craft that fits the season, and Keegan crochets. Each finished piece shows up in the home afterward as decor she can keep or move (Keegan, Nov 25).
+  - **Cheeky after-moments:** a few playful hints that they just had some time alone, with nothing shown (see Romance). The details stay in the private project files. No real app or game names on screen (`studio-bible/studio.md`, No real brands), and picks don't repeat until the pool runs out (`studio-bible/play.md`, Picks from a pool don't repeat).
 
 ### Memory book
 
