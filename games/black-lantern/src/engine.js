@@ -485,7 +485,7 @@ async function start(agent,squad,id){
  G=Object.assign(G,{active:true,case:c.id,lead:0,db:null,flags:{},clues:[],fights:0,enc:10,rescued:0,busy:0,mode:'scene',scene:null,map:null});
  fieldStart();  // each agent's kit and items, the backpack, the field state (field.js)
  MAZE=null;enter();applySan();
- run(c.opening);
+ run(async()=>{await c.opening();await arcNine()});
 }
 // A checkpoint from before a case was rewritten (save step 7, spec 006 Saves) can't land in the new story's middle:
 // the same team starts the case again from its briefing, keeping their SAN, disorders, injuries, gear and backpack.
