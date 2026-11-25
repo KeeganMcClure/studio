@@ -136,7 +136,7 @@ The Garden chapter's 10 moments (bible, Memory book) trigger here, each recordin
 
 | Moment | Triggers when |
 | --- | --- |
-| First seed planted | Any seed goes in, in Life mode |
+| First seed planted | Any seed goes in |
 | First sprout | Any plant reaches Sprout |
 | First bloom | Any flower reaches Ready |
 | First harvest | Any veggie or herb is picked |
@@ -148,7 +148,7 @@ The Garden chapter's 10 moments (bible, Memory book) trigger here, each recordin
 | Plants from all four seasons grown | At least one plant of each season has reached Ready, at any time |
 
 - The rewards come in steps, as the bible sets (a piece at 3 moments, more at 6, the centerpiece at 10). The reward pieces are listed in the bible's Memory book table.
-- In Sandbox, the moments don't count, and every piece is already hers.
+- The memory book is shared by every mode (bible, Memory book), so these moments count in Sandbox too. Only the reward pieces wait for Life mode, since Sandbox already has every piece (spec 007).
 - Idle life (bible, Reasons to come back): when she opens Life mode in the morning or daytime, Sarah may be found watering or weeding out back. This spec gives the yard spots and animations for it. The Life mode spec picks when it happens.
 
 **Done when:** each moment triggers once, on the right action, with its date. The reward pieces unlock at 3, 6 and 10 moments.
