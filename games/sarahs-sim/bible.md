@@ -52,7 +52,7 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [x] Title and cover: the title screen and the 120 × 80 cover (`studio-bible/launcher.md`).
   Done Nov 25: set with Keegan and drawn in `mockups/title-v1` (winter). See Title and cover. Keegan writes the Christmas line.
 - [ ] Specs: one spec per build part, in this order: the Philly home and decorating (Sandbox), Outfits, Creator, Building, Garden and yard, Life mode (clock, needs, cat care, gigs, coins, idle life), Memory book and notes, Visitors and the neighborhood, Holidays, Challenges.
-- [ ] Challenges mode: the challenge list, rewards and its screen mockup (built last).
+- [ ] Challenges mode: the challenge list, rewards and its screen mockup (built last). (Nov 25: client briefs with a twist; draft list of 14 in Play, Challenges, for Keegan's review; mockup still to draw.)
 
 ### Bugs
 
@@ -315,6 +315,31 @@ Set Nov 25, 2026 (Keegan): weed is part of their cozy life, in the same light to
 - Keegan and Sarah can smoke a joint or the bong, or eat a brownie, as a relaxing moment together. It's played light and giggly, never as a problem.
 - *Claude default:* it fills fun and makes them a bit hungry (the munchies). It never makes anything go wrong.
 - No real brands or strain names (`studio-bible/studio.md`, No real brands).
+
+### Challenges
+
+Set Nov 25, 2026 (Keegan): **client briefs with a twist.** A client wants a room, yard or outfit on a theme, plus one twist: a budget, a must-have, one color, a piece limit and so on. She designs it, the client rates it with 1 to 3 stars, and she earns reward pieces. There are no timers and no way to fail (pillar 3).
+
+*Claude draft, for Keegan's review:* the starting list of 14 challenges, with 8 spaces and 6 outfits.
+
+| # | Client and brief | Twist | Kind |
+| --- | --- | --- | --- |
+| 1 | A winter cabin living room for a couple escaping the city | Must have a fireplace and three throws or blankets | Room |
+| 2 | A tiny studio for a student | The whole home (bed, kitchen, seating) in one 6 × 6 room | Room |
+| 3 | A first apartment's living room | A budget of 800 coins | Room |
+| 4 | A calm bedroom | One color family only | Room |
+| 5 | A sunroom for a plant collector | At least 12 plants | Room |
+| 6 | A cat café corner | A nap spot and a play spot for both cats | Room |
+| 7 | A grandma's kitchen refresh | Keep the three old pieces she loves | Room |
+| 8 | A garden party yard | String lights and seats for six | Yard |
+| 9 | A date-night outfit | Something red | Outfit |
+| 10 | A rainy-day outfit | A coat and boots, and still cute | Outfit |
+| 11 | A costume party look | Dress as a season | Outfit |
+| 12 | Matching pajamas for a couple | Both outfits match | Outfit |
+| 13 | An interview outfit for a design studio | Three colors at most | Outfit |
+| 14 | A reading nook | 8 pieces at most | Room |
+
+- **Rewards** (*Claude draft*): the first time she finishes a challenge, she gets one themed piece. Her first 3-star result on it gives a second piece. The pieces join her Life catalog as a special set, and each finished challenge hangs a ribbon on the Challenges board.
 
 ### Keeping designs
 
