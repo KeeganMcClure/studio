@@ -11,6 +11,7 @@ Tick an item when it's done and add one indented `Done <date>:` line under it. W
   Done Nov 25: Keegan approved the 16 current pieces (the look pass's species sheet, all 9 creatures, streets v2, sites v2, chart v2, the parchment menus, face parts and coin tokens). The 10 older drafts they replaced are marked replaced, each pointing to its newer version.
 - [x] Rushlight: add autumn rows to the Text Library's VO-NARR-DEATH pool. The only row is a winter one, so the slice drops its frost line.
   Done Nov 24: VO-NARR-DEATH-2 to -6 added to the Text Library as Draft, waiting for your OK. Once approved, the build copies them in and plays them in autumn.
+  Done Nov 25: Keegan approved all five; they're Approved in the Text Library, ready for the build to copy in.
 - [ ] Black Lantern: run more pitch rounds if season 1 still needs regular cases before the later agency cases (spec 015).
 - [x] Update the status lines on merged specs that still read draft or waiting for merge: Black Lantern 015 and 023, Rushlight 008, Life After 001 to 004.
   Done Nov 24: all seven now read "approved (studio PR #<n>), ready to build". Most other Black Lantern and Rushlight specs still read draft or waiting for merge too; they weren't on this list.
