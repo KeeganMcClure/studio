@@ -7,6 +7,10 @@
 //     o.pools  [[x, y, r], ...]      lamps, the lantern: dark is cut away around each, and its ground is lit
 //     o.glows  [[x, y, r, a], ...]   lit windows, carved pumpkins: they glow but don't light the ground
 //     o.warm   '#d6a43a'             the color of the light on the ground and of the glows
+//     o.cones  [[x, y, angle, len, half], ...]  flashlight beams: dark is cut away in a wedge from (x, y) pointing at
+//                                    angle (radians, 0 = right), len pixels long, half the spread in radians each side;
+//                                    bright near the hand, fading at the tip (Life After spec 002, Night)
+//     o.beam   '#ffecbe'             the color of the light inside the cones (default: o.warm)
 //   StudioLight.sour(ctx, k, o)      sours the picture by k (0 = normal, 1 = full): shadows toward o.cyan,
 //                                    warm light toward o.pink, the rest kept readable. Reads every pixel, so only call it when k > 0.
 //   StudioLight.shimmer(ctx, k, now, o)  a drugged heat-haze by k (0 to 1): bands of the picture sway sideways a pixel or
@@ -27,7 +31,7 @@
   var onScreen = function (w, h, x, y, r) { return x + r > 0 && y + r > 0 && x - r < w && y - r < h; };
 
   function night(ctx, o) {
-    var w = ctx.canvas.width, h = ctx.canvas.height, d = layer(w, h), pools = o.pools || [], glows = o.glows || [], warm = o.warm || '#d6a43a';
+    var w = ctx.canvas.width, h = ctx.canvas.height, d = layer(w, h), pools = o.pools || [], glows = o.glows || [], cones = o.cones || [], warm = o.warm || '#d6a43a';
     d.globalCompositeOperation = 'source-over'; d.clearRect(0, 0, w, h);
     d.fillStyle = rgba(o.dark || '#0a0812', o.alpha == null ? 0.78 : o.alpha); d.fillRect(0, 0, w, h);
     // the mockup's hole: fully clear at the middle, mostly clear halfway out, gone at the edge
@@ -38,6 +42,7 @@
       g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.55, 'rgba(0,0,0,.85)'); g.addColorStop(1, 'rgba(0,0,0,0)');
       d.fillStyle = g; d.fillRect(p[0] - p[2], p[1] - p[2], p[2] * 2, p[2] * 2);
     });
+    cones.forEach(function (c) { wedge(d, c, 'rgba(0,0,0,1)', 'rgba(0,0,0,.9)'); });
     d.globalCompositeOperation = 'source-over';
     ctx.drawImage(buf, 0, 0);
     // light on top: a soft warm wash inside each pool, and the glows of windows and pumpkins
@@ -54,7 +59,16 @@
       g.addColorStop(0, rgba(warm, p[3] == null ? 0.3 : p[3])); g.addColorStop(1, rgba(warm, 0));
       ctx.fillStyle = g; ctx.fillRect(p[0] - p[2], p[1] - p[2], p[2] * 2, p[2] * 2);
     });
+    cones.forEach(function (c) { wedge(ctx, c, rgba(o.beam || warm, 0.16), rgba(o.beam || warm, 0)); });
     ctx.globalCompositeOperation = 'source-over';
+  }
+  // a wedge of light from c = [x, y, angle, len, half]: color a at the hand, b at the tip
+  function wedge(d, c, a, b) {
+    var x = c[0], y = c[1], ang = c[2], len = c[3], half = c[4];
+    var g = d.createRadialGradient(x, y, 0, x, y, len);
+    g.addColorStop(0, a); g.addColorStop(0.7, a); g.addColorStop(1, b);
+    d.fillStyle = g; d.beginPath(); d.moveTo(x, y);
+    d.arc(x, y, len, ang - half, ang + half); d.closePath(); d.fill();
   }
 
   // The mockup's sour filter: the picture's brightness picks a color from a dark-to-cyan-to-pink ramp

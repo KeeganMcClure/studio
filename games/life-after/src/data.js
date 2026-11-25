@@ -14,23 +14,8 @@
     cooking: ['Stretch it', 'Comfort food'], talk: ['Read people', 'Silver tongue']
   };
 
-  // items.md. slots: how many bag slots it takes. bag: extra slots when worn. Look-alike brands only.
-  var ITEMS = {
-    bandage: { name: 'Bandages', slots: 1 }, painkillers: { name: 'Painkillers (Relievo)', slots: 1 },
-    ducttape: { name: 'Duct tape', slots: 1 }, hammer: { name: 'Hammer and nails', slots: 1 },
-    seeds: { name: 'Seed packets', slots: 1 }, hatchet: { name: 'Hatchet', slots: 1 },
-    revolver: { name: 'Revolver', slots: 1 }, revolverAmmo: { name: 'Revolver rounds', slots: 1 },
-    flashlight: { name: 'Flashlight (Beamline)', slots: 1 }, backpack: { name: 'School backpack', slots: 1, bag: 6 },
-    fieldguide: { name: 'Field guide', slots: 1 }, roadmap: { name: 'Road map', slots: 1 },
-    jerky: { name: 'Beef jerky (Trail Boss)', slots: 1 }, lighter: { name: 'Lighter (Flint King)', slots: 1 },
-    knife: { name: 'Kitchen knife', slots: 1 }, canopener: { name: 'Can opener', slots: 1 },
-    beans: { name: 'Farmstead canned beans', slots: 1 }, bat: { name: 'Baseball bat (Slugger)', slots: 1 },
-    fannypack: { name: 'Fanny pack', slots: 1, bag: 2 }, duffel: { name: 'Duffel bag', slots: 1, bag: 8 },
-    rags: { name: 'Rags', slots: 1 }, crowbar: { name: 'Crowbar', slots: 1 },
-    rifle: { name: 'Hunting rifle', slots: 2 }, rifleAmmo: { name: 'Rifle rounds', slots: 1 },
-    soda: { name: 'Kola King soda', slots: 1 }, chocolate: { name: 'Chocolate bar (Cocoa Joe)', slots: 1 },
-    cigarettes: { name: 'Cigarettes (Marlo Reds)', slots: 1 }
-  };
+  // items.md: the full list is in items.js (window.LAI)
+  var ITEMS = LAI.ITEMS;
 
   // survivor.md, The 12 jobs. skills: the 5 job points, main skill first. items: [id, count].
   // recipes: spec 002, Recipes, Starting recipes by job (everyone also knows the torch).
