@@ -11,6 +11,7 @@ Keegan's call, Nov 24: work the list top to bottom, switching games as it goes. 
 5. - [ ] Black Lantern: the later agency cases and the finale (spec 015).
 6. - [ ] Life After: the slice, parts A to D (specs 001 to 004) and the cover.
    Part A and the cover merged Nov 24 (PR #216). Parts B to D wait for Keegan's Part A phone notes and the Designer's mockups for the "To draw" screens (Fights, Bag, Map screen, Notebook, Hideout, Attack, Death).
+   Part B's town (sections, clock, night, searching, locks) built Nov 25, ahead of the mockups by Keegan's call. The rest of part B waits for the Bag, Map screen and Notebook mockups.
 7. - [x] Black Lantern: the Gleaner's 1 px sprite bug (cosmetic).
    Done Nov 24: fixed and merged.
 
