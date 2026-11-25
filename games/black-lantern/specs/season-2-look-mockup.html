@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Season 2 Look</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#0e1020;color:#e8dcc0;font-family:'VT323',monospace}
+  .wrap{display:flex;flex-wrap:wrap;justify-content:center;gap:28px;padding:20px 8px 32px}
+  .col{width:375px;max-width:100%}
+  .cap{font-family:'Press Start 2P',monospace;font-size:10px;letter-spacing:1px;color:#d6a43a;margin:0 0 6px 4px}
+  .note{font-size:18px;line-height:19px;color:#b9a8e0;margin:10px 6px 0}
+  .note b{color:#e8dcc0;font-weight:normal}
+  .phone{position:relative;width:375px;height:667px;overflow:hidden;background:#34305c}
+  .btn{border:none;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap"></div>
+
+<script>
+// One scene, drawn twice. Only these settings change between frames.
+const FRAMES = [
+  { id:'a', mode:'s1', cap:'1 · SEASON 1 · NIGHT', san:61, low:false, tag:'NIGHT',
+    note:'<b>Season 1 today.</b> The approved night street (spec 005), for comparison.' },
+  { id:'b', mode:'creep', cap:'2 · SEASON 2 · YELLOW CREEP', san:58, low:false, tag:'NIGHT',
+    note:'<b>A regular Season 2 case.</b> Same street, same base palette. Lamp and window light turn a tarnished, pallid yellow; a yellow rag flutters on the lamp post, a chalked sign sits on the bricks, and a playbill is pasted on the house. The woman\'s glasses catch the yellow. Small and easy to miss at first, worse as the season goes on.' },
+  { id:'c', mode:'carcosa', cap:'3 · SEASON 2 · CARCOSA', san:44, low:false, tag:'???',
+    note:'<b>Where the story calls for it.</b> A grey lake under black stars and two low suns, towers on the far shore, a tattered figure watching. A street lamp from home stands half sunk in the shore, so it still feels like somewhere you\'ve been. The NIGHT tag reads ??? here. Lantern light works as usual, so everything usable stays readable.' }
+];
+
+function sceneRaw(f){
+  if(f.mode==='carcosa') return carcosa(f);
+  const id=f.id, low=f.low, creep=f.mode==='creep';
+  const lanternR = low ? 40 : 62;     // light radius shrinks below 40 SAN
+  const lampR    = low ? 26 : 34;
+  const dark     = low ? '#14061a' : '#0a0812';
+  const darkOp   = low ? .86 : .78;
+  const glow     = low ? '#ff4fa3' : (creep ? '#d8c870' : '#d6a43a');
+  return `
+<svg role="img" aria-label="Night street, three-quarter top-down. Diner on the left, dark house on the right, a street lamp between them with an old woman in huge glasses under it. The lead agent, Dunn, holds up a lantern in the street.${low?' Colors are soured toward pink and cyan and the lantern light is smaller.':''}" viewBox="0 0 170 221" width="340" height="442" shape-rendering="crispEdges" style="position:absolute;left:0;top:0;display:block">
+<defs>
+<pattern id="brick${id}" width="8" height="6" patternUnits="userSpaceOnUse"><rect width="8" height="6" fill="#44262e"/><rect y="2" width="8" height="1" fill="#2e1a26"/><rect y="5" width="8" height="1" fill="#2e1a26"/><rect x="3" width="1" height="2" fill="#2e1a26"/><rect x="7" y="3" width="1" height="2" fill="#2e1a26"/></pattern>
+<pattern id="siding${id}" width="8" height="4" patternUnits="userSpaceOnUse"><rect width="8" height="4" fill="#2c2a44"/><rect y="3" width="8" height="1" fill="#221f36"/></pattern>
+<pattern id="walk${id}" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#3e3850"/><rect width="1" height="16" fill="#332e44"/><rect x="5" y="9" width="1" height="1" fill="#48425c"/></pattern>
+<pattern id="grass${id}" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#1d2824"/><rect x="3" y="4" width="1" height="2" fill="#2a3a30"/><rect x="4" y="5" width="1" height="1" fill="#2a3a30"/><rect x="11" y="11" width="1" height="2" fill="#2a3a30"/><rect x="12" y="12" width="1" height="1" fill="#2a3a30"/><rect x="8" y="1" width="1" height="1" fill="#24302a"/></pattern>
+<radialGradient id="hole${id}"><stop offset="0" stop-color="#000" stop-opacity="1"/><stop offset=".55" stop-color="#000" stop-opacity=".85"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<mask id="dark${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="170" height="221">
+<rect width="170" height="221" fill="#fff"/>
+<circle cx="66" cy="132" r="${lanternR}" fill="url(#hole${id})"/>
+<circle cx="96" cy="86" r="${lampR}" fill="url(#hole${id})"/>
+<rect x="6" y="28" width="26" height="40" fill="#000" opacity=".5"/>
+<rect x="54" y="28" width="26" height="40" fill="#000" opacity=".5"/>
+</mask>
+${low ? `
+<!-- Low-SAN sour: blend the scene with a cyan-shadow / pink-highlight duotone -->
+<filter id="sour${id}" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+<feColorMatrix in="SourceGraphic" type="matrix" values=".3 .59 .11 0 0  .3 .59 .11 0 0  .3 .59 .11 0 0  0 0 0 1 0" result="lum"/>
+<feComponentTransfer in="lum" result="duo">
+<feFuncR type="table" tableValues=".02 .07 .62 1"/>
+<feFuncG type="table" tableValues=".05 .24 .30 .31"/>
+<feFuncB type="table" tableValues=".09 .30 .50 .64"/>
+</feComponentTransfer>
+<feComposite in="duo" in2="SourceGraphic" operator="arithmetic" k1="0" k2=".62" k3=".42" k4="0"/>
+</filter>` : ''}
+</defs>
+
+<g ${low ? `filter="url(#sour${id})"` : ''}>
+<rect width="170" height="221" fill="#1b1f33"/>
+
+<!-- diner -->
+<rect x="0" y="0" width="86" height="84" fill="url(#brick${id})"/>
+<rect x="0" y="0" width="86" height="9" fill="#2a1a24"/>
+<rect x="0" y="9" width="86" height="2" fill="#5c2a22"/>
+<rect x="22" y="13" width="42" height="11" fill="#14121e"/>
+<rect x="23" y="14" width="40" height="9" fill="#1b1f33"/>
+<text x="43" y="22" font-family="VT323, monospace" font-size="10" fill="#f4c96a" text-anchor="middle">EAT</text>
+<rect x="4" y="26" width="78" height="3" fill="#5c2a22"/>
+<g fill="#5c2a22" opacity=".9"><rect x="4" y="29" width="6" height="2"/><rect x="16" y="29" width="6" height="2"/><rect x="28" y="29" width="6" height="2"/><rect x="40" y="29" width="6" height="2"/><rect x="52" y="29" width="6" height="2"/><rect x="64" y="29" width="6" height="2"/><rect x="76" y="29" width="6" height="2"/></g>
+<rect x="7" y="33" width="24" height="22" fill="#14121e"/>
+<rect x="8" y="34" width="22" height="20" fill="#d6a43a"/>
+<rect x="11" y="37" width="16" height="14" fill="#f4c96a"/>
+<rect x="18" y="34" width="2" height="20" fill="#14121e"/>
+<rect x="8" y="44" width="22" height="1" fill="#14121e"/>
+<rect x="55" y="33" width="24" height="22" fill="#14121e"/>
+<rect x="56" y="34" width="22" height="20" fill="#d6a43a"/>
+<rect x="59" y="37" width="16" height="14" fill="#f4c96a"/>
+<rect x="66" y="34" width="2" height="20" fill="#14121e"/>
+<rect x="56" y="44" width="22" height="1" fill="#14121e"/>
+<rect x="61" y="46" width="4" height="8" fill="#5c3a2a" opacity=".7"/>
+<rect x="61" y="44" width="4" height="3" fill="#8a5a3a" opacity=".7"/>
+<rect x="36" y="44" width="14" height="40" fill="#14121e"/>
+<rect x="37" y="45" width="12" height="39" fill="#2e1612"/>
+<rect x="39" y="48" width="8" height="8" fill="#d6a43a" opacity=".8"/>
+<rect x="46" y="64" width="2" height="2" fill="#a7adbd"/>
+<rect x="0" y="80" width="86" height="4" fill="#2a1a24"/>
+
+<!-- alley -->
+<rect x="86" y="0" width="12" height="84" fill="#100e18"/>
+
+<!-- house -->
+<rect x="98" y="0" width="72" height="84" fill="url(#siding${id})"/>
+<rect x="98" y="0" width="72" height="10" fill="#1a182a"/>
+<rect x="98" y="10" width="72" height="2" fill="#3a3656"/>
+<rect x="107" y="30" width="18" height="22" fill="#3a3656"/>
+<rect x="108" y="31" width="16" height="20" fill="#141726"/>
+<rect x="115" y="31" width="2" height="20" fill="#3a3656"/>
+<rect x="145" y="30" width="18" height="22" fill="#3a3656"/>
+<rect x="146" y="31" width="16" height="20" fill="#141726"/>
+<rect x="153" y="31" width="2" height="20" fill="#3a3656"/>
+<rect x="148" y="38" width="4" height="5" fill="#2c2a44"/>
+<rect x="148" y="39" width="1" height="1" fill="#e8dcc0"/>
+<rect x="150" y="39" width="1" height="1" fill="#e8dcc0"/>
+<rect x="129" y="48" width="14" height="32" fill="#3a3656"/>
+<rect x="130" y="49" width="12" height="31" fill="#1a1626"/>
+<rect x="139" y="64" width="2" height="2" fill="#6b5a3a"/>
+<rect x="126" y="80" width="20" height="4" fill="#3a3656"/>
+
+<!-- sidewalk, street, sidewalk -->
+<rect x="0" y="84" width="170" height="14" fill="url(#walk${id})"/>
+<rect x="0" y="96" width="170" height="2" fill="#26222f"/>
+<rect x="0" y="98" width="170" height="62" fill="#221c28"/>
+<g fill="#2a2232"><rect x="18" y="108" width="2" height="1"/><rect x="104" y="114" width="3" height="1"/><rect x="142" y="150" width="2" height="1"/><rect x="40" y="148" width="1" height="1"/></g>
+<g fill="#6b5a3a" opacity=".7"><rect x="4" y="128" width="12" height="2"/><rect x="28" y="128" width="12" height="2"/><rect x="52" y="128" width="12" height="2"/><rect x="76" y="128" width="12" height="2"/><rect x="100" y="128" width="12" height="2"/><rect x="124" y="128" width="12" height="2"/><rect x="148" y="128" width="12" height="2"/></g>
+<rect x="128" y="140" width="12" height="6" fill="#1a1520"/>
+<rect x="129" y="141" width="10" height="4" fill="#2c2534"/>
+<g fill="#1a1520"><rect x="131" y="142" width="6" height="1"/><rect x="131" y="144" width="6" height="1"/></g>
+<rect x="0" y="160" width="170" height="2" fill="#26222f"/>
+<rect x="0" y="162" width="170" height="14" fill="url(#walk${id})"/>
+
+<!-- lot and fence -->
+<rect x="0" y="176" width="170" height="45" fill="url(#grass${id})"/>
+<g fill="#3a2e3e"><rect x="0" y="182" width="170" height="1"/><rect x="0" y="187" width="170" height="1"/></g>
+<g fill="#2e2434"><rect x="4" y="179" width="2" height="12"/><rect x="20" y="179" width="2" height="12"/><rect x="36" y="179" width="2" height="12"/><rect x="52" y="179" width="2" height="12"/><rect x="68" y="179" width="2" height="12"/><rect x="84" y="179" width="2" height="12"/><rect x="100" y="179" width="2" height="12"/><rect x="116" y="179" width="2" height="12"/><rect x="132" y="179" width="2" height="12"/><rect x="148" y="179" width="2" height="12"/><rect x="164" y="179" width="2" height="12"/></g>
+<rect x="112" y="200" width="22" height="12" fill="#14121e" opacity=".6"/>
+<rect x="114" y="196" width="18" height="10" fill="#2a2030"/>
+<rect x="114" y="196" width="18" height="2" fill="#3a2e3e"/>
+
+<!-- mailbox (hotspot) -->
+<rect x="40" y="170" width="2" height="12" fill="#120e18"/>
+<rect x="35" y="162" width="12" height="9" fill="#120e18"/>
+<rect x="36" y="163" width="10" height="7" fill="#4a5a7a"/>
+<rect x="43" y="163" width="3" height="7" fill="#36425c"/>
+<rect x="36" y="163" width="10" height="1" fill="#6a7a9a"/>
+<rect x="45" y="158" width="1" height="5" fill="#b5532e"/>
+<rect x="46" y="158" width="2" height="2" fill="#b5532e"/>
+
+<!-- street lamp -->
+<rect x="91" y="40" width="3" height="54" fill="#14121e"/>
+<rect x="92" y="40" width="1" height="54" fill="#3a3656"/>
+<rect x="89" y="92" width="7" height="3" fill="#14121e"/>
+<rect x="88" y="36" width="9" height="5" fill="#14121e"/>
+<rect x="89" y="37" width="7" height="3" fill="#f4c96a"/>
+
+<!-- NPC: woman with huge glasses -->
+<g transform="translate(97,64)">
+<rect x="2" y="25" width="11" height="1" fill="#0a0812" opacity=".6"/>
+<rect x="2" y="0" width="11" height="11" fill="#120e18"/>
+<rect x="3" y="1" width="9" height="3" fill="#9a96a8"/>
+<rect x="2" y="2" width="1" height="5" fill="#9a96a8"/>
+<rect x="12" y="2" width="1" height="5" fill="#7a7688"/>
+<rect x="3" y="4" width="9" height="6" fill="#d9a07a"/>
+<rect x="10" y="4" width="2" height="6" fill="#b07c5c"/>
+<rect x="2" y="5" width="5" height="4" fill="#e8dcc0"/>
+<rect x="8" y="5" width="5" height="4" fill="#e8dcc0"/>
+<rect x="3" y="6" width="3" height="2" fill="#9aa3d6"/>
+<rect x="9" y="6" width="3" height="2" fill="#9aa3d6"/>
+<rect x="4" y="6" width="1" height="1" fill="#120e18"/>
+<rect x="10" y="6" width="1" height="1" fill="#120e18"/>
+<rect x="7" y="6" width="1" height="1" fill="#120e18"/>
+<rect x="1" y="11" width="13" height="11" fill="#120e18"/>
+<rect x="2" y="11" width="11" height="10" fill="#6a3a5a"/>
+<rect x="10" y="12" width="3" height="9" fill="#4e2a44"/>
+<rect x="5" y="11" width="5" height="2" fill="#e8dcc0"/>
+<rect x="3" y="15" width="9" height="1" fill="#4e2a44"/>
+<rect x="4" y="21" width="2" height="4" fill="#120e18"/>
+<rect x="9" y="21" width="2" height="4" fill="#120e18"/>
+</g>
+
+<!-- lead agent: Dunn with lantern -->
+<g transform="translate(60,114)">
+<rect x="0" y="25" width="14" height="1" fill="#0a0812" opacity=".6"/>
+<rect x="1" y="0" width="12" height="11" fill="#120e18"/>
+<rect x="2" y="1" width="10" height="4" fill="#6b4426"/>
+<rect x="2" y="5" width="1" height="3" fill="#6b4426"/>
+<rect x="11" y="5" width="1" height="3" fill="#4a2e1a"/>
+<rect x="3" y="4" width="8" height="6" fill="#e2b08c"/>
+<rect x="3" y="4" width="4" height="1" fill="#6b4426"/>
+<rect x="9" y="4" width="2" height="6" fill="#b8866a"/>
+<rect x="4" y="6" width="1" height="2" fill="#120e18"/>
+<rect x="8" y="6" width="1" height="2" fill="#120e18"/>
+<rect x="6" y="9" width="2" height="1" fill="#b8866a"/>
+<rect x="0" y="11" width="14" height="11" fill="#120e18"/>
+<rect x="1" y="11" width="12" height="10" fill="#a88a5c"/>
+<rect x="9" y="12" width="4" height="9" fill="#7e6640"/>
+<rect x="6" y="11" width="2" height="4" fill="#e8dcc0"/>
+<rect x="6" y="12" width="2" height="3" fill="#b5532e"/>
+<rect x="1" y="17" width="2" height="1" fill="#7e6640"/>
+<rect x="3" y="21" width="3" height="4" fill="#2a2030"/>
+<rect x="8" y="21" width="3" height="4" fill="#2a2030"/>
+<rect x="3" y="21" width="8" height="1" fill="#120e18"/>
+<rect x="-3" y="12" width="4" height="3" fill="#120e18"/>
+<rect x="-2" y="12" width="3" height="2" fill="#a88a5c"/>
+<rect x="-3" y="14" width="2" height="2" fill="#e2b08c"/>
+<rect x="-5" y="15" width="6" height="1" fill="#3a2a1a"/>
+<rect x="-5" y="16" width="1" height="6" fill="#3a2a1a"/>
+<rect x="0" y="16" width="1" height="6" fill="#3a2a1a"/>
+<rect x="-4" y="16" width="4" height="6" fill="#f4c96a"/>
+<rect x="-3" y="17" width="2" height="4" fill="#fff1c4"/>
+<rect x="-5" y="22" width="6" height="1" fill="#3a2a1a"/>
+</g>
+
+<!-- darkness outside the lantern and lamp -->
+<rect width="170" height="221" fill="${dark}" opacity="${darkOp}" mask="url(#dark${id})"/>
+
+<!-- light on top -->
+<g fill="${glow}">
+<rect x="${66-lanternR*.52}" y="${132-lanternR*.45}" width="${lanternR*1.03}" height="${lanternR*.9}" opacity=".05"/>
+<rect x="${66-lanternR*.39}" y="${132-lanternR*.32}" width="${lanternR*.77}" height="${lanternR*.65}" opacity=".06"/>
+<rect x="${66-lanternR*.26}" y="${132-lanternR*.19}" width="${lanternR*.52}" height="${lanternR*.42}" opacity=".07"/>
+<rect x="80" y="40" width="26" height="54" opacity=".05"/>
+<rect x="84" y="84" width="24" height="12" opacity=".08"/>
+<rect x="6" y="84" width="26" height="8" opacity=".1"/>
+<rect x="54" y="84" width="26" height="8" opacity=".1"/>
+</g>
+<rect x="89" y="37" width="7" height="3" fill="#fff1c4"/>
+<rect x="58" y="130" width="2" height="4" fill="#fff1c4"/>
+<g fill="#f4c96a"><rect x="40" y="153" width="1" height="3"/><rect x="39" y="154" width="3" height="1"/></g>
+</g>
+</svg>`;
+}
+
+
+const CREEP_EXTRA = `
+<!-- chalked sign on the diner bricks (original glyph) -->
+<g fill="#c9b448" opacity=".85">
+<rect x="70" y="62" width="1" height="6"/><rect x="71" y="61" width="2" height="1"/><rect x="73" y="60" width="1" height="2"/>
+<rect x="68" y="68" width="2" height="1"/><rect x="66" y="69" width="2" height="1"/><rect x="65" y="70" width="1" height="2"/>
+<rect x="71" y="68" width="1" height="1"/><rect x="72" y="69" width="1" height="2"/><rect x="73" y="71" width="1" height="2"/><rect x="72" y="73" width="1" height="1"/>
+<rect x="70" y="65" width="1" height="1" fill="#120e18"/>
+</g>
+<!-- yellow rag tied to the lamp post -->
+<g>
+<rect x="94" y="52" width="2" height="3" fill="#8a7424"/>
+<rect x="96" y="52" width="5" height="2" fill="#b0962e"/><rect x="96" y="54" width="6" height="2" fill="#c9ae3e"/>
+<rect x="97" y="56" width="4" height="2" fill="#b0962e"/><rect x="101" y="56" width="1" height="3" fill="#8a7424"/>
+<rect x="98" y="58" width="1" height="3" fill="#8a7424"/><rect x="96" y="58" width="1" height="2" fill="#b0962e"/>
+</g>
+<!-- playbill pasted on the house -->
+<g>
+<rect x="148" y="56" width="14" height="19" fill="#120e18"/>
+<rect x="149" y="57" width="12" height="17" fill="#d9cc8a"/>
+<rect x="149" y="57" width="12" height="1" fill="#e8dcc0"/>
+<rect x="151" y="59" width="8" height="1" fill="#2a2030"/><rect x="152" y="61" width="6" height="1" fill="#2a2030"/>
+<rect x="153" y="63" width="4" height="4" fill="#b0962e"/><rect x="154" y="64" width="2" height="2" fill="#2a2030"/>
+<rect x="151" y="69" width="8" height="1" fill="#6b5a3a"/><rect x="152" y="71" width="6" height="1" fill="#6b5a3a"/>
+<rect x="160" y="73" width="1" height="1" fill="#2c2a44"/><rect x="149" y="73" width="2" height="1" fill="#2c2a44"/>
+</g>
+<!-- the woman's glasses catch the yellow -->
+<g fill="#e6da8c"><rect x="99" y="69" width="5" height="4"/><rect x="105" y="69" width="5" height="4"/></g>
+<g fill="#8a7424"><rect x="100" y="70" width="3" height="2"/><rect x="106" y="70" width="3" height="2"/></g>
+`;
+function scene(f){
+  let s=sceneRaw(f);
+  if(f.mode!=='creep') return s;
+  s=s.split('#f4c96a').join('#e6da8c').split('#d6a43a').join('#b0962e').split('#fff1c4').join('#f4eebc');
+  // add a faint pallid film and the extras before the darkness layer
+  s=s.replace('<!-- darkness outside the lantern and lamp -->', '<rect width="170" height="221" fill="#b0962e" opacity=".07"/>\n<!-- darkness outside the lantern and lamp -->');
+  s=s.replace('<!-- light on top -->', '<g opacity=".8">'+CREEP_EXTRA+'</g>\n<!-- light on top -->');
+  return s;
+}
+function carcosa(f){
+  const id=f.id, R=58;
+  const stars=[[14,10],[40,22],[66,8],[92,18],[124,6],[150,20],[30,40],[110,34],[160,44],[78,30]];
+  let st='';stars.forEach(([x,y])=>{st+=`<rect x="${x-1}" y="${y-1}" width="4" height="4" fill="#7a6e52" opacity=".55"/><rect x="${x}" y="${y}" width="2" height="2" fill="#07050a"/>`;});
+  let sky='';for(let i=0;i<70;i+=2){const t=i/70;const r=Math.round(16+t*70),g=Math.round(11+t*52),b=Math.round(18+t*14);sky+=`<rect y="${i}" width="170" height="2" fill="rgb(${r},${g},${b})"/>`;}
+  let ripples='';for(let i=0;i<22;i++){ripples+=`<rect x="${(i*41)%160}" y="${80+((i*13)%40)}" width="${6+(i%3)*4}" height="1" fill="#7d898c" opacity=".6"/>`;}
+  let pebbles='';for(let i=0;i<34;i++){pebbles+=`<rect x="${(i*37)%168}" y="${128+((i*19)%90)}" width="${1+(i%2)}" height="1" fill="#5a5048"/>`;}
+  return `
+<svg role="img" aria-label="Carcosa: a grey lake under black stars and two low suns, dark towers on the far shore, a tattered pale figure on the right, a half-sunk street lamp on the near shore, and the lead agent Dunn with a lantern." viewBox="0 0 170 221" width="340" height="442" shape-rendering="crispEdges" style="position:absolute;left:0;top:0;display:block">
+<defs>
+<radialGradient id="hole${id}"><stop offset="0" stop-color="#000" stop-opacity="1"/><stop offset=".55" stop-color="#000" stop-opacity=".85"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<mask id="dark${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="170" height="221">
+<rect width="170" height="221" fill="#fff"/>
+<rect width="170" height="126" fill="#000"/>
+<circle cx="66" cy="166" r="${R}" fill="url(#hole${id})"/>
+</mask>
+</defs>
+${sky}
+${st}
+<!-- twin suns, low on the horizon -->
+<circle cx="58" cy="58" r="13" fill="#e6da8c"/><circle cx="58" cy="58" r="10" fill="#f4eebc"/>
+<circle cx="108" cy="62" r="8" fill="#b0962e"/><circle cx="108" cy="62" r="6" fill="#c9ae3e"/>
+<!-- far shore and towers -->
+<rect y="66" width="170" height="8" fill="#140f16"/>
+<g fill="#0d0a10">
+<rect x="6" y="30" width="10" height="40"/><rect x="10" y="22" width="2" height="8"/><rect x="4" y="44" width="2" height="26"/>
+<rect x="24" y="46" width="7" height="24"/><rect x="27" y="40" width="1" height="6"/>
+<rect x="132" y="24" width="12" height="46"/><rect x="137" y="14" width="2" height="10"/><rect x="144" y="36" width="3" height="34"/>
+<rect x="154" y="48" width="8" height="22"/><rect x="157" y="42" width="2" height="6"/>
+</g>
+<g fill="#b0962e"><rect x="9" y="38" width="2" height="3"/><rect x="136" y="32" width="2" height="3"/><rect x="139" y="46" width="1" height="2"/><rect x="26" y="52" width="1" height="2"/></g>
+<!-- tatters hanging from the tall tower -->
+<g fill="#8a7424"><rect x="133" y="26" width="1" height="8"/><rect x="135" y="26" width="1" height="5"/><rect x="141" y="26" width="1" height="10"/><rect x="143" y="26" width="1" height="6"/></g>
+<!-- lake -->
+<rect y="74" width="170" height="52" fill="#56636a"/>
+<rect y="74" width="170" height="3" fill="#3e4a50"/>
+${ripples}
+<!-- sun reflections broken in the water -->
+<g fill="#e6da8c" opacity=".45"><rect x="50" y="78" width="16" height="2"/><rect x="52" y="83" width="12" height="2"/><rect x="54" y="89" width="9" height="1"/><rect x="55" y="95" width="6" height="1"/><rect x="56" y="102" width="4" height="1"/></g>
+<g fill="#b0962e" opacity=".5"><rect x="104" y="78" width="9" height="2"/><rect x="105" y="84" width="7" height="1"/><rect x="106" y="90" width="5" height="1"/></g>
+<!-- near shore -->
+<rect y="124" width="170" height="97" fill="#2b2421"/>
+<rect y="124" width="170" height="3" fill="#3a302b"/>
+<g fill="#56636a" opacity=".55"><rect x="0" y="127" width="30" height="1"/><rect x="60" y="127" width="44" height="1"/><rect x="128" y="127" width="42" height="1"/></g>
+${pebbles}
+<g fill="#3a302b"><rect x="14" y="150" width="18" height="6"/><rect x="16" y="148" width="14" height="2"/><rect x="120" y="196" width="22" height="8"/><rect x="123" y="194" width="16" height="2"/></g>
+<g fill="#4a3e36"><rect x="16" y="150" width="14" height="1"/><rect x="122" y="196" width="18" height="1"/></g>
+<!-- the street lamp from home, half sunk and tilted -->
+<g>
+<rect x="100" y="170" width="10" height="3" fill="#14121e" opacity=".6"/>
+<rect x="103" y="138" width="3" height="34" fill="#14121e"/><rect x="104" y="138" width="1" height="34" fill="#3a3656"/>
+<rect x="104" y="134" width="3" height="5" fill="#14121e"/>
+<rect x="105" y="130" width="9" height="5" fill="#14121e"/>
+<rect x="106" y="131" width="7" height="3" fill="#56514a"/>
+</g>
+<g data-lamp="1">
+<rect x="99" y="170" width="11" height="2" fill="#3a302b"/>
+</g>
+<!-- tattered figure, faceless, watching -->
+<g transform="translate(140,140)">
+<rect x="-1" y="35" width="14" height="2" fill="#0a0812" opacity=".6"/>
+<rect x="3" y="0" width="7" height="8" fill="#120e18"/><rect x="4" y="1" width="5" height="7" fill="#e6da8c"/><rect x="5" y="2" width="3" height="6" fill="#f4eebc"/>
+<rect x="1" y="8" width="11" height="22" fill="#120e18"/>
+<rect x="2" y="8" width="9" height="22" fill="#b0962e"/><rect x="8" y="9" width="3" height="21" fill="#8a7424"/><rect x="2" y="8" width="2" height="22" fill="#c9ae3e"/>
+<g fill="#b0962e"><rect x="1" y="30" width="2" height="5"/><rect x="4" y="30" width="2" height="3"/><rect x="7" y="30" width="2" height="6"/><rect x="10" y="30" width="2" height="4"/></g>
+<g fill="#8a7424"><rect x="12" y="14" width="2" height="8"/><rect x="13" y="22" width="1" height="5"/><rect x="0" y="16" width="1" height="7"/></g>
+</g>
+<!-- lead agent: Dunn with lantern -->
+<g transform="translate(60,148)">
+<rect x="0" y="25" width="14" height="1" fill="#0a0812" opacity=".6"/>
+<rect x="1" y="0" width="12" height="11" fill="#120e18"/><rect x="2" y="1" width="10" height="4" fill="#6b4426"/><rect x="2" y="5" width="1" height="3" fill="#6b4426"/><rect x="11" y="5" width="1" height="3" fill="#4a2e1a"/>
+<rect x="3" y="4" width="8" height="6" fill="#e2b08c"/><rect x="3" y="4" width="4" height="1" fill="#6b4426"/><rect x="9" y="4" width="2" height="6" fill="#b8866a"/>
+<rect x="4" y="6" width="1" height="2" fill="#120e18"/><rect x="8" y="6" width="1" height="2" fill="#120e18"/><rect x="6" y="9" width="2" height="1" fill="#b8866a"/>
+<rect x="0" y="11" width="14" height="11" fill="#120e18"/><rect x="1" y="11" width="12" height="10" fill="#a88a5c"/><rect x="9" y="12" width="4" height="9" fill="#7e6640"/>
+<rect x="6" y="11" width="2" height="4" fill="#e8dcc0"/><rect x="6" y="12" width="2" height="3" fill="#b5532e"/>
+<rect x="3" y="21" width="3" height="4" fill="#2a2030"/><rect x="8" y="21" width="3" height="4" fill="#2a2030"/><rect x="3" y="21" width="8" height="1" fill="#120e18"/>
+<rect x="-3" y="12" width="4" height="3" fill="#120e18"/><rect x="-2" y="12" width="3" height="2" fill="#a88a5c"/><rect x="-3" y="14" width="2" height="2" fill="#e2b08c"/>
+<rect x="-5" y="15" width="6" height="1" fill="#3a2a1a"/><rect x="-5" y="16" width="1" height="6" fill="#3a2a1a"/><rect x="0" y="16" width="1" height="6" fill="#3a2a1a"/>
+<rect x="-4" y="16" width="4" height="6" fill="#f4c96a"/><rect x="-3" y="17" width="2" height="4" fill="#fff1c4"/><rect x="-5" y="22" width="6" height="1" fill="#3a2a1a"/>
+</g>
+<!-- the near shore is dark outside the lantern -->
+<rect width="170" height="221" fill="#0a0812" opacity=".72" mask="url(#dark${id})"/>
+<g fill="#d6a43a"><rect x="36" y="140" width="60" height="52" opacity=".05"/><rect x="44" y="148" width="44" height="36" opacity=".06"/></g>
+<rect x="58" y="164" width="2" height="4" fill="#fff1c4"/>
+<g opacity=".85"><rect x="103" y="138" width="3" height="32" fill="#2a2638"/><rect x="104" y="138" width="1" height="32" fill="#4a4566"/><rect x="105" y="130" width="9" height="5" fill="#2a2638"/><rect x="106" y="131" width="7" height="3" fill="#8a8270"/><rect x="104" y="134" width="3" height="5" fill="#2a2638"/></g>
+</svg>`;
+}
+
+function phone(f){
+  const sanCol = f.low ? '#ff4fa3' : '#b9a8e0';
+  return `
+<div class="col">
+<p class="cap">${f.cap}</p>
+<div class="phone">
+<div style="position:absolute;left:0;right:0;top:0;height:4px;background:#4a4380"></div>
+<div style="position:absolute;left:7px;top:10px;width:361px;height:466px;background:#14121e;border-radius:10px 10px 28px 10px"></div>
+
+<div style="position:absolute;left:17px;top:22px;width:340px;height:442px;overflow:hidden;background:#1b1f33">
+${scene(f)}
+
+<div style="position:absolute;left:4px;top:4px;display:flex;align-items:center;gap:6px;padding:3px 6px 3px 3px;background:rgba(27,31,51,.92);border:2px solid #e8dcc0;border-radius:3px">
+<svg aria-hidden="true" viewBox="0 0 12 12" width="28" height="28" shape-rendering="crispEdges" style="display:block;outline:2px solid #d6a43a"><rect width="12" height="12" fill="#2a2030"/><rect x="2" y="2" width="8" height="9" fill="#e2b08c"/><rect x="2" y="1" width="8" height="3" fill="#6b4426"/><rect x="1" y="2" width="1" height="5" fill="#6b4426"/><rect x="10" y="2" width="1" height="5" fill="#6b4426"/><rect x="4" y="6" width="1" height="1" fill="#120e18"/><rect x="7" y="6" width="1" height="1" fill="#120e18"/><rect x="5" y="9" width="2" height="1" fill="#8a3a2e"/></svg>
+<div style="display:flex;flex-direction:column;gap:1px;width:92px">
+<div style="display:flex;justify-content:space-between;font-size:15px;line-height:13px"><span style="color:#f4c96a">DUNN</span><span>11/12</span></div>
+<div style="height:4px;background:#2a2030;border:1px solid #120e18"><div style="width:92%;height:100%;background:#7fbf6a"></div></div>
+<div style="font-size:14px;line-height:12px;color:#b9a8e0;white-space:nowrap">WP 7 · <span style="color:${sanCol}">SAN ${f.san}</span></div>
+</div>
+</div>
+
+<div style="position:absolute;right:4px;top:4px;display:flex;align-items:center;gap:5px;padding:2px 6px;background:rgba(27,31,51,.92);border:2px solid #e8dcc0;border-radius:3px;font-size:15px;line-height:15px">
+<svg aria-hidden="true" viewBox="0 0 7 7" width="14" height="14" shape-rendering="crispEdges" style="display:block"><path d="M2 0h3v1h-2v1h-1v3h1v1h2v1h-3v-1h-1v-1h-1v-3h1v-1h1z" fill="#e8dcc0"/></svg>
+<span>${f.tag}</span>
+</div>
+
+${f.mode==='carcosa'?'':`<div style="position:absolute;left:186px;top:98px;display:flex;align-items:center;gap:4px;padding:1px 5px 1px 2px;background:rgba(27,31,51,.94);border:2px solid #e8dcc0;border-radius:3px;font-size:15px;line-height:15px">
+<span style="width:15px;height:15px;border-radius:50%;background:#b5532e;color:#fbe8d8;font-family:'Press Start 2P',monospace;font-size:7px;line-height:15px;text-align:center">A</span>TALK
+</div>
+<div style="position:absolute;left:204px;top:117px;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid #e8dcc0"></div>`}
+</div>
+
+<div style="position:absolute;left:0;right:0;top:482px;display:flex;justify-content:center;align-items:center;gap:8px;font-family:'Press Start 2P',monospace;font-size:9px;letter-spacing:1px;color:#9a92c8">
+<span style="width:6px;height:6px;background:#d6a43a;box-shadow:0 0 6px #d6a43a"></span>BLACK LANTERN
+</div>
+
+<div style="position:absolute;left:25px;top:508px;width:106px;height:106px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr))">
+<div></div><button class="btn" aria-label="Up" style="background:#1a1824;border-radius:4px 4px 0 0;box-shadow:inset 0 2px 0 #2e2b40;color:#4a4560;font-size:12px">▲</button><div></div>
+<button class="btn" aria-label="Left" style="background:#1a1824;border-radius:4px 0 0 4px;box-shadow:inset 0 2px 0 #2e2b40;color:#4a4560;font-size:12px">◀</button><div style="background:#1a1824"></div><button class="btn" aria-label="Right" style="background:#1a1824;border-radius:0 4px 4px 0;box-shadow:inset 0 2px 0 #2e2b40;color:#4a4560;font-size:12px">▶</button>
+<div></div><button class="btn" aria-label="Down" style="background:#1a1824;border-radius:0 0 4px 4px;color:#4a4560;font-size:12px">▼</button><div></div>
+</div>
+
+<button class="btn" aria-label="B, back" style="position:absolute;left:228px;top:548px;width:52px;height:52px;border-radius:50%;background:#6e2e24;box-shadow:inset 0 -4px 0 #4a1e18,0 2px 0 #241f40;color:#e8c8b8;font-family:'Press Start 2P',monospace;font-size:14px">B</button>
+<button class="btn" aria-label="A, confirm" style="position:absolute;left:294px;top:516px;width:52px;height:52px;border-radius:50%;background:#b5532e;box-shadow:inset 0 -4px 0 #7a3520,0 2px 0 #241f40;color:#fbe8d8;font-family:'Press Start 2P',monospace;font-size:14px">A</button>
+
+<div style="position:absolute;left:0;right:0;top:626px;display:flex;justify-content:center;gap:14px">
+<button class="btn" style="width:54px;height:26px;border-radius:13px;background:#24213c;color:#9a92c8;font-family:'Press Start 2P',monospace;font-size:9px">L</button>
+<button class="btn" style="width:72px;height:26px;border-radius:13px;background:#1a1824;color:#9a92c8;font-family:'Press Start 2P',monospace;font-size:7px">SELECT</button>
+<button class="btn" style="width:72px;height:26px;border-radius:13px;background:#1a1824;color:#9a92c8;font-family:'Press Start 2P',monospace;font-size:7px">START</button>
+<button class="btn" style="width:54px;height:26px;border-radius:13px;background:#24213c;color:#9a92c8;font-family:'Press Start 2P',monospace;font-size:9px">R</button>
+</div>
+</div>
+<p class="note">${f.note}</p>
+</div>`;
+}
+
+document.getElementById('wrap').innerHTML = FRAMES.map(phone).join('');
+</script>
+</body>
+</html>
