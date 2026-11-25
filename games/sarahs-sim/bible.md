@@ -30,7 +30,7 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
   Done Nov 25: coins and prices drafted in Play, Life mode, sets in Memory book and Visitors.
 - [x] Cat personalities: Keegan and the Designer work out Louie's and Ralph's personalities, which shape how each one wanders, naps, nudges and reacts (Keegan, Nov 25).
   Done Nov 25: in Play, The cats.
-- [ ] Keegan's notes: Keegan writes about 20 short notes in the [Notes for Sarah](https://claude.ai/artifact/Xez8onsWSjq7SKSSsnGk1o) sheet: one under the Christmas tree, one on her birthday, about 8 for holidays and their anniversary, and about 10 hidden around the home for her first month. Each slot says when and where she finds it (Keegan, Nov 25). Keegan also sends their anniversary date.
+- [ ] Keegan's notes: Keegan writes about 20 short notes in the [Notes for Sarah](https://claude.ai/artifact/Xez8onsWSjq7SKSSsnGk1o) sheet: one under the Christmas tree, one on her birthday, about 8 for holidays and their anniversary, and about 10 hidden around the home for her first month. Each slot says when and where she finds it (Keegan, Nov 25).
 - [ ] Idle life: Keegan writes more things the two of them are busy doing when she opens the game, on top of the first ones (see Play) (Keegan, Nov 25).
 - [x] Recipes: Keegan lists the dishes he really cooks for Sarah, with what goes in each, for the cooking minigame.
   Done Nov 25: nine dishes, in Play, Cooking.
@@ -142,7 +142,7 @@ Moments approved by Keegan as starters (Nov 25). The reward pieces are a *Claude
 | Holidays | First snow · the Christmas tree trimmed · Christmas morning · New Year's Eve · Valentine's Day · spring's first warm day · Fourth of July · Halloween costumes · Thanksgiving dinner · Sarah's birthday · Keegan's birthday · a whole year of holidays | A garland for every season · an ornament shelf · a lit-up holiday village |
 | Home | First room finished · first piece bought with coins · first wall built on an empty lot · a whole new home finished · first favorite saved · first photo taken · first outfit designed · the ORANGE ROCKS tee worn · 10 rooms finished · every room in the Philly home redone | A mood board · a sewing corner and a dress form · a drafting table studio |
 | Friends | First visitor · first gig done · first visit to a neighbor's home · first neighbor's home redone · first person made in the creator · a visitor brings a gift · first friend's story finished · three friends made · every neighbor's story finished · a full house of visitors | Floor cushions · a snack table and string lights · a record player |
-| The two of us | First note from Keegan found · the note under the tree · cuddled up on the couch · a kiss · a cozy night in · winding down together · Sarah video-calls her mom · Keegan's game night · a slow morning in bed · every note found | A cozy throw · a "home" sign · a wall of framed pictures of the two of them |
+| The two of us | First note from Keegan found · the note under the tree · cuddled up on the couch · a kiss · a cozy night in · winding down together · Sarah video-calls her mom · Keegan's game night · a slow morning in bed · our anniversary · every note found | A cozy throw · a "home" sign · a wall of framed pictures of the two of them |
  Life mode runs on the real time of day. Morning light in her morning, lamps and a night sky in her evening. Plants and the cats' needs run on real time too.
 - **Needs:** people have three soft needs: energy, hunger and fun. A low need only makes them yawn or sigh and work a bit slower.
 - **Away from the game:** every need, for people and cats, pauses while she isn't playing. A month away comes back to the same home, just as she left it.
@@ -315,6 +315,7 @@ Set Nov 25, 2026 (Keegan): weed is part of their cozy life, in the same light to
   - On her birthday, the home wakes up with balloons and a cake, Keegan has a gift and a note waiting for her, and the cats wear party hats.
   - On his, she can throw him a party. It's also St. Patrick's Day, so the decorations are green.
   - Both go in the memory book's Holidays chapter.
+- **Anniversary** (Keegan, Nov 25): July 10. The home is dressed for a date night in: candles, flowers on the table and a special dinner to cook together, with a note from Keegan on her pillow. It goes in the memory book's "two of us" chapter.
 - **The cats** (Keegan, Nov 25): Louie, a slim grey-and-white cat with a white blaze up his nose and sleepy yellow-green eyes (`mockups/louie-v1`), and Ralph, a big orange tabby with white socks and a white blaze, clearly bigger than Louie (`mockups/ralph-v1`). Ralph has an optional outfit: a red bowtie with a small silver bell.
 - **People** (Keegan, Nov 25): Keegan and Sarah are drawn to look like themselves (`mockups/people-v1`, approved as a starting place), and she can restyle their hair and outfits.
   - **Sarah:** copper curls, freckles, grey-blue eyes, glasses on or off, gold hoops. She has several hairstyles (pinned up, loose bob, long curls, ponytail to start), but her hair is always ginger: restyle, never recolor.
