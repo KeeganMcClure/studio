@@ -22,7 +22,9 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [x] Decorating: catalog categories, how many pieces at launch, color variants, rotate, stack and wall items. Screen mockup for the catalog.
   Done Nov 25: set with Keegan and drawn in `mockups/decorate-v1`. See Decorating.
 - [ ] Item sprites: Keegan and the Designer work out how furniture and decor pieces are drawn, so all 80 match (Keegan, Nov 25: later).
-- [ ] Outfits: what she designs (pick parts, recolor, patterns), the clothing list, and the Style screen mockup. Set Nov 25 apart from the clothing list: see Outfits and `mockups/style-v1`. Left: the list of about 60 pieces.
+- [x] Outfits: what she designs (pick parts, recolor, patterns), the clothing list, and the Style screen mockup.
+  Done Nov 25: set with Keegan, drawn in `mockups/style-v1`, and a starting list of 60 pieces. See Outfits.
+- [ ] More outfit references: Keegan sends more photos of the two of them, and the clothing list grows from them (Keegan, Nov 25).
 - [ ] Creator: the parts for making new people (face, hair, skin, body), and its screen mockup.
 - [ ] Building: lot size, walls, doors, windows, floors, stairs or not, how the view scrolls and zooms over a home bigger than the screen, and the build screen mockup.
 - [x] Gameplay: what keeps her coming back beyond designing (Nov 25). See Play.
@@ -242,6 +244,85 @@ Set Nov 25 (Keegan). Mockup: `mockups/style-v1` (UI approved).
 - **Big dress-up view:** the Style screen shows the person large, about 3 times map size, in front of a standing mirror. Arrows spin them to see the back. Tap the name to dress someone else. The heart saves a favorite and the camera takes a picture (see Play).
 - **Designing a piece:** each piece has hand-picked swatches, a paint mode for each part, and patterns: plain, stripes, plaid, floral, leopard and dots.
 - **Her own prints:** she can write on tees, front or back, in 2 short lines of up to 6 letters, and pick the letter color. The ORANGE ROCKS tee is built this way.
+- **Coats** sit under the Tops tab, so the 8 tabs stay as they are. Ralph's bowtie is a cat outfit and isn't counted here. More holiday clothes come with each holiday set after Christmas.
+
+### Clothing list
+
+The starting list, approved by Keegan on Nov 25 (60 pieces). ♥ marks a piece from Keegan's photos, which also shows in the Ours tab. More are added as Keegan sends more photos (see To do).
+
+#### Tops (16)
+1. ♥ ORANGE ROCKS tee (front: ORANGE ROCKS, back: AND SO DO I)
+2. ♥ Rose crochet-flower cardigan over a cream top
+3. ♥ Leopard spot sweater
+4. ♥ Lilac hoodie
+5. ♥ Cream turtleneck sweater
+6. ♥ Slate-blue puffer vest
+7. ♥ Mauve-pink tee
+8. ♥ Green tartan flannel over a white tee
+9. ♥ Navy plaid cardigan
+10. ♥ Camp shirt, red floral
+11. ♥ Camp shirt, white with a blue print
+12. ♥ Camp shirt, purple and pink stripes
+13. ♥ White button-down with a navy tie
+14. Plain tee (blank for her own prints)
+15. Cozy cable-knit sweater
+16. Tank top
+
+#### Bottoms (9)
+17. ♥ Straight blue jeans
+18. ♥ Light cuffed jeans
+19. ♥ Light-wash jean shorts
+20. ♥ Blue chino shorts
+21. Wide-leg trousers
+22. Pleated skirt
+23. Overalls
+24. Soft joggers
+25. Leggings
+
+#### Dresses (7)
+26. ♥ White eyelet floral sundress
+27. ♥ Pink satin slip dress
+28. ♥ Burgundy long-sleeve mini dress
+29. Wrap dress
+30. Sweater dress
+31. Overall dress
+32. Party dress with a full skirt
+
+#### Coats (4)
+33. ♥ Floral puffer
+34. ♥ Denim sherpa jacket with pins
+35. Long wool coat
+36. Raincoat
+
+#### Shoes (8)
+37. ♥ Tan suede boots
+38. ♥ Converse high-tops
+39. ♥ Strappy heels
+40. Slippers
+41. Sneakers
+42. Rain boots
+43. Sandals
+44. Socks only (cozy socks)
+
+#### Extras (11)
+45. ♥ Glasses, clear frames
+46. ♥ Glasses, tortoiseshell
+47. ♥ Gold hoops
+48. ♥ Gold claw clip
+49. ♥ Pink cap
+50. ♥ Cream cap with a brown brim
+51. ♥ Black cap with a green underbrim
+52. ♥ Dark sunglasses
+53. Beanie
+54. Scarf
+55. Tote bag
+
+#### Holiday (5)
+56. ♥ Red tartan Christmas pajamas with lace trim and puffed sleeves
+57. Ugly Christmas sweater
+58. Santa hat
+59. Halloween witch hat
+60. Valentine's heart sweater
 
 ## Controls and screen
 
