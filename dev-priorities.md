@@ -5,7 +5,8 @@ Keegan's call, Nov 24: work the list top to bottom, switching games as it goes. 
 
 1. - [x] Black Lantern: Kinder overstepping (bible rule changed Nov 24).
    Done Nov 24: built and merged.
-2. - [ ] Black Lantern: bigger agents in battle (spec 023), before more cases.
+2. - [x] Black Lantern: bigger agents in battle (spec 023), before more cases.
+   Done Nov 25: built on Dev, waiting for review and merge.
 3. - [ ] Rushlight: the look bug batch. Its dev prompt (`handoffs/rushlight-look-bugs-dev-prompt.md`) still has to be shared again by the Designer (see `designer-todo.md`).
 4. - [ ] Rushlight: look pass 8A to 8D (spec 008), one part per session. Dev prompt: `handoffs/rushlight-facelift-dev-prompt.md`. It assumes the look bug batch is done first. The seven CO-TAG rows need Keegan's OK before 8C releases.
 5. - [ ] Black Lantern: the later agency cases and the finale (spec 015).

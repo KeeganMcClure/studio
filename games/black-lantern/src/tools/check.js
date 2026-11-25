@@ -14,6 +14,9 @@
 //      (a checkpoint paused mid-debrief, spec 007, first reopens at its debrief step);
 //      then New game (asking first when a case is closed) → Pick a team → Your team → START shows the board with
 //      Still Harvest open, B goes back to Your team, and the roster is kept
+//   7. the battle backs' contact sheet (spec 023; tools/battle-backs-sheet.js) is written to dist/contact-sheet-battle-backs.png:
+//      every profession on both builds, every hair style, the lead with the lantern and Downed. Each drawing must be the
+//      same size, not blank, a slim build exactly 8 px narrower at the waist, and the lantern must show only when not Downed
 // Still needs a person: the changed part playing start to finish, text and typos, the fun check.
 // Usage: node tools/build.js && node tools/check.js
 const { chromium } = require('playwright');
@@ -80,6 +83,7 @@ const KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x', 'q', 
   }
   failed += await checkSaves(browser);
   await browser.close();
+  failed += await checkBattleBacks();
   console.log(failed ? `\n${failed} problem(s) found.` : '\nAll automatic checks passed.');
   process.exit(failed ? 1 : 0);
 })();
@@ -211,4 +215,26 @@ async function checkBoard(page, name, save, inCase, from) {
   const after = await page.evaluate(() => JSON.parse(localStorage.getItem('bl.roster') || '[]').length);
   if (after < roster) problems.push(`the roster lost agents (${roster} → ${after})`);
   return problems;
+}
+
+// 7. the battle backs' contact sheet (spec 023, Part 7; studio-bible/art-style.md, Contact sheet every build)
+async function checkBattleBacks() {
+  const sheet = require('../../../../engine/tools/contact-sheet.js'), draw = require('./battle-backs-sheet.js');
+  const out = path.join(__dirname, '..', 'dist', 'contact-sheet-battle-backs.png'), problems = [];
+  const res = await sheet({ page: path.join(__dirname, '..', 'dist', 'index.html'), draw, out }).catch(e => ({ errors: [e.message] }));
+  problems.push(...(res.errors || []));
+  const info = res.info || [];
+  if (info.length < 18 * 2 + 7 * 2 + 6) problems.push(`the sheet drew ${info.length} battle backs, expected ${18 * 2 + 7 * 2 + 6}`);
+  const size = info[0] ? info[0].w + ' x ' + info[0].h : '';
+  info.forEach(b => {
+    if (b.w + ' x ' + b.h !== size) problems.push(`${b.label} is ${b.w} x ${b.h}, the others ${size}`);
+    if (b.pixels < 800) problems.push(`${b.label} is blank or nearly (${b.pixels} pixels)`);
+  });
+  const broad = info.filter(b => !b.slim && !b.lantern && !b.downed), slim = info.filter(b => b.slim && !b.lantern && !b.downed);
+  broad.slice(0, 18).forEach((b, i) => { const s = slim[i]; if (!s || b.waist - s.waist !== 8) problems.push(`${b.label}: slim should be 8 px narrower at the waist (${b.waist} vs ${s && s.waist})`); });
+  const lead = info.find(b => b.label === 'lead'), dlead = info.find(b => b.label === 'downed lead');
+  if (lead && dlead && dlead.pixels >= lead.pixels) problems.push('a Downed lead should drop the lantern');
+  console.log(`${problems.length ? 'FAIL' : 'ok  '} battle backs contact sheet: ${info.length} drawings at ${size} (dist/contact-sheet-battle-backs.png)`);
+  problems.forEach(p => console.log('     - ' + p));
+  return problems.length;
 }

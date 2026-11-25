@@ -728,7 +728,8 @@ function render(scroll=true){
 }
 function drawBig(blink){const c=$('#pbig');if(c){drawPortrait(c,S.a,3,blink);c.style.width='96px';c.style.height='96px'}}
 // Identity's body preview (spec 022, Part 3): the agent's map sprite (agent-sprite.js) and battle back (agent-back.js),
-// trimmed to what's drawn and shown at 2x (1x when the column is short), feet on one line
+// trimmed to what's drawn and shown at 2x (1x when the column is short), feet on one line; the battle back steps down
+// on its own when the column is too narrow for it (spec 023)
 function drawBodies(){
   const trim=src=>{const g=src.getContext('2d'),{width:w,height:h}=src,d=g.getImageData(0,0,w,h).data;let x0=w,y0=h,x1=-1,y1=-1;
     for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(d[(y*w+x)*4+3]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
@@ -741,7 +742,10 @@ function drawBodies(){
   // (tight 2) the face keeps only its own frame and BACKSTORY sits at the start of the text
   const box=$('#bodies'),scr=screen.classList;
   for(const [k,hint,tight] of [[2,1,0],[2,0,0],[2,0,1],[1,1,0],[1,0,0],[1,0,1],[1,0,2]]){
-    scr.toggle('idtight',tight>0);scr.toggle('idtight2',tight>1);under.classList.toggle('nohint',!hint);put(cm,m,k);put(cb,b,k);
+    // the battle back (48 x 60 since spec 023) also fits the column's width beside the map sprite: at the same scale
+    // when it fits, else in half steps down to 1x (1.5x is 3 phone pixels a game pixel at 2x, so it stays crisp)
+    const room=under.clientWidth-4-(m?m.w*k:0)-10,kb=b?Math.max(1,Math.min(k,Math.floor(room/b.w*2)/2)):k;
+    scr.toggle('idtight',tight>0);scr.toggle('idtight2',tight>1);under.classList.toggle('nohint',!hint);put(cm,m,k);put(cb,b,kb);
     if(box.getBoundingClientRect().top>=under.getBoundingClientRect().top-.5)break}}
 // the sprite files load after this one: draw the preview again once they're in
 window.addEventListener('load',()=>{if(S.step==='identity')drawBodies()});
