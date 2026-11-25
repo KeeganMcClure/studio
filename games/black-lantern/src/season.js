@@ -5,7 +5,7 @@
 // Loaded right after case-board.js as a plain script; the board (case-board.js) draws what this decides.
 //
 // A season data file calls registerSeason({n, regular:[case ids in queue order], agency:[{id, at, finale}],
-//  text:{unlock:{id:[lines]}, end:[lines]}}). A Dev-only test season (seasons/test-season.js) registers as 'test'.
+//  text:{unlock:{id:[lines]}, end:[lines] or {clean, costly, worst: [lines]}}}). A Dev-only test season (seasons/test-season.js) registers as 'test'.
 
 const SEASONS={};
 function registerSeason(d){if(d&&(d.n||d.id))SEASONS[d.id||d.n]=d}
@@ -55,7 +55,7 @@ async function introSteps(){
  else{const s=loadSeason();if(clearShut(s)|fillSlots(s))store.set(seasonKey(),s)}
  let s=loadSeason();
  if(seasonOver(s)){CB.end={t0:performance.now()};const d=seasonDef(s.season);await sleep(400);if(!CB)return;
-  for(const l of [].concat((d&&d.text&&d.text.end)||[]))await say('BIG HAT',l);return}
+  for(const l of endLines(s,d))await say('BIG HAT',l);return}
  const due=agencyDue(s);
  if(due){if(!s.agency.some(a=>a.id===due))s.agency.push({id:due,played:false});const c=caseById(due);
   if(!s.cases[due])s.cases[due]={file:c.card.file,state:'open',ending:null};store.set(seasonKey(),s);
@@ -64,6 +64,10 @@ async function introSteps(){
   s=loadSeason();const x=s.agency.find(a=>a.id===due);if(x)x.played=true;store.set(seasonKey(),s);
   if(!CB)return;CB.thud={t0:performance.now()};const t=boardTargets(boardLayout());CB.sel=Math.max(0,t.findIndex(x=>x.id===due))}
 }
+// Big Hat's season-end lines: text.end is a list, or {clean, costly, worst} picked by how the finale ended (a missing
+// ending falls back to costly, then clean), or a function of that ending.
+function endLines(s,d){const E=d&&d.text&&d.text.end,f=agencyDefs(s).find(a=>a.finale),e=f&&s.cases[f.id]&&s.cases[f.id].ending;
+ if(typeof E==='function')return[].concat(E(e)||[]);if(Array.isArray(E)||!E)return[].concat(E||[]);return[].concat(E[e]||E.costly||E.clean||[])}
 // A on the season end screen: the next season begins. Overstepping goes back to Clean; open regular cases carry over,
 // first in the queue; everyone's survived-case count starts over, except where an arc is still running (spec 008, A2).
 function nextSeason(){
