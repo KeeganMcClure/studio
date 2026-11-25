@@ -61,7 +61,7 @@ Every screen you can see, in play order (studio rule: `studio-bible/studio.md`, 
 | Survivor builder | Make your survivor | 001 (4, 5) | `05`, sprites to `06` |
 | Map | Walk the town's sections, with the top bar, search, locks and night | 002 (1 to 7) | `04` |
 | Fights on the map | Turns, zombies, attacks, noise, sneaking, fleeing | 003 (1 to 8) | **To draw** (`01` is an old placeholder) |
-| Bag (L) | Your items, crafting | 002 (8, 10) | **To draw** |
+| Bag (L) | Your items, crafting | 002 (8, 10) | `07-bag-rough-v1` (approved Nov 25, 2026) |
 | Map screen (R) | The map of what you've found | 002 (12) | **To draw** |
 | Start menu | Party, Notebook, Wait, Sleep, Claim this place, Save code, Quit to title | 001 (wiring), 002, 004 (wiring) | `05` (same surface) |
 | Party card | You and your companions | 001 (6), `studio-bible/ui.md` | `05` (the taped photo and cards) |
@@ -333,6 +333,7 @@ Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
 | `06-sprite-reference-rough-v1` | Rough, Nov 23: the sprite reference and day palette. Keegan, Nov 23: the direction is right; necks too long, shading read as stubble, cars didn't read as cars. |
 | `06-sprite-reference-rough-v2` | Rough, Nov 23: v1 with shorter necks, clean faces lit from the side (no stubble look), and real cars (side view with the roof showing, wheels in arches, glass, lights). Approved Nov 23 (Keegan): this is the look. |
 | `06-sprite-reference-rough-v3` | Rough, Nov 23: v2 with Scared redrawn, because Keegan found it read as surprised. Now the inner brows are pulled up and together, the eyes are wide and dart to one side, the mouth is a tight grimace and there's a sweat bead. Approved Nov 23 (Keegan): this is the sprite reference. |
+| `07-bag-rough-v1` | Rough, Nov 25: the Bag (L) on the cardboard surface: 4 pocket slots and a school backpack's 6, each square with its icon, count and wear marks; In hand, slots used and walk speed on the right; the picked item's card with its actions as buttons (after A); L/R flip to Recipes. Keegan approved it as is, Nov 25. |
 
 ## Tech
 
