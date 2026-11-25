@@ -15,7 +15,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [x] Setup: create this bible (Nov 25).
 - [x] Base look: warm and cozy isometric room approved (Nov 25). See Art.
 - [ ] Sarah's phone: Keegan finds out the model. It sets the target screen size.
-- [ ] Shell space: with the phone known, Keegan picks between keeping L/R, dropping them, and a taller game screen (Keegan, Nov 25: maybe drop L/R for more room; a plain question, no mockup needed). The approved mockup uses today's shell with L/R.
+- [ ] Shell space: with the phone known, Keegan decides whether the game screen grows taller than the studio's 320 px cap to fill the space L and R leave (a plain question, no mockup needed).
+  Nov 25: L and R are dropped (Keegan). See Controls and screen. The taller screen still waits on the phone model.
 - [ ] Photos: Keegan sends photos of their things and their cats. Photos stay in the Game Designer project files, never in this repo; only the drawn versions come here.
 - [ ] Reference sheet: Keegan, Sarah and the cats (drawn and approved Nov 25: `mockups/louie-v1`, `mockups/ralph-v1`, `mockups/people-v1`; real furniture to come) as map sprites and portraits, plus a first set of their real furniture, drawn from the photos (`studio-bible/art-style.md`, Before a game's first build).
 - [x] Holidays: which holidays get decorations and items (Nov 25). See Homes and people.
@@ -48,7 +49,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [x] Garden: the plant list, how long each takes to grow in real days, how plants change with the seasons, and the mow, weed and water minigames. Plus the house upkeep minigames.
   Done Nov 25: in Play, Garden (the plant list is a starter list Keegan can change).
 - [ ] Memory book: screen mockup (moments approved and rewards set in steps, Nov 25).
-- [ ] Saves: slots per mode, and save export and import (favorites and the camera are set, see Play).
+- [x] Saves: slots per mode, and save export and import (favorites and the camera are set, see Play).
+  Done Nov 25: set with Keegan. See Saves.
 - [x] Title and cover: the title screen and the 120 × 80 cover (`studio-bible/launcher.md`).
   Done Nov 25: set with Keegan and drawn in `mockups/title-v1` (winter). See Title and cover. Keegan writes the Christmas line.
 - [ ] Specs: one spec per build part, in this order: the Philly home and decorating (Sandbox), Outfits, Creator, Building, Garden and yard, Life mode (clock, needs, cat care, gigs, coins, idle life), Memory book and notes, Visitors and the neighborhood, Holidays, Challenges.
@@ -69,9 +71,9 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 
 | Screen | What you do there | Spec | Mockup |
 | --- | --- | --- | --- |
-| First open (gift) | Once only: pull the ribbon on a wrapped gift, which opens onto the home with Keegan's Christmas line | No spec yet | `title-v1` (approved Nov 25, 2026) |
-| Title | Pick a mode, continue, import a save, over the snowy home | No spec yet | `title-v1` (approved Nov 25, 2026) |
-| Home (decorate) | Open the catalog, drag pieces into the room, stack small things, turn, move, recolor and paint them | No spec yet | `decorate-v1` (UI approved Nov 25, 2026), on the `look-iso-v1` room |
+| First open (gift) | Once only: pull the ribbon on a wrapped gift, which opens onto the home with Keegan's Christmas line | `specs/001-home-and-decorating.md` | `title-v1` (approved Nov 25, 2026) |
+| Title | Pick a mode, continue, import a save, over the snowy home | `specs/001-home-and-decorating.md` | `title-v1` (approved Nov 25, 2026) |
+| Home (decorate) | Open the catalog, drag pieces into the room, stack small things, turn, move, recolor and paint them | `specs/001-home-and-decorating.md` | `decorate-v1` (UI approved Nov 25, 2026), on the `look-iso-v1` room |
 | Style (outfits) | Dress a person in the big view: pick pieces, recolor, paint, add patterns and tee prints, spin to see the back | No spec yet | `style-v1` (UI approved Nov 25, 2026) |
 | Creator | Make a new person: parts, fine tuning, age, gender and extras | No spec yet | `creator-v1` (approved Nov 25, 2026) |
 | Build | Draw rooms, walls, doors, windows, floors and stairs on an empty lot, up to 3 floors | No spec yet | `build-v1` (approved Nov 25, 2026) |
@@ -84,10 +86,10 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Neighborhood | Walk to a neighbor's home to help redo it | `specs/008-visitors-and-neighborhood.md` | **To draw** |
 | Memory book | Flip through moments, notes and photos | `specs/007-memory-book-and-notes.md` | **To draw** |
 | Note found | Read a note from Keegan she found in the home | `specs/007-memory-book-and-notes.md` | **To draw** |
-| Favorites | Save and reuse whole rooms and outfits | No spec yet | **To draw** |
-| Camera | Take a clean picture of a room or outfit | No spec yet | **To draw** |
+| Favorites | Save and reuse whole rooms and outfits | `specs/001-home-and-decorating.md` | **To draw** |
+| Camera | Take a clean picture of a room or outfit | `specs/001-home-and-decorating.md` | **To draw** |
 | Challenges | Pick a challenge and see how you did | `specs/010-challenges.md` | **To draw** |
-| Start menu | Save, homes, people, quit to title | No spec yet | **To draw** |
+| Start menu | Save, homes, people, quit to title | `specs/001-home-and-decorating.md` | **To draw** |
 
 ## Overview
 
@@ -508,11 +510,22 @@ Set Nov 25 (Keegan: "I absolutely love it"). Mockup: `mockups/title-v1` (the gif
 - **Title:** the game's name in gold over the scene, with "A cozy life" and a heart under it. The menu card has Continue (with her day), Sandbox, Life and Challenges, plus a small Import a save link.
 - **Cover (120 × 80):** a small version of the same scene with the title on it (`studio-bible/launcher.md`, Covers). It changes with the seasons too.
 
+## Saves
+
+Set Nov 25 (Keegan). The studio rules in `studio-bible/saves.md` apply (autosave, save on close, a save version with upgrade steps, test saves), with the two named exceptions below.
+
+- **One save per mode** (named exception to "one slot"): Sandbox, Life and Challenges each keep their own autosaved save with their own homes and people. Playing Sandbox never touches Life's coins or day.
+- **Shared across modes:** favorites (rooms and outfits) are kept once and work in every mode. The first-open gift is remembered once for the whole game, so it never shows again.
+- **Keys:** prefix `ss.`, one key per kind of data (for example one per mode, one for favorites, one for the version). The spec sets the exact names.
+- **Backups are a file** (named exception to the text code): one tap in the Start menu saves a backup file of all three modes and her favorites to her phone's Files. Import a save on the title screen reads one back. A text code would be far too long once her homes and outfits are in it.
+- **Reminders:** about once a month, and before a big update, a gentle note on the title screen offers a backup. One tap makes it, and it can be dismissed.
+
 ## Controls and screen
 
 - **Touch first, buttons too** (Keegan, Nov 25): she taps and drags furniture and clothes. The studio shell and its buttons stay for walking, menus and anyone who prefers buttons. **Named exception** to `studio-bible/controls.md` (Buttons): drag and drop on the game screen is a main control here, not only tapping menu rows.
 - **Target screen:** Sarah's phone. The studio's tests at 375 × 667, 375 × 550 and 320 × 480 still run, so nothing is cut off anywhere.
-- **Shell space:** open (see To do). On a big phone the game height cap of 320 px (`studio-bible/controls.md`, Shell) leaves dark bands above and below the room; the shell-space question covers it.
+- **No L or R** (Keegan, Nov 25): the shell has no shoulder buttons, and the game screen gets that space. **Named exception** to `studio-bible/controls.md` (Shell, Buttons). Everything L and R would do has an on-screen button or a swipe instead: turning a piece uses its turn button, and tabs and pages are tapped or swiped. Mockups drawn before this still show L and R.
+- **Shell space:** partly open (see To do). On a big phone the game height cap of 320 px (`studio-bible/controls.md`, Shell) leaves dark bands above and below the room; the shell-space question covers it.
 
 ## Art
 
