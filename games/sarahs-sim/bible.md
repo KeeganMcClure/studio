@@ -39,7 +39,7 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [ ] Neighbors: the made-up neighbor cast, each one's personality, and each visitor's short story and special set.
 - [x] Garden: the plant list, how long each takes to grow in real days, how plants change with the seasons, and the mow, weed and water minigames. Plus the house upkeep minigames.
   Done Nov 25: in Play, Garden (the plant list is a starter list Keegan can change).
-- [ ] Memory book: Keegan reviews the drafted moments and special sets (Play, Memory book), and the screen mockup.
+- [ ] Memory book: screen mockup (moments approved and rewards set in steps, Nov 25).
 - [ ] Saves: slots per mode, and save export and import (favorites and the camera are set, see Play).
 - [ ] Title and cover: the title screen and the 120 × 80 cover (`studio-bible/launcher.md`).
 - [ ] Specs: one spec per build part, in this order: the Philly home and decorating (Sandbox), Outfits, Creator, Building, Garden and yard, Life mode (clock, needs, cat care, gigs, coins, idle life), Memory book and notes, Visitors and the neighborhood, Holidays, Challenges.
@@ -125,22 +125,22 @@ What keeps her coming back beyond designing. Set Nov 25, 2026 (Keegan), in the G
 Set Nov 25, 2026 (Keegan).
 
 - **Chapters by theme:** seven chapters (the cats, garden, kitchen, holidays, home, friends, and the two of them), with about 10 moments each, around 70 in all.
-- **Rewards:** finishing a chapter unlocks its special set in Life mode. In Sandbox, she already has everything, so the book is just for keeps.
+- **Rewards in steps** (Keegan, Nov 25): each chapter unlocks its set a piece at a time in Life mode: a small piece at 3 moments, more at 6, and one big centerpiece when all 10 are done. In Sandbox, she already has everything, so the book is just for keeps.
 - **Dates:** every moment records the real date it happened, written by hand on its page (Keegan).
 - **Pictures:** each moment is a small drawn snapshot of the scene as it really looked, with her own furniture and outfits. Her camera photos can also go on any chapter's pages as extras, and they don't count toward finishing it (*Claude default*).
 - A moment happens once. Later updates can add more moments to a chapter.
 
-*Claude draft of the moments, for Keegan to change:*
+Moments approved by Keegan as starters (Nov 25). The reward pieces are a *Claude draft*.
 
-| Chapter | Moments | Special set |
+| Chapter | Moments | Rewards: at 3 · at 6 · all 10 |
 | --- | --- | --- |
-| The cats | Louie naps on something she placed · Louie sits on the edge of the tub during a bath · Louie chats until he gets a treat · Ralph sprawls on his toy pile · Ralph shows up while Keegan cooks · Ralph steals Louie's warm spot · Ralph slowly leaves when the vacuum starts · first time with the feather wand · Ralph in his red bowtie · both cats asleep together | Cat lovers: a cat tree, a gallery wall of cat art, a cat tapestry and a pair of cat beds |
-| Garden | First seed planted · first sprout · first bloom · first harvest · a full bed · a houseplant grows up · the greenhouse goes up · snow on the beds · a pumpkin grown in fall · plants from all four seasons grown | Cottage garden: an arbor, a birdbath, a garden bench and string lights |
-| Kitchen | Cooking together for the first time · one moment for each of Keegan's dishes, the first time it's made (9) | Cozy kitchen: a retro fridge, open shelves, a herb rail and a breakfast nook |
-| Holidays | First snow · the Christmas tree trimmed · Christmas morning · New Year's Eve · Valentine's Day · spring's first warm day · Fourth of July · Halloween costumes · Thanksgiving dinner · a whole year of holidays | Keepsakes: an ornament shelf, a holiday village and a garland for every season |
-| Home | First room finished · first piece bought with coins · first wall built on an empty lot · a whole new home finished · first favorite saved · first photo taken · first outfit designed · the ORANGE ROCKS tee worn · 10 rooms finished · every room in the Philly home redone | Designer's studio: a drafting table, a mood board, a sewing corner and a dress form |
-| Friends | First visitor · first gig done · first visit to a neighbor's home · first neighbor's home redone · first person made in the creator · a visitor brings a gift · first friend's story finished · three friends made · every neighbor's story finished · a full house of visitors | Party: string lights, a record player, a snack table and floor cushions |
-| The two of us | First note from Keegan found · the note under the tree · cuddled up on the couch · a kiss · a cozy night in · winding down together · Sarah video-calls her mom · Keegan's game night · a slow morning in bed · every note found | Our place: framed pictures of the two of them, a cozy throw and a "home" sign |
+| The cats | Louie naps on something she placed · Louie sits on the edge of the tub during a bath · Louie chats until he gets a treat · Ralph sprawls on his toy pile · Ralph shows up while Keegan cooks · Ralph steals Louie's warm spot · Ralph slowly leaves when the vacuum starts · first time with the feather wand · Ralph in his red bowtie · both cats asleep together | A pair of cat beds · a gallery wall of cat art and a cat tapestry · a big cat tree |
+| Garden | First seed planted · first sprout · first bloom · first harvest · a full bed · a houseplant grows up · the greenhouse goes up · snow on the beds · a pumpkin grown in fall · plants from all four seasons grown | A birdbath · a garden bench and string lights · a rose arbor |
+| Kitchen | Cooking together for the first time · one moment for each of Keegan's dishes, the first time it's made (9) | A herb rail · open shelves and a breakfast nook · a retro fridge |
+| Holidays | First snow · the Christmas tree trimmed · Christmas morning · New Year's Eve · Valentine's Day · spring's first warm day · Fourth of July · Halloween costumes · Thanksgiving dinner · a whole year of holidays | A garland for every season · an ornament shelf · a lit-up holiday village |
+| Home | First room finished · first piece bought with coins · first wall built on an empty lot · a whole new home finished · first favorite saved · first photo taken · first outfit designed · the ORANGE ROCKS tee worn · 10 rooms finished · every room in the Philly home redone | A mood board · a sewing corner and a dress form · a drafting table studio |
+| Friends | First visitor · first gig done · first visit to a neighbor's home · first neighbor's home redone · first person made in the creator · a visitor brings a gift · first friend's story finished · three friends made · every neighbor's story finished · a full house of visitors | Floor cushions · a snack table and string lights · a record player |
+| The two of us | First note from Keegan found · the note under the tree · cuddled up on the couch · a kiss · a cozy night in · winding down together · Sarah video-calls her mom · Keegan's game night · a slow morning in bed · every note found | A cozy throw · a "home" sign · a wall of framed pictures of the two of them |
  Life mode runs on the real time of day. Morning light in her morning, lamps and a night sky in her evening. Plants and the cats' needs run on real time too.
 - **Needs:** people have three soft needs: energy, hunger and fun. A low need only makes them yawn or sigh and work a bit slower.
 - **Away from the game:** every need, for people and cats, pauses while she isn't playing. A month away comes back to the same home, just as she left it.
