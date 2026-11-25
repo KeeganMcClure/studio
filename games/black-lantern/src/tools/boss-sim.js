@@ -109,6 +109,28 @@ const BOSSES = {
       G.clues = G.clues.filter(c => c.id !== 'record'); if (s.record) G.clues.push({ id: 'record', text: '' }); G.fs.ident = [];
       if (s.brine) gearOf(party[0]).it.push(newItem('brine')); goMap('cannery', 12, 4, 'up'); },
   },
+  // LANTERN 02 (specs 014/015): its weakening choices are the right deduction (−6 HP, Identify free), all three mirrors
+  // covered (−6 HP, no phase-2 heal) and her page found before the fight (−8 HP); her own hand shown (here taken as
+  // shown) drops phase 2's shield; the compact is her weakness (3 uses). "all" makes every choice. prep closes LANTERN 01
+  // and pins this one (as the Dev shortcut does), since only one agency case is open at a time.
+  otheragnes: {
+    case: 'lantern-02',
+    entry: 'l02Boss',  // lantern-02.js: bossFight without the ending choice
+    prep: () => { const s = loadSeason(); s.agency = s.agency.filter(a => a.id !== 'lantern-02'); if (!s.agency.some(a => a.id === 'lantern-01')) s.agency.push({ id: 'lantern-01', played: true });
+      s.cases['lantern-01'] = { file: 1, state: 'closed', ending: 'clean', facts: { label: 'clean', offBooks: true } }; s.agency.push({ id: 'lantern-02', played: true }); s.cases['lantern-02'] = { file: 2, state: 'open', ending: null }; store.set(seasonKey(), s); },
+    scenarios: [
+      { label: 'none' },
+      { label: 'right', right: 1 },
+      { label: 'mirrors', mirrors: 1 },
+      { label: 'page', page: 1 },
+      { label: 'hand, compact', hand: 1, compact: 1 },
+      { label: 'all', right: 1, mirrors: 1, page: 1, hand: 1, compact: 1 },
+    ],
+    setup: s => { const F = G.flags; F.day = 7; F.nt = 1; F.read = 7; F.hallIn = 1; F.deduce = s.right ? 'right' : 'half'; F.cHall = F.cVan = F.cBath = s.mirrors ? 1 : 0; F.shown = s.hand ? 1 : 0; F.boss = 0;
+      G.clues = G.clues.filter(c => c.id !== 'stillhere'); G.fs.ident = [];
+      const it = gearOf(party[0]).it; for (const k of ['page', 'compact', 'hand']) { const i = it.findIndex(x => x.k === k); if (i >= 0) it.splice(i, 1); }
+      if (s.page) it.push(newItem('page')); if (s.compact) it.push(newItem('compact')); goMap('hall', 5, 3, 'up'); },
+  },
   // Tracking (spec 018 part B): its weakening choices are the copies burned (−2 HP each, and no heals: each copy not
   // burned is a door she heals 5 through, up to 3), the stage lights woken (no −10 to hit her while she dances), her name
   // said (−6 HP, no second-phase speed) and the chant read backward (−8 HP). Each watch of the tape adds 2 HP, and 3 or

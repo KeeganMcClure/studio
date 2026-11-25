@@ -309,7 +309,7 @@ const TEXT={
   filedBox:[['BIG HAT','The box goes upstairs.'],['BIG HAT','God help us, the box goes upstairs.']]
  },
  // the unlock scene's stand-in lines (the board plays these until the season data has the finale's own)
- unlock:['No folder this time.','Somebody upstairs took the folders.']
+ unlock:['No folder this time.','Somebody upstairs took the folders. I got the address anyway.']
 };
 const fill=(t,o)=>String(t).replace(/\{(n|m|v|t|e|h|i|w)\}/g,(x,k)=>o[k]??x);
 async function play(seq,o={}){for(const l of [].concat(seq)){if(Array.isArray(l))await say(l[0],fill(l[1],o));else await say('',fill(l,o))}}
