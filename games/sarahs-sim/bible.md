@@ -26,7 +26,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [ ] Creator: the parts for making new people (face, hair, skin, body), and its screen mockup.
 - [ ] Building: lot size, walls, doors, windows, floors, stairs or not, how the view scrolls and zooms over a home bigger than the screen, and the build screen mockup.
 - [x] Gameplay: what keeps her coming back beyond designing (Nov 25). See Play.
-- [ ] Life mode: prices, coin pay for gigs and chores, and the special sets (the day, needs, job and unlocks are set, see Play).
+- [x] Life mode: prices, coin pay for gigs and chores, and the special sets (the day, needs, job and unlocks are set, see Play).
+  Done Nov 25: coins and prices drafted in Play, Life mode, sets in Memory book and Visitors.
 - [x] Cat personalities: Keegan and the Designer work out Louie's and Ralph's personalities, which shape how each one wanders, naps, nudges and reacts (Keegan, Nov 25).
   Done Nov 25: in Play, The cats.
 - [ ] Keegan's notes: Keegan writes the hidden notes, including the one under the Christmas tree, and says where and when each one shows up (Keegan, Nov 25).
@@ -148,6 +149,35 @@ Moments approved by Keegan as starters (Nov 25). The reward pieces are a *Claude
 - **Job: design gigs.** Visitors and neighbors pay her to style a room or an outfit. Gigs are small and quick and are there whenever she plays. Challenges stay the bigger themed jobs.
 - **Minigames:** short minigames for house upkeep and lawn care also earn coins.
 - **Unlocks:** Sandbox has every piece, clothing and design option from the start. In Life mode, coins from gigs and chores buy most pieces in the catalog, and memory book pages, visitor friendships and holidays unlock special sets coins can't buy.
+
+**Coins and prices** (*Claude draft*, Nov 25, Keegan said go ahead). Tuned so that about 20 minutes of play buys one big piece, with no grind.
+
+- **Start:** Life mode opens in the Philly home, already furnished with their real things, plus 500 coins.
+- **Pay:**
+
+| Earned by | Coins |
+| --- | --- |
+| A chore minigame | 20 to 40, more for a tidy job |
+| An ordinary gig (style a room corner or an outfit) | 100 to 200, more the happier the visitor is |
+| A neighbor's story gig | 250 |
+| Redoing a neighbor's whole home | 600 |
+| Cooking, cat care, gardening | No coins. They fill needs, grow plants and add memory book moments |
+
+- **Prices:**
+
+| Piece | Coins |
+| --- | --- |
+| Small decor (a plant pot, a frame, a pillow) | 25 to 75 |
+| Clothes and accessories | 50 to 150 |
+| Seeds | 5 to 20 a packet |
+| Everyday furniture (a chair, a lamp, a rug) | 100 to 300 |
+| Big pieces (a sofa, a bed, a piano, a fridge) | 300 to 600 |
+| Walls and floors | 5 a tile |
+| Doors and windows | 50 each |
+| An empty lot | Free |
+
+- **Nothing is lost** (pillar 3): selling a piece back gives every coin back, so trying things out costs nothing. There are no bills, rent or costs that run while she's away.
+- Holiday pieces go on sale in the catalog during their holiday, and stay hers after.
 
 ### The cats
 
