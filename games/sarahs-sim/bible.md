@@ -488,7 +488,7 @@ Set Nov 25 (Keegan: "I absolutely love it"). Mockup: `mockups/title-v1` (the gif
 Set Nov 25 (Keegan). The studio rules in `studio-bible/saves.md` apply (autosave, save on close, a save version with upgrade steps, test saves), with the two named exceptions below.
 
 - **One save per mode** (named exception to "one slot"): Sandbox, Life and Challenges each keep their own autosaved save with their own homes and people. Playing Sandbox never touches Life's coins or day.
-- **Shared across modes:** favorites (rooms and outfits) and the memory book's photos are kept once and work in every mode. The first-open gift is remembered once for the whole game, so it never shows again.
+- **Shared across modes:** favorites (rooms and outfits) are kept once and work in every mode. The first-open gift is remembered once for the whole game, so it never shows again.
 - **Keys:** prefix `ss.`, one key per kind of data (for example one per mode, one for favorites, one for the version). The spec sets the exact names.
 - **Backups are a file** (named exception to the text code): one tap in the Start menu saves a backup file of all three modes and her favorites to her phone's Files. Import a save on the title screen reads one back. A text code would be far too long once her homes and outfits are in it.
 - **Reminders:** about once a month, and before a big update, a gentle note on the title screen offers a backup. One tap makes it, and it can be dismissed.
