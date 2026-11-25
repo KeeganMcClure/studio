@@ -49,7 +49,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
   Done Nov 25: in Play, Garden (the plant list is a starter list Keegan can change).
 - [ ] Memory book: screen mockup (moments approved and rewards set in steps, Nov 25).
 - [ ] Saves: slots per mode, and save export and import (favorites and the camera are set, see Play).
-- [ ] Title and cover: the title screen and the 120 × 80 cover (`studio-bible/launcher.md`).
+- [x] Title and cover: the title screen and the 120 × 80 cover (`studio-bible/launcher.md`).
+  Done Nov 25: set with Keegan and drawn in `mockups/title-v1` (winter). See Title and cover. Keegan writes the Christmas line.
 - [ ] Specs: one spec per build part, in this order: the Philly home and decorating (Sandbox), Outfits, Creator, Building, Garden and yard, Life mode (clock, needs, cat care, gigs, coins, idle life), Memory book and notes, Visitors and the neighborhood, Holidays, Challenges.
 - [ ] Challenges mode: the challenge list, rewards and its screen mockup (built last).
 
@@ -68,7 +69,8 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 
 | Screen | What you do there | Spec | Mockup |
 | --- | --- | --- | --- |
-| Title | Pick a mode, continue, import a save | No spec yet | **To draw** |
+| First open (gift) | Once only: pull the ribbon on a wrapped gift, which opens onto the home with Keegan's Christmas line | No spec yet | `title-v1` (approved Nov 25, 2026) |
+| Title | Pick a mode, continue, import a save, over the snowy home | No spec yet | `title-v1` (approved Nov 25, 2026) |
 | Home (decorate) | Open the catalog, drag pieces into the room, stack small things, turn, move, recolor and paint them | No spec yet | `decorate-v1` (UI approved Nov 25, 2026), on the `look-iso-v1` room |
 | Style (outfits) | Dress a person in the big view: pick pieces, recolor, paint, add patterns and tee prints, spin to see the back | No spec yet | `style-v1` (UI approved Nov 25, 2026) |
 | Creator | Make a new person: parts, fine tuning, age, gender and extras | No spec yet | `creator-v1` (approved Nov 25, 2026) |
@@ -469,6 +471,16 @@ Set Nov 25 (Keegan). Mockup: `mockups/build-v1` (approved; Keegan asked for bett
 - **Floors and walls:** a floor tool and a wallpaper tool, plus erase.
 - **View:** pinch to zoom, two-finger drag (or the D-pad) to pan over a home bigger than the screen. A walls button cycles walls up, cut away (back walls up, front walls low) and down. No whole-home rotation; furniture still turns 4 ways.
 - **Tray:** the same Home / Style / Build tabs as the other screens. The 8 tools are icons only, and the picked tool's name shows below them with a hint. Below that, cards for the picked tool (wall styles, doors, stair types).
+
+## Title and cover
+
+Set Nov 25 (Keegan: "I absolutely love it"). Mockup: `mockups/title-v1` (the gift, the opening, the title, and the cover).
+
+- **The scene:** a red-brick Philly rowhouse at night, with a white marble stoop, warm lit windows, a wreath on the door, the tree in the front window, and Louie and Ralph in an upstairs window. Snow falls, the porch light and street lamp glow, and the chimney smokes. Keegan and Sarah don't live in Philly yet, so this rowhouse is drawn, not copied from photos, and it stays as it is.
+- **Seasons:** the title and the cover both follow the real date. Winter has snow, with Christmas lights in December. Spring has rain and flower boxes. Summer is a warm evening with fireflies. Fall has falling leaves, with a pumpkin on the stoop near Halloween. Other holidays add a small touch to the stoop or windows.
+- **First open, once only:** a wrapped gift fills the screen (pink polka-dot paper, a gold bow, a "To Sarah" tag). She taps to pull the ribbon, and it opens onto the snowy home. Ribbon bits drift down, and a short Christmas line from Keegan appears ("Merry Christmas, Sarah", signed Keegan). Keegan writes the real words. Tapping goes in. After this the gift never shows again.
+- **Title:** the game's name in gold over the scene, with "A cozy life" and a heart under it. The menu card has Continue (with her day), Sandbox, Life and Challenges, plus a small Import a save link.
+- **Cover (120 × 80):** a small version of the same scene with the title on it (`studio-bible/launcher.md`, Covers). It changes with the seasons too.
 
 ## Controls and screen
 
