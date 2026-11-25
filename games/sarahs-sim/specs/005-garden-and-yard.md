@@ -47,7 +47,7 @@ These rows go into the bible's Screens table in the same PR as this spec.
 **What it is.** The yard is part of the home's lot, like another room with no roof. It's on the same isometric grid and uses the same placing tools as the Decorating section of the bible.
 
 - **Getting there:** she walks out the back door, or taps a Yard button on the home screen. Both go to the same yard.
-- **The Philly yard:** behind the Philly home, sized and laid out from Keegan's photos the same way the house is (part of the decorating spec's work). It starts with a lawn and whatever their real yard has. *Claude default.*
+- **The Philly yard:** behind the Philly home, which is their future dream home and not a copy of a place they live now (Keegan, Nov 25). It's laid out as part of the decorating spec's work and starts as a plain lawn with a fence, ready for her to design. *Claude default.*
 - **Other homes:** every empty lot has a yard around the house she builds on it (spec 004 sets the lot sizes).
 - **Yard catalog tabs:** beds and planters, paths and patio, fences and gates, garden decor (birdbath, bench, lights and so on) and structures (greenhouse, shed). They use the same cards, swatches and paint mode as indoor pieces.
 - **Ground:** each tile is lawn, soil, a path or a patio. She paints ground the way she paints a floor in Build. Beds and planters are pieces that hold plants.
