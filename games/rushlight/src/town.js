@@ -88,9 +88,8 @@ function townMap(k){const T=TOWNS[k],g=mk(T.w,T.h,',');rect(g,0,0,T.w,4,'H');rec
  if(D.beggar){const [x,y]=D.beggar;npcs.push({x,y,sp:'rat',look:{shade:2,mark:3,neck:0,coat:'#5a5048'},dir:'down',talk:()=>say('BEGGAR','A groat for a soldier of the Grey Summer? No? A groat for the rest of us, then.')})}
  return {name:T.name,w:T.w,h:T.h,g,npcs,O,vv:{},town:k,warps:{},onStep:async()=>{if(G.x<=0||G.x>=T.w-1)await leaveTown()}}}
 // the town strip (Art, Town street): party heads with the lead in Tallow, the town's name and type, purse, day
-function drawTownStrip(){const r=G.run,T=TOWNS[G.town];if(!T)return;pR(0,0,VW,18,'rgba(44,38,33,.96)');pR(0,17,VW,1,'#e6dcc4');
- let x=3;party.forEach((m,i)=>{if(m.dead)return;const on=i===(G.lead|0);pR(x-1,2,14,14,on?'#d9b45a':'#857e72');cx.drawImage(RLSP.portrait(m.sp,m.look),0,0,64,64,x,3,12,12);x+=16});
- pT(T.name,x+2,2,'#e6dcc4',13);pT(T.type,x+6+pW(T.name,13),4,'#857e72',11);const ds=`DAY ${r.day}`,ps=`${r.purse} gr`;pT(ds,VW-3-pW(ds,13),2,'#e6dcc4',13);pT(ps,VW-9-pW(ds,13)-pW(ps,13),2,'#d9b45a',13)}
+// the town's HUD (spec 008, 8B; mockup 34): the lead card and the place card (the town, the purse, the day)
+function drawTownStrip(){const r=G.run,T=TOWNS[G.town];if(!T)return;leadCard();placeCard([[T.name,'#e6dcc4',13],[`${r.purse} gr`,'#d9b45a',13],[`DAY ${r.day}`,'#e6dcc4',12]])}
 const propLine=k=>({cart:'A handcart with something under a sheet. The sheet is the wrong shape.',pillory:'A rat in the pillory. Somebody threw a turnip and missed.',well:'The well. A bucket, a chain, a smell.',gibbet:'The gibbet outside the wall. Its man has been there since Lent.'})[k]||'';
 async function leaveTown(){const r=G.run;G.town=null;saveRun();enterRegion();}
 // townsfolk: one line each on A, from the Voice pools (barks, the March's tic, sayings, texture)
@@ -238,13 +237,13 @@ async function dropJob(id){const r=G.run,B_=r.boards,J=JOBS[id];r.contracts=r.co
  const g=RG();g.seals=(g.seals||[]).filter(s=>r.contracts.some(c=>JOBS[c.id].site===s));saveRun()}
 // the Contracts page (R on the map): taken jobs with their Next lines, A to drop one; then the Signs list
 let CP_SEL=0;
-function drawContractsExtra(y){return y}
+function drawContractsExtra(){}
 function contractsPress(k){const cs=G.run.contracts.filter(c=>!c.done);if(!cs.length)return;
  if(k==='up')CP_SEL=(CP_SEL+cs.length-1)%cs.length;else if(k==='down')CP_SEL=(CP_SEL+1)%cs.length;
  else if(k==='a'||k==='select'){const c=cs[CP_SEL];MAPV.page=null;run(async()=>{const x=await choose([`Keep ${c.title}`,`Drop ${c.title}`],{cancel:true,title:'CONTRACT'});if(x===1)await dropJob(c.id)})}}
 // the givers (spec 005, 3): name, archetype, faction and its step, a showing quirk, and the job; haggling; Read
 async function giverPlace(gk){const r=G.run,gv=r.givers[gk],G_=GIVERS[gk],k=G_.town;
- PORTRAITS[gv.name.toUpperCase()]=(c,f)=>{c.imageSmoothingEnabled=false;c.drawImage(RLSP.portrait(gv.sp,gv.look),0,0)};
+ PORTRAITS[gv.name.toUpperCase()]=(c,f)=>{c.imageSmoothingEnabled=false;c.drawImage(RLSP.portrait(gv.sp,gv.look,1,f?'talk':null),0,0)};
  if(!gv.met){gv.met=true;await say(gv.name.toUpperCase(),RLT(G_.line))}
  for(;;){const jobs=r.boards.posted.filter(j=>JOBS[j].by==='giver'&&JOBS[j].giver===gk),wary=facStep(G_.faction)<=1;
   const head=`${gv.name}, ${G_.title} · ${FACS[G_.faction]} ${facWord(G_.faction)}${['Tight-fisted','Desperate','Pious','Grieving'].includes(gv.quirk)?' · '+gv.quirk:''}`;
@@ -267,11 +266,11 @@ async function giverPlace(gk){const r=G.run,gv=r.givers[gk],G_=GIVERS[gk],k=G_.t
 async function hireCorner(k){const r=G.run;
  for(;;){const pool=r.hires[k]||[],open=party.filter(m=>!m.dead).length<3;
   if(!pool.length){await say('','Nobody here is looking for work.');return}
-  const rows=pool.map(m=>({label:`${m.name} · ${m.sp} · ${m.trade} · L${m.lvl} · ${m.fee} gr`}));rows.push({label:'Leave'});
+  const rows=pool.map(m=>({label:`${m.name} · ${m.sp} · ${m.trade} · L${m.lvl} · ${m.fee} gr`,face:{sp:m.sp,look:m.look},name:m.name,sub:`${m.trade} · ${m.sp}`,right:`L${m.lvl} · ${m.fee} gr`}));rows.push({label:'Leave'});
   const c=await choose(rows,{cancel:true,title:open?'MERCS FOR HIRE':'MERCS FOR HIRE · NO SEAT OPEN'});if(c<0||c>=pool.length)return;
   const m=pool[c],E=best('Empathy');
   const card=`${m.name}, ${m.sp}, ${m.trade}. ${Object.keys(m.sk).sort((a,b)=>m.sk[b]-m.sk[a]).slice(0,3).map(s=>s+' '+m.sk[s]).join(', ')}. Main: ${m.mot[m.main]}. Kin: ${m.kin.name}, ${m.kin.type.toLowerCase()}. ${m.back}${m.readDone&&m.weak?' Weak-willed: they won\'t stay hungry long.':''}`;
-  PORTRAITS[m.name.toUpperCase()]=(cc)=>{cc.imageSmoothingEnabled=false;cc.drawImage(RLSP.portrait(m.sp,m.look),0,0)};
+  PORTRAITS[m.name.toUpperCase()]=(cc,f)=>{cc.imageSmoothingEnabled=false;cc.drawImage(RLSP.portrait(m.sp,m.look,1,f?'talk':null),0,0)};
   const x=await ask(m.name.toUpperCase(),card,[open?`Hire (${m.fee} gr)`:'Hire (no seat open)',`Read (Empathy · ${odds(E,'Empathy')})`,'Back']);
   if(x===0){if(!open){await say('','No seat open.');continue}if(r.purse<m.fee){await say('','Not enough in the purse.');continue}
    r.purse-=m.fee;pool.splice(c,1);const seat=party.findIndex(p=>p.dead);m.bonds={};party.filter(p=>!p.dead).forEach(p=>{p.bonds[m.id]=1;m.bonds[p.id]=1});

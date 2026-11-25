@@ -5,10 +5,11 @@
 const fs = require('fs'), path = require('path');
 const dir = process.argv[2];
 if (!dir) { console.error('Give the folder of art/sprites/*.html'); process.exit(1); }
-const PICK = { noonwife: 'noonwife-v1', counter: 'counter-v2', monk: 'monk-v2', candle: 'candle-v1', lampwalkers: 'lampwalkers-v1',
-  severa: 'severa-v1', hedgecat: 'hedgecat-v1', rooks: 'rooks-v1', hag: 'hag-v1' };
+// v2 (spec 008, 8A look pass, filed Nov 24): every creature brought up to the studio Quality bar, drawn natively at 1.5× its v1 size
+const PICK = { noonwife: 'noonwife-v2', counter: 'counter-v3', monk: 'monk-v3', candle: 'candle-v2', lampwalkers: 'lampwalkers-v2',
+  severa: 'severa-v2', hedgecat: 'hedgecat-v2', rooks: 'rooks-v2', hag: 'hag-v2' };
 let out = '// Rushlight · art/creatures.js. Battle sprites copied unchanged from the Rushlight Asset Library by tools/import-art.js\n' +
-  '// (rushlight-sprites-<name>; all approved Nov 21). Don\'t edit here: change the library piece, then run the tool again.\n' +
+  '// (rushlight-sprites-<name>-v2, the Counter and the Monk -v3, spec 008 look pass, Nov 24). Don\'t edit here: change the library piece, then run the tool again.\n' +
   '// Each is SVG drawing code (pixel rects and paths, no image files); RLArt.sprite(name) turns one into a canvas.\nwindow.RL_SVG={\n';
 for (const [k, f] of Object.entries(PICK)) {
   const html = fs.readFileSync(path.join(dir, `rushlight-sprites-${f}.html`), 'utf8');

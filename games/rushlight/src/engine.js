@@ -107,17 +107,23 @@ function drawBox(){
 function renderMenu(){const m=menu;if(!m)return;
  if(m.inBox){if(box){box.choices=m.items.map(it=>typeof it==='string'?it:it.label);box.sel=m.sel;box.more=false}if(m.onSel)m.onSel(m.sel);return}
  menuEl.hidden=false;
- const rows=sel=>(m.title?`<div class="mt">${esc(m.title)}</div>`:'')+m.items.map((it,i)=>{const o=typeof it==='string'?{label:it}:it;const ic=o.icon&&window.RL_ICONS&&RL_ICONS[String(o.icon).toLowerCase()];return`<div class="gi ${i===sel?'on':''} ${o.dis?'dis':''}" data-i="${i}"><span class="gc">${i===sel?'▶':''}</span>${ic?`<img class="gic" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(ic)}">`:''}${esc(o.label)}</div>`}).join('');
+ const face=f=>f?`<canvas class="face" width="64" height="64" data-sp="${f.sp}" data-look='${JSON.stringify(f.look||{})}'></canvas>`:'';
+ const rows=sel=>(m.title?`<div class="mt">${m.tface?face(m.tface):''}${esc(m.title)}</div>`:'')+m.items.map((it,i)=>{const o=typeof it==='string'?{label:it}:it;const ic=o.icon&&window.RL_ICONS&&RL_ICONS[String(o.icon).toLowerCase()];// a row may show a face, a name with a second line under it, and a value on the right (spec 008, 8C: hire rows, the hotspot prompt);
+  // its label stays the plain text the auto-player and the checks read
+  const body=o.name||o.sub||o.right||o.face?`${face(o.face)}<span class="gl">${esc(o.name||o.label)}${o.sub?`<br><span class="gs">${esc(o.sub)}</span>`:''}</span>${o.right!=null?`<span class="r">${o.rface?face(o.rface):''}${esc(o.right)}</span>`:''}`:esc(o.label);
+  return`<div class="gi ${i===sel?'on':''} ${o.dis?'dis':''}" data-i="${i}"><span class="gc">${i===sel?'▶':''}</span>${ic?`<img class="gic" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(ic)}">`:''}${body}</div>`}).join('');
  // one fixed width, measured once when the menu opens from its widest row plus the cursor, never from the selected row
  if(!m.w)m.w=StudioMenu.lockWidth(menuEl,rows(-1));
  menuEl.innerHTML=rows(m.sel)+(m.desc&&m.desc[m.sel]?`<div class="md">${esc(m.desc[m.sel])}</div>`:'');
+ menuEl.querySelectorAll('canvas.face').forEach(c=>{const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(RLSP.portrait(c.dataset.sp,JSON.parse(c.dataset.look)),0,0)});
  if(m.onSel)m.onSel(m.sel);posMenu();const on=menuEl.querySelector('.gi.on');if(on)on.scrollIntoView({block:'nearest'})}
 function posMenu(){if(menuEl.hidden)return;let b=6;const bx=dhost.querySelector('.bld'),tab=bx&&bx.querySelector('.bld-tab');
  if(G.mode==='battle'&&!hud.hidden)b=hud.offsetHeight+8;else if(bx)b=bx.offsetHeight+(tab?tab.offsetHeight:0)+10;menuEl.style.bottom=b+'px'}
-function choose(items,o={}){if(G.auto&&G.auto.menu)return Promise.resolve(G.auto.menu(items,o));return new Promise(res=>{menu={items,sel:o.sel||0,res,cancel:o.cancel,title:o.title,desc:o.desc,onSel:o.onSel,inBox:o.inBox,onSelect:o.onSelect};renderMenu()})}
+function choose(items,o={}){if(G.auto&&G.auto.menu)return Promise.resolve(G.auto.menu(items,o));return new Promise(res=>{menu={items,sel:o.sel||0,res,cancel:o.cancel,title:o.title,tface:o.tface,desc:o.desc,onSel:o.onSel,inBox:o.inBox,onSelect:o.onSelect};renderMenu()})}
 function closeMenu(v){const m=menu;menu=null;menuEl.hidden=true;StudioMenu.unlock(menuEl);if(m.inBox&&box)box.choices=null;if(Bt)Bt.hover=-1;m.res(v)}
 async function ask(name,text,opts){if(G.auto&&G.auto.menu){await say(name,text);return G.auto.menu(opts,{title:text})}await say(name,text,{keep:true,instant:false});const r=await choose(opts,{cancel:true,inBox:true});hideTB();return r<0?opts.length-1:r}
-function banner(t){ban.textContent=t;ban.hidden=false;clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,2200)}
+// the banner sits under the HUD cards on a street, a site or the map (spec 008, 8B), in screen pixels from the canvas's scale
+function banner(t){ban.textContent=t;ban.hidden=false;{const c=document.getElementById('gcv'),k=c&&c.clientWidth?c.clientWidth/VW:1,under=G.mode==='region'?SH+16:G.site?64:G.town?50:0;ban.style.top=under?Math.round(under*k+4)+'px':''}clearTimeout(banner.t);banner.t=setTimeout(()=>ban.hidden=true,2200)}
 function fade(on){fadeEl.style.opacity=on?1:0;return sleep(340)}
 async function run(fn){G.busy=(G.busy||0)+1;try{await fn()}catch(e){console.error(e)}finally{G.busy--}}
 
@@ -134,28 +140,49 @@ function goMap(name,x,y,dir){hud.hidden=true;gEl.classList.remove('battle','regi
  banner(G.M.name);saveRun()}
 function update(){
  if(G.mode!=='world')return;
- StudioMove.update(G,StudioMove.last(held),{passable,busy:()=>G.busy||dlg||menu||PM||IV||EX,arrive:()=>run(onStep)});
+ StudioMove.update(G,StudioMove.last(held),{passable,busy:()=>G.busy||dlg||menu||PM||IV||EX||CV||BV,arrive:()=>run(onStep)});
 }
 async function onStep(){const M=G.M,k=G.x+','+G.y;if(M.warps&&M.warps[k]){held=[];return M.warps[k]()}if(M.onStep)await M.onStep()}
 async function interact(){
  const [tx,ty]=StudioMove.ahead(G),M=G.M,k=tx+','+ty;
  const n=M.npcs.find(n=>(!n.on||n.on())&&n.x===tx&&n.y===ty);
- if(n){n.dir={up:'down',down:'up',left:'right',right:'left'}[G.dir];held=[];await n.talk(n);return}
+ if(n){n.dir={up:'down',down:'up',left:'right',right:'left'}[G.dir];held=[];talker=n;try{await n.talk(n)}finally{talker=null}return}
  if(M.O[k]){held=[];await M.O[k]();return}
 }
-function cam(){return StudioMove.camera(G,G.M.w,G.M.h,VW,VH)}
+// who is talking on the map, so their sprite flaps while the line types (art-style, Animation: Talk)
+let talker=null;
+function mouthOpen(){if(!box||box.typed>=box.text.length)return false;const T=BLD.TIMING,n=Math.floor(performance.now()/T.flapMs),p=n%(T.burst+T.rest);return p<T.burst&&p%2===0}
+// a map sprite's frame from the shared rig: the talk flap, else a blink or an idle breath now and then (each person out of step)
+function idleFrame(seed,now){return StudioRig.blink(now,seed)?'blink':StudioRig.idle(now,seed)||'stand'}
+// ---- the HUD cards (spec 008, 8B; mockup 34): the lead card top left, the place card top right, on the shared frame ----
+const HUDT={outer:'#1c1814',line:'#e6dcc4',fill:'rgba(44,38,33,.97)',backTop:'#a8906c',backBot:'#6a5a44',bar:'#9a4528'};
+// the lead: a portrait on its lit backing, the name in Tallow, the HP bar, HP, WP and SAN (SAN pink under 40). Returns its bottom.
+function leadCard(){const m=party[G.lead|0];if(!m)return 0;StudioHUD.card(cx,2,2,108,44,HUDT);
+ StudioHUD.portrait(cx,RLSP.portrait(m.sp,m.look),4,0,56,60,5,5,34,37,HUDT);
+ const nm=m.name.toUpperCase(),z=pSize(nm,61,[14,13,12,11,10])||10;pT(nm,42,3+(14-z)/2,'#d9b45a',z);
+ StudioHUD.bar(cx,42,17,60,m.hp/m.mhp,HUDT);pT(`HP ${m.hp}/${m.mhp}`,42,20,'#e6dcc4',12);
+ let s=`WP ${m.wp} · SAN `;if(pW(s+m.san,12)>62)s=`WP ${m.wp} SAN `;const sz=pW(s+m.san,12)>62?11:12;pT(s,42,31,"#e6dcc4",sz);pT(String(m.san),42+pW(s,sz),31,m.san<40?"#ff4fa3":"#e6dcc4",sz);return 46}
+// the place: rows of [text, color, size]; the first is the name and wraps rather than being cut. As wide as it needs, up to the lead card.
+function placeCard(rows){const maxW=VW-116,need=Math.max(...rows.slice(1).map(([t,,z])=>pW(t,z)+10),pW(rows[0][0],rows[0][2])+10,78),w=Math.min(maxW,Math.ceil(need));
+ const name=pW(rows[0][0],rows[0][2])+10<=w?[rows[0][0]]:pWrap(rows[0][0],w-10,12,2),nz=name.length>1?12:rows[0][2],h=Math.max(44,6+name.length*(nz-1)+(rows.length-1)*12+2);
+ const x=VW-w-2;StudioHUD.card(cx,x,2,w,h,HUDT);let y=3;name.forEach(l=>{pT(l,x+5,y,rows[0][1],nz);y+=nz-1});y+=1;
+ rows.slice(1).forEach(([t,c,z])=>{pT(pFit(t,w-10,z),x+5,y,c,z);y+=12});return h+2}
+// on a town street the camera sits 34 px higher, so the rooftops and smoke show under the HUD cards (spec 008, 8B)
+function cam(){const c=StudioMove.camera(G,G.M.w,G.M.h,VW,VH);if(G.M&&G.M.town)c[1]-=34;return c}
 function drawWorld(){
  const M=G.M,[camx,camy]=cam();cx.fillStyle='#0a0710';cx.fillRect(0,0,VW,VH);
  const x0=Math.floor(camx/16),y0=Math.floor(camy/16);
  if(M.town)drawStreet(M,camx,camy);else if(M.site)drawSiteTiles(M,camx,camy);else for(let ty=y0;ty<=y0+Math.ceil(VH/16)+1;ty++)for(let tx=x0;tx<=x0+Math.ceil(VW/16)+1;tx++){const ch=M.g[ty]&&M.g[ty][tx];if(!ch)continue;let v=(tx*7+ty*13)%4;if(ch==='V')v=M.vv[tx+','+ty];if(ch==='T')v=(tx*3+ty*5)%3;cx.drawImage(tile(ch,v),tx*16-camx,ty*16-camy)}
  const spr=[];
- M.npcs.forEach(n=>{if(n.on&&!n.on())return;spr.push({y:n.y*16,f:()=>cx.drawImage(RLSP.map(n.sp,n.look),n.x*16+1-camx,n.y*16+16-26-camy)})});
- const moving=!!G.mv,fr=StudioMove.walkFrame(G);
- // Only the lead walks the map (Bible, Art, Maps). Agent sprites from agent-sprite.js; lantern at night only; a blink every few seconds.
- const blink=!moving&&(performance.now()%3400)<150?1:0;
- spr.push({y:G.py,f:()=>{const s=RLSP.map(lead().sp,lead().look);cx.drawImage(s,Math.round(G.px+1-camx),Math.round(G.py+16-26-camy+(moving&&fr%2?-1:0)))}});
+ const now=performance.now();
+ M.npcs.forEach(n=>{if(n.on&&!n.on())return;const fr=n===talker&&mouthOpen()?'talk':idleFrame(n.x*31+n.y*17,now);
+  spr.push({y:n.y*16,f:()=>cx.drawImage(RLSP.map(n.sp,n.look,fr),n.x*16+1-camx,n.y*16+16-26-camy)})});
+ // Only the lead walks the map (Bible, Art, Maps). The walk is four beats, step, pass, step, pass, one beat per half tile
+ // (art-style, Animation); standing, the lead breathes and blinks like everyone else
+ const moving=!!G.mv,lfr=moving?StudioRig.WALK[StudioRig.walkBeat(G.anim,StudioMove.STEPF/2)]:idleFrame(7,now);
+ spr.push({y:G.py,f:()=>{const s=RLSP.map(lead().sp,lead().look,lfr);cx.drawImage(s,Math.round(G.px+1-camx),Math.round(G.py+16-26-camy))}});
  spr.sort((a,b)=>a.y-b.y).forEach(s=>s.f());
- if(M.site){drawSiteOver(M,camx,camy);siteLight(M,camx,camy);drawSiteStrip()}else{lights(M,camx,camy);if(M.town)drawTownStrip()}
+ if(M.site){drawSiteOver(M,camx,camy);siteLight(M,camx,camy);drawSiteStrip()}else if(M.town){townLight(M,camx,camy);drawTownStrip()}else lights(M,camx,camy)
 }
 // Night and lamps on the shared light (engine/light.js): the dark from Peat, Tallow pools from the rushlight and lamps.
 // The rushlight's pool shrinks as the lead's SAN falls (the old rule), and below 40% SAN the picture sours.
@@ -169,7 +196,7 @@ function lights(M,camx,camy){
 function drawTitleCard(){cx.fillStyle='#05040a';cx.fillRect(0,0,VW,VH);const t=performance.now()/1000,fl=.7+.3*Math.sin(t*7)*Math.sin(t*3.1);const x=VW/2,y=VH*.38;const g=cx.createRadialGradient(x,y,2,x,y,44);g.addColorStop(0,`rgba(255,190,80,${.35*fl})`);g.addColorStop(1,'rgba(255,190,80,0)');cx.fillStyle=g;cx.fillRect(x-50,y-50,100,100);const P=(a,b,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x+a,y+b,w,h)};P(-1,-16,2,3,'#3a3460');P(-5,-13,10,2,'#2a2440');P(-6,-11,1,16,'#2a2440');P(5,-11,1,16,'#2a2440');P(-5,-11,10,16,`rgba(255,${180+Math.floor(Math.random()*20)},80,${fl})`);P(-2,-8,4,9,'#fff6d8');P(-6,5,12,2,'#2a2440')}
 // Logic runs at 60 ticks a second on any screen (engine/clock.js); frames with no tick due are skipped.
 const clock=StudioClock.make();
-function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(G.mode==='battle'&&Bt)drawBattle();else if(IV)drawItems();else if(PM)drawParty();else if(G.mode==='region')drawRegion();else if(G.mode==='world')drawWorld();else drawTitleCard();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
+function loop(now){if(!G.active)return;const n=clock.ticks(now);if(!n){raf=requestAnimationFrame(loop);return}try{for(let i=0;i<n;i++)update();if(G.mode==='battle'&&Bt)drawBattle();else if(BV)drawBestiary();else if(IV)drawItems();else if(PM)drawParty();else if(G.mode==='region')drawRegion();else if(G.mode==='world')drawWorld();else drawTitleCard();if(CV)drawCard();drawBox()}catch(e){console.error(e)}raf=requestAnimationFrame(loop)}
 function fit(){const v=StudioMove.fit(gEl,cv);if(!v)return;VW=v.w;VH=v.h;gEl.style.setProperty('--pu',(64*v.boxW/VW)+'px');boxKey='';if(menu&&!menu.inBox){menu.w=0;renderMenu()}posMenu()}
 window.addEventListener('resize',()=>{if(G.active)fit()});
 
@@ -233,27 +260,46 @@ let EX=null;
 
 // ================= ITEMS (read-only in Part A; Mockup 4's layout) =================
 let IV=null;
+// a parchment card over the scene (spec 008, 8C): the pay, and other summaries. rows: [[label, value, color]]; any button closes it
+let CV=null;
+function showCard(o){if(G.auto)return Promise.resolve();return new Promise(res=>{CV=Object.assign({done:res},o)})}
+function closeCard(){const d=CV&&CV.done;CV=null;if(d)d()}
+function drawCard(){const o=CV,w=VW-12,rows=o.rows||[],sub=o.sub?pWrap(o.sub,w-16,14,4):[],h=22+sub.length*12+rows.length*13+(o.note?pWrap(o.note,w-16,14,3).length*12+6:0)+16,x=6,y=Math.max(6,Math.round((VH-h)/2));
+ pR(0,0,VW,VH,'rgba(28,24,20,.55)');StudioParch.panel(cx,x,y,w,h,PT_);pT(o.title,x+8,y+6,IK.rust,8,PXf);if(o.right)pT(o.right,x+w-8-pW(o.right,15),y+2,IK.rust,15);let yy=y+20;
+ sub.forEach(l=>{pT(l,x+8,yy,IK.soot,14);yy+=12});
+ rows.forEach(([l,v,c],i)=>{if(i)pR(x+8,yy-1,w-16,1,'rgba(90,62,43,.25)');pT(l,x+8,yy,IK.dim,14);const vz=pSize(v,w-24-pW(l,14),[14,13,12,11])||11;pT(v,x+w-8-pW(v,vz),yy+(14-vz)/2,c||IK.peat,vz);yy+=13});
+ if(o.note){yy+=3;pWrap(o.note,w-16,14,3).forEach(l=>{cx.font='italic '+VTf(14);cx.fillStyle=IK.soot;cx.textBaseline='top';cx.fillText(l,x+8,yy);yy+=12})}
+ const t='A: GO ON';pT(t,x+w-8-pW(t,12),y+h-14,IK.dim,12)}
 function openItems(i){return new Promise(res=>{IV={i,done:res};ban.hidden=true;gEl.classList.add('menu')})}
-function itemsPress(k){const n=party.length;if(k==='l'||k==='up')IV.i=(IV.i+n-1)%n;else if(k==='r'||k==='down')IV.i=(IV.i+1)%n;else if(k==='b'||k==='a'||k==='start'){const d=IV.done;IV=null;gEl.classList.remove('menu');d()}}
+// L and R flip between mercs; Up and Down move through what the merc carries (spec 008, 8C); A, B or Start close
+function itemsPress(k){const n=party.length,c=party[IV.i].slots.length;if(k==='l')IV.i=(IV.i+n-1)%n,IV.c=0;else if(k==='r')IV.i=(IV.i+1)%n,IV.c=0;else if(k==='up')IV.c=Math.max(0,(IV.c|0)-1);else if(k==='down')IV.c=Math.min(Math.max(0,c-1),(IV.c|0)+1);else if(k==='b'||k==='a'||k==='start'){const d=IV.done;IV=null;gEl.classList.remove('menu');d()}}
 const WEAR=['Sound','Worn','Cracked','Broken'];
+// Items (spec 008, 8C; mockup 42): a tab per merc; the worn gear with its slot written out and its wear pips; what the merc carries
+// with a count and what the picked one does; the pack with rations and days. The purse in the header.
 function drawItems(){const m=party[IV.i],I=RLS.ITEMS,r=G.run;pR(0,0,VW,VH,PAL.peat);
- pBox(4,4,VW-8,18,PAL.soot,PAL.bone);pT('ITEMS',9,9,PAL.tallow,8,PXf);
- party.forEach((p,j)=>{const x=78+j*52;if(j===IV.i)pBox(x-2,5,50,16,PAL.cardOn,PAL.tallow);cx.drawImage(RLSP.portrait(p.sp,p.look),0,0,64,64,x,6,14,14);const z=pSize(p.name,32,[13,12,11]);if(z)pT(p.name,x+16,6+(13-z)/2,j===IV.i?PAL.tallow:PAL.bone,z)});  // a tab shows the whole name or only the face
- let y=26;const used=m.slots.length,sl=`SLOTS ${used}/8`,slx=VW-8-pW(sl,14);const NM=m.name.toUpperCase();pT(NM,8,y,PAL.tallow,pSize(NM,slx-12,[16,15,14,13,12])||12);pT(sl,slx,y+1,'#c4b99e',14);y+=13;
- // species · trade on its own line, whole (bug batch, Nov 24)
- const sub=`${m.sp} · ${m.trade}${(G.lead|0)===IV.i?' · lead':''}`;pT(sub,8,y,PAL.bone,pSize(sub,VW-16,[14,13,12,11])||11);y+=16;
- const g=m.gear;[['WPN 1',g.w1,g.hand==='w1'],['WPN 2',g.w2,g.hand==='w2'],['BODY',g.body],['HEAD',g.head]].forEach(([l,it,inHand])=>{pBox(4,y,VW-8,14,PAL.card,PAL.line);pT(l,8,y,'#c4b99e',14);
-  if(inHand)pR(42,y+5,3,3,PAL.tallow);const nm=it?I[it.id].name+(I[it.id].dmg?' '+I[it.id].dmg:''):'—';pT(nm,48,y,PAL.bone,14);
-  if(it){const w=WEAR[it.wear|0];pT(w,VW-30-pW(w,13),y+1,it.wear?PAL.tallow:PAL.bone,13);for(let q=0;q<3;q++)pR(VW-24+q*6,y+5,4,4,q<3-(it.wear|0)?PAL.bone:PAL.soot)}y+=15});
- // the 8 slots in two columns, so every item's name fits whole (bug batch, Nov 24)
- y+=2;const sw=Math.floor((VW-10)/2);for(let s=0;s<8;s++){const x=4+(s%2)*(sw+2),yy=y+Math.floor(s/2)*15,it=m.slots[s];pBox(x,yy,sw,14,PAL.card,it?PAL.line:PAL.soot);
-  if(it){const cn=it.n>1?'×'+it.n:'',kt=it.kit?'KIT':'',rw=(cn?pW(cn,13)+3:0)+(kt?pW(kt,9)+3:0),nm=I[it.id].name;pT(nm,x+3,yy+(13-(pSize(nm,sw-6-rw,[13,12,11])||11))/2,PAL.bone,pSize(nm,sw-6-rw,[13,12,11])||11);
-   let rx=x+sw-3;if(cn){rx-=pW(cn,13);pT(cn,rx,yy,PAL.tallow,13);rx-=3}if(kt){rx-=pW(kt,9);pT(kt,rx,yy+3,PAL.ash,9)}}}
- y+=62;pT('PACK',8,y,PAL.tallow,14);y+=13;
- const pack=r.pack||[];if(!pack.length){pT('Nothing in the pack.',8,y,PAL.bone,14);y+=13}
- pack.slice(0,Math.max(0,Math.floor((VH-28-y)/12))).forEach(p=>{pT(I[p.id]?I[p.id].name+(p.n>1?' ×'+p.n:''):p.id,8,y,PAL.bone,14);y+=12});
- pBox(4,VH-20,VW-8,16,PAL.soot,PAL.bone);const days=Math.floor((r.rations|0)/Math.max(1,party.filter(p=>!p.dead).length));
- pT(`PURSE ${r.purse} gr · RATIONS ${r.rations}/15 · ${days} days`,9,VH-19,PAL.bone,14);
+ let y=frameTop('ITEMS',`PURSE ${r.purse} gr`);const bot=frameFoot('L/R: MERC · ▲▼: ITEM · B: BACK');
+ const tw=Math.floor((VW-8-(party.length-1)*3)/party.length);party.forEach((p,j)=>{const x=4+j*(tw+3),on=j===IV.i;
+  StudioParch.button(cx,x,y,tw,16,PT_,{on:false});if(on){pR(x,y,tw,16,PAL.tallow);pR(x+1,y+1,tw-2,14,'#e8cf86')}faceAt(p,x+2,y+2,12,p.dead);
+  const z=pSize(p.name,tw-20,[14,13,12,11]);pT(z?p.name:p.name.split(/\s/)[0],x+17,y+(15-(z||11))/2,on?IK.peat:PAL.bone,z||11)});y+=20;
+ // the worn gear: the slot written out, the item and its dice, wear as pips
+ const g=m.gear,rows=[['Weapon 1',g.w1,g.hand==='w1'],['Weapon 2',g.w2,g.hand==='w2'],['Body',g.body],['Head',g.head]];
+ parch(4,y,VW-8,17+rows.length*13);const NM=m.name.toUpperCase();pT(NM,10,y+3,IK.peat,pSize(NM,120,[8,7],PXf)||7,PXf);pT(m.trade,VW-10-pW(m.trade,14),y+1,IK.rust,14);let yy=y+14;
+ rows.forEach(([l,it,hand])=>{pT(l,10,yy-1,IK.dim,14);if(hand)pR(58,yy+4,3,3,PAL.tallow);const nm=it?I[it.id].name+(I[it.id].dmg?' '+I[it.id].dmg:''):'—';
+  pT(nm,63,yy-1,IK.peat,pSize(nm,VW-63-40,[14,13,12])||12);if(it){for(let q=0;q<3;q++)pR(VW-30+q*6,yy+3,4,5,q<3-(it.wear|0)?IK.moss:'rgba(90,62,43,.3)');const w=WEAR[it.wear|0];if(it.wear)pT(w,VW-34-pW(w,12),yy,IK.rust,12)}yy+=13});
+ y=yy+8;
+ // what the merc carries: a row per thing with its count, the picked one's use under the list
+ const sl=m.slots,c=Math.min(IV.c|0,Math.max(0,sl.length-1)),it=sl[c],dsc=it?pWrap(I[it.id].desc||'',VW-22,14,3):[],h=17+Math.max(1,sl.length)*13+(dsc.length?dsc.length*12+7:0);
+ parch(4,y,VW-8,h);pT('CARRIED',10,y+3,IK.peat,7,PXf);const sc=`slots ${sl.length} of 8`;pT(sc,VW-10-pW(sc,13),y+1,IK.dim,13);yy=y+14;
+ if(!sl.length){pT('Nothing carried.',10,yy-1,IK.soot,14);yy+=13}
+ sl.forEach((s2,k)=>{const on=k===c;if(on){pR(6,yy-1,VW-12,13,'rgba(217,180,90,.35)');StudioParch.seal(cx,13,yy+5,PT_)}const nm=I[s2.id].name+(s2.kit?'  (kit)':'');pT(nm,22,yy-1,IK.peat,pSize(nm,VW-60,[14,13,12])||12);
+  const cn=s2.n>1?'×'+s2.n:'';if(cn)pT(cn,VW-12-pW(cn,14),yy-1,IK.rust,14);yy+=13});
+ if(dsc.length){pR(10,yy+1,VW-20,1,'rgba(90,62,43,.5)');yy+=3;dsc.forEach(l=>{cx.font='italic '+VTf(14);cx.fillStyle=IK.soot;cx.textBaseline='top';cx.fillText(l,10,yy);yy+=12})}
+ y+=h+4;
+ // the pack: shared, with rations and the days they cover
+ const days=Math.floor((r.rations|0)/Math.max(1,party.filter(p=>!p.dead).length)),pack=r.pack||[],room=Math.max(1,Math.floor((bot-y-18)/12)),shown=pack.slice(0,room);
+ const ph=Math.min(bot-y-2,16+Math.max(1,shown.length)*12);parch(4,y,VW-8,ph);pT('PACK',10,y+3,IK.peat,7,PXf);const rs=`rations ${r.rations}/15 · ${days} day${days===1?'':'s'}`;pT(rs,VW-10-pW(rs,13),y+1,IK.dim,13);yy=y+14;
+ if(!pack.length){cx.font='italic '+VTf(14);cx.fillStyle=IK.soot;cx.textBaseline='top';cx.fillText('Nothing in the pack.',10,yy-1)}
+ shown.forEach(p=>{pT(I[p.id]?I[p.id].name+(p.n>1?' ×'+p.n:''):p.id,10,yy-1,IK.peat,14);yy+=12});if(pack.length>shown.length)pT(`and ${pack.length-shown.length} more`,VW-10-pW(`and ${pack.length-shown.length} more`,13),yy-13,IK.dim,13);
 }
 
 // ================= INPUT =================
@@ -261,6 +307,8 @@ function input(k){
  if(!G.active)return;
  if(EX){EX.press(k);return}
  if(G.mode==='battle'&&Bt&&!dlg&&!menu){battlePress(k);return}
+ if(CV&&!dlg&&!menu){if(k==='a'||k==='b')closeCard();return}
+ if(BV&&!dlg&&!menu){bestiaryPress(k);return}
  if(IV&&!dlg&&!menu){itemsPress(k);return}
  if(PM&&!dlg&&!menu){partyPress(k);return}
  if(dlg){if(k==='a'||k==='b'){if(!dlg.done)finishType();else closeDlg()}return}
@@ -286,7 +334,7 @@ window.addEventListener('pagehide',()=>{if(G.active)saveRun()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&G.active)saveRun()});
 // A canvas tap goes to the battle, the party list or the items page when one is open
 cv.addEventListener('click',e=>{if(!G.active)return;const r=cv.getBoundingClientRect();if(!r.width)return;
- const x=(e.clientX-r.left)*VW/r.width,y=(e.clientY-r.top)*VH/r.height;if(G.mode==='battle'&&Bt)battleTap(x,y);else if(IV)itemsPress(x<VW/3?'l':x>VW*2/3?'r':'b');else if(PM)partyTap(x,y);else if(G.mode==='region'&&!menu&&!dlg)regionTap(x,y)});
+ const x=(e.clientX-r.left)*VW/r.width,y=(e.clientY-r.top)*VH/r.height;if(CV){closeCard();return}if(BV){bestiaryPress(y<VH/2?'up':'down');return}if(G.mode==='battle'&&Bt)battleTap(x,y);else if(IV)itemsPress(x<VW/3?'l':x>VW*2/3?'r':'b');else if(PM)partyTap(x,y);else if(G.mode==='region'&&!menu&&!dlg)regionTap(x,y)});
 
 // ================= NEW RUNS FOR THE CHECKS (spec 003; src/CLAUDE.md rule 5) =================
 // RLG.newRun(seed): makes the first company a seed offers, checks every template's mercs against the rules, signs on

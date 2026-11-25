@@ -17,6 +17,7 @@
 }
 </style>
 <link rel="stylesheet" href="../../../engine/shell.css">
+<link rel="stylesheet" href="../../../engine/parch.css">
 <style>
 .hdr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 9px 6px;font:8px/1.4 var(--px);color:var(--scr-hi);background:#2c2621;border-bottom:2px solid var(--scr-line)}
 .hdr #hStep{color:var(--scr-dim)}
@@ -28,7 +29,7 @@
 .body.side .pane{border-top:0;border-left:2px solid var(--scr-line);max-height:none;width:42%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;padding-top:12px}
 .row{display:flex;align-items:center;gap:6px;padding:3px 9px 3px 4px;cursor:pointer;min-height:26px}
 .row .cur{width:12px;flex:none;color:var(--scr-hi);visibility:hidden;font-size:16px}
-.row.on{background:#3b3229;outline:2px solid var(--scr-hi);outline-offset:-2px}
+.row.on:not(.parch){background:#3b3229;outline:2px solid var(--scr-hi);outline-offset:-2px}
 .row.on .cur{visibility:visible;animation:bob .6s steps(2) infinite}
 .row .lab{flex:1;min-width:0;white-space:normal;overflow-wrap:break-word;line-height:1}
 .row .val{flex:none;display:flex;align-items:center;gap:4px;color:var(--scr-hi)}
@@ -68,6 +69,8 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 .squad .m{border:2px solid var(--scr-line);padding:5px;text-align:center;font-size:16px;background:#231e1a;min-width:0}
 .squad .m .p{color:var(--scr-hi);font-size:15px;overflow-wrap:anywhere}
 .scan{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.18) 2px 3px);mix-blend-mode:multiply}
+/* the shell's scanlines fade over parchment, so the chart and menus don't read as ruled paper (spec 008) */
+#game.region~.scan,#game.parch~.scan{opacity:.35}
 .vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(94,26,24,.85));opacity:0;transition:opacity .4s}
 .toast{position:absolute;left:8px;right:8px;bottom:34px;background:#d9b45a;color:#1c1814;font:8px/1.5 var(--px);padding:6px 8px;border:2px solid #1c1814;opacity:0;transform:translateY(6px);transition:all .18s;pointer-events:none}
 .toast.show{opacity:1;transform:none}
@@ -136,12 +139,94 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 #gexport{left:6px;right:6px;top:6px;padding:4px 6px}#gexport textarea{width:100%;height:120px;box-sizing:border-box;font:12px ui-monospace,monospace;background:#141210;color:#e6dcc4;border:1px solid #4d4134;word-break:break-all}
 #gexport .mt{font:7px/1.6 var(--px);color:var(--scr-hi)}#gexport .gi{display:flex;gap:4px;padding:1px 2px;cursor:pointer}#gexport .gi.on{background:#1c1814}#gexport .gc{width:12px;color:var(--scr-hi)}
 
+/* ================= THE PARCHMENT LOOK (spec 008, 8C; mockups 35, 42 and 44) =================
+   Every list-box screen outside battle and the dialog box draws its rows as aged parchment (engine/parch.css) in a dark Soot frame:
+   ink text (Peat and Soot), trade names in dark Rust, tags in dark Moss, the picked row with a Tallow edge and a wax-seal cursor,
+   dark leather buttons with the picked one Rust. No ruled lines. Labels written out in full; a value too long wraps. */
+.screen:not(.gaming) .scan{opacity:.35}
+#game.menu~.scan,#game.parchm~.scan{opacity:.35}
+.ftr{color:var(--scr-fg)}                                   /* the key hints read in Bone on the dark frame */
+.list{display:flex;flex-direction:column;gap:5px;padding:6px 7px;background:#1c1814;
+ --scr-fg:#2c2621;--scr-hi:#76331d;--scr-dim:#5a4a3a;--scr-grn:#4e5a24;--scr-red:#9a4528}
+.list .row{color:#1c1814;padding:4px 8px 4px 22px;min-height:24px;flex:none}
+.list .row .cur{display:none}
+.list .row.on{outline:0}
+.list .row.on:not(.parch){background:none}
+.list .row .val{color:#76331d}.list .row .val b{color:#9a4528;padding:0 4px}.list .row.on .val b{color:#9a4528}
+.list .row.dim .lab{color:#7a6a58}
+.list .row.go,.list .row.start{justify-content:center;padding:7px 8px;box-shadow:inset 0 0 0 1px #9a4528,0 2px 0 #0e0c0a!important;background:#5e1a18!important;border:1px solid #1c1814}
+.list .row.go .lab,.list .row.start .lab{color:#f2ead6;font:9px/1.4 var(--px);flex:none}.list .row.go .val,.list .row.start .val{color:#e6dcc4;font-size:15px}
+.list .row.start.dim{background:#3b3229!important;box-shadow:0 2px 0 #0e0c0a!important}.list .row.start.dim .lab{color:#b3aa98}
+.list .row.go.on,.list .row.start.on{box-shadow:0 0 0 2px #d9b45a,inset 0 0 0 1px #c8603a!important}
+.list .row.go::after,.list .row.start::after{display:none}
+.list .row .lab+input{margin-left:4px}.list .row input{background:#f2e8cc;color:#1c1814;border-color:#5a3e2b}
+.list .static{color:#e6dcc4;padding:2px 4px;flex:none;--scr-fg:#e6dcc4;--scr-hi:#d9b45a;--scr-dim:#b3aa98}
+.list .static .hint,.list .static.hintline{color:#c8bea8;text-align:center;font-size:16px}
+.list .static .desc,.list .static .mcard,.list .static .muster{color:#3b3229;--scr-fg:#2c2621;--scr-hi:#76331d;--scr-dim:#5a4a3a;--scr-grn:#4e5a24}
+.list .static .desc{font:17px/1 var(--vt);font-style:italic;padding:5px 9px}
+.list .static h3{color:#d9b45a}
+.pane{--scr-fg:#2c2621;--scr-hi:#76331d;--scr-dim:#5a4a3a;--scr-grn:#4e5a24;color:#2c2621;margin:0 7px 7px;border:1px solid #1c1814!important}
+/* step 1: company cards */
+.list .row.pc{flex-direction:column;align-items:stretch;gap:0;padding:3px 7px 4px 22px}
+.list .row.pc .lab{line-height:1}
+.pc .t1{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font:9px/1.6 var(--px);color:#1c1814;letter-spacing:.04em}
+.pc .t1 i{font:17px var(--vt);font-style:normal;color:#4e5a24;white-space:nowrap}
+.pc .t2{font:16px/1 var(--vt);color:#3b3229}
+.row.pc.blank{opacity:.9}
+/* step 2: seat cards */
+.list .row.seatrow{flex-direction:column;align-items:stretch;gap:5px;padding:6px 6px 6px 22px}
+.list .row.seatrow.on::after{top:14px;margin-top:0}
+.seat2{display:flex;gap:8px;align-items:center;min-width:0}
+.seat2 canvas.face{width:52px;height:52px;flex:none;image-rendering:pixelated;background:linear-gradient(#a8906c,#6a5a44);border:2px solid #1c1814}
+.seat2 .si{min-width:0;flex:1}.seat2 .nm,.mcard .nm{font:10px/1.6 var(--px);color:#1c1814;overflow-wrap:anywhere}
+.seat2 .k,.mcard .k{font:16px/1 var(--vt);color:#76331d}.seat2 .ln{font:16px/1.05 var(--vt);color:#2c2621;white-space:normal}
+.seat2 .tick{font-style:normal;color:#d9b45a;text-shadow:0 1px 0 #1c1814}
+.seat2.empty{justify-content:space-between;color:#5a4a3a;padding:8px 2px}
+.btns{display:flex;gap:4px}.btns b{flex:1;text-align:center;font:7px/1 var(--px);font-weight:normal;padding:5px 0;border:1px solid #1c1814;color:#e6dcc4;background:#3b3229;cursor:pointer}
+.btns b.on{background:#9a4528;color:#f2ead6}
+/* Tweak: the merc's card, then one row per choice */
+.mcard{display:flex;gap:8px;align-items:center;padding:6px 8px}
+.mcard canvas.face{width:64px;height:64px;flex:none;image-rendering:pixelated;background:linear-gradient(#a8906c,#6a5a44);border:2px solid #1c1814}
+.mcard .d{font:15px/1.05 var(--vt);color:#5a4a3a}
+.list .row .lab{color:#5a4a3a}.list .row.pc .lab,.list .row.seatrow .lab,.list .row.two .lab,.list .row.tpl .lab,.list .row.bkrow .lab{color:#1c1814}
+.list .row.bkrow{flex-direction:column;align-items:stretch}
+.bkh{display:flex;justify-content:space-between;align-items:center}.bkh .t{font:9px/1.6 var(--px);color:#1c1814}.bkh .btn{font:7px/1 var(--px);font-weight:normal;padding:4px 10px;border:1px solid #1c1814;color:#e6dcc4;background:#3b3229}
+.list .row .bk,.list .static .bk{font-style:italic;color:#3b3229}
+/* the older seat and muster blocks on parchment */
+.list .seat,.squad .m,.card,.kv6 span{background:transparent;border-color:#8a6c4a}
+.muster b,.card .who .n{color:#76331d}
+/* the in-world pick lists, the pause menu and hotspot prompts: a parchment card above the dialog box */
+#gmenu{border:1px solid #1c1814;border-radius:0;color:#1c1814;font:18px/1.05 var(--vt);padding:4px 0 3px;
+ background:radial-gradient(ellipse at 30% 40%,rgba(255,248,225,.55),rgba(255,248,225,0) 60%),radial-gradient(ellipse at 85% 80%,rgba(140,104,50,.22),rgba(140,104,50,0) 45%),#dccca4;
+ box-shadow:inset 0 0 0 2px #dccca4,inset 0 0 0 3px #5a3e2b,inset 0 0 12px rgba(90,62,43,.55),0 0 0 1px #1c1814,0 2px 0 #0e0c0a}
+#gmenu .mt{font:7px/1.6 var(--px);color:#76331d;margin:0 8px 2px}
+#gmenu .gi{position:relative;padding:2px 8px 2px 22px;color:#1c1814;border-top:1px solid transparent}
+#gmenu .gi .gc{display:none}
+#gmenu .gi.on{background:rgba(217,180,90,.35);box-shadow:inset 0 0 0 1px #d9b45a}
+#gmenu .gi.on::after{content:'';position:absolute;left:4px;top:50%;margin-top:-7px;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#c8603a 0 3px,#9a4528 4px 5px,#5e1a18 6px 7px);box-shadow:0 1px 0 #1c1814}
+#gmenu .gi.dis{color:#8a7a66}
+#gmenu .md{color:#3b3229;border-top:1px solid rgba(90,62,43,.5);margin:3px 8px 0;padding-top:2px}
+#gmenu .gi .r{margin-left:auto;text-align:right;color:#76331d;white-space:nowrap;padding-left:6px}
+/* the title: the lantern drawn large in a warm glow */
+.list .static .lantern{width:132px;height:132px;margin:4px auto 0;background:radial-gradient(circle at 50% 40%,rgba(217,180,90,.35),rgba(217,180,90,0) 65%)!important}
+.list .static .logo{font-size:16px;color:#d9b45a}.list .static .logo small{color:#e6dcc4;font-size:8px}
+#gmenu .gi{align-items:center}#gmenu .gl{flex:1;min-width:0}#gmenu .gs{color:#76331d;font-size:16px}#gmenu .gi .r .face{width:16px;height:16px;vertical-align:-3px;margin-right:4px}
+#gmenu .gi .face{width:24px;height:24px;image-rendering:pixelated;background:linear-gradient(#a8906c,#6a5a44);border:1px solid #1c1814;flex:none;margin-right:2px}
+
+/* the death screen and the ledger's company page */
+.dcard,.droll{padding:6px 9px;color:#2c2621}.dcard{text-align:center}.dcard .nm{font:10px/1.6 var(--px);color:#1c1814}
+.stamp2{display:inline-block;transform:rotate(-6deg);border:2px solid #5e1a18;color:#5e1a18;font:9px/1.6 var(--px);padding:1px 6px;letter-spacing:.08em;margin:3px 0}
+.dcard .d,.droll .d{color:#5a4a3a}.dcard .it,.droll .it{font-style:italic;color:#3b3229;margin-top:3px}
+.droll .dm{display:flex;gap:7px;align-items:center;padding:2px 0;border-bottom:1px dotted rgba(90,62,43,.35)}.droll .dm:last-child{border-bottom:0}
+.droll canvas.face,.droll .noface{width:30px;height:30px;flex:none;image-rendering:pixelated;background:linear-gradient(#a8906c,#6a5a44);border:1px solid #1c1814}
+.droll canvas.grey{filter:grayscale(1) brightness(.75) sepia(.35)}
+.droll .kvr{display:flex;justify-content:space-between}.droll .kvr b{font-weight:normal;color:#1c1814}
 </style>
 
 <!-- The shell around this screen (bezel, brand strip, buttons) comes from engine/shell.js -->
 <div class="screen" id="screen" data-brand="RUSHLIGHT" data-brand-sub="THE WITHY MARCH" data-label-l="L" data-label-r="R" data-label-start="Start: menu">
   <div class="hdr"><span id="hTitle"></span><span id="hStep"></span></div>
-  <div class="body" id="body"><div class="list" id="list"></div><div class="pane" id="pane"></div></div>
+  <div class="body" id="body"><div class="list" id="list"></div><div class="pane parch" id="pane"></div></div>
   <div class="ftr" id="ftr"></div>
   <div id="game"><canvas id="gcv" width="240" height="160"></canvas><div class="gbox" id="gsan" hidden></div><div class="gban" id="gban" hidden></div><div id="gdlg"></div><div class="gbox" id="gmenu" hidden></div><div id="ghud" hidden></div><div id="gfade"></div></div>
   <div class="vig" id="vig"></div>
@@ -160,6 +245,10 @@ canvas.pix,img.pix{image-rendering:pixelated;image-rendering:crisp-edges;backgro
 <script src="../../../engine/roll.js"></script>
 <script src="../../../engine/battle.js"></script>
 <script src="../../../engine/patrol.js"></script>
+<script src="../../../engine/pixgrid.js"></script>
+<script src="../../../engine/rig.js"></script>
+<script src="../../../engine/hud.js"></script>
+<script src="../../../engine/parch.js"></script>
 <script src="content/text-library.js"></script>
 <script src="strings.js"></script>
 <script src="species-art.js"></script>

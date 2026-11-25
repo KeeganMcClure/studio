@@ -53,100 +53,173 @@ const rationsNeed=days=>days*alive().length;
 // ================= THE MAP SCREEN =================
 let MAPV={cur:'harrow',key:false,page:null,log:[],cam:null};
 function enterRegion(){G.mode='region';gEl.classList.remove('site','town');gEl.classList.add('region');const g=RG();MAPV={cur:g.at,key:false,page:null,log:[],cam:null};scout(g.at);applySan();saveRun()}
-const SH=44;   // top strip height
-function chartRect(){return {x:0,y:SH,w:VW,h:VH-SH-50}}
+// ---- the region map's look (spec 008, 8B; mockup 43-map-look-rough-v1, "Looks good"). Same chart data (content/march.js). ----
+// The chart is aged parchment (a lit middle, stained edges, foxing, low-contrast fibres); the river inked with a blue-grey wash;
+// woods as clumps of inked trees lit from the upper left; fields hatched with an ochre wash; reed beds as ink tufts; hachured hills;
+// a compass rose. Roads in ink: main roads a double line with a pale bed, side roads dashed, den roads Blood, a cross stroke per day,
+// the route being picked in Tallow dots with an ink edge. Each place a little picture with its name on a pale ribbon.
+const SH=64;   // the HUD cards and the faction line
+function chartRect(){return {x:0,y:SH,w:VW,h:VH-SH-54}}
 function camFor(k){const r=chartRect(),p=P_[k];return [clamp(p.x-r.w/2,0,MARCH.w-r.w),clamp(p.y-r.h/2,0,MARCH.h-r.h)]}
 function drawRegion(){
  const r=chartRect(),g=RG();const want=camFor(MAPV.cur);if(!MAPV.cam)MAPV.cam=want.slice();MAPV.cam[0]+=(want[0]-MAPV.cam[0])*.2;MAPV.cam[1]+=(want[1]-MAPV.cam[1])*.2;
  const ox=Math.round(r.x-MAPV.cam[0]),oy=Math.round(r.y-MAPV.cam[1]);
+ pR(0,0,VW,VH,'#1c1814');
  cx.save();cx.beginPath();cx.rect(r.x,r.y,r.w,r.h);cx.clip();drawChart(ox,oy);cx.restore();
- drawStrip();drawInset(r);drawTabs(r,ox,oy);drawRoadCard();
+ drawStrip();drawInset(r);
+ // a name the inset covers is drawn again on top of it, so no name is ever cut
+ const ins={x:r.x+r.w-51,y:r.y+3,w:48,h:42};(MAPV.ribs||[]).forEach(([t,x,y,big,w])=>{if(x+w/2>ins.x&&x-w/2<ins.x+ins.w&&y+13>ins.y&&y<ins.y+ins.h)ribbon(t,x,y,big)});
+ drawTabs(r,ox,oy);drawRoadCard();
  if(MAPV.key)drawKey();if(MAPV.page==='contracts')drawContracts();
 }
-// the chart: parchment, river, scenery, roads, points, the coin token
-const PARCH='#cfc2a0',PARCHD='#b8aa86',INK='#3a3028',INKL='#6a5c48';
+const PARCH='#d6c6a0',PARCHD='#b8aa86',INK='#3a2c20',INKL='#5a4632',RIB='rgba(242,234,214,.85)';
+let chartSheet=null;
+function bakeChart(){
+ const c=document.createElement('canvas');c.width=MARCH.w;c.height=MARCH.h;const x=c.getContext('2d'),W=MARCH.w,Hh=MARCH.h,H=(a,b)=>(((a*73856093)^(b*19349663))>>>0);
+ const r=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(Math.round(a),Math.round(b),w,h)};
+ r(0,0,W,Hh,PARCH);
+ let g=x.createRadialGradient(W*.4,Hh*.4,10,W*.4,Hh*.4,W*.7);g.addColorStop(0,'rgba(255,248,222,.55)');g.addColorStop(1,'rgba(255,248,222,0)');x.fillStyle=g;x.fillRect(0,0,W,Hh);
+ g=x.createRadialGradient(W/2,Hh/2,Math.min(W,Hh)*.35,W/2,Hh/2,W*.72);g.addColorStop(0,'rgba(120,84,40,0)');g.addColorStop(1,'rgba(120,84,40,.45)');x.fillStyle=g;x.fillRect(0,0,W,Hh);
+ for(const [fx,fy,fr] of [[60,300,14],[380,80,10],[260,40,7],[30,30,9]]){const f=x.createRadialGradient(fx,fy,1,fx,fy,fr);f.addColorStop(0,'rgba(140,96,48,.28)');f.addColorStop(1,'rgba(140,96,48,0)');x.fillStyle=f;x.fillRect(fx-fr,fy-fr,fr*2,fr*2)}
+ for(let i=0;i<900;i++){const k=H(i,7),a=k%W,b=(k>>9)%Hh;r(a,b,1+(k>>20)%3,1,(k>>3)%2?'rgba(150,118,74,.22)':'rgba(255,248,225,.35)')}
+ const hill=(hx,hy,w)=>{for(let i=0;i<w;i+=2){const h0=Math.round(Math.sin(i/w*Math.PI)*7);r(hx+i,hy-h0,1,1,INKL);if(i%4===0&&i<w/2)r(hx+i,hy-h0+1,1,3,'rgba(90,70,50,.55)')}};
+ [[280,330,26],[330,296,22],[350,340,30],[300,352,18],[392,260,24],[20,250,26],[12,300,22]].forEach(a=>hill(...a));
+ const riv=(w,col)=>{x.strokeStyle=col;x.lineWidth=w;x.lineJoin=x.lineCap='round';x.beginPath();MARCH.river.forEach(([a,b],i)=>i?x.lineTo(a,b):x.moveTo(a,b));x.stroke()};
+ riv(9,INKL);riv(7,'#9aa8ae');riv(3,'#b4c0c2');
+ for(let i=0;i<MARCH.river.length-1;i++){const [a,b]=MARCH.river[i],[c2,d]=MARCH.river[i+1];for(let t=.25;t<1;t+=.35)r(a+(c2-a)*t-1,b+(d-b)*t,3,1,'#7c8c98')}
+ MARCH.fields.forEach(([a,b])=>{r(a-2,b-2,30,16,'rgba(200,165,82,.35)');for(let k=0;k<5;k++)r(a,b+k*3,26,1,k%2?'#a8873e':'#8a6c2e');for(let k=0;k<30;k+=3)r(a-2+k,b+14,2,1,INKL)});
+ MARCH.beds.forEach(([a,b])=>{for(let k=0;k<7;k++){const tx=a+k*4,ty=b+(k%2)*3;r(tx,ty,1,5,'#5a6a3a');r(tx-1,ty+1,1,2,'#5a6a3a');r(tx+1,ty+2,1,2,'#5a6a3a');r(tx-1,ty+5,4,1,INKL)}});
+ MARCH.woods.forEach(([a,b])=>{[[0,0],[9,3],[3,9],[12,-4],[15,7]].forEach(([dx,dy])=>{const tx=a+dx,ty=b+dy;r(tx+1,ty+9,7,1,'rgba(58,44,32,.35)');r(tx+3,ty+6,2,3,INK);
+  for(let yy=0;yy<7;yy++)for(let xx=0;xx<8;xx++){const q=((xx-3.5)/4)**2+((yy-3)/3.6)**2;if(q>1)continue;r(tx+xx,ty+yy,1,1,q>.7?INK:xx+yy<6?'#7a8a4a':'#56623a')}})});
+ const cx0=26,cy0=Hh-30;x.strokeStyle=INKL;x.lineWidth=1;x.beginPath();x.arc(cx0,cy0,11,0,7);x.stroke();
+ x.fillStyle=INK;x.beginPath();x.moveTo(cx0,cy0-16);x.lineTo(cx0+3,cy0);x.lineTo(cx0,cy0+16);x.lineTo(cx0-3,cy0);x.fill();
+ x.beginPath();x.moveTo(cx0-16,cy0);x.lineTo(cx0,cy0-3);x.lineTo(cx0+16,cy0);x.lineTo(cx0,cy0+3);x.fill();
+ x.font='8px "Press Start 2P"';x.fillStyle=INK;x.textBaseline='top';x.fillText('N',cx0-3,cy0-27);
+ chartSheet=c;
+}
 function drawChart(ox,oy){
- const g=RG();pR(ox,oy,MARCH.w,MARCH.h,PARCH);
- for(let i=0;i<70;i++){const x=(i*97)%MARCH.w,y=(i*61)%MARCH.h;pR(ox+x,oy+y,2,1,PARCHD)}
- // river
- cx.strokeStyle='#5c6c7c';cx.lineWidth=5;cx.lineJoin='round';cx.beginPath();MARCH.river.forEach(([x,y],i)=>i?cx.lineTo(ox+x,oy+y):cx.moveTo(ox+x,oy+y));cx.stroke();
- cx.strokeStyle='#8a9aa8';cx.lineWidth=1;cx.stroke();
- MARCH.woods.forEach(([x,y])=>{[[0,0],[8,3],[3,8],[11,-4]].forEach(([a,b])=>{pR(ox+x+a,oy+y+b,6,5,'#56623a');pR(ox+x+a+1,oy+y+b+5,2,2,'#3a3028');pR(ox+x+a,oy+y+b,6,1,'#434d2c')})});
- MARCH.fields.forEach(([x,y])=>{for(let k=0;k<4;k++)pR(ox+x,oy+y+k*3,22,1,'#c8a552');pR(ox+x+24,oy+y,1,10,INKL)});
- MARCH.beds.forEach(([x,y])=>{for(let k=0;k<6;k++)pR(ox+x+k*4,oy+y+(k%2)*2,1,5,'#6a7a4a')});
- // roads: solid main roads, dashed side roads, day ticks; the march route in Tallow dots
+ const g=RG();if(!chartSheet)bakeChart();cx.drawImage(chartSheet,ox,oy);MAPV.ribs=[];
  const rt=MAPV.cur!==g.at&&knownPt(MAPV.cur)?route(g.at,MAPV.cur):null,onRoute=new Set(rt?rt.legs.map(l=>l.road):[]);
  Object.keys(RD).forEach(id=>{if(!knownRoad(id))return;const R=RD[id],pts=[[P_[R[0]].x,P_[R[0]].y],...R[4],[P_[R[1]].x,P_[R[1]].y]];
-  cx.strokeStyle=R[3]==='den'?'#5e1a18':INK;cx.lineWidth=R[3]==='main'?2:1;cx.setLineDash(R[3]==='main'?[]:[3,3]);cx.beginPath();pts.forEach(([x,y],i)=>i?cx.lineTo(ox+x,oy+y):cx.moveTo(ox+x,oy+y));cx.stroke();cx.setLineDash([]);
-  // day ticks: one across the road for each day
-  const n=roadDays(id);for(let d=1;d<=n;d++){const [tx,ty]=along(pts,d/(n+1));pR(ox+tx-1,oy+ty-1,3,3,INK)}
-  if(onRoute.has(id)){const t=performance.now()/120;for(let q=0;q<14;q++){const [x,y]=along(pts,((q+t)%14)/14);pR(ox+x-1,oy+y-1,2,2,'#d9b45a')}}
-  // roamer claws on a road where one was met
+  const path=()=>{cx.beginPath();pts.forEach(([x,y],i)=>i?cx.lineTo(ox+x,oy+y):cx.moveTo(ox+x,oy+y))};cx.lineJoin=cx.lineCap='round';
+  if(R[3]==='main'){path();cx.strokeStyle=INK;cx.lineWidth=4;cx.stroke();path();cx.strokeStyle='#e8dcc0';cx.lineWidth=2;cx.stroke()}
+  else{path();cx.strokeStyle=R[3]==='den'?'#5e1a18':INK;cx.lineWidth=1.5;cx.setLineDash([4,3]);cx.stroke();cx.setLineDash([])}
+  // one short cross stroke for each day of road
+  const n=roadDays(id);for(let d=1;d<=n;d++){const [x,y]=along(pts,d/(n+1)),[x2,y2]=along(pts,Math.min(1,d/(n+1)+.02)),a=Math.atan2(y2-y,x2-x)+Math.PI/2;
+   cx.strokeStyle=INK;cx.lineWidth=1.5;cx.beginPath();cx.moveTo(ox+x-Math.cos(a)*4,oy+y-Math.sin(a)*4);cx.lineTo(ox+x+Math.cos(a)*4,oy+y+Math.sin(a)*4);cx.stroke()}
+  if(onRoute.has(id)){const t=performance.now()/120;for(let q=0;q<14;q++){const [x,y]=along(pts,((q+t)%14)/14);pR(ox+x-2,oy+y-2,4,4,INK);pR(ox+x-1,oy+y-1,2,2,'#d9b45a')}}
   Object.entries(g.roam).forEach(([k,ro])=>{if(ro.road===id&&ro.met&&!ro.dead){const [x,y]=along(pts,.5);claws(ox+x+4,oy+y-8)}});
  });
  // far ends not yet known: a pencil ? where a shown road leads
  g.roads.forEach(id=>RD[id].slice(0,2).forEach(k=>{if(!knownPt(k)){const p=P_[k];pT('?',ox+p.x-3,oy+p.y-8,INKL,16)}}));
- // points
- (g.seals||[]).forEach(k=>{const p=P_[k];if(!p)return;const x=ox+p.x+8,y=oy+p.y-12;cx.fillStyle='#9a4528';cx.beginPath();cx.arc(x,y,4,0,7);cx.fill();pR(x-1,y-1,2,2,'#5e1a18')});
+ (g.seals||[]).forEach(k=>{const p=P_[k];if(!p)return;const x=ox+p.x+10,y=oy+p.y-12;cx.fillStyle='#5e1a18';cx.beginPath();cx.arc(x,y,5,0,7);cx.fill();cx.fillStyle='#9a4528';cx.beginPath();cx.arc(x-1,y-1,3.5,0,7);cx.fill();pR(x-1,y-2,2,3,'#5e1a18')});
  Object.keys(P_).forEach(k=>{if(!knownPt(k))return;const p=P_[k],x=ox+p.x,y=oy+p.y;
-  if(p.kind==='lie'){const L=(G.run.rumors||{lies:{}}).lies[k]||{};pT('?',x-3,y-8,INKL,16);if(L.found){cx.strokeStyle=INK;cx.beginPath();cx.moveTo(x-6,y-6);cx.lineTo(x+6,y+6);cx.stroke()}pT(p.name,x-pW(p.name,11)/2,y+8,INKL,11);return}
-  glyph(p.kind,x,y);
-  const nm=p.kind==='town'?p.name:p.name,big=p.kind==='town';pT(nm,x-pW(nm,big?13:12)/2,y+8,INK,big?13:12)});
- // signs: margin notes by Lowmoor Pit's hills (Part D adds them where they're found)
- // the cursor
- const c=P_[MAPV.cur],b=Math.floor(performance.now()/300)%2;cx.strokeStyle='#d9b45a';cx.lineWidth=1;cx.strokeRect(ox+c.x-11-b,oy+c.y-11-b,22+2*b,22+2*b);
- // the coin token, struck with the lead's head
- const at=P_[g.at],coin=RLSP.coin(lead().sp);pR(ox+at.x+5,oy+at.y-4,15,3,'rgba(28,24,20,.3)');cx.drawImage(coin,ox+at.x+3,oy+at.y-20);
+  if(p.kind==='lie'){const L=(G.run.rumors||{lies:{}}).lies[k]||{};pT('?',x-3,y-8,INKL,16);if(L.found){cx.strokeStyle=INK;cx.lineWidth=1;cx.beginPath();cx.moveTo(x-6,y-6);cx.lineTo(x+6,y+6);cx.stroke()}ribbon(p.name,x,y+9,false);return}
+  glyph(p.kind,x,y,k);ribbon(p.kind==='town'?p.name:p.name.replace(/^the /,'The '),x,y+8,p.kind==='town')});
+ // the cursor: four Tallow corner brackets with a Peat edge, framing the picture
+ const c=P_[MAPV.cur],b=Math.floor(performance.now()/300)%2,s=11+b,X=ox+c.x,Y=oy+c.y-4;
+ for(const [sx,sy] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const ax=X+sx*s,ay=Y+sy*s;pR(ax-(sx>0?5:0)-1,ay-1,7,3,'#1c1814');pR(ax-1,ay-(sy>0?5:0)-1,3,7,'#1c1814');pR(ax-(sx>0?4:0),ay,5,1,'#d9b45a');pR(ax,ay-(sy>0?4:0),1,5,'#d9b45a')}
+ // the coin token, struck with the lead's head, with its shadow
+ const at=P_[g.at],coin=RLSP.coin(lead().sp);cx.fillStyle='rgba(28,24,20,.35)';cx.beginPath();cx.ellipse(ox+at.x+12,oy+at.y-2,8,2.5,0,0,7);cx.fill();cx.drawImage(coin,ox+at.x+3,oy+at.y-20);
 }
+// a name on a pale ribbon, slid in from the edge rather than cut, never on texture
+function ribbon(t,x,y,big){const s=big?13:12,w=pW(t,s)+8,xc=Math.max(w/2+2,Math.min(VW-w/2-2,x));if(Math.abs(xc-x)>w/2)return;x=xc;if(MAPV.ribs)MAPV.ribs.push([t,x,y,big,w]);
+ pR(x-w/2,y,w,s-1,RIB);pR(x-w/2,y+s-1,w,1,'rgba(58,44,32,.4)');pT(t,x-w/2+4,y-2,INK,s)}
 function along(pts,t){let L=0;const seg=[];for(let i=1;i<pts.length;i++){const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);seg.push(d);L+=d}
  let want=t*L;for(let i=0;i<seg.length;i++){if(want<=seg[i]){const f=seg[i]?want/seg[i]:0;return [pts[i][0]+(pts[i+1][0]-pts[i][0])*f,pts[i][1]+(pts[i+1][1]-pts[i][1])*f]}want-=seg[i]}return pts[pts.length-1]}
-function glyph(kind,x,y){const P=(a,b,w,h,c)=>pR(x+a,y+b,w,h,c);
- if(kind==='town'){P(-9,-6,18,10,INK);P(-8,-5,16,8,'#e6dcc4');P(-8,-9,4,4,INK);P(4,-9,4,4,INK);P(-2,-11,4,6,INK);P(-1,-2,2,5,INK);P(-6,-3,2,2,INK);P(4,-3,2,2,INK)}
- else if(kind==='hamlet'){P(-6,-4,6,6,INK);P(-5,-3,4,5,'#e6dcc4');P(1,-3,6,5,INK);P(2,-2,4,4,'#c8a552');P(-6,-6,6,2,INK);P(1,-5,6,2,INK)}
- else if(kind==='den'){P(-7,-4,14,8,'#5e1a18');P(-5,-2,10,4,'#1c1814');P(-1,-8,2,4,INK)}
- else{P(-5,-5,10,9,INK);P(-4,-4,8,7,'#c8a552');P(-1,-8,2,3,INK);P(-1,0,2,3,INK)}}
+// each place as a little picture: a walled town with towers (Saint Ebbe's with a spire), cottages for a hamlet, a pictogram for each
+// wild site, the pit head on a Blood ground for the den. k: the place (the map Key passes none)
+function glyph(kind,x,y,k){const r=(a,b,w,h,c)=>pR(x+a,y+b,w,h,c);
+ r(-10,4,20,2,'rgba(58,44,32,.3)');
+ if(kind==='town'){r(-10,-6,20,10,INK);r(-9,-5,18,8,'#efe4c8');r(-9,-5,3,8,'#fff6dc');r(4,-5,5,8,'#cdbf9c');
+  r(-11,-10,5,14,INK);r(-10,-9,3,12,'#efe4c8');r(6,-10,5,14,INK);r(7,-9,3,12,'#cdbf9c');
+  [-11,-9,-7,6,8,10].forEach(a=>r(a,-11,1,1,INK));r(-2,-1,4,5,INK);r(-1,0,2,4,'#6a4a2c');
+  if(k==='ebbe'){r(-1,-18,2,12,INK);r(-3,-13,6,1,INK);r(-2,-8,4,3,INK)}else{r(-6,-9,3,3,'#9a4528');r(-1,-9,3,3,'#9a4528')}}
+ else if(kind==='hamlet'){[[-9,0],[-1,-3],[5,1]].forEach(([a,b])=>{r(a,b-2,7,6,INK);r(a+1,b-1,5,4,'#efe4c8');r(a-1,b-5,9,3,INK);r(a,b-4,7,2,'#c8a552');r(a+3,b+1,1,3,INK)})}
+ else if(kind==='den'){r(-9,-3,18,9,'#5e1a18');r(-6,-1,12,5,'#1c1814');r(-5,-12,2,11,INK);r(3,-12,2,11,INK);r(-6,-13,12,2,INK);r(-1,-11,2,2,'#7a7a7a');r(-1,-9,1,8,INKL)}
+ else{if(k==='camp'){r(-6,-2,12,6,INK);r(-5,-1,10,4,'#6a5a4a');r(-3,-6,6,4,INK);r(-2,-5,4,3,'#4a3e34');for(let i=0;i<3;i++)r(-1+i,-10-i*3,2,2,'rgba(90,80,70,.5)')}
+  else if(k==='cause'){for(let i=-9;i<10;i+=3)r(i,-1,2,5,INK);r(-10,0,20,1,INKL);r(-10,3,20,1,INKL)}
+  else if(k==='crook'){r(-7,-4,7,8,INK);r(-6,-3,5,6,'#cdbf9c');r(1,-2,7,6,INK);r(2,-1,5,4,'#cdbf9c');r(-8,-6,9,2,INK);r(0,-4,9,2,INK);r(-5,-1,3,3,'#5e1a18');r(-4,-2,1,5,'#5e1a18')}
+  else if(k==='hollin'){r(-9,-1,18,6,'rgba(200,165,82,.6)');for(let i=-8;i<9;i+=3)r(i,-3,1,7,'#8a6c2e');r(-3,-9,6,8,INK);r(-2,-8,4,7,'#efe4c8');r(-4,-10,8,2,INK)}
+  else if(k==='sallow'){r(-8,-4,7,7,INK);r(-7,-3,5,5,'#efe4c8');r(-9,-6,9,2,INK);r(2,-9,5,12,INK);r(3,-8,3,10,'#cdbf9c');r(2,-11,5,2,INK)}
+  else{r(-5,-5,10,9,INK);r(-4,-4,8,7,'#c8a552');r(-1,-8,2,3,INK);r(-1,0,2,3,INK)}}}
 function claws(x,y){for(let k=0;k<3;k++){pR(x+k*3,y,1,5,'#9a4528');pR(x+k*3+1,y+4,1,2,'#9a4528')}}
-// the top strip: row 1 party heads (lead in Tallow), where, purse, day, rations and the days they cover
-function drawStrip(){const g=RG(),r=G.run;pR(0,0,VW,SH,'rgba(44,38,33,.97)');pR(0,SH-2,VW,2,'#e6dcc4');
- let x=3;party.forEach((m,i)=>{const on=i===(G.lead|0);pR(x-1,2,16,16,on?'#d9b45a':'#857e72');cx.drawImage(RLSP.portrait(m.sp,m.look),0,0,64,64,x,3,14,14);if(m.dead)pR(x,3,14,14,'rgba(28,24,20,.7)');x+=18});
- const where=(g.trip?'ON THE ROAD':'AT '+P_[g.at].name.toUpperCase());{const z=pSize(where,92,[13,12,11]);if(z)pT(where,x+2,3+(13-z)/2,'#e6dcc4',z);else pWrap(where,92,11,2).forEach((l,k)=>pT(l,x+2,k*9,'#e6dcc4',11))}
- const live=Math.max(1,alive().length),days=Math.floor(r.rations/live),rs=`${r.rations}·${days}d`,ps=`${r.purse}gr`,ds=`DAY ${r.day}`;
- let rx=VW-3;[[ds,'#e6dcc4'],[rs,r.rations<live?'#c8603a':'#e6dcc4'],[ps,'#d9b45a']].forEach(([t,c])=>{rx-=pW(t,13);pT(t,rx,3,c,13);rx-=6});
- if((g.meat||[]).some(l=>l.d<=1))pT('MEAT ROTS TOMORROW',VW-3-pW('MEAT ROTS TOMORROW',11),13,'#c8603a',11);
- // row 2: the Hue and cry pips and the four factions (their rules come in Part C; here they only draw)
- const hue=(r.hue|0);pT('HUE',3,24,'#857e72',12);for(let k=0;k<4;k++)pR(22+k*6,28,4,6,k<hue?'#9a4528':'#4d4134');
- const F=[['LORD','lord'],['CHURCH','church'],['TOWN','town'],['OUTLAWS','outlaws']];let fx=52;
- F.forEach(([n,k])=>{const st=r.fac&&r.fac[k]?['HATED','WARY','NEUTRAL','TRUSTED','SWORN'][r.fac[k].step]:'NEUTRAL',t=n[0]+' '+st;pT(t,fx,24,'#c4b99e',11);fx+=pW(t,11)+6});
+// the HUD: a party card (the three faces on their backings, the lead's in Tallow, the lead's name) and a place card (the place,
+// the purse, the day, food and the days it covers); then the Hue and the four factions on one line, each written out
+function drawStrip(){const g=RG(),r=G.run;
+ StudioHUD.card(cx,2,2,104,46,HUDT);let x=6;
+ party.forEach((m,i)=>{const on=i===(G.lead|0);pR(x-1,5,32,32,on?'#d9b45a':'#5a4a3a');StudioHUD.portrait(cx,RLSP.portrait(m.sp,m.look),4,0,56,56,x,6,30,30,HUDT);if(m.dead)pR(x,6,30,30,'rgba(28,24,20,.7)');x+=33});
+ const ln=party[G.lead|0].name.toUpperCase();pT(ln,6,35,'#d9b45a',pSize(ln,96,[12,11,10])||10);
+ const live=Math.max(1,alive().length),days=Math.floor(r.rations/live),where=g.trip?'ON THE ROAD':P_[g.at].name.toUpperCase();
+ const rows=[[where,'#e6dcc4',13],[`${r.purse} gr · DAY ${r.day}`,'#d9b45a',12],[`Food ${r.rations} · ${days} day${days===1?'':'s'}`,r.rations<live?'#c8603a':'#e6dcc4',12]];
+ if((g.meat||[]).some(l=>l.d<=1))rows.push(['Meat rots tomorrow','#c8603a',11]);
+ const h=Math.max(48,placeCard(rows));
+ pR(0,h+1,VW,14,'rgba(28,24,20,.92)');const hue=r.hue|0;pT('HUE',4,h+1,'#d9b45a',12);for(let k=0;k<4;k++)pR(24+k*6,h+5,4,7,k<hue?'#9a4528':'#4d4134');
+ let fx=54;const F=[['Lord','lord'],['Church','church'],['Town','town'],['Outlaws','outlaws']],st=k=>r.fac&&r.fac[k]?['hated','wary','–','trusted','sworn'][r.fac[k].step]:'–';
+ const z=pW(F.map(([n,k])=>n+' '+st(k)).join('   '),12)+54<=VW?12:11;
+ F.forEach(([n,k])=>{const s=st(k);pT(n,fx,h+1,'#c8bea8',z);fx+=pW(n,z)+3;pT(s,fx,h+1,s==='hated'?'#c8603a':s==='–'?'#e6dcc4':'#d9b45a',z);fx+=pW(s,z)+(z===12?8:5)});
 }
-function drawInset(r){const w=46,h=40,x=r.x+r.w-w-3,y=r.y+3;pR(x,y,w,h,'#1c1814');pR(x+1,y+1,w-2,h-2,PARCH);
+// the inset: the chart itself in small, in an ink frame, with the view marked
+function drawInset(rr){const w=46,h=40,x=rr.x+rr.w-w-4,y=rr.y+4;pR(x-1,y-1,w+2,h+2,'#1c1814');pR(x,y,w,h,INK);if(chartSheet)cx.drawImage(chartSheet,x+1,y+1,w-2,h-2);
  Object.keys(P_).forEach(k=>{if(!knownPt(k))return;const p=P_[k];pR(x+1+p.x*(w-2)/MARCH.w-1,y+1+p.y*(h-2)/MARCH.h-1,3,3,k===RG().at?'#9a4528':INK)});
- const cr=chartRect();cx.strokeStyle='#d9b45a';cx.strokeRect(x+1+MAPV.cam[0]*(w-2)/MARCH.w,y+1+MAPV.cam[1]*(h-2)/MARCH.h,cr.w*(w-2)/MARCH.w,cr.h*(h-2)/MARCH.h)}
-// edge tabs: known points off screen, named on the edge they lie past
-function drawTabs(r,ox,oy){MAPV.tabs=[];Object.keys(P_).forEach(k=>{if(!knownPt(k))return;const p=P_[k],x=ox+p.x,y=oy+p.y;if(x>=r.x&&x<r.x+r.w&&y>=r.y&&y<r.y+r.h)return;
- const t=(x<r.x?'◀ ':'')+p.name.replace(/^the /,'').toUpperCase()+(x>=r.x+r.w?' ▶':''),w=pW(t,11)+6,tx=clamp(x-w/2,r.x+2,r.x+r.w-w-2),ty=clamp(y-6,r.y+46,r.y+r.h-14);
- pR(tx,ty,w,12,'#1c1814');pT(t,tx+3,ty-1,'#e6dcc4',11);MAPV.tabs.push({x:tx,y:ty,w,h:12,k})})}
-// the road card: the point under the cursor, its days, rations needed against carried, event rolls, contract, threat
-function drawRoadCard(){const g=RG(),r=G.run,y=VH-50,c=MAPV.cur,p=P_[c];pBox(2,y,VW-4,48,PAL.soot,PAL.bone,2);
- if(MAPV.log.length&&(g.trip||G.busy)){MAPV.log.slice(-3).forEach((l,i)=>pT(pFit(l,VW-14,14),7,y+3+i*14,PAL.bone,14));return}
- pT(p.name.toUpperCase(),7,y+2,PAL.tallow,15);pT(p.type,VW-7-pW(p.type,13),y+3,'#c4b99e',13);
- if(c===g.at){pT('You are here. A: go in.',7,y+17,PAL.bone,14);pT('◀ ▶ ▲ ▼ pick a point · L key · R contracts',7,y+31,PAL.ash,12);return}
- const rt=route(g.at,c);if(!rt){pT('No known road there.',7,y+17,PAL.bone,14);return}
- const need=rationsNeed(rt.days);pT(`Road ${rt.days} day${rt.days>1?'s':''}`,7,y+17,PAL.bone,14);pT(`Food ${need} of ${r.rations}`,78,y+17,r.rations<need?'#c8603a':PAL.bone,14);
- const ev=`${rt.days} event roll${rt.days>1?'s':''}`;pT(ev,VW-7-pW(ev,14),y+17,PAL.bone,14);
- pT(`Threat ???`,7,y+31,PAL.bone,14);pT('A go',VW-7-pW('A go',14),y+31,PAL.tallow,14);
+ const cr=chartRect();cx.strokeStyle='#d9b45a';cx.lineWidth=1;cx.strokeRect(x+1+MAPV.cam[0]*(w-2)/MARCH.w,y+1+MAPV.cam[1]*(h-2)/MARCH.h,cr.w*(w-2)/MARCH.w,cr.h*(h-2)/MARCH.h)}
+// edge tags: parchment with an ink edge; places below or above line up along that edge, places to the sides stack; none overlap
+function drawTabs(rr,ox,oy){MAPV.tabs=[];const bot=[],top=[];
+ const tab=(t,tx,ty,w,k)=>{pR(tx,ty,w,13,INK);pR(tx+1,ty+1,w-2,11,'#efe4c8');pT(t,tx+4,ty,INK,11);MAPV.tabs.push({x:tx,y:ty,w,h:13,k})};
+ Object.keys(P_).forEach(k=>{if(!knownPt(k))return;const p=P_[k],x=ox+p.x,y=oy+p.y;if(x>=rr.x&&x<rr.x+rr.w&&y>=rr.y&&y<rr.y+rr.h)return;
+  const nm=p.name.replace(/^the /,'').toUpperCase();
+  if(y>=rr.y+rr.h&&x>=rr.x&&x<rr.x+rr.w){bot.push([x,nm+' ▼',k]);return}if(y<rr.y&&x>=rr.x&&x<rr.x+rr.w){top.push([x,nm+' ▲',k]);return}
+  const t=(x<rr.x?'◀ ':'')+nm+(x>=rr.x+rr.w?' ▶':''),w=pW(t,11)+8,tx=x<rr.x?rr.x+2:rr.x+rr.w-w-2;let ty=clamp(y-6,rr.y+48,rr.y+rr.h-30);
+  let guard=0;while(MAPV.tabs.some(o=>tx<o.x+o.w&&tx+w>o.x&&Math.abs(ty-o.y)<14)&&guard++<20)ty-=15;tab(t,tx,ty,w,k)});
+ [[bot,rr.y+rr.h-15],[top,rr.y+2]].forEach(([L,y])=>{if(!L.length)return;L.sort((a,b)=>a[0]-b[0]);const ws=L.map(([,t])=>pW(t,11)+8),tot=ws.reduce((a,b)=>a+b+3,0);
+  let x=Math.max(rr.x+2,Math.min(rr.x+rr.w-2-tot,L[0][0]-ws[0]/2));L.forEach(([,t,k],i)=>{tab(t,x,y,ws[i],k);x+=ws[i]+3})});
 }
-function drawKey(){pR(0,0,VW,VH,'rgba(28,24,20,.7)');const w=200,h=168,x=(VW-w)/2,y=Math.max(8,(VH-h)/2);pBox(x,y,w,h,PAL.soot,PAL.bone,2);pT('KEY',x+8,y+4,PAL.tallow,8,PXf);
- const rows=[['town','Town'],['hamlet','Hamlet'],['site','Wild site'],['den','Den']];rows.forEach(([k,l],i)=>{const yy=y+26+i*18;pR(x+10,yy-4,24,16,PARCH);glyph(k,x+22,yy+4);pT(l,x+42,yy-2,PAL.bone,14)});
- let yy=y+26+4*18;[['main','Main road'],['side','Side road']].forEach(([k,l])=>{cx.strokeStyle=PAL.bone;cx.lineWidth=k==='main'?2:1;cx.setLineDash(k==='main'?[]:[3,3]);cx.beginPath();cx.moveTo(x+10,yy+4);cx.lineTo(x+34,yy+4);cx.stroke();cx.setLineDash([]);pT(l,x+42,yy-2,PAL.bone,14);yy+=16});
- pT('?',x+18,yy-3,PAL.bone,16);pT('Not yet known',x+42,yy-2,PAL.bone,14);yy+=16;claws(x+16,yy);pT('Roamer met here',x+42,yy-2,PAL.bone,14);yy+=16;
- cx.drawImage(RLSP.coin(lead().sp),x+14,yy-4);pT('The company (the lead)',x+42,yy-2,PAL.bone,14);pT('L or B: close',x+8,y+h-16,PAL.ash,13)}
-function drawContracts(){pR(0,0,VW,VH,PAL.peat);pBox(4,4,VW-8,18,PAL.soot,PAL.bone);pT('CONTRACTS',9,9,PAL.tallow,8,PXf);let y=28;
- const cs=(G.run.contracts||[]).filter(c=>!c.done);if(!cs.length){pT(RW.noContracts,8,y,PAL.bone,15);y+=18}
- else cs.forEach((c,i)=>{if(typeof CP_SEL!=='undefined'&&i===CP_SEL%cs.length)pR(4,y-1,3,12,PAL.tallow);const tl=pWrap(c.title,VW-16,15,9);tl.forEach((l,k)=>pT(l,8,y+k*13,PAL.bone,15));let ny=y+tl.length*13;pWrap('NEXT: '+(c.next||''),VW-16,13,9).forEach(l=>{pT(l,8,ny,PAL.bone,13);ny+=11});y=ny+8});
- pT(RW.signs,8,y+4,PAL.tallow,8,PXf);y+=18;const sg=RG().signs;if(!sg.length){pT(RW.noSigns,8,y,PAL.bone,15);y+=14}
- sg.forEach(id=>{pWrap(RLT(id),VW-16,14,3).forEach(l=>{pT(l,8,y,PAL.bone,14);y+=12});y+=3});
- if(typeof drawContractsExtra==='function')y=drawContractsExtra(y);
- pT(cs.length?'A: keep or drop · R or B: back':'R or B: back',8,VH-16,PAL.ash,13)}
+// the road card: the same card as the HUD, tall enough that nothing is cut: the place under the cursor, its days, the food it
+// needs against what's carried, event rolls and threat
+function drawRoadCard(){const g=RG(),r=G.run,y=VH-54,c=MAPV.cur,p=P_[c];StudioHUD.card(cx,2,y,VW-4,52,HUDT);
+ if(MAPV.log.length&&(g.trip||G.busy)){MAPV.log.slice(-3).flatMap(l=>pWrap(l,VW-16,13,2)).slice(-3).forEach((l,i)=>pT(l,8,y+4+i*15,PAL.bone,13));return}
+ const nm=p.name.toUpperCase(),tz=pSize(nm,VW-24-pW(p.type,12),[15,14,13,12])||12;pT(nm,8,y+3+(15-tz)/2,PAL.tallow,tz);pT(p.type,VW-8-pW(p.type,12),y+5,'#c8bea8',12);
+ if(c===g.at){pT('You are here. A: go in.',8,y+19,PAL.bone,14);pT('◀▶▲▼ pick a place · L key · R contracts',8,y+34,'#c8bea8',pSize('◀▶▲▼ pick a place · L key · R contracts',VW-16,[12,11])||11);return}
+ const rt=route(g.at,c);if(!rt){pT('No known road there.',8,y+19,PAL.bone,14);return}
+ const need=rationsNeed(rt.days);pT(`Road ${rt.days} day${rt.days>1?'s':''}`,8,y+19,PAL.bone,14);pT(`Food ${need} of ${r.rations}`,84,y+19,r.rations<need?'#c8603a':PAL.bone,14);
+ const ev=`${rt.days} event roll${rt.days>1?'s':''}`;pT(ev,VW-8-pW(ev,14),y+19,PAL.bone,14);
+ pT('Threat ???',8,y+34,'#c8bea8',14);pT('A: go',VW-8-pW('A: go',14),y+34,PAL.tallow,14);
+}
+// the map Key (spec 008, 8C; mockup 44): a parchment card over the dimmed chart that uses the chart's own pictures; every row fits
+function drawKey(){pR(0,0,VW,VH,'rgba(28,24,20,.7)');
+ const rows=[['town','Town'],['hamlet','Hamlet'],['site','Wild site'],['den','Den'],['main','Main road, a stroke per day'],['side','Side road'],['denroad','Road to a den'],['route','The way you\'ve picked'],['?','Not yet known'],['claws','Roamer met here'],['seal','A contract here'],['coin','The company (the lead)']];
+ const rh=Math.max(13,Math.min(17,Math.floor((VH-48)/rows.length))),w=Math.min(VW-8,206),h=26+rows.length*rh+16,x=(VW-w)/2,y=Math.max(4,(VH-h)/2);
+ StudioParch.panel(cx,x,y,w,h,PT_);pT('THE KEY',x+8,y+6,IK.rust,8,PXf);const sub='The Withy March';pT(sub,x+w-8-pW(sub,13),y+3,IK.dim,13);
+ rows.forEach(([k,l],i)=>{const yy=y+22+i*rh,ix=x+24,iy=yy+rh/2;
+  if(['town','hamlet','site','den'].includes(k))glyph(k,ix,iy+2,k==='site'?'camp':null);
+  else if(k==='main'){pR(ix-14,iy-2,28,4,INK);pR(ix-14,iy-1,28,2,'#e8dcc0');pR(ix-1,iy-5,2,10,INK)}
+  else if(k==='side'||k==='denroad')for(let q=-14;q<14;q+=7)pR(ix+q,iy-1,4,2,k==='side'?INK:'#5e1a18');
+  else if(k==='route')for(let q=-12;q<14;q+=6){pR(ix+q-1,iy-2,4,4,INK);pR(ix+q,iy-1,2,2,'#d9b45a')}
+  else if(k==='?')pT('?',ix-3,iy-9,INKL,16);
+  else if(k==='claws')claws(ix-4,iy-4);
+  else if(k==='seal'){cx.fillStyle='#5e1a18';cx.beginPath();cx.arc(ix,iy,5,0,7);cx.fill();cx.fillStyle='#9a4528';cx.beginPath();cx.arc(ix-1,iy-1,3.5,0,7);cx.fill()}
+  else if(k==='coin'){const c=RLSP.coin(lead().sp);cx.drawImage(c,ix-7,iy-9)}
+  pT(l,x+46,yy+(rh-15)/2,IK.peat,pSize(l,w-54,[15,14,13,12])||12)});
+ pT('L or B: close',x+(w-pW('L or B: close',13))/2,y+h-15,IK.dim,13)}
+// the Contracts page (spec 008, 8C; mockup 44): one parchment card per contract (its title, the pay, where with days and food, who it's
+// for and the kind of job, what's known, whose motivation it touches), then Signs and The dead as their own cards
+function drawContracts(){pR(0,0,VW,VH,PAL.peat);let y=frameTop('CONTRACTS',`DAY ${G.run.day}`)+2;
+ const cs=(G.run.contracts||[]).filter(c=>!c.done),bot=frameFoot(cs.length?'A: KEEP OR DROP · R OR B: BACK':'R OR B: BACK'),g=RG(),r=G.run;
+ const card=(lines,title,on,right)=>{const h=(title?14:4)+lines.length*12+8;if(y+h>bot)return false;parch(4,y,VW-8,h,on);let yy=y+3;
+  if(title){const tz=pSize(title,VW-(on?32:14)-(right?pW(right,15)+10:0),[8,7],PXf);if(tz)pT(title,on?22:10,yy+(8-tz)/2+1,IK.peat,tz,PXf);else pT(title,on?22:10,yy-2,IK.peat,14);if(right)pT(right,VW-10-pW(right,15),yy-3,IK.rust,15);yy+=14}
+  lines.forEach(([t,c,it])=>{cx.font=(it?'italic ':'')+VTf(14);cx.fillStyle=c||IK.soot;cx.textBaseline='top';cx.fillText(t,on&&!title?22:10,yy);yy+=12});y+=h+4;return true};
+ const wrap=(t,c,it)=>pWrap(t,VW-22,14,4).map(l=>[l,c,it]);
+ if(!cs.length)card(wrap(RW.noContracts,IK.soot));
+ cs.forEach((c,i)=>{const J=(typeof JOBS!=='undefined'&&JOBS[c.id])||{},on=typeof CP_SEL!=='undefined'&&i===CP_SEL%cs.length,L=[];
+  if(J.site&&P_[J.site]){const rt=g.at===J.site?null:route(g.at,J.site);L.push(...wrap(rt?`Where: ${P_[J.site].name} · ${rt.days} day${rt.days>1?'s':''} · food ${rationsNeed(rt.days)} of ${r.rations}`:`Where: ${P_[J.site].name}`))}
+  if(J.kind){const gv=J.by==='giver'&&r.givers&&r.givers[J.giver];L.push(...wrap(`For: ${gv?gv.name+', the '+GIVERS[J.giver].title:J.by==='none'?'nobody':'the notice board'} · a ${J.kind}`))}
+  const mt=(J.tags||[]).map(t=>{const who=party.filter(m=>!m.dead&&(m.mot||[]).includes(t)).map(m=>m.name);return who.length?`${who.join(', ')} (${t})`:''}).filter(Boolean);if(mt.length)L.push(...wrap('Moment: '+mt.join(' · '),IK.moss));
+  L.push(...wrap('Next: '+(c.next||''),IK.peat));
+  card(L,c.title,on,c.pay?c.pay+' gr':'')});
+ const sg=g.signs||[];card(sg.length?sg.flatMap(id=>wrap(RLT(id),IK.soot,true)):wrap(RW.noSigns,IK.dim),RW.signs.toUpperCase());
+ const bodies=r.bodies||[];if(bodies.length)card(bodies.flatMap(b=>wrap(`${b.name} · bury by the end of the next job${G.town?' · at the church':''}`)),'THE DEAD');
+ if(typeof drawContractsExtra==='function')drawContractsExtra(card,wrap);
+}
 
 // ================= MAP INPUT =================
 function regionPress(k){
