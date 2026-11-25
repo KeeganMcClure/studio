@@ -138,6 +138,7 @@ function drawCard(c,r,on,now){
   pT(`${BW.lantern} ${String(c.c.card.file).padStart(2,'0')}`,x+5,y+3,c.finale?PC.gold:CB_COL.agInk,11);
   const lines=cbWrap(c.c.card.title,W-22,H>=44?14:13,H>=44?2:1);lines.forEach((l,i)=>pT(l,x+5,y+13+i*11,PC.cream,H>=44?14:13));
   if(H>=48)pT(c.finale?BW.finale:c.c.card.town,x+5,y+35,c.finale?PC.gold:CB_COL.town,11);  // the finale says FINALE under its number
+  else if(c.finale&&H>=36)pT(BW.finale,x+5,y+H-11,PC.gold,11);  // a short card still says FINALE, under its one title line
   cbDisc(x+W-9,y+H-9,6,CB_COL.seal);cbDisc(x+W-9,y+H-9,4,'#8a1a18');pR(x+W-10,y+H-12,2,5,'#f0c070');return}
  pBox(x,y,W,H,c.shut?CB_COL.paperShut:CB_COL.paper,PC.dark);
  drawPin(x+Math.round(W/2)-1,y,c.shut?CB_COL.pinShut:c.c.card.pin);
@@ -255,9 +256,12 @@ function drawBoard(){
  const sel=t[CB.sel];if(sel)drawCursor(sel.kind==='card'?sel.r:Object.assign({},sel.r,{y:sel.r.y-Math.max(0,20-sel.r.h/2)}),now);
  pBox(h.x,h.y,h.w,h.h,'rgba(27,31,51,.95)',PC.cream);
  pT(`${BW.season} ${s.season} · ${BW.title}`,h.x+6,h.y+3,PC.gold,15);pT(cl,h.x+h.w-6-pW(cl,15),h.y+3,PC.lav,15);
- if(!sel){CB.hits=[];return}
+ if(!sel){drawEmptyDesc(L);return}
  if(sel.kind==='plaque')drawPlaqueDesc(L);else if(sel.kind==='pile')drawPileDesc(L,s);else drawDesc(L,sel);
 }
+// nothing on the board yet (a new season with nothing carried over): the box still shows, with B BACK
+function drawEmptyDesc(L){const right=VW-3;pBox(3,L.descY,VW-6,L.boxH,PC.navy,PC.cream);pT(BW.empty,10,L.descY+6,PC.cream,14);
+ const ky=L.descY+L.boxH-13,kx=right-7-pW(BW.back,12);pT(BW.back,kx,ky-1,CB_COL.hint,12);drawKey(kx-13,ky,'B');CB.hits=[{k:'b',x:kx-15,y:ky-3,w:right-kx+15,h:16}]}
 function drawPileDesc(L,s){
  const right=VW-3,fs=closedList(s),tw=pW(BW.closedFiles,14)+10;
  pR(6,L.tabY,tw,13,PC.cream);pR(7,L.tabY+1,tw-2,13,PC.navy);pT(BW.closedFiles,11,L.tabY,PC.gold,14);

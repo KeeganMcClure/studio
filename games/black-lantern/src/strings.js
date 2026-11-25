@@ -415,7 +415,7 @@ const BOARD={
  season:'SEASON',title:'CASE BOARD',closed:'CLOSED',briefing:'BRIEFING',back:'BACK',stamp:'CLOSED',file:'FILE',
  sticky:['NOBODY','TOUCH MY','CRULLERS.','—BH'],  // Big Hat's sticky note on the cork (mockup)
  stickyMore:['MORE ON','THE WAY.','—BH'],  // a season with no data file yet (spec 009, step 5)
- lantern:'LANTERN',finale:'FINALE',devQ:'Dev menu.',devPin:'Dev: pin {n} now',devClose:'Close',devNone:'NO AGENCY CASE TO PIN',agencyPlace:'AGENCY CASE',finalePlace:'SEASON FINALE',files:'{n} files',file1:'1 file',closedFiles:'CLOSED FILES',
+ lantern:'LANTERN',finale:'FINALE',empty:'No cases pinned yet.',devQ:'Dev menu.',devPin:'Dev: pin {n} now',devClose:'Close',devNone:'NO AGENCY CASE TO PIN',agencyPlace:'AGENCY CASE',finalePlace:'SEASON FINALE',files:'{n} files',file1:'1 file',closedFiles:'CLOSED FILES',
  endTitle:'SEASON {n} CLOSED',endRegular:'Cases closed',endAgency:'Agency cases',endLost:'Agents lost',endStep:'Overstepping',endKeys:'A: next season',
  // New game with a closed case (Skills and menus, Quality of life: Confirm what sticks)
  sure:'Can\'t be undone. Sure?',resetLine:'This starts Season 1 over. Your roster stays.',yes:'Yes, start over',no:'No, back to the title'
@@ -423,13 +423,17 @@ const BOARD={
 // ---------- THE DEBRIEF (spec 007, Demo 6; approved debrief mockup) ----------
 // Screen words, the send-off, funeral and goodbye lines (Systems, Losing an agent: Claude writes these without review).
 // {n} the agent's first name, {c} their code, {k} cases closed, {r} the recruit, {s} an overstepping step, {i} an item.
+// the number that follows the team after a walk-away (season.js, arcNine)
+const NINE={label:'The 9',see:['A room key on the motel desk, a brass tag: 9. You asked for 4.','Somebody chalked a 9 on the van\'s back door. Neat, like a teacher.','The radio skips to a station counting down. It stops at 9.','Every clock in the first room you walk into says 9:09.']};
 const DEBRIEF={
  closed:'CASE CLOSED',clues:'Clues',saved:'Saved',fights:'Fights',overstep:'Overstep',
  items:'CASE ITEMS',itemsHint:'Big Hat sorts',keep:'KEEP',bag:'BAG',hide:'HIDE',ordinary:'Ordinary',unnatural:'Unnatural',done:'Done',
  keepLine:'Ordinary: you keep it.',bagLine:'Unnatural: bagged as evidence unless hidden.',hideLine:'Hidden: stays with {n}. Big Hat never sees it.',
- hideAsk:'Hide the {i} from Big Hat? Can\'t be undone.',hideYes:'Hide it',hideNo:'Bag it',
+ hideAsk:'Hide {i} from Big Hat? Can\'t be undone.',hideYes:'Hide it',hideNo:'Bag it',
  itemKeys:'A: flip · Done: sort them',
  safeStory:'Already filed: nothing happened',
+ offAsk:'And the page. Records wants it by Monday.',offFile:'File it',offKeep:'Keep it off the books',offFiled:'He clips it to the folder. It goes upstairs with the rest.',
+ offKept:'He looks at it a long time. Then it goes in his coat, not the folder.',offCover:'{n} fixes the paperwork. Nobody upstairs counts the pages.',offCost:'Somebody upstairs counts the pages. Overstepping climbs to {s}.',offTop:'Somebody upstairs counts the pages.',
  cover:'COVER STORY',coverHint:'What do locals hear?',who:'WHO TELLS IT?',luck:'Luck',safe:'SAFE',weak:'Weak story',
  stepShort:{Clean:'CLEAN',Noticed:'NOTICED','Local chief':'CHIEF','Agency call':'CALL','Federal agents':'FEDS'},
  passDrop:'Pass: the case closes quiet, and it drops to {s}.',passQuiet:'Pass: the case closes quiet.',
@@ -582,5 +586,5 @@ const INJURIES=[null,
 const BRIEF={ask:'Two questions. Make \'em count.',none:'No questions',noQ:'Good. I like you. Don\'t make it weird.',two:'That\'s two.',banner:'CASE FILE: INTEL ADDED',skip:'B SKIP'};
 const STEPNAME={profession:'JOB',stats:'STATS',skills:'SKILLS',identity:'IDENTITY',bonds:'BONDS',motives:'MOTIVATIONS',dossier:'DOSSIER',title:'BLACK LANTERN',roster:'ROSTER',team:'YOUR TEAM',pick:'PICK A TEAM',confirm:'NEW GAME'};
 const STEPSHORT={profession:'JOB',stats:'STATS',skills:'SKILL',identity:'ID',bonds:'BOND',motives:'WHY',dossier:'FILE'};
-return {pron,proOf,PRONOUNS,BUILDS,PROW_UI,CODENAMES,MOTKEY,CODEW,BRIEF,ROAMW,SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,diceOf,ITEMS,KIT,KITUSES,ITEMUI,DISORDERS,SANW,TIERS,KINDS,SKILLOPT,AUTOPERK,SKILLW,MAPMENU,OVERSTEP,RECRUITS,RECRUITW,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD,MAPHUD,BATTLEW,MOVES,INJURIES,DEBRIEF,UNLOCKS,HOMEW};
+return {pron,proOf,PRONOUNS,BUILDS,PROW_UI,CODENAMES,MOTKEY,CODEW,BRIEF,ROAMW,SKILLS,SKILLJOB,PROFS,ABILTXT,TEAMS,STATS,STATNAME,FEAT,RELS,RELTXT,FIRST,LAST,MOTIVES,MOTTXT,ADJ,NOUN,HAIRCN,HAIRS,EYES,EYEC,ACC,OUTCN,CREEP,ITEMDEF,WEAP,WEAPTXT,diceOf,ITEMS,KIT,KITUSES,ITEMUI,DISORDERS,SANW,TIERS,KINDS,SKILLOPT,AUTOPERK,SKILLW,MAPMENU,OVERSTEP,RECRUITS,RECRUITW,DIS,STEPNAME,STEPSHORT,STATJOB,HOBBY,STATUS,PARTY,BOARD,MAPHUD,BATTLEW,MOVES,INJURIES,DEBRIEF,UNLOCKS,HOMEW,NINE};
 })();

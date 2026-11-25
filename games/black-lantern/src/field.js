@@ -31,6 +31,11 @@ const fastOn=()=>!!settings().fast;
 // ================= ITEMS (A1) =================
 // a case's own item stays readable after its case (a trophy or a hidden item): any loaded case's items are checked last
 function itemDef(k){const c=caseById(G.case),ci=c&&c.items;return FI[k]||(ci&&ci[k])||CASES.map(x=>x.items&&x.items[k]).find(Boolean)||{name:String(k),type:'?',desc:''}}
+// an item's name inside a sentence, article and all: "the sleeping jar", "the Tidewater Psalter" (a name that starts with
+// A, An or The keeps the rest as written; any other starts lowercase after "the"); d.noun overrides it ("Agnes's diary").
+// cid: the case the item came from, for a key two cases share (a hidden item, read in a later case)
+function itemNoun(k,cid){const c=cid&&caseById(cid),d=c&&c.items&&c.items[k]||itemDef(k),n=String(d.name||'thing');if(d.noun)return d.noun;
+ const m=n.match(/^(?:the|an?) (.+)$/i);return'the '+(m?m[1]:n.charAt(0).toLowerCase()+n.slice(1))}
 function newItem(k,o={}){const d=itemDef(k);const it={k,u:o.u??(d.uses||1)};if(o.kit)it.kit=o.kit;if(d.pin)it.pin=1;return it}
 const isWeap=it=>!!itemDef(it.k).w;
 const isWorn=it=>!!itemDef(it.k).worn;
@@ -218,9 +223,10 @@ async function sanCheck(spec,label,who){return horror({spec,label,kind:'unnatura
 function bondsLose(m,n){const a=m.a;a.bondDmg=a.bondDmg||[];(a.bonds||[]).forEach((b,j)=>{a.bondDmg[j]=(a.bondDmg[j]||0)+n})}
 // folds Leaning and Adapted damage into each Bond's score (the home phase works on the score itself, spec 008)
 function bondFold(a){(a.bonds||[]).forEach((b,j)=>{b.score=bondNow(a,j)});a.bondDmg=[]}
-// arc perks (spec 008): perkOn spends a once-per-case perk and says so; badge is Duty's
+// arc perks (spec 008): perkOn spends a once-per-case perk and says so; badge is Duty's (awaited: a line said on the side
+// would be cut off by the next one and never finish, which held G.busy and froze the walk)
 function perkOn(m,id){if(!(m&&m.a&&m.a.arc&&m.a.arc.perk===id))return false;const k='arc'+id+m.a.id;if(G.fs.perk[k])return false;G.fs.perk[k]=1;return true}
-function badge(m){if(!perkOn(m,'duty'))return false;run(()=>say('',fillT(BLS.HOMEW.perkUsed,{p:BLS.HOMEW.perks.duty[0],n:m.name}),{auto:1000}));return true}
+async function badge(m){if(!perkOn(m,'duty'))return false;await say('',fillT(BLS.HOMEW.perkUsed,{p:BLS.HOMEW.perks.duty[0],n:m.name}),{auto:1000});return true}
 const bondNow=(a,j)=>{const b=a.bonds[j],cha=a.stats.CHA||10;return Math.max(0,(b.score??cha)-((a.bondDmg||[])[j]||0))};
 // Breaking Point: SAN minus POW, reset after each one (Sanity; SAN loss table)
 async function breakingPoint(m,kind,subj){
@@ -317,7 +323,7 @@ async function runOpt(o,r,key){
  if(o.once)G.fs.used['opt:'+o.once]=1;
  if(o.use){const L=r.m||lead(),S=r.S,v=skillVal(L.a,S.skill);let x=SR.pct(r.p),perk='';
   if(!x.ok&&S.skill==='Persuade'&&v>=90&&!G.fs.perk.retry){G.fs.perk.retry=1;await say('',SKW.retry,{auto:900});x=SR.pct(r.p)}
-  if(!x.ok&&o.official&&badge(L))x=Object.assign({},x,{ok:true,fumble:false});  // Badge (an arc perk, spec 008)
+  if(!x.ok&&o.official&&await badge(L))x=Object.assign({},x,{ok:true,fumble:false});  // Badge (an arc perk, spec 008)
   if(!x.ok&&v>=90&&BLS.AUTOPERK[S.skill]&&!G.fs.perk[S.skill]){G.fs.perk[S.skill]=1;perk=fillT(SKW.perk,{p:BLS.AUTOPERK[S.skill]});x=Object.assign({},x,{ok:true,fumble:false})}
   await say('',(L!==lead()?L.name+': ':'')+resultLine(`${(o.label||S.label).toUpperCase()} · ${S.skill.toUpperCase()}`,x)+(perk?' '+perk:''),{auto:1300});
   if(r.loud)noise();if(!x.ok)tried(L,S.skill);
@@ -439,7 +445,7 @@ async function requisition(){
   const i=await choose(cat.map(([k,x])=>`${x.name} · ${p(k)}%`).concat([RW_.reqSkip]),{cancel:true,title:fillT(RW_.reqWho,{n:m.name.toUpperCase()}),desc:cat.map(([k,x])=>x.desc).concat([''])});
   if(i<0||i>=cat.length)continue;
   if(m.a.noReq){delete m.a.noReq;await say('BIG HAT',BLS.HOMEW.noReq);await say('BIG HAT',BLS.HOMEW.noReq2);continue}  // Therapy fumble (spec 008)
-  const [k,x]=cat[i];let o=SR.pct(p(k));if(!o.ok&&badge(m))o=Object.assign({},o,{ok:true,fumble:false});await say('',resultLine('BUREAUCRACY',o),{auto:1000});
+  const [k,x]=cat[i];let o=SR.pct(p(k));if(!o.ok&&await badge(m))o=Object.assign({},o,{ok:true,fumble:false});await say('',resultLine('BUREAUCRACY',o),{auto:1000});
   if(!o.ok){tried(m,'Bureaucracy');await say('BIG HAT',fillT(RW_.reqNoLine,{i:x.name}));continue}
   G.fs.pack.push(newItem(k));await say('BIG HAT',fillT(RW_.reqOk,{i:x.name,n:m.name}));
  }
@@ -621,7 +627,7 @@ async function useItem(m,it){
   case 'hotline':{const cat=Object.entries(FI).filter(([k,x])=>x.lb);
    await say('',IU.hotlineAsk);const i=await choose(cat.map(([k,x])=>`${x.name} · ${x.req>=0?'+':''}${x.req}%`),{cancel:true,title:'HOTLINE'});if(i<0)return false;
    const [k,x]=cat[i],o=SR.pct(chanceOf(m,'Bureaucracy',(x.req||0)+15));await say('',resultLine('BUREAUCRACY',o),{auto:1000});
-   if(!o.ok&&badge(m))o.ok=true;
+   if(!o.ok&&await badge(m))o.ok=true;
    if(!o.ok){tried(m,'Bureaucracy');await say('BIG HAT',IU.hotlineNo);return true}
    const n=newItem(k),g=gearOf(m);if(x.w&&g.w.length<2)g.w.push(n);else if(!x.w&&!x.worn&&g.it.length<8)g.it.push(n);else G.fs.pack.push(n);refreshW(m);await say('',IU.hotlineOk+` ${x.name}.`);return true}
  }

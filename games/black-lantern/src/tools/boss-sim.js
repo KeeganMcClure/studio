@@ -109,6 +109,28 @@ const BOSSES = {
       G.clues = G.clues.filter(c => c.id !== 'record'); if (s.record) G.clues.push({ id: 'record', text: '' }); G.fs.ident = [];
       if (s.brine) gearOf(party[0]).it.push(newItem('brine')); goMap('cannery', 12, 4, 'up'); },
   },
+  // LANTERN 02 (specs 014/015): its weakening choices are the right deduction (−6 HP, Identify free), all three mirrors
+  // covered (−6 HP, no phase-2 heal) and her page found before the fight (−8 HP); her own hand shown (here taken as
+  // shown) drops phase 2's shield; the compact is her weakness (3 uses). "all" makes every choice. prep closes LANTERN 01
+  // and pins this one (as the Dev shortcut does), since only one agency case is open at a time.
+  otheragnes: {
+    case: 'lantern-02',
+    entry: 'l02Boss',  // lantern-02.js: bossFight without the ending choice
+    prep: () => { const s = loadSeason(); s.agency = s.agency.filter(a => a.id !== 'lantern-02'); if (!s.agency.some(a => a.id === 'lantern-01')) s.agency.push({ id: 'lantern-01', played: true });
+      s.cases['lantern-01'] = { file: 1, state: 'closed', ending: 'clean', facts: { label: 'clean', offBooks: true } }; s.agency.push({ id: 'lantern-02', played: true }); s.cases['lantern-02'] = { file: 2, state: 'open', ending: null }; store.set(seasonKey(), s); },
+    scenarios: [
+      { label: 'none' },
+      { label: 'right', right: 1 },
+      { label: 'mirrors', mirrors: 1 },
+      { label: 'page', page: 1 },
+      { label: 'hand, compact', hand: 1, compact: 1 },
+      { label: 'all', right: 1, mirrors: 1, page: 1, hand: 1, compact: 1 },
+    ],
+    setup: s => { const F = G.flags; F.day = 7; F.nt = 1; F.read = 7; F.hallIn = 1; F.deduce = s.right ? 'right' : 'half'; F.cHall = F.cVan = F.cBath = s.mirrors ? 1 : 0; F.shown = s.hand ? 1 : 0; F.boss = 0;
+      G.clues = G.clues.filter(c => c.id !== 'stillhere'); G.fs.ident = [];
+      const it = gearOf(party[0]).it; for (const k of ['page', 'compact', 'hand']) { const i = it.findIndex(x => x.k === k); if (i >= 0) it.splice(i, 1); }
+      if (s.page) it.push(newItem('page')); if (s.compact) it.push(newItem('compact')); goMap('hall', 5, 3, 'up'); },
+  },
   // Tracking (spec 018 part B): its weakening choices are the copies burned (−2 HP each, and no heals: each copy not
   // burned is a door she heals 5 through, up to 3), the stage lights woken (no −10 to hit her while she dances), her name
   // said (−6 HP, no second-phase speed) and the chant read backward (−8 HP). Each watch of the tape adds 2 HP, and 3 or
@@ -146,6 +168,31 @@ const BOSSES = {
     setup: s => { const F = G.flags; F.ph = 3; F.burn = s.burn ? 1 : 0; F.name = s.name ? 1 : 0; F.carrier = s.carrier ? 1 : 0; F.boss = 0; F.named = null;
       F.woke = {}; F.taken = null; F.circle = 1; F.lucien = 'safe';
       G.clues = G.clues.filter(c => c.id !== 'ebooth'); if (s.ebooth) G.clues.push({ id: 'ebooth', text: '' }); G.fs.ident = []; goMap('radials', 11, 12, 'up'); },
+  },
+  // LANTERN 03, the finale (spec 015): its weakening choices are the out-tray burned in the incinerator (−10 HP) and
+  // Wren's page torn out (−8 HP), or instead her gift of his true name (−6 HP; read aloud in phase 1 here, which stops
+  // phase 2's page storm); the season's own cut is −2 per kept page or hidden item (up to −8) and −4 if the forged page burned
+  // in LANTERN 02 ("arc" sets 2 kept, 2 hidden and the burned page). The right deduction makes Identify free. His deals
+  // are refused by the AI (the battle asks, and the sim takes the last option). "all" makes every choice.
+  almoner: {
+    case: 'lantern-03',
+    entry: 'l03Boss',  // lantern-03.js: bossFight without the ending
+    prep: () => { const s = loadSeason(); if (!s.agency.some(a => a.id === 'lantern-03')) s.agency.push({ id: 'lantern-03', played: true }); s.cases['lantern-03'] = { file: 3, state: 'open', ending: null }; store.set(seasonKey(), s); },
+    scenarios: [
+      { label: 'none' },
+      { label: 'burned', burn: 1 },
+      { label: 'her page', page: 1 },
+      { label: 'his name', name: 1 },
+      { label: 'arc', arc: 1 },
+      { label: 'burned, page', burn: 1, page: 1 },
+      { label: 'all (page)', burn: 1, page: 1, arc: 1, right: 1 },
+      { label: 'all (name)', burn: 1, name: 1, arc: 1, right: 1 },
+    ],
+    setup: s => { const F = G.flags; F.ph = 1; F.filing = 1; F.stairs = 'talked'; F.base1 = 1; F.boss = 0; F.burn = s.burn ? 1 : 0; F.lit = s.burn ? 1 : 0; F.page = s.page ? 1 : 0;
+      F.gotName = s.name ? 1 : 0; F.named = s.name ? 1 : 0; F.deduce = s.right ? 'right' : 'half'; F.deals = 0; G.fs.ident = [];
+      const S = loadSeason(); S.kept = s.arc ? ['a', 'b'] : []; S.hidden = s.arc ? [{ k: 'x', case: 'a', who: 'A' }, { k: 'y', case: 'b', who: 'B' }] : [];
+      if (s.arc) S.cases['lantern-02'] = { file: 2, state: 'closed', ending: 'clean', facts: { arc: { agnes: 'burn' } } }; else delete S.cases['lantern-02'];
+      store.set(seasonKey(), S); goMap('basement', 10, 4, 'up'); },
   },
 };
 

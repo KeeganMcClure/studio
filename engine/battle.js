@@ -5,7 +5,11 @@
 //   StudioBattle.layout(w, h, o)       rects for a w × h canvas: scene, strip (party cards), cmd (command box),
 //                                      col (turn-order column), the baselines agentY and enemyY, and over (true when a tall enemy's
 //                                      feet stand behind the agents: draw its bar and name after them) (o.tallest: tallest enemy;
-//                                      o.detailLines: lines the command box's detail may wrap to, default 1)
+//                                      o.detailLines: lines the command box's detail may wrap to, default 1;
+//                                      o.agentRoom: the game's room for its agents above the strip, default 66;
+//                                      o.sink: how far the agents may sink behind the strip for a tall enemy, default 0,
+//                                      with o.agentH their height and o.barH the enemy's bar and name under its feet;
+//                                      sink: how far they sank, so agentY is the strip's top plus sink)
 //   StudioBattle.turnColumn(c, T, x, y, faces, maxH)   small faces down the left edge, the one acting first and bigger;
 //                                      faces: [{img, foe, out}] (img: a canvas or null; out: drawn greyed, e.g. a
 //                                      downed fighter still in the order); returns the column's height
@@ -38,16 +42,25 @@
   // the party cards just above it, the scene above those with enemies in its top half and agents at its foot.
   // o.tallest: the tallest enemy sprite, so its head stays on screen. The baseline drops for it, keeping clear of the
   // agents (AGENT_ROOM) when the scene is tall enough; on a shorter screen the head still wins and the enemy's feet
-  // stand behind the agents' heads (over: true, so the game draws enemy bars and names after the agents)
+  // stand behind the agents' heads (over: true, so the game draws enemy bars and names after the agents).
+  // A game with o.sink lets its agents sink behind the party strip first, up to o.sink px, until the enemy's bar and
+  // name (o.barH under its feet) clear their heads (o.agentH tall); only past that is over true (Black Lantern spec 023)
   const DL = 10;  // a detail line's height
-  const AGENT_ROOM = 66, TOP = 6;  // the agents' heads and the enemy's bar under its feet; the gap above the head
+  const AGENT_ROOM = 66, TOP = 6;  // default room: the agents' heads and the enemy's bar under its feet; the gap above the head
   function layout(w, h, o) {
-    const cmdH = 40 + DL * (((o && o.detailLines) || 1) - 1), stripH = 27, cmd = { x: 2, y: h - cmdH - 2, w: w - 4, h: cmdH };
+    o = o || {};
+    const cmdH = 40 + DL * ((o.detailLines || 1) - 1), stripH = 27, cmd = { x: 2, y: h - cmdH - 2, w: w - 4, h: cmdH };
     const strip = { x: 0, y: cmd.y - stripH - 1, w, h: stripH };
-    const scene = { x: 0, y: 0, w, h: strip.y }, tall = (o && o.tallest) || 0;
-    const clear = scene.h - AGENT_ROOM, want = Math.max(scene.h * 0.5, tall + TOP);
+    const scene = { x: 0, y: 0, w, h: strip.y }, tall = o.tallest || 0, room = o.agentRoom || AGENT_ROOM;
+    const clear = scene.h - room, want = Math.max(scene.h * 0.5, tall + TOP);
     const enemyY = Math.round(Math.min(want <= clear ? want : Math.max(clear, tall + TOP), scene.h - 2));
-    return { scene, strip, cmd, col: { x: 2, y: 3, w: 22 }, agentY: strip.y, enemyY, over: enemyY > clear };
+    let agentY = strip.y, sink = 0, over = enemyY > clear;
+    if (o.sink) {
+      const aH = o.agentH || room - 16, bar = o.barH || 16;
+      sink = Math.max(0, Math.min(o.sink, enemyY + bar + aH - strip.y));
+      agentY += sink; over = enemyY + bar > agentY - aH;
+    }
+    return { scene, strip, cmd, col: { x: 2, y: 3, w: 22 }, agentY, enemyY, over, sink };
   }
 
   function turnColumn(c, T, x, y, faces, maxH) {

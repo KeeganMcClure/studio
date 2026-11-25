@@ -89,7 +89,7 @@ async function dbItemAct(){
  if(s.sel>=rows.length){dbSort(rows);return}
  const r=rows[s.sel];if(!unnatural(r.it)||r.it.hidden)return;
  s.lock=1;try{
-  const i=await ask('',fillT(DBW.hideAsk,{i:itemDef(r.it.k).name.toLowerCase()}),[DBW.hideYes,DBW.hideNo]);
+  const i=await ask('',fillT(DBW.hideAsk,{i:itemNoun(r.it.k)}),[DBW.hideYes,DBW.hideNo]);
   // Confirm what sticks: a hide saves at once and can't be undone
   if(i===0){r.it.hidden=1;r.it.by=(r.m||lead()).a.name;checkpoint()}
  }finally{s.lock=0}
@@ -146,7 +146,22 @@ function dbClimbed(){const cur=loadSeason().overstep|0;return!!G.fs.climbed||(G.
 // where a held story drops overstepping to (Overstepping, Carry-over; Nov 24, 2026): one step even if it climbed this
 // case, two if it never climbed; never below Clean
 function dbDropTo(cur){return Math.max(0,cur-(dbClimbed()?1:2))}
-function dbCover(){return new Promise(res=>{const st=dbStories();SCR={kind:'db',v:'cover',sel:0,who:dbBest(st[0]),focus:'list',hits:[],done:res};ban.hidden=true})}
+// Off the books (arc): once the first agency case has closed, every later debrief but the finale's asks about the page
+// before the cover story. Keeping it off the books costs a step of overstepping unless Clean books or Credentials (a
+// Bureaucracy roll) covers it. The season keeps the list (bl.season.kept; missing means none, so no save step).
+async function dbOffBooks(){
+ const D=G.db;if(D.off||!offBooksOpen()||isFinaleCase(G.case)){D.off=1;return}
+ const i=await ask('BIG HAT',DBW.offAsk,[DBW.offFile,DBW.offKeep]);
+ const s=loadSeason();if(!Array.isArray(s.kept))s.kept=[];
+ if(i===1){if(!s.kept.includes(G.case))s.kept.push(G.case);store.set(seasonKey(),s);D.off=2;checkpoint();await say('',DBW.offKept);
+  const ms=live(),clean=ms.find(m=>skillVal(m.a,'Bureaucracy')>=90);let who=clean;
+  if(!who&&ms.length){const b=ms.slice().sort((a,b)=>chanceOf(b,'Bureaucracy')-chanceOf(a,'Bureaucracy'))[0],x=SR.pct(chanceOf(b,'Bureaucracy'));
+   await say('',resultLine('BUREAUCRACY · '+b.name.toUpperCase(),x),{auto:1100});if(x.ok)who=b;else tried(b,'Bureaucracy')}
+  if(who)await say('',fillT(DBW.offCover,{n:who.name}));
+  else{const st=stepsOf(),s2=loadSeason(),cur=s2.overstep|0;if(cur<st.length-1){s2.overstep=cur+1;store.set(seasonKey(),s2);G.fs.climbed=1;await say('',fillT(DBW.offCost,{s:st[s2.overstep]}))}else await say('',DBW.offTop)}}
+ else{D.off=1;checkpoint();await say('',DBW.offFiled)}
+ D.off=D.off||1;checkpoint()}
+async function dbCover(){await dbOffBooks();return new Promise(res=>{const st=dbStories();SCR={kind:'db',v:'cover',sel:0,who:dbBest(st[0]),focus:'list',hits:[],done:res};ban.hidden=true})}
 async function dbTell(){
  const s=SCR,o=dbStories()[s.sel],m=dbTellers()[s.who]||lead(),D=G.db,steps=stepsOf(),sv=loadSeason(),cur=sv.overstep|0;
  let x=null,ok=true;

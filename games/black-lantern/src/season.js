@@ -5,7 +5,7 @@
 // Loaded right after case-board.js as a plain script; the board (case-board.js) draws what this decides.
 //
 // A season data file calls registerSeason({n, regular:[case ids in queue order], agency:[{id, at, finale}],
-//  text:{unlock:{id:[lines]}, end:[lines]}}). A Dev-only test season (seasons/test-season.js) registers as 'test'.
+//  text:{unlock:{id:[lines]}, end:[lines] or {clean, costly, worst: [lines]}}}). A Dev-only test season (seasons/test-season.js) registers as 'test'.
 
 const SEASONS={};
 function registerSeason(d){if(d&&(d.n||d.id))SEASONS[d.id||d.n]=d}
@@ -35,6 +35,17 @@ function agencyDue(s){if(openAgency(s))return null;
 // the finale closed and its end screen not yet seen
 function seasonOver(s){const f=agencyDefs(s).find(a=>a.finale);return!!(f&&s.cases[f.id]&&s.cases[f.id].state==='closed'&&!s.ended)}
 
+// The arc's season tally (agency cases read it): Off the books opens once a closed case's facts say so; kept pages
+// (bl.season.kept), hidden items (bl.season.hidden), and what each agency case left behind (its facts.arc).
+function offBooksOpen(s=loadSeason()){return Object.values(s.cases||{}).some(e=>e&&e.state==='closed'&&e.facts&&e.facts.offBooks)}
+function arcTally(s=loadSeason()){const arc={};Object.values(s.cases||{}).forEach(e=>{if(e&&e.state==='closed'&&e.facts&&e.facts.arc)Object.assign(arc,e.facts.arc)});
+ return{kept:(s.kept||[]).length,hidden:(s.hidden||[]).length,arc}}
+// An agency case that was walked away from leaves a mark (facts.arc.nine): until the finale, every other case opens with
+// one extra SAN roll, once (saved straight away, so a reload doesn't lose it). The finale itself uses it instead (its own file).
+async function arcNine(){const T=arcTally();if(!T.arc.nine||!G.active||G.flags.nine||isFinaleCase(G.case)||isAgencyId(loadSeason(),G.case)&&T.arc.nineFrom===G.case)return;
+ G.flags.nine=1;const W=BLS.NINE;if(!W)return;await say('',W.see[(loadSeason().closed|0)%W.see.length]);  // cases closed so far picks the sighting, so two cases in a row never share one
+ await BLF.horror({id:'nine',tier:'unsettling',kind:'unnatural',label:W.label,all:true});checkpoint()}
+
 // ---- what the board plays when it opens: the closed card's slide, an agency unlock, the season's end ----
 async function boardIntro(){
  if(!CB)return;const me=CB;me.busy=true;try{await introSteps()}finally{me.busy=false}}
@@ -44,7 +55,7 @@ async function introSteps(){
  else{const s=loadSeason();if(clearShut(s)|fillSlots(s))store.set(seasonKey(),s)}
  let s=loadSeason();
  if(seasonOver(s)){CB.end={t0:performance.now()};const d=seasonDef(s.season);await sleep(400);if(!CB)return;
-  for(const l of [].concat((d&&d.text&&d.text.end)||[]))await say('BIG HAT',l);return}
+  for(const l of endLines(s,d))await say('BIG HAT',l);return}
  const due=agencyDue(s);
  if(due){if(!s.agency.some(a=>a.id===due))s.agency.push({id:due,played:false});const c=caseById(due);
   if(!s.cases[due])s.cases[due]={file:c.card.file,state:'open',ending:null};store.set(seasonKey(),s);
@@ -53,6 +64,10 @@ async function introSteps(){
   s=loadSeason();const x=s.agency.find(a=>a.id===due);if(x)x.played=true;store.set(seasonKey(),s);
   if(!CB)return;CB.thud={t0:performance.now()};const t=boardTargets(boardLayout());CB.sel=Math.max(0,t.findIndex(x=>x.id===due))}
 }
+// Big Hat's season-end lines: text.end is a list, or {clean, costly, worst} picked by how the finale ended (a missing
+// ending falls back to costly, then clean), or a function of that ending.
+function endLines(s,d){const E=d&&d.text&&d.text.end,f=agencyDefs(s).find(a=>a.finale),e=f&&s.cases[f.id]&&s.cases[f.id].ending;
+ if(typeof E==='function')return[].concat(E(e)||[]);if(Array.isArray(E)||!E)return[].concat(E||[]);return[].concat(E[e]||E.costly||E.clean||[])}
 // A on the season end screen: the next season begins. Overstepping goes back to Clean; open regular cases carry over,
 // first in the queue; everyone's survived-case count starts over, except where an arc is still running (spec 008, A2).
 function nextSeason(){
