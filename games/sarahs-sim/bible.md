@@ -97,6 +97,7 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 
 - A gift for Sarah. Deadline: Dec 25, 2026, with the whole game done, not a preview (Keegan, Nov 25).
 - Built openly in this public repo (Keegan, Nov 25: Sarah doesn't check it).
+- **Private data** (Keegan, Nov 25): Keegan's notes to Sarah, the idle-life lists, the romance details and the real people's names and lines live only in the private project files (`gift-life-sim/`). The build copies them into the finished game. The repo never holds them: it keeps a placeholder file with the same shape and dummy text, so the game builds and tests without them.
 - Ships as its own standalone game. While it's being built it lives on the studio shelf like the other games.
 - Phone-first on Sarah's phone (model to be found; it's bigger than Keegan's and not an iPhone SE), inside the studio shell. No sound (`studio-bible/art-style.md`).
 - Folder `games/sarahs-sim/`. Planned save prefix `ss.`.
