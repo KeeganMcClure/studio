@@ -22,7 +22,6 @@ Keegan's call, Nov 24: work the list top to bottom, switching games as it goes. 
 ## Open flags
 
 - Rushlight: the slice's missed tuning checks (spec 006 D2) have no To do line yet. That's on `designer-todo.md`.
-- Black Lantern: an optional question is open on whether Federal agents should rule out a clean ending (asked while building Kinder overstepping).
 
 ## How the work goes
 
