@@ -272,7 +272,7 @@ Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
 
 - **Buttons** (set Nov 21): D-pad moves and faces, A acts, B goes back, Start opens the full menu, Select opens companion orders. L opens the bag and R opens the map; both stop the clock. Inside the bag and the map, L and R flip between pages.
 - **Top bar** (set Nov 21; made a framed card Nov 23, mockup `04`): a framed card across the top with your survivor's face (from the portrait, so mood, SAN and injuries show), the four need bars each with an icon and a short label (FOOD, HP, REST, SAN), the day, the clock and the season mark. The section's name sits on a small tab under it. Your weapon and ammo show only in fights.
-- **Bag** (set Nov 21): a grid of slots. Pockets are one row, and each bag adds rows of item squares with pixel icons, counts and a wear mark. L and R flip to companions' bags. A uses an item, B goes back.
+- **Bag** (set Nov 21): a grid of slots. Pockets are one row, and each bag adds rows of item squares with pixel icons, counts and a wear mark. L and R step through one row of pages: Recipes, your own bag, then each companion's bag, in party order; the Bag opens on your own bag (Keegan, Nov 25, 2026). A uses an item, B goes back.
 - **Party menu** (set Nov 21): the studio's party cards (`studio-bible/ui.md`) for you and each companion: portrait, needs, wounds, traits, the rough bond word, and Give item. No Make lead, since you always play your own survivor.
 
 ## Shelter
@@ -288,7 +288,7 @@ Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
 ## Items and crafting
 
 - **Item list** (set Nov 21): every item, recipe and keepsake is in `items.md`, part of this bible. Exact numbers go in spec 001.
-- **Bag slots** (set Nov 21): 4 pocket slots, and you can wear one bag at a time for more (a school backpack, a hiking pack). Every companion carries the same way, and L/R flips between people on the bag screen.
+- **Bag slots** (set Nov 21): 4 pocket slots, and you can wear one bag at a time for more (a school backpack, a hiking pack). Every companion carries the same way, and L/R reaches their bags on the bag screen (see Bag).
 - **Hideout storage** (Keegan, Nov 21): crates and shelves you build, a root cellar where food spoils slower, and a small lockbox raiders can't take from. Anything else can be stolen in a raid. Sizes are set in playtests.
 - **Crafting** (set Nov 21): simple recipes from scavenged parts. Weapons (a nail bat), barricades and traps, without deep menus. How it works (Keegan, Nov 21): your notebook's Recipes page, opened from the bag menu, lists the recipes you know and shows what's missing. You start with a few from your job and learn more from finds (how-to magazines, the field guide) and from companions at evening talks. Small things craft anywhere; big builds need a workbench at the hideout. Crafting takes time on the clock.
 - **Looting the dead** (Keegan, Nov 21): a dead survivor or raider drops what they carried: their bag, a worn weapon, a few rounds, some food, maybe a note or keepsake. Raiders carry more. Searching a body takes time.
