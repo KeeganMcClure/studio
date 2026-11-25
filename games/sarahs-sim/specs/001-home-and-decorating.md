@@ -64,7 +64,7 @@ These rows already exist in the bible's Screens table. This PR points them at th
 
 - The rowhouse scene with the game's name, "A cozy life" and a heart, and the menu card: Continue, Sandbox, Life, Challenges, and the small Import a save link.
 - **Continue** opens the mode she played last, with its day if it's Life. It's hidden until she has a save.
-- **Sandbox**, **Life** and **Challenges** open that mode's own save, or start it fresh. Life is spec 006. Challenges shows "Coming soon" until spec 010 is built.
+- **Sandbox**, **Life** and **Challenges** open that mode's own save, or start it fresh. Life is spec 006. Challenges is spec 010, built last; until then it shows "Coming soon".
 - **Seasons:** the scene and the cover follow the real date (winter, spring, summer, fall), with the bible's holiday touches. This spec builds winter with December's lights first; the other three seasons follow before Dec 25 if time allows, and in the first update if not. *Claude default.*
 - **Backup reminder:** about once a month, and before a big update, a small card on the title offers a backup. One tap makes the file. Not now dismisses it until next time (bible, Saves).
 
