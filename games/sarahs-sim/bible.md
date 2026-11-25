@@ -25,7 +25,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [x] Outfits: what she designs (pick parts, recolor, patterns), the clothing list, and the Style screen mockup.
   Done Nov 25: set with Keegan, drawn in `mockups/style-v1`, and a starting list of 60 pieces. See Outfits.
 - [ ] More outfit references: Keegan sends more photos of the two of them, and the clothing list grows from them (Keegan, Nov 25).
-- [ ] Creator: the parts for making new people (face, hair, skin, body), and its screen mockup.
+- [x] Creator: the parts for making new people (face, hair, skin, body), and its screen mockup.
+  Done Nov 25: set with Keegan and drawn in `mockups/creator-v1`. See Creator.
 - [ ] Building: lot size, walls, doors, windows, floors, stairs or not, how the view scrolls and zooms over a home bigger than the screen, and the build screen mockup.
 - [x] Gameplay: what keeps her coming back beyond designing (Nov 25). See Play.
 - [ ] Life mode: prices, coin pay for gigs and chores, and the special sets (the day, needs, job and unlocks are set, see Play).
@@ -64,7 +65,7 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Title | Pick a mode, continue, import a save | No spec yet | **To draw** |
 | Home (decorate) | Open the catalog, drag pieces into the room, stack small things, turn, move, recolor and paint them | No spec yet | `decorate-v1` (UI approved Nov 25, 2026), on the `look-iso-v1` room |
 | Style (outfits) | Dress a person in the big view: pick pieces, recolor, paint, add patterns and tee prints, spin to see the back | No spec yet | `style-v1` (UI approved Nov 25, 2026) |
-| Creator | Make a new person | No spec yet | **To draw** |
+| Creator | Make a new person: parts, fine tuning, age, gender and extras | No spec yet | `creator-v1` (approved Nov 25, 2026) |
 | Build | Draw walls, doors, windows and floors on an empty lot | No spec yet | **To draw** |
 | Life mode top bar | Day, time and coins over the home | No spec yet | `look-iso-v1` (top bar) |
 | Yard (garden) | Lay out beds, paths, fences and a patio, plant seeds, water and weed | No spec yet | **To draw** |
@@ -323,6 +324,18 @@ The starting list, approved by Keegan on Nov 25 (60 pieces). ♥ marks a piece f
 58. Santa hat
 59. Halloween witch hat
 60. Valentine's heart sweater
+
+## Creator
+
+Set Nov 25 (Keegan: "she LOVES a character creator", so it gets lots of room to play). Mockup: `mockups/creator-v1` (approved).
+
+- **Same mirror view as Style.** When she taps Done, the new person goes to Style to get dressed.
+- **Tabs:** age, face, eyes, nose, lips, hair, body, skin and more.
+- **Parts from lists, plus fine tuning:** each part has a list of shapes and a row of colors, with Random and Undo buttons. Sliders and switches fine-tune things like eye spacing, eye size, height, build, freckles and dimples.
+- **Ages:** kid, teen, adult and elder, each with its own body size. People don't age on their own. Babies may come in a later update.
+- **Gender:** woman, man or nonbinary sets a starting body and pronouns, and she can edit the pronouns. Nothing is locked: every body shape, hairstyle and outfit works for anyone.
+- **Extras, all of them:** makeup, freckles and blush, facial hair, glasses, piercings, tattoos (pick a design, a spot and a color) and birthmarks. Any hair color, with highlights.
+- Sarah's own hair is always ginger (see People). That rule is only for her.
 
 ## Controls and screen
 
