@@ -140,7 +140,7 @@ The colors follow the bible's Decorating section (Colors) and the `decorate-v1` 
 
 - **Swatches:** each piece has 4 to 6 hand-picked color sets that always look good together. One tap swaps the whole piece.
 - **Paint mode:** she picks a part of the piece (for example fabric, wood, cushion), and taps a color from the 24-color cozy palette. Only that part changes. The parts are named on buttons, so color is never the only label.
-- **Patterns:** fabric parts can take a pattern (stripes, gingham, floral, polka dots and a few more, shared with spec 002), which replaces the fabric texture on that part (bible, Furniture art).
+- **Patterns:** fabric parts can take a pattern, the same set as clothes (bible, Outfits: plain, stripes, plaid, floral, leopard and dots), which replaces the fabric texture on that part (bible, Furniture art).
 - **Texture stays:** fabric texture and wood grain are light shading only, so they show under any color.
 - Each placed piece keeps its own colors, so two of the same chair can look different.
 
