@@ -121,6 +121,7 @@ One item per chat, in order, biggest open decisions first. Claude ticks the item
   - [x] 8D The check against Screen craft and the Quality bar
     Done Nov 24: every screen checked at 320 × 480, 375 × 550 and 375 × 667 with a new look check (no cut-off words, no dim body text), the contact sheet reviewed, and the few misfits fixed.
   Done Nov 24: all four builds (8A to 8D) done; spec 008 is built.
+- [ ] Retune the slice's missed fights (`dev-notes.md`, spec 006 D2) to spec 006's own pass marks, then re-run every check on the same 3 seeds (set Nov 25: retune the fights, keep the targets). The Noonwife and the Counter get harder, so a hunt lasts 8 to 12 rounds and skipping the prep can lose; a careful company with the prep loses no one to the Counter. The Withy Hag fight kills no one. Severa holds on longer at night, so the night fight Downs a merc more often than the day fight, with no deaths.
 
 ### Bugs
 
