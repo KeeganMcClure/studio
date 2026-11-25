@@ -62,7 +62,7 @@ Every screen you can see, in play order (studio rule: `studio-bible/studio.md`, 
 | Map | Walk the town's sections, with the top bar, search, locks and night | 002 (1 to 7) | `04` |
 | Fights on the map | Turns, zombies, attacks, noise, sneaking, fleeing | 003 (1 to 8) | **To draw** (`01` is an old placeholder) |
 | Bag (L) | Your items, crafting | 002 (8, 10) | `07-bag-rough-v2` (approved Nov 25, 2026) |
-| Map screen (R) | The map of what you've found | 002 (12) | **To draw** |
+| Map screen (R) | The map of what you've found | 002 (12) | `08-map-screen-rough-v2` (approved Nov 25, 2026) |
 | Start menu | Party, Notebook, Wait, Sleep, Claim this place, Save code, Quit to title | 001 (wiring), 002, 004 (wiring) | `05` (same surface) |
 | Party card | You and your companions | 001 (6), `studio-bible/ui.md` | `05` (the taped photo and cards) |
 | Notebook | What you've learned | 002 (11) | **To draw** |
@@ -335,6 +335,8 @@ Set Nov 23 from Keegan's review. Standard is the numbers already in this bible.
 | `06-sprite-reference-rough-v3` | Rough, Nov 23: v2 with Scared redrawn, because Keegan found it read as surprised. Now the inner brows are pulled up and together, the eyes are wide and dart to one side, the mouth is a tight grimace and there's a sweat bead. Approved Nov 23 (Keegan): this is the sprite reference. |
 | `07-bag-rough-v1` | Rough, Nov 25: the Bag (L) on the cardboard surface: 4 pocket slots and a school backpack's 6, each square with its icon, count and wear marks; In hand, slots used and walk speed on the right; the picked item's card with its actions as buttons (after A); L/R flip to Recipes. Keegan approved it as is, Nov 25. |
 | `07-bag-rough-v2` | Nov 25, finished quality: v1's layout with 20 × 20 item icons, shaded from the upper left and drawn with the game's selective outline, in bigger 30 px slots. Keegan approved it Nov 25; build to this one. |
+| `08-map-screen-rough-v1` | Rough, Nov 25: the Map screen's first pass. Keegan, Nov 25: the vibe is right but it looked too rough; since the build copies the mockup, screen mockups are now drawn at finished quality. |
+| `08-map-screen-rough-v2` | Nov 25, finished quality: the Map screen (R), page 1 This section. Your survivor's own map in black and red marker on cardboard: houses with gable roofs, drives and yard trees, the school's flat roof, gym and playground, the church's steeple, streets with curbs and a center line, unseen ground as bare cardboard behind a hatched edge. Place names on taped paper tags; marks on paper discs (looted a cross, promising a circle, danger a red triangle); a red pin for you and your bike in its drive. The view scrolls over the 60 × 60 section. The picked place's card shows its mark, and A changes it. Page 2, the Road map, uses the same style. Keegan approved it Nov 25. |
 
 ## Tech
 
