@@ -93,7 +93,7 @@ Every screen you can see, in play order (studio rule: `studio-bible/studio.md`, 
 5. **Every system has a stake.** No mechanics for mechanics' sake.
 6. **Short phone sittings.** One in-game day fits one sitting.
 
-**Mature content.** Violence, gore, infection, starvation, cruelty and hard choices about other people are on the table, shown plainly and never lingered on for shock. Romance fades to black (Claude's call, for review). Hard line: nothing sexual involving minors, ever. Children are harmed only off screen or as aftermath.
+**Mature content.** Violence, gore, infection, starvation, cruelty and hard choices about other people are on the table, shown plainly and never lingered on for shock. Romance fades to black (Claude's call, confirmed by Keegan Nov 25, 2026). Hard line: nothing sexual involving minors, ever. Children are harmed only off screen or as aftermath.
 
 **Open questions.** See To do.
 
