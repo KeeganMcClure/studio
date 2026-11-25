@@ -30,7 +30,7 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
   Done Nov 25: coins and prices drafted in Play, Life mode, sets in Memory book and Visitors.
 - [x] Cat personalities: Keegan and the Designer work out Louie's and Ralph's personalities, which shape how each one wanders, naps, nudges and reacts (Keegan, Nov 25).
   Done Nov 25: in Play, The cats.
-- [ ] Keegan's notes: Keegan writes the hidden notes, including the one under the Christmas tree, and says where and when each one shows up (Keegan, Nov 25).
+- [ ] Keegan's notes: Keegan writes about 20 short notes in the [Notes for Sarah](https://claude.ai/artifact/Xez8onsWSjq7SKSSsnGk1o) sheet: one under the Christmas tree, one on her birthday, about 8 for holidays and their anniversary, and about 10 hidden around the home for her first month. Each slot says when and where she finds it (Keegan, Nov 25). Keegan also sends their anniversary date.
 - [ ] Idle life: Keegan writes more things the two of them are busy doing when she opens the game, on top of the first ones (see Play) (Keegan, Nov 25).
 - [x] Recipes: Keegan lists the dishes he really cooks for Sarah, with what goes in each, for the cooking minigame.
   Done Nov 25: nine dishes, in Play, Cooking.
