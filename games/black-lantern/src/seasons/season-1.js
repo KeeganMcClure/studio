@@ -8,5 +8,5 @@
 registerSeason({n:1,
  regular:['still-harvest','good-manners','lot-83','lost-hour','tracking','dead-air'],
  agency:[{id:'lantern-01',at:2},{id:'lantern-02',at:4},{id:'lantern-03',at:6,finale:true}],
- text:{unlock:{'lantern-01':['Sit.','Not a town this time. This one\'s ours.']},end:[]}
+ text:{unlock:{'lantern-01':['Sit.','Not a town this time. This one\'s ours.'],'lantern-02':['Got a letter. Addressed to us. By name.','Nobody outside this outfit knows our name.']},end:[]}
 });
