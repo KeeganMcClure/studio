@@ -147,6 +147,31 @@ const BOSSES = {
       F.woke = {}; F.taken = null; F.circle = 1; F.lucien = 'safe';
       G.clues = G.clues.filter(c => c.id !== 'ebooth'); if (s.ebooth) G.clues.push({ id: 'ebooth', text: '' }); G.fs.ident = []; goMap('radials', 11, 12, 'up'); },
   },
+  // LANTERN 03, the finale (spec 015): its weakening choices are the out-tray burned in the incinerator (−10 HP) and
+  // Wren's page torn out (−8 HP), or instead her gift of his true name (−6 HP; read aloud in phase 1 here, which stops
+  // phase 2's page storm); the season's own cut is −2 per kept page or hidden item (up to −8) and −4 if the forged page burned
+  // in LANTERN 02 ("arc" sets 2 kept, 2 hidden and the burned page). The right deduction makes Identify free. His deals
+  // are refused by the AI (the battle asks, and the sim takes the last option). "all" makes every choice.
+  almoner: {
+    case: 'lantern-03',
+    entry: 'l03Boss',  // lantern-03.js: bossFight without the ending
+    prep: () => { const s = loadSeason(); if (!s.agency.some(a => a.id === 'lantern-03')) s.agency.push({ id: 'lantern-03', played: true }); s.cases['lantern-03'] = { file: 3, state: 'open', ending: null }; store.set(seasonKey(), s); },
+    scenarios: [
+      { label: 'none' },
+      { label: 'burned', burn: 1 },
+      { label: 'her page', page: 1 },
+      { label: 'his name', name: 1 },
+      { label: 'arc', arc: 1 },
+      { label: 'burned, page', burn: 1, page: 1 },
+      { label: 'all (page)', burn: 1, page: 1, arc: 1, right: 1 },
+      { label: 'all (name)', burn: 1, name: 1, arc: 1, right: 1 },
+    ],
+    setup: s => { const F = G.flags; F.ph = 1; F.filing = 1; F.stairs = 'talked'; F.base1 = 1; F.boss = 0; F.burn = s.burn ? 1 : 0; F.lit = s.burn ? 1 : 0; F.page = s.page ? 1 : 0;
+      F.gotName = s.name ? 1 : 0; F.named = s.name ? 1 : 0; F.deduce = s.right ? 'right' : 'half'; F.deals = 0; G.fs.ident = [];
+      const S = loadSeason(); S.kept = s.arc ? ['a', 'b'] : []; S.hidden = s.arc ? [{ k: 'x', case: 'a', who: 'A' }, { k: 'y', case: 'b', who: 'B' }] : [];
+      if (s.arc) S.cases['lantern-02'] = { file: 2, state: 'closed', ending: 'clean', facts: { arc: { agnes: 'burn' } } }; else delete S.cases['lantern-02'];
+      store.set(seasonKey(), S); goMap('basement', 10, 4, 'up'); },
+  },
 };
 
 const args = process.argv.slice(2);
