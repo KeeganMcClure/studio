@@ -68,7 +68,7 @@ The book opens from the Start menu, or by tapping a bookshelf and choosing Memor
 - **The reward ribbon:** a strip at the top of each chapter's first page shows the three reward steps (3, 6 and 10) with their pieces drawn small. Reached steps are ticked and say "In your catalog". In Sandbox, the strip says the pieces are already in her catalog.
 - **Notes tab:** every note she's found, in the order she found them. Each is a small folded paper with its date, and it opens full size when tapped (as the Note found screen).
 - **Photos tab:** her camera photos (bible, Keeping designs). She can add any photo to a chapter's pages as an extra, which doesn't count toward finishing the chapter, or take it off again.
-- **Moving through it:** swipe, tap the page-corner arrows or press the D-pad left and right to turn pages, tap a tab to jump, and B to close. No L or R buttons are needed (see the bible, Controls and screen).
+- **Moving through it:** swipe, tap the page-corner arrows or press the D-pad left and right to turn pages, tap a tab to jump, and B to close.
 - **Handwriting:** dates and captions use VT323 in a soft brown ink, with each letter tipped a little at random, so it reads as handwriting while staying inside the studio's two fonts (`studio-bible/art-style.md`, Fonts and sound).
 
 **Done when:**
