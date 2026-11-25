@@ -113,13 +113,13 @@ The catalog and placing follow the bible's Decorating section and the approved `
 
 - Drag a card out of the tray into the room. The piece follows her finger, snapped to the floor tiles. The tiles under it glow green where it fits and rose where it doesn't, with a small check or cross, so color is never the only sign.
 - Let go to place it. If it doesn't fit, it slides back to the tray.
-- **Turning:** a placed piece turns 4 ways with the turn button, or with L and R while it's held. *Claude default.*
+- **Turning:** a placed piece turns 4 ways with the turn button over it (the shell has no L or R, bible, Controls and screen).
 - **Stacking:** small things (a lamp, a mug, a plant pot, a book stack, a frame) can sit on tables, counters, dressers and shelves. The spot on top glows green when a piece will stack there. A table holds as many as fit on its top.
 - **Wall pieces:** art, shelves, mirrors and clocks hang on walls. Dragged near a wall, they snap flat to it at eye height and can slide along it. Shelves on walls can hold small things.
 - **Picking a placed piece:** tap it. Turn, move and put-away buttons float over it, and the tray shows its name, swatches, Paint, Put away, Move and Done (`decorate-v1`, piece tray).
 - **Moving** drags it again. **Put away** sends it back to her storage, never lost.
 - **Undo:** one-tap undo for the last 10 changes in this home. *Claude default.*
-- **Buttons too:** the D-pad moves a held piece one tile at a time, A places, B cancels, L and R turn (bible, Controls and screen).
+- **Buttons too:** the D-pad moves a held piece one tile at a time, A places, B cancels, and Select turns it (bible, Controls and screen). *Claude default.*
 
 **Props** (bible, Furniture art, Props both ways):
 
@@ -232,7 +232,7 @@ Ours and Holiday are on top of the 80. Holiday's Christmas set comes first (spec
 These follow the bible but fill in details it doesn't set. Keegan can change any of them:
 
 - Winter and December lights on the title are built first; the other seasons come before Dec 25 if time allows.
-- L and R turn a held piece.
+- Select turns a held piece when she's using buttons.
 - Undo covers the last 10 changes in a home.
 - The Start menu rows and the Homes list.
 - Using a room favorite places what fits and stores the rest.

@@ -15,7 +15,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [x] Setup: create this bible (Nov 25).
 - [x] Base look: warm and cozy isometric room approved (Nov 25). See Art.
 - [ ] Sarah's phone: Keegan finds out the model. It sets the target screen size.
-- [ ] Shell space: with the phone known, Keegan picks between keeping L/R, dropping them, and a taller game screen (Keegan, Nov 25: maybe drop L/R for more room; a plain question, no mockup needed). The approved mockup uses today's shell with L/R.
+- [ ] Shell space: with the phone known, Keegan decides whether the game screen grows taller than the studio's 320 px cap to fill the space L and R leave (a plain question, no mockup needed).
+  Nov 25: L and R are dropped (Keegan). See Controls and screen. The taller screen still waits on the phone model.
 - [ ] Photos: Keegan sends photos of their things and their cats. Photos stay in the Game Designer project files, never in this repo; only the drawn versions come here.
 - [ ] Reference sheet: Keegan, Sarah and the cats (drawn and approved Nov 25: `mockups/louie-v1`, `mockups/ralph-v1`, `mockups/people-v1`; real furniture to come) as map sprites and portraits, plus a first set of their real furniture, drawn from the photos (`studio-bible/art-style.md`, Before a game's first build).
 - [x] Holidays: which holidays get decorations and items (Nov 25). See Homes and people.
@@ -498,7 +499,8 @@ Set Nov 25 (Keegan). The studio rules in `studio-bible/saves.md` apply (autosave
 
 - **Touch first, buttons too** (Keegan, Nov 25): she taps and drags furniture and clothes. The studio shell and its buttons stay for walking, menus and anyone who prefers buttons. **Named exception** to `studio-bible/controls.md` (Buttons): drag and drop on the game screen is a main control here, not only tapping menu rows.
 - **Target screen:** Sarah's phone. The studio's tests at 375 × 667, 375 × 550 and 320 × 480 still run, so nothing is cut off anywhere.
-- **Shell space:** open (see To do). On a big phone the game height cap of 320 px (`studio-bible/controls.md`, Shell) leaves dark bands above and below the room; the shell-space question covers it.
+- **No L or R** (Keegan, Nov 25): the shell has no shoulder buttons, and the game screen gets that space. **Named exception** to `studio-bible/controls.md` (Shell, Buttons). Everything L and R would do has an on-screen button or a swipe instead: turning a piece uses its turn button, and tabs and pages are tapped or swiped. Mockups drawn before this still show L and R.
+- **Shell space:** partly open (see To do). On a big phone the game height cap of 320 px (`studio-bible/controls.md`, Shell) leaves dark bands above and below the room; the shell-space question covers it.
 
 ## Art
 
