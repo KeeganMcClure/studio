@@ -78,7 +78,7 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Creator | Make a new person: parts, fine tuning, age, gender and extras | `specs/003-creator.md` | `creator-v1` (approved Nov 25, 2026) |
 | Build | Draw rooms, walls, doors, windows, floors and stairs on an empty lot, up to 3 floors | `specs/004-building.md` | `build-v1` (approved Nov 25, 2026) |
 | Life mode top bar | Day, time and coins over the home | `specs/006-life-mode.md` | `look-iso-v1` (top bar) |
-| Yard (garden) | Lay out beds, paths, fences and a patio, plant seeds, water and weed | `specs/005-garden-and-yard.md` | **To draw** |
+| Yard (garden) | Lay out beds, paths, fences and a patio, plant seeds, water and weed | `specs/005-garden-and-yard.md` | `yard-v1` (drawn Nov 25, 2026, waiting on Keegan's review) |
 | Minigame | One of the eight chores (mow, weed, water, rake, shovel snow, dishes, vacuum, fold laundry), all in one shared frame | `specs/005-garden-and-yard.md` | **To draw** |
 | Cooking | Chop, stir and plate one of Keegan's dishes with him | `specs/006-life-mode.md` | **To draw** |
 | Visitor chat | A visitor talks and asks for a gig | `specs/008-visitors-and-neighborhood.md` | **To draw** |

@@ -113,6 +113,7 @@
     c.restore();
   }
 
+  window.RALPH_SIT = SIT; window.RALPH_PAL = PAL; // shared with later mockups
   window.drawRalphSheet = function (c, W, H, t) {
     c.imageSmoothingEnabled = false;
     c.fillStyle = '#fff6ea'; c.fillRect(0, 0, W, H);

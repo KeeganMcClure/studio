@@ -198,6 +198,7 @@
   }
   function shadow(c, x, y, w) { c.fillStyle = 'rgba(90,45,40,.25)'; c.beginPath(); c.ellipse(x, y, w / 2, w / 5, 0, 0, 7); c.fill(); }
 
+  window.SS_SARAH = sarahSprite; window.SS_KEEGAN = keeganSprite; // shared with later mockups
   window.drawPeopleSheet = function (c, W, H, t) {
     c.imageSmoothingEnabled = false;
     c.fillStyle = '#fff6ea'; c.fillRect(0, 0, W, H);
