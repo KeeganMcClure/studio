@@ -138,6 +138,7 @@ function drawCard(c,r,on,now){
   pT(`${BW.lantern} ${String(c.c.card.file).padStart(2,'0')}`,x+5,y+3,c.finale?PC.gold:CB_COL.agInk,11);
   const lines=cbWrap(c.c.card.title,W-22,H>=44?14:13,H>=44?2:1);lines.forEach((l,i)=>pT(l,x+5,y+13+i*11,PC.cream,H>=44?14:13));
   if(H>=48)pT(c.finale?BW.finale:c.c.card.town,x+5,y+35,c.finale?PC.gold:CB_COL.town,11);  // the finale says FINALE under its number
+  else if(c.finale&&H>=36)pT(BW.finale,x+5,y+H-11,PC.gold,11);  // a short card still says FINALE, under its one title line
   cbDisc(x+W-9,y+H-9,6,CB_COL.seal);cbDisc(x+W-9,y+H-9,4,'#8a1a18');pR(x+W-10,y+H-12,2,5,'#f0c070');return}
  pBox(x,y,W,H,c.shut?CB_COL.paperShut:CB_COL.paper,PC.dark);
  drawPin(x+Math.round(W/2)-1,y,c.shut?CB_COL.pinShut:c.c.card.pin);
