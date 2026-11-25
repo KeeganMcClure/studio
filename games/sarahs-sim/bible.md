@@ -19,7 +19,9 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [ ] Photos: Keegan sends photos of their things and their cats. Photos stay in the Game Designer project files, never in this repo; only the drawn versions come here.
 - [ ] Reference sheet: Keegan, Sarah and the cats (drawn and approved Nov 25: `mockups/louie-v1`, `mockups/ralph-v1`, `mockups/people-v1`; real furniture to come) as map sprites and portraits, plus a first set of their real furniture, drawn from the photos (`studio-bible/art-style.md`, Before a game's first build).
 - [x] Holidays: which holidays get decorations and items (Nov 25). See Homes and people.
-- [ ] Decorating: catalog categories, how many pieces at launch, color variants, rotate, stack and wall items. Screen mockup for the catalog.
+- [x] Decorating: catalog categories, how many pieces at launch, color variants, rotate, stack and wall items. Screen mockup for the catalog.
+  Done Nov 25: set with Keegan and drawn in `mockups/decorate-v1`. See Decorating.
+- [ ] Item sprites: Keegan and the Designer work out how furniture and decor pieces are drawn, so all 80 match (Keegan, Nov 25: later).
 - [ ] Outfits: what she designs (pick parts, recolor, patterns), the clothing list, and the Style screen mockup.
 - [ ] Creator: the parts for making new people (face, hair, skin, body), and its screen mockup.
 - [ ] Building: lot size, walls, doors, windows, floors, stairs or not, how the view scrolls and zooms over a home bigger than the screen, and the build screen mockup.
@@ -54,7 +56,7 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Screen | What you do there | Spec | Mockup |
 | --- | --- | --- | --- |
 | Title | Pick a mode, continue, import a save | No spec yet | **To draw** |
-| Home (decorate) | Drag furniture from the tray into the room, turn it, recolor it | No spec yet | `look-iso-v1` (approved Nov 25, 2026) |
+| Home (decorate) | Open the catalog, drag pieces into the room, stack small things, turn, move, recolor and paint them | No spec yet | `decorate-v1` (UI approved Nov 25, 2026), on the `look-iso-v1` room |
 | Style (outfits) | Design and change outfits | No spec yet | **To draw** |
 | Creator | Make a new person | No spec yet | **To draw** |
 | Build | Draw walls, doors, windows and floors on an empty lot | No spec yet | **To draw** |
@@ -175,9 +177,21 @@ Set Nov 25, 2026 (Keegan): weed is part of their cozy life, in the same light to
 - **People** (Keegan, Nov 25): Keegan and Sarah are drawn to look like themselves (`mockups/people-v1`, approved as a starting place), and she can restyle their hair and outfits.
   - **Sarah:** copper curls, freckles, grey-blue eyes, glasses on or off, gold hoops. She has several hairstyles (pinned up, loose bob, long curls, ponytail to start), but her hair is always ginger: restyle, never recolor.
   - **Keegan:** buzz cut, full beard trimmed to his jaw, open eyes (they only narrow when he grins), nose stud, cap on or off.
-  - **Clothes:** their real outfits from Keegan's photos are references for the Style catalog. One must-have: the **ORANGE ROCKS tee**, from Sarah's childhood shirt. Bright orange with white rounded letters, "ORANGE ROCKS" on the front and "AND SO DO I" on the back. A creator lets her make extra people for other homes.
+  - **Clothes:** their real outfits from Keegan's photos are references for the Style catalog. One must-have: the **ORANGE ROCKS tee**, from Sarah's childhood shirt. Bright orange with white rounded letters, "ORANGE ROCKS" on the front and "AND SO DO I" on the back.
+  - **Creator:** lets her make extra people for other homes.
 - **Other homes** (Keegan, Nov 25): she builds them from scratch on empty lots: walls, doors and rooms, then furniture.
 - **Room size:** rooms and homes can be much bigger than one screen. The approved mockup shows one 10 × 10 tile room only because it fits the screen; the view scrolls over bigger homes. How it scrolls and zooms is part of the Building item on To do.
+
+## Decorating
+
+Set Nov 25 (Keegan). Mockup: `mockups/decorate-v1` (UI approved; the furniture in it is a stand-in until item sprites are worked out).
+
+- **Catalog size:** about 80 furniture and decor pieces at launch, with more added as needed.
+- **Catalog tabs:** sorted by type: seating, tables, beds, storage, lights, plants, rugs, wall and decor. Two more tabs: **Ours**, holding their real things from Keegan's photos, and **Holiday**. Each card shows small dots for its color choices.
+- **Placing:** big pieces snap to the floor tiles and turn 4 ways. Small things stack on tables and shelves, and the spot glows green when a piece will stack there. Art and shelves hang on walls.
+- **Picking a placed piece:** tap it for turn, move and put-away buttons over it. The tray shows its name, its swatches, Paint, Put away, Move and Done.
+- **Colors:** both quick and free. Each piece has 4 to 6 hand-picked swatches that always look good together. Paint mode lets her color each part (for example fabric, wood, cushion) with any color from a 24-color cozy palette.
+- **Sandbox top bar:** shows the mode and the home's name instead of the day, time and coins.
 
 ## Controls and screen
 
