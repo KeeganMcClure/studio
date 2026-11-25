@@ -69,8 +69,8 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Creator | Make a new person | No spec yet | **To draw** |
 | Build | Draw walls, doors, windows and floors on an empty lot | No spec yet | **To draw** |
 | Life mode top bar | Day, time and coins over the home | No spec yet | `look-iso-v1` (top bar) |
-| Yard (garden) | Lay out beds, paths, fences and a patio, plant seeds, water and weed | No spec yet | **To draw** |
-| Minigame | A short lawn care or house upkeep game (one row per minigame once they're listed) | No spec yet | **To draw** |
+| Yard (garden) | Lay out beds, paths, fences and a patio, plant seeds, water and weed | `specs/005-garden-and-yard.md` | **To draw** |
+| Minigame | One of the eight chores (mow, weed, water, rake, shovel snow, dishes, vacuum, fold laundry), all in one shared frame | `specs/005-garden-and-yard.md` | **To draw** |
 | Cooking | Chop, stir and plate one of Keegan's dishes with him | No spec yet | **To draw** |
 | Visitor chat | A visitor talks and asks for a gig | No spec yet | **To draw** |
 | Gig | See what a visitor wants, design it, hand it in, get paid | No spec yet | **To draw** |
