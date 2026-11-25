@@ -129,7 +129,8 @@ What keeps her coming back beyond designing. Set Nov 25, 2026 (Keegan), in the G
 - **Idle life:** when she opens the game, the two of them are already busy living their lives. Sarah might be video-calling her mom, and Keegan might be doing school work or playing a video game. What they're doing fits the real time of day.
   - **Four times of day** (Keegan, Nov 25): morning (6 to 11 AM), daytime (11 AM to 5 PM), evening (5 to 10 PM) and late night (10 PM to 6 AM), with about 25 activities across them. They include cooking, school work, gaming, gardening, calls home, baths with Louie on the tub edge, couch time, winding down, reading, sleeping, and play with the cats. The full list lives in the private project files, since it is about their real life.
   - **Crafts:** Sarah paints and does a craft that fits the season, and Keegan crochets. Each finished piece shows up in the home afterward as decor she can keep or move (Keegan, Nov 25).
-  - **Cheeky after-moments:** a few playful hints that they just had some time alone, with nothing shown (see Romance). The details stay in the private project files. No real app or game names on screen (`studio-bible/studio.md`, No real brands), and picks don't repeat until the pool runs out (`studio-bible/play.md`, Picks from a pool don't repeat).
+  - **Cheeky after-moments:** a few playful hints that they just had some time alone, with nothing shown (see Romance). The details stay in the private project files.
+  - No real app or game names on screen (`studio-bible/studio.md`, No real brands), and picks don't repeat until the pool runs out (`studio-bible/play.md`, Picks from a pool don't repeat).
 
 ### Memory book
 
@@ -153,6 +154,7 @@ Moments approved by Keegan as starters (Nov 25). The reward pieces are a *Claude
 | Friends | First visitor · first gig done · first visit to a neighbor's home · first neighbor's home redone · first person made in the creator · a visitor brings a gift · first friend's story finished · three friends made · every neighbor's story finished · a full house of visitors | Floor cushions · a snack table and string lights · a record player |
 | The two of us | First note from Keegan found · the note under the tree · cuddled up on the couch · a kiss · a cozy night in · winding down together · Sarah video-calls her mom · Keegan's game night · a slow morning in bed · our anniversary · every note found | A cozy throw · a "home" sign · a wall of framed pictures of the two of them |
  Life mode runs on the real time of day. Morning light in her morning, lamps and a night sky in her evening. Plants and the cats' needs run on real time too.
+- **Who she plays** (Keegan, Nov 25): Sarah plays as herself. Keegan lives on his own: he goes about his day (idle life), cooks for her, and joins in when she taps him for something to do together.
 - **Needs:** people have three soft needs: energy, hunger and fun. A low need only makes them yawn or sigh and work a bit slower.
 - **Away from the game:** every need, for people and cats, pauses while she isn't playing. A month away comes back to the same home, just as she left it.
 - **Job: design gigs.** Visitors and neighbors pay her to style a room or an outfit. Gigs are small and quick and are there whenever she plays. Challenges stay the bigger themed jobs.
