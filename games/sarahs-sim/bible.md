@@ -30,7 +30,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [ ] Cat personalities: Keegan and the Designer work out Louie's and Ralph's personalities, which shape how each one wanders, naps, nudges and reacts (Keegan, Nov 25).
 - [ ] Keegan's notes: Keegan writes the hidden notes, including the one under the Christmas tree, and says where and when each one shows up (Keegan, Nov 25).
 - [ ] Idle life: Keegan writes more things the two of them are busy doing when she opens the game, on top of the first ones (see Play) (Keegan, Nov 25).
-- [ ] Recipes: Keegan lists the dishes he really cooks for Sarah, with what goes in each, for the cooking minigame.
+- [x] Recipes: Keegan lists the dishes he really cooks for Sarah, with what goes in each, for the cooking minigame.
+  Done Nov 25: nine dishes, in Play, Cooking.
 - [ ] Bong reference: Keegan sends a photo of his bong, drawn for the reference sheet with their other real things.
 - [ ] Real people: Keegan sends the list of friends and family to draw in as visitors, with a photo or a few notes on each. They join the reference sheet.
 - [ ] Neighbors: the made-up neighbor cast, each one's personality, and each visitor's short story and special set.
@@ -165,6 +166,22 @@ Set Nov 25, 2026 (Keegan): Keegan cooks for Sarah all the time, so the game show
 - **Cook together:** she can jump in and cook with him in a little chop, stir and plate minigame.
 - **Their dishes:** the recipes are Keegan's real dishes (To do). Meals can use veggies from her garden.
 - *Claude default:* the first time they make a dish, it goes in the memory book.
+
+**Recipes** (Keegan, Nov 25: his three, plus the dishes in his Recipe Cards doc). Each one is a few simple steps in the minigame. Store-bought things are plain, with no brand names.
+
+| Dish | What goes in | Minigame steps |
+| --- | --- | --- |
+| Bean burritos | Tortillas, beans, rice, cheese, salsa | Warm the beans, warm the tortillas, fill, roll |
+| Spaghetti and meatballs | Spaghetti, meatballs, marinara, Parmesan | Boil the pasta, simmer the meatballs in sauce, plate, cheese on top |
+| Eggs on toast | Eggs, bread, butter, pepper | Toast the bread, fry the eggs, stack |
+| Beef and broccolini | Thin-sliced beef, broccolini, shallots, soy-honey sauce, rice | Slice, sear the beef, soften the greens, toss in sauce (his top-rated) |
+| Chicken nachos | Chips, chicken, peppers and onion, beans, cheese, salsa | Char the peppers, season the chicken, layer the pan, melt |
+| Breakfast sandwiches | Eggs, sausage, cheese, hashbrowns, English muffin | Crisp the hashbrowns, brown the sausage, fry the eggs, stack |
+| Meatball subs | Meatballs, marinara, rolls, provolone | Simmer, toast the rolls, load, melt |
+| Ravioli with chicken sausage | Ravioli, chicken sausage, red and white sauce | Brown the sausage, boil the ravioli, mix the sauces, fold |
+| Chorizo breakfast tacos | Chorizo, eggs, hashbrowns, tortillas, green salsa | Crisp the hashbrowns, cook the chorizo, scramble, fill (one she loved) |
+
+- *Claude default:* garden veggies (peppers, onions, greens, tomatoes for sauce) can stand in for store-bought ones, and a dish with something from her garden gets a little sparkle.
 
 ### Winding down
 
