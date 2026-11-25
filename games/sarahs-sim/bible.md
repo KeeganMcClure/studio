@@ -91,7 +91,7 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 
 ## Overview
 
-**Pitch.** Sarah's Sim is a cozy life simulator for the phone, made by Keegan as a Christmas gift for Sarah. It's in the style of the life sim genre, but its own game, with a heavy focus on design: decorating and building homes, and designing outfits. It starts in a copy of Keegan and Sarah's home in Philly, with their cats and their real things.
+**Pitch.** Sarah's Sim is a cozy life simulator for the phone, made by Keegan as a Christmas gift for Sarah. It's in the style of the life sim genre, but its own game, with a heavy focus on design: decorating and building homes, and designing outfits. It starts in Keegan and Sarah's future home in Philly, a red-brick rowhouse, with their cats and their real things.
 
 **At a glance**
 
@@ -322,7 +322,7 @@ Set Nov 25, 2026 (Keegan): weed is part of their cozy life, in the same light to
 
 ## Homes and people
 
-- **Starter home** (Keegan, Nov 25): a prebuilt copy of Keegan and Sarah's place in Philly, with their cats. Their real furniture and things are drawn from Keegan's photos. No street address anywhere.
+- **Starter home** (Keegan, Nov 25): their future home in Philly, with their cats. Keegan and Sarah don't live in Philly yet, so the house is the red-brick rowhouse from the title screen, a dream of their next chapter, furnished inside with their real furniture and things drawn from Keegan's photos. No street address anywhere.
 - **Holiday things** (Keegan, Nov 25): year-round, Christmas first. The Christmas set is built first, then Valentine's, Halloween, Thanksgiving and more, each with its own decorations and items.
 - **Birthdays** (Keegan, Nov 25): Sarah's is August 31 and Keegan's is March 17, on the real date like the holidays.
   - On her birthday, the home wakes up with balloons and a cake, Keegan has a gift and a note waiting for her, and the cats wear party hats.
