@@ -22,7 +22,7 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [x] Decorating: catalog categories, how many pieces at launch, color variants, rotate, stack and wall items. Screen mockup for the catalog.
   Done Nov 25: set with Keegan and drawn in `mockups/decorate-v1`. See Decorating.
 - [ ] Item sprites: Keegan and the Designer work out how furniture and decor pieces are drawn, so all 80 match (Keegan, Nov 25: later).
-- [ ] Outfits: what she designs (pick parts, recolor, patterns), the clothing list, and the Style screen mockup.
+- [ ] Outfits: what she designs (pick parts, recolor, patterns), the clothing list, and the Style screen mockup. Set Nov 25 apart from the clothing list: see Outfits and `mockups/style-v1`. Left: the list of about 60 pieces.
 - [ ] Creator: the parts for making new people (face, hair, skin, body), and its screen mockup.
 - [ ] Building: lot size, walls, doors, windows, floors, stairs or not, how the view scrolls and zooms over a home bigger than the screen, and the build screen mockup.
 - [x] Gameplay: what keeps her coming back beyond designing (Nov 25). See Play.
@@ -61,7 +61,7 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | --- | --- | --- | --- |
 | Title | Pick a mode, continue, import a save | No spec yet | **To draw** |
 | Home (decorate) | Open the catalog, drag pieces into the room, stack small things, turn, move, recolor and paint them | No spec yet | `decorate-v1` (UI approved Nov 25, 2026), on the `look-iso-v1` room |
-| Style (outfits) | Design and change outfits | No spec yet | **To draw** |
+| Style (outfits) | Dress a person in the big view: pick pieces, recolor, paint, add patterns and tee prints, spin to see the back | No spec yet | `style-v1` (UI approved Nov 25, 2026) |
 | Creator | Make a new person | No spec yet | **To draw** |
 | Build | Draw walls, doors, windows and floors on an empty lot | No spec yet | **To draw** |
 | Life mode top bar | Day, time and coins over the home | No spec yet | `look-iso-v1` (top bar) |
@@ -232,6 +232,16 @@ Set Nov 25 (Keegan). Mockup: `mockups/decorate-v1` (UI approved; the furniture i
 - **Picking a placed piece:** tap it for turn, move and put-away buttons over it. The tray shows its name, its swatches, Paint, Put away, Move and Done.
 - **Colors:** both quick and free. Each piece has 4 to 6 hand-picked swatches that always look good together. Paint mode lets her color each part (for example fabric, wood, cushion) with any color from a 24-color cozy palette.
 - **Sandbox top bar:** shows the mode and the home's name instead of the day, time and coins.
+
+## Outfits
+
+Set Nov 25 (Keegan). Mockup: `mockups/style-v1` (UI approved).
+
+- **Wardrobe size:** about 60 clothing pieces at launch: their real outfits from Keegan's photos, everyday basics and Christmas clothes.
+- **Wardrobe tabs:** hair, tops, bottoms, dresses, shoes, extras (hats, glasses, jewelry), plus **Ours** and **Holiday**. Hearts mark pieces from their real clothes.
+- **Big dress-up view:** the Style screen shows the person large, about 3 times map size, in front of a standing mirror. Arrows spin them to see the back. Tap the name to dress someone else. The heart saves a favorite and the camera takes a picture (see Play).
+- **Designing a piece:** each piece has hand-picked swatches, a paint mode for each part, and patterns: plain, stripes, plaid, floral, leopard and dots.
+- **Her own prints:** she can write on tees, front or back, in 2 short lines of up to 6 letters, and pick the letter color. The ORANGE ROCKS tee is built this way.
 
 ## Controls and screen
 

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sarah's Sim style v1</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<link rel="stylesheet" href="../../../engine/shell.css">
+<style>
+:root{--page:#2a1b24;--shell:#e9a7a2;--shell-hi:#f6c9c1;--shell-lo:#c9827f;--bezel:#3b2430;--bezel-edge:#55313f;--brand-ink:#e8b8b0;--led:#ffd56b;--led-off:#5a3b46;
+--scr-bg:#22171f;--scr-fg:#fff1e2;--scr-hi:#ffd56b;--btn:#fff1e2;--label:#8e5a5e;--btn-a:#e46f8b;--btn-b:#7fa7a0;--btn-ink:#fff;
+--px:"Press Start 2P",monospace;--vt:"VT323",monospace;color-scheme:dark}
+body{margin:0}
+.screen{align-items:center;justify-content:center}
+canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+</style></head><body>
+<div class="screen" id="screen" data-brand="SARAH'S SIM" data-brand-sub="FOR SARAH"><canvas id="c"></canvas></div>
+<script src="../../../engine/shell.js"></script>
+<script src="style-v1.js"></script><script>var ST=new URLSearchParams(location.search).get("state")||"wardrobe";</script>
+<script>
+function fit(){var s=document.getElementById('screen'),cv=document.getElementById('c');
+ var sc=s.clientWidth/240, h=Math.min(320,Math.floor(s.clientHeight/sc));
+ cv.width=240;cv.height=h;cv.style.width=(240*sc)+'px';cv.style.height=(h*sc)+'px';
+ var t=+(new URLSearchParams(location.search).get('t')||0);
+ drawStyle(cv.getContext("2d"),240,h,t,ST);}
+document.fonts.ready.then(fit);addEventListener('resize',fit);
+if(!new URLSearchParams(location.search).get('still')){var T=0;setInterval(function(){T++;var cv=document.getElementById('c');drawStyle(cv.getContext("2d"),240,cv.height,T,ST)},250);}
+</script></body></html>
