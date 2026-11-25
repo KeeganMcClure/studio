@@ -123,5 +123,9 @@ Short scenes with 2 or 3 choices. First set of seeds:
 
 - Opens only with an adult companion whose attraction fits you, at Easy bond or better.
 - A flirt choice at an evening talk: if they're open, bond rises; if not, it drops a little, and for some it drops a lot.
-- Three romance scenes as bond rises past 50, 70 and 90; the last fades to black.
+- **Pace** (set Nov 25, 2026: it depends on the person). Each companion open to romance has one, rolled with their other parts and hidden like bond:
+  - **Quick:** falls fast. Romance scenes at bond 35, 50 and 65.
+  - **Steady:** scenes at bond 50, 70 and 90.
+  - **Slow:** takes a long time to trust anyone. Scenes at bond 65, 80 and 95.
+  - About 1 in 4 are Quick, 1 in 2 Steady and 1 in 4 Slow. The last scene fades to black whatever the pace.
 - A partner lifts SAN at every shared evening, and losing them costs 50 SAN.
