@@ -75,7 +75,7 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Title | Pick a mode, continue, import a save, over the snowy home | `specs/001-home-and-decorating.md` | `title-v1` (approved Nov 25, 2026) |
 | Home (decorate) | Open the catalog, drag pieces into the room, stack small things, turn, move, recolor and paint them | `specs/001-home-and-decorating.md` | `decorate-v1` (UI approved Nov 25, 2026), on the `look-iso-v1` room |
 | Style (outfits) | Dress a person in the big view: pick pieces, recolor, paint, add patterns and tee prints, spin to see the back | `specs/002-outfits.md` | `style-v1` (UI approved Nov 25, 2026) |
-| Creator | Make a new person: parts, fine tuning, age, gender and extras | No spec yet | `creator-v1` (approved Nov 25, 2026) |
+| Creator | Make a new person: parts, fine tuning, age, gender and extras | `specs/003-creator.md` | `creator-v1` (approved Nov 25, 2026) |
 | Build | Draw rooms, walls, doors, windows, floors and stairs on an empty lot, up to 3 floors | No spec yet | `build-v1` (approved Nov 25, 2026) |
 | Life mode top bar | Day, time and coins over the home | `specs/006-life-mode.md` | `look-iso-v1` (top bar) |
 | Yard (garden) | Lay out beds, paths, fences and a patio, plant seeds, water and weed | `specs/005-garden-and-yard.md` | **To draw** |
