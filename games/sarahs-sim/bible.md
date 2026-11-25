@@ -144,6 +144,14 @@ Sarah has a major green thumb and loves her back yard (Keegan, Nov 25).
 - **Stories:** each visitor tells a short story over a few visits, ending with their special set.
 - **Their homes:** she can walk over to a visitor's home and help redo it, so there's a small neighborhood.
 
+### Romance
+
+Set Nov 25, 2026 (Keegan): flirty, with a fade to black. Tasteful, never explicit.
+
+- Keegan and Sarah flirt, kiss and cuddle in everyday play.
+- Now and then a small playful moment, such as a wink, a few hearts or an "oh?", leads into a fade to black.
+- Romance is only between Keegan and Sarah. The details live in the Game Designer project files, not in this repo.
+
 ### Keeping designs
 
 - **Favorites:** she saves outfits and whole rooms as favorites to reuse in any home or mode.
