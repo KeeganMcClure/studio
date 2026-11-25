@@ -238,6 +238,8 @@
       if (S.run) a.push({ lines: ['Continue'], a: function () { go('room'); } });
       a.push({ lines: ['Best runs'], a: function () { go('best'); } });
       a.push({ lines: ['Import save'], a: importSave });
+      // Back to the studio's game shelf, only when the game was opened from it (launcher.md), as in the other games
+      if (window.Studio && Studio.fromShelf) a.push({ lines: ['Game shelf'], value: '◀', a: function () { Studio.toShelf(); } });
       return a;
     },
     draw: function (now) {
