@@ -86,7 +86,7 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Note found | Read a note from Keegan she found in the home | `specs/007-memory-book-and-notes.md` | **To draw** |
 | Favorites | Save and reuse whole rooms and outfits | No spec yet | **To draw** |
 | Camera | Take a clean picture of a room or outfit | No spec yet | **To draw** |
-| Challenges | Pick a challenge and see how you did | No spec yet | **To draw** |
+| Challenges | Pick a challenge and see how you did | `specs/010-challenges.md` | **To draw** |
 | Start menu | Save, homes, people, quit to title | No spec yet | **To draw** |
 
 ## Overview
