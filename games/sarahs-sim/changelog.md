@@ -16,6 +16,7 @@ What the Developer has built, newest first. The Designer reads this before every
   - Now every floor below is drawn, with its walls as the walls button says.
   - With walls up you see the whole brick building; cut away shows each floor below with its near walls low.
   - The flight up from the floor below only shows over the walls when they aren't up.
+- **Sarah's phone is an iPhone 15 Pro Max (430 × 932, Dynamic Island).** The check tests that size first, with its 59 px top and 34 px bottom safe areas. The title bar sits below the Dynamic Island, the controls sit above the home bar, and the game fills the space between them. The bible's Sarah's phone To do is ticked. Screen: `src/dist/screen-iphone15promax-430x932.png`, with the Island and home bar drawn in where they sit.
 - **Nothing is lost mid-move.** While a piece is lifted to move, it's out of the home. A save at that moment (the app closing mid-move) now keeps it, and what's stacked on it, where it was.
 
 ### Checks

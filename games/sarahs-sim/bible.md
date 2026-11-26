@@ -14,7 +14,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 
 - [x] Setup: create this bible (Nov 25).
 - [x] Base look: warm and cozy isometric room approved (Nov 25). See Art.
-- [ ] Sarah's phone: Keegan finds out the model. It sets the target screen size.
+- [x] Sarah's phone: Keegan finds out the model. It sets the target screen size.
+  Done Nov 26: an iPhone 15 Pro Max (430 × 932, Dynamic Island). The game is tested there first, clear of the Dynamic Island and the home bar.
 - [x] Shell space: with the phone known, Keegan decides whether the game screen grows taller than the studio's 320 px cap to fill the space L and R leave (a plain question, no mockup needed).
   Done Nov 26: Keegan chose to grow it, for Sarah's Sim only. The room view now fills a tall phone from the title bar to the controls, with the tray at the bottom.
   Nov 25: L and R are dropped (Keegan). See Controls and screen. The taller screen still waits on the phone model.

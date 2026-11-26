@@ -609,7 +609,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       bad.push(...errors); await ctx.close();
     }
     // 4. the shell's title bar sits below a notched phone's status bar, and nothing falls off the bottom
-    for (const [w, h, top, bot] of [[375, 667, 20, 0], [375, 812, 47, 34], [390, 844, 47, 34], [430, 932, 59, 34]]) {
+    for (const [w, h, top, bot] of [[430, 932, 59, 34], [375, 667, 20, 0], [375, 812, 47, 34], [390, 844, 47, 34]]) {   // Sarah's iPhone 15 Pro Max first (Dynamic Island: 59 px top, 34 px home bar)
       const { ctx, page, errors } = await fresh({ w, h, init: () => localStorage.setItem('ss.gift', '1') });
       await page.evaluate(t => { document.documentElement.style.setProperty('--safe-top', t[0] + 'px'); document.documentElement.style.setProperty('--safe-bottom', t[1] + 'px'); }, [top, bot]);
       await page.waitForTimeout(200);
