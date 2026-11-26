@@ -2,6 +2,30 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 26, 2026: idle Sarah and her phone (Dev)
+
+Spec 006 part D, the rest that doesn't wait on another part. Rules and content, with no new screens.
+
+- **Idle Sarah:** when Life opens, Sarah is in the middle of something from the time of day's pool: scrolling on her phone on the sofa (or in bed, late at night), painting, or reading. As soon as she taps anything, Sarah stops and is hers to play.
+- **The pool is private data.** The placeholder file has a short generic list built from the bible's public summary.
+- **Her phone:**
+  - While she scrolls, the battery runs down, only while the game is open (about 15 minutes of scrolling from full).
+  - When it's low, a red low-battery icon blinks over her head and she holds the phone up.
+  - Tapping Sarah shows her battery and Charge beside her meters. Charge starts the hunt: the charger is never where she left it. It's under a couch cushion, in the bed sheets, or under Ralph, from a pool that doesn't repeat until it's used up (saved).
+  - Tapping the wrong spot gets a sigh; the right one finds it. Her phone then charges over about 3 minutes of play.
+  - The first time, a bouncing marker shows the spot as a hint. B gives up for now.
+- **What a dead phone affects:** calls and photos aren't built yet, so a dead phone changes nothing else today.
+- `npm run check` now tests:
+  - Sarah starts idle;
+  - the battery runs down while she scrolls;
+  - Charge shows when it's low;
+  - a wrong guess, the right spot, and charging to full;
+  - no repeated hiding spot before the pool runs out.
+
+### Changes from the spec
+
+- Keegan handing her his charger when he walks by is left for later. It's a small extra moment, and it fits better once his day has more to it.
+
 ## Nov 26, 2026: Keegan's day (Dev)
 
 Spec 006 part D, Keegan's idle life. Rules and content, with no new screens.

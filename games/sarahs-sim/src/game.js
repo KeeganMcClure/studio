@@ -47,8 +47,8 @@
     if (mode === 'life') lampPhase(true);
     G.tray.open = mode === 'sandbox';
     G.floor = 0; G.walls = 'cut';
-    SS.makeAgents(G); G.sarahF = undefined; SS.startKeeganDay(G);
-    G.sel = null; centerCam(true);
+    SS.makeAgents(G); G.sarahF = undefined; G.idle = null; G.hunt = null; G.charging = false; SS.startKeeganDay(G);
+    G.sel = null; centerCam(true); SS.startSarahIdle(G);
     G.screen = 'home';
     G.changed(true);
   }
@@ -286,13 +286,14 @@
   function openBubble(target, tip) {
     var acts = SS.actionsFor(G, target);
     if (!acts) { G.toast('NOTHING TO DO WITH THIS YET', 1000); return; }
-    var title = target.agent ? (target.agent.who.toUpperCase() + (target.agent.who === 'keegan' ? ' · AT HIS DESK' : '')) : target.door ? 'BACK DOOR' : SS.DEF[target.piece.id].name.toUpperCase();
+    var title = target.agent && target.agent.who === 'sarah' ? 'SARAH · ' + Math.round(SS.phoneOf(G) * 100) + '% BATTERY' : target.agent ? (target.agent.who.toUpperCase() + (target.agent.who === 'keegan' ? ' · AT HIS DESK' : '')) : target.door ? 'BACK DOOR' : SS.DEF[target.piece.id].name.toUpperCase();
     if (target.agent && target.agent.who === 'keegan') title = 'KEEGAN' + (G.kday ? ' · ' + G.kday.text.toUpperCase() : '');
     G.bubble = { target: target, actions: acts, cur: 0, tip: tip, title: title };
   }
   G.doBubble = function (i) {
     var b = G.bubble; if (!b) return; var a = b.actions[i]; G.bubble = null;
     if (a.soon) { G.toast(a.name + (a.sub ? ' ' + a.sub : '') + ': COMING SOON', 1800, a.soon); return; }
+    if (a.fx === 'charge') { G.meters = null; SS.startHunt(G); return; }
     G.meters = null;
     var r = SS.chooseAction(G, b.target, a);
     if (r === 'busy') G.toast('KEEGAN IS ' + G.kday.text.toUpperCase(), 2000, 'It\'s lined up for when he\'s done.');
@@ -320,8 +321,12 @@
     var playing = G.mode === 'life' && G.trayState() === 'closed';
     if (playing) {
       G.bubble = null; G.meters = null;
+      if (G.hunt) { SS.huntTap(G, pick); return; }   // looking for the charger: each tap is a guess
       if (pick && pick.agent) {
-        if (pick.agent.who === 'sarah') { G.meters = G.meters === 'sarah' ? null : 'sarah'; return; }   // her three meters (spec 006, part C)
+        if (pick.agent.who === 'sarah') { // her three meters (spec 006, part C), and Charge when her phone needs it (part D)
+          if (SS.actionsFor(G, { agent: pick.agent })) { openBubble({ agent: pick.agent }, [p.x, p.y - 8]); G.meters = 'sarah'; } else G.meters = G.meters === 'sarah' ? null : 'sarah';
+          return;
+        }
         openBubble({ agent: pick.agent }, [p.x, p.y - 8]); G.meters = pick.agent.who === 'keegan' ? 'keegan' : null; return;
       }
       if (pick && pick.piece) { var d = W.def(pick.piece); if (d.use) { openBubble({ piece: pick.piece }, [p.x, p.y - 8]); return; } }
@@ -401,6 +406,7 @@
     if (G.toastT && k === 'a' && !G.hold && !G.bubble) { G.toastT = null; return; }
     if (k === 'start') { G.openMenu(); return; }
     if (G.meters && k === 'b' && !G.bubble) { G.meters = null; return; }
+    if (G.hunt && k === 'b') { G.hunt = null; G.toast('MAYBE LATER', 800); return; }
     if (G.bubble) { var b = G.bubble; if (k === 'b') G.meters = null; if (k === 'left' || k === 'up') b.cur = (b.cur + b.actions.length - 1) % b.actions.length; if (k === 'right' || k === 'down') b.cur = (b.cur + 1) % b.actions.length; if (k === 'a') G.doBubble(b.cur); if (k === 'b') G.bubble = null; return; }
     if (G.hold) { if (k === 'a') placeHold(); else if (k === 'b') cancelHold(false); else if (k === 'select') turnHold(); else if (DIRS[k]) moveHold(k); return; }
     if (G.focus === 'cards') {
@@ -522,6 +528,7 @@
       ghost = ghostItem(Hd, t);
     }
     G.cam.fit(W0, H);
+    var hg = SS.huntGlow(G); if (hg && hg.f === G.floor) glows.push({ tiles: hg.tiles, ok: true });
     var selP = G.sel && W.byUid[G.sel];
     if (selP && !selP.wall && W.floorOf(selP) === G.floor) { var fs = W.foot(selP.host ? W.hostOf(selP) : selP), st = []; for (var sx2 = fs[0]; sx2 < fs[2]; sx2++) for (var sy2 = fs[1]; sy2 < fs[3]; sy2++) st.push([sx2, sy2]); glows.push({ tiles: st, sel: true }); }
     var hits = SS.drawScene(wc, W, { version: G.version + ':' + (G.hold ? G.hold.from : ''), floor: G.floor, walls: G.walls, t: t, look: G.look, agents: G.agents, glows: glows, ghost: ghost, sel: G.sel });
@@ -549,6 +556,14 @@
     var hint = G.hold ? (G.hold.ok ? 'DRAG TO MOVE · TAP IT TO TURN · OK PLACES' : (G.hold.why === 'DOORWAY' ? 'KEEP DOORWAYS CLEAR' : G.hold.why === 'NEEDS A WINDOW' ? 'CURTAINS GO ON A WINDOW' : G.hold.why === 'STAIRS' ? 'KEEP THE STAIRS CLEAR' : 'IT DOESN\'T FIT HERE'))
       : G.trayState() === 'catalog' ? 'DRAG A PIECE INTO THE ROOM' : G.trayState() === 'closed' && G.mode === 'life' ? 'TAP THE FLOOR TO WALK · TAP THINGS TO DO' : G.sel ? 'TAP A SWATCH · PAINT ANY PART' : '';
     if (hint && !G.menu) SS.txt(hint, W0 / 2, H - trayH - 12, 'rgba(255,241,226,.85)', 5, 'center');
+    // the charger hunt's hint: a bouncing marker over the spot, the first time (spec 006, part D)
+    var hint = SS.huntGlow(G);
+    if (hint && hint.f === G.floor) {
+      var hp = hint.agent ? I.p(hint.agent.x, hint.agent.y, hint.f * FH + 26) : selTop(hint.piece), hs = toScreen(hp[0], hp[1]), bob = Math.round(Math.sin(now / 200) * 2);
+      var mx = Math.round(hs[0]), my = Math.round(hs[1] - 6 + bob);
+      SS.R(mx - 5, my - 11, 11, 10, '#3b2430'); SS.R(mx - 4, my - 10, 9, 8, SS.P.rose); SS.txt('?', mx + 1, my - 9, '#fff', 6, 'center');
+      SS.R(mx - 1, my - 2, 3, 2, SS.P.rose); SS.R(mx, my, 1, 2, SS.P.rose);
+    }
     if (G.sleeping) sleepScene(H - trayH, now);
     SS.drawTopBar(G, W0);
     SS.drawViewControls(G, W0, G.mode === 'life' && (G.act || G.queue.length) ? 40 : 24, H - trayH - 16);

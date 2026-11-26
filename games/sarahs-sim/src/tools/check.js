@@ -328,7 +328,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       const uses = {}; W.pieces.forEach(p => { const u = W.def(p).use; if (u && !uses[u]) uses[u] = p; });
       if (G.kday) G.kday.busy = false;   // Keegan free for the together actions (his busy time is checked below)
       Object.keys(SS.ACTIONS).forEach(k => {
-        if (k === 'cat' || k === 'keegan' || k === 'backdoor' || k === 'meal') return;
+        if (k === 'cat' || k === 'keegan' || k === 'backdoor' || k === 'meal' || k === 'sarah') return;
         const p = uses[k]; if (!p) { out.push('no piece in the home for ' + k); return; }
         SS.ACTIONS[k].forEach(a => { if (a.soon) return; const r = SS.chooseAction(G, { piece: p }, a); if (r !== 'now') out.push(a.name + ' on ' + p.id + ' did not start'); let started = false; for (let i = 0; i < 2400 && G.act; i++) { SS.updateAgents(G, .05); if (G.act && G.act.started) started = true; } if (!started) out.push(a.name + ' on ' + p.id + ': Sarah never got there'); });
       });
@@ -393,6 +393,27 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       return out;
     });
     day.forEach(a => bad.push(a));
+    // spec 006, part D: idle Sarah and her phone
+    const phone = await page.evaluate(() => {
+      const G = SSG, out = [], W = G.W, run = n => { for (let i = 0; i < n; i++) SS.updateAgents(G, .05); };
+      SS.stopActions(G); G.hunt = null; G.charging = false; SS.setClock(20, 0); SS.startSarahIdle(G);
+      if (!G.idle) { out.push('Sarah is not in the middle of anything when Life opens'); return out; }
+      G.idle.phone = true; G.save.phone = .5; run(1200);
+      if (!(G.save.phone < .5)) out.push('the phone does not run down while she scrolls');
+      G.save.phone = .1;
+      if (!SS.actionsFor(G, { agent: G.people.sarah })) out.push('tapping Sarah with a low phone does not show Charge');
+      SS.startHunt(G); const h = G.hunt.hide;
+      const wrong = W.pieces.find(p => W.def(p).use === 'desk');
+      SS.huntTap(G, { piece: wrong }); if (!G.hunt) out.push('a wrong guess finds the charger');
+      const right = h.cat ? { agent: G.cats[h.cat] } : { piece: W.pieces.find(p => W.def(p).use === h.use) };
+      SS.huntTap(G, right); if (G.hunt || !G.charging) out.push('the right spot does not find the charger (' + h.key + ')');
+      run(4000); if (G.save.phone < .99) out.push('the phone does not charge in a few minutes of play');
+      // the hiding spots don't repeat until they're used up
+      G.save.shown.charger = []; const keys = []; for (let i = 0; i < 3; i++) { SS.startHunt(G); keys.push(G.hunt.hide.key); G.hunt = null; }
+      if (new Set(keys).size !== 3) out.push('the charger hides in the same spot twice before the pool runs out: ' + keys);
+      return out;
+    });
+    phone.forEach(a => bad.push(a));
     // spec 006, part D: the cats' needs only nudge, and each one's fix clears it
     const cats = await page.evaluate(() => {
       const G = SSG, out = [], W = G.W, run = n => { for (let i = 0; i < n; i++) SS.updateAgents(G, .05); };
@@ -420,7 +441,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     if (await page.evaluate(() => { SSG.openMode('sandbox'); return !!SS.lowNeed(SSG, 'sarah') || SSG.mode !== 'sandbox'; })) bad.push('Sandbox has needs');
     const soon = await page.evaluate(() => { const need = ['COOK', 'FIND A GIG', 'CHANGE', 'GO TO', 'VIDEO-CALL', 'WIND DOWN']; const all = [].concat.apply([], Object.keys(SS.ACTIONS).map(k => SS.ACTIONS[k])); return need.filter(n => !all.some(a => a.name === n && a.soon)); });
     soon.forEach(n => bad.push(n + ' does not show Coming soon'));
-    report('spec 006: four light looks, lamps at 5 PM, walking up the stairs, every starter action, crafts, the queue; needs; together actions; the cats\' needs; Keegan\'s day', bad.concat(errors));
+    report('spec 006: four light looks, lamps at 5 PM, walking up the stairs, every starter action, crafts, the queue; needs; together actions; the cats\' needs; Keegan\'s day; her phone', bad.concat(errors));
     await ctx.close();
   }
 

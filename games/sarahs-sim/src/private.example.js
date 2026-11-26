@@ -7,6 +7,14 @@ window.SS_PRIVATE = {
   // the first-open gift card (spec 001, part A): lines in order, then who signed it
   christmas: { lines: ['Merry Christmas,', 'Sarah.'], sign: 'Keegan' },
   // for later specs; the placeholder keeps the shape so nothing breaks when they're built
+  // idle Sarah (spec 006, part D): what she's in the middle of when Life opens. PLACEHOLDER: generic entries from the bible's
+  // public summary (doomscrolling, painting, reading); phone: true means she's on her phone (its battery runs down)
+  sarahIdle: {
+    morning: [{ text: 'Scrolling on her phone', at: 'sofa', phone: true }, { text: 'Painting', at: 'easel' }],
+    daytime: [{ text: 'Scrolling on her phone', at: 'sofa', phone: true }, { text: 'Reading', at: 'bookshelf' }],
+    evening: [{ text: 'Scrolling on her phone', at: 'sofa', phone: true }, { text: 'Painting', at: 'easel' }],
+    lateNight: [{ text: 'Scrolling in bed', at: 'bed', phone: true }]
+  },
   notes: [],
   // Keegan's idle life (spec 006, part D): what he's busy with at each time of day. Each entry: what the People card and his
   // bubble say, where he does it (a piece's Life use: desk, sofa, stove, bed, bookshelf, chair, tv), and busy: true for things

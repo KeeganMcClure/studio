@@ -262,9 +262,10 @@
       if (a.kind === 'cat') catThink(G, a, dt);
       if (a.on && !G.W.byUid[a.on]) getUp(G.W, a);   // her seat was moved or put away
     });
-    if (G.mode === 'life') { runActions(G, dt); SS.tickNeeds(G, dt); keeganDay(G, dt); }
+    if (G.mode === 'life') { runActions(G, dt); SS.tickNeeds(G, dt); keeganDay(G, dt); SS.tickPhone(G, dt); }
   };
   SS.agentGetUp = function (G, a) { getUp(G.W, a); };
+  SS.seatSarah = function (G, p, pose) { seatOn(G.W, G.people.sarah, p, pose); };
 
   // ---------- Sarah's actions (spec 006, part B, Starter actions) ----------
   // dur in seconds. how: 'sit' | 'lie' | 'stand' | 'tub'. soon: shows "Coming soon" in the bubble (parts not built yet)
@@ -290,18 +291,20 @@
       { name: 'COOK', sub: 'TOGETHER', icon: 'pan', soon: 'Cooking together comes with the Cooking screen.' }, { name: 'WIND DOWN', sub: 'TOGETHER', icon: 'star', soon: 'Winding down comes with its own pieces.' }],
     bowl: [{ name: 'FILL', sub: 'THE BOWL', icon: 'treat', dur: 4, how: 'stand', fx: 'fill' }],
     litter: [{ name: 'SCOOP', icon: 'star', dur: 6, how: 'stand', fx: 'scoop' }],
+    sarah: [{ name: 'CHARGE', sub: 'HER PHONE', icon: 'lamp', fx: 'charge', instant: true }],
     meal: [{ name: 'EAT', icon: 'snack', dur: 8, how: 'stand', fx: 'eat', fill: { hunger: .6, fun: .05 } }],
     backdoor: [{ name: 'GO TO', sub: 'THE YARD', icon: 'star', soon: 'The yard comes in its own part.' }]
   };
   SS.ACTIONS = ACTIONS;
   SS.actionsFor = function (G, target) {
-    if (target.agent) { if (target.agent.kind === 'cat') return ACTIONS.cat; if (target.agent.who === 'keegan') return ACTIONS.keegan; return null; }
+    if (target.agent) { if (target.agent.kind === 'cat') return ACTIONS.cat; if (target.agent.who === 'keegan') return ACTIONS.keegan; return SS.phoneOf(G) < .99 && !G.charging && !G.hunt ? ACTIONS.sarah : null; }
     if (target.door) return ACTIONS.backdoor;
     var d = G.W.def(target.piece); return d.use ? ACTIONS[d.use] : null;
   };
   // she picked an action: do it now, or line it up (up to 3)
   SS.chooseAction = function (G, target, act) {
     if (act.soon || !act.dur) return 'soon';
+    SS.stopSarahIdle(G);   // she taps anything: Sarah stops and is hers to play
     if (G.kday && G.kday.busy && (act.together || act.both)) { G.waitK0 = { target: target, act: act }; return 'busy'; }
     if (act.with) {
       var W = G.W, s = G.people.sarah, f = s.f;
@@ -315,6 +318,7 @@
     startJob(G, job); return 'now';
   };
   SS.stopActions = function (G) { // tapping anywhere else stops the action; nothing is lost
+    SS.stopSarahIdle(G);
     var s = G.people.sarah; if (G.act) finishJob(G, true); G.queue = []; s.path = []; s.arrive = null; getUp(G.W, s);
   };
   function targetTiles(G, tg) {
