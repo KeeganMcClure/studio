@@ -86,10 +86,10 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Neighborhood | Walk to a neighbor's home to help redo it | `specs/008-visitors-and-neighborhood.md` | **To draw** |
 | Memory book | Flip through moments, notes and photos | `specs/007-memory-book-and-notes.md` | **To draw** |
 | Note found | Read a note from Keegan she found in the home | `specs/007-memory-book-and-notes.md` | **To draw** |
-| Favorites | Save and reuse whole rooms and outfits | `specs/001-home-and-decorating.md` | **To draw** |
-| Camera | Take a clean picture of a room or outfit | `specs/001-home-and-decorating.md` | **To draw** |
+| Favorites | Save and reuse whole rooms and outfits | `specs/001-home-and-decorating.md` | `favorites-v1` (approved Nov 25, 2026) |
+| Camera | Take a clean picture of a room or outfit | `specs/001-home-and-decorating.md` | `camera-v1` (approved Nov 25, 2026) |
 | Challenges | Pick a challenge and see how you did | `specs/010-challenges.md` | **To draw** |
-| Start menu | Save, homes, people, quit to title | `specs/001-home-and-decorating.md` | **To draw** |
+| Start menu | Save, homes, people, quit to title | `specs/001-home-and-decorating.md` | `start-menu-v1` (approved Nov 25, 2026) |
 
 ## Overview
 
@@ -533,6 +533,7 @@ Set Nov 25 (Keegan). The studio rules in `studio-bible/saves.md` apply (autosave
 - **View** (Keegan, Nov 25): isometric, the diagonal view of classic life sims (2:1, the approved mockup uses 22 × 11 px floor tiles). **Named exception** to `studio-bible/art-style.md` (Craft: Maps are 3/4 top-down). Light still comes from the upper left: left-front faces lit, right-front faces in shade.
 - **Base look** (approved Nov 25): `mockups/look-iso-v1` (drawing code in `look-iso-v1.js`). It sets the palette, the plank floor, striped wallpaper with a wainscot, the lamp glow, the cream tray with rose tabs and the top bar. The people and cats in it are stand-ins until the reference sheet.
 - All the studio Craft rules apply on top: lit, dressed and alive rooms, soft shadows under everything, dark outlines.
+- **Menu surface** (Keegan, Nov 25; `studio-bible/ui.md`, Each game has a menu surface): every menu is drawn on the cream card with a rose border and a stitched inner line, as on the title and in `mockups/start-menu-v1`. The picked row is solid rose with white text. Text uses the tray ink.
 
 ### Palette
 

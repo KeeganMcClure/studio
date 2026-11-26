@@ -409,7 +409,12 @@
     });
     btn(6, y + 74, 110, 'BACK TO SWATCHES', false); btn(124, y + 74, 110, 'DONE', true);
   }
-  window.drawDecorate = function (ctx, W, H, t, st) {
+  window.drawDecorate = function (ctx, W, H, t, st, theme) {
+    // theme (optional): palette swaps for a recolored room, used by the favorites thumbnails
+    var saved = {}, k0; if (theme) for (k0 in theme) { saved[k0] = P[k0]; P[k0] = theme[k0]; }
+    try { drawDecorateInner(ctx, W, H, t, st); } finally { for (k0 in saved) P[k0] = saved[k0]; }
+  };
+  function drawDecorateInner(ctx, W, H, t, st) {
     st = st || 'catalog';
     c = ctx; t = t || 0;
     var g = c.createRadialGradient(W / 2, H * .45, 20, W / 2, H * .45, W); g.addColorStop(0, P.bg1); g.addColorStop(1, P.bg2);
@@ -444,7 +449,11 @@
       hair: function (x, y) { R(x - 7, y - 3, 14, 6, '#3b2a22'); R(x - 7, y - 3, 7, 2, '#5a4034'); R(x - 7, y + 1, 2, 4, '#3b2a22'); R(x + 5, y + 1, 2, 4, '#2a1d17'); }
     }, t + 2);
     catSit(iso(2.2, 7.6)[0], iso(2.2, 7.6)[1], ['#6d6670', '#504a55', '#e8e2e6'], t, 5);
-    if (st === 'catalog') {
+    if (st === 'bare') { // the room alone, no top bar or tray (the camera's clean picture, favorites thumbnails)
+      armchair(6.3, 6.4, RUST); mushroomLamp(3.5, 3.6, 11, t);
+    } else if (st === 'home') { // the home at rest: the lamp on the table, the catalog tray open (used behind the Start menu)
+      armchair(6.3, 6.4, RUST); mushroomLamp(3.5, 3.6, 11, t); topBar(W); catalogTray(W, H);
+    } else if (st === 'catalog') {
       armchair(6.3, 6.4, RUST);
       // the mushroom lamp, dragged in from the Ours tab, about to stack on the coffee table
       var lift = 10 + Math.round(Math.sin(t / 2));
@@ -465,5 +474,5 @@
       topBar(W);
       if (st === 'paint') paintTray(W, H); else pieceTray(W, H, 'RUST ARMCHAIR', 0);
     }
-  };
+  }
 })();

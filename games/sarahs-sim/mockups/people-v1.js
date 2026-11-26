@@ -198,7 +198,6 @@
   }
   function shadow(c, x, y, w) { c.fillStyle = 'rgba(90,45,40,.25)'; c.beginPath(); c.ellipse(x, y, w / 2, w / 5, 0, 0, 7); c.fill(); }
 
-  window.SS_SARAH = sarahSprite; window.SS_KEEGAN = keeganSprite; // shared with later mockups
   window.drawPeopleSheet = function (c, W, H, t) {
     c.imageSmoothingEnabled = false;
     c.fillStyle = '#fff6ea'; c.fillRect(0, 0, W, H);
@@ -237,4 +236,6 @@
     c.font = '8px "Press Start 2P", monospace'; c.fillStyle = '#6b4250';
     ['Bright orange fitted tee', 'White rounded letters', 'Front: ORANGE ROCKS', 'Back: AND SO DO I', 'In the Style catalog from', ' the start, for Sarah and', ' anyone she makes'].forEach(function (w, i) { c.fillText(w, 440, oy + 50 + i * 16); });
   };
+  window.SS_PORTRAITS = { sarah: sarahPortrait, keegan: keeganPortrait };
+  window.SS_SPRITES = { sarah: sarahSprite, keegan: keeganSprite };
 })();
