@@ -101,6 +101,7 @@ People have three soft needs (bible, Needs):
 - **Rates** (*Claude default*): from full to low takes about 40 minutes of play. Nothing drains while the game is closed.
 - **Low needs:** below a quarter, Sarah yawns, sighs or her tummy rumbles, and actions take a little longer. That's all that happens (bible, Needs; pillar 3). No need can hurt her, stop her doing anything or end anything.
 - **Meters:** tapping Sarah shows her three meters beside the action bubble, each with its icon and word (`studio-bible/ui.md`). The meters are hidden the rest of the time, to keep the room clean.
+- **What she's doing** (Keegan, Nov 26): tapping Sarah also shows what she's doing right now at the top of her bubble, the same way Keegan's bubble does (for example "Sarah · Doomscrolling", with her phone battery under it). When she isn't doing anything, it just says her name.
 - **Keegan's needs:** he has the same three, but he looks after them himself as part of idle life. They're shown only when she taps him.
 - **Sandbox:** no needs (bible, Modes).
 
@@ -132,6 +133,7 @@ People have three soft needs (bible, Needs):
 - Doomscrolling on her phone is one of Sarah's idle activities, at any time of day. She's curled up somewhere and thumbing away.
 - **Always about to die:** her phone has a little battery that runs down while she scrolls, calls or takes photos (bible, Keeping designs). When it's low, a red low-battery icon pops over her head and she holds the phone up with a look of despair.
   - Tapping her shows **Charge**, and she goes looking for the charger. The charger is never where she left it: it's under a couch cushion, in the bed sheets, or under Ralph. Finding it is a quick tap on the right spot, with the first spot glowing as a hint.
+    - **Hiding spots show** (Keegan, Nov 26): during a hunt, a small bouncing question mark floats over every place the charger could be in her home (each couch cushion, the bed sheets, Ralph, and any other spot in the pool), so she's picking between spots, not tapping blindly. A wrong spot gets a sigh and its question mark goes away; the right one finds the charger. The marks only show during a hunt and leave when it ends or she gives up.
   - Keegan may hand her his charger if he walks by, as a little together moment.
   - A dead phone just means no calls or photos until it's charged, which takes a few minutes of play. Nothing else is lost (pillar 3).
   - *Claude default:* the battery drains only while the game is open, like the needs, and the charger hides in a different spot each time, from a pool that doesn't repeat until it's used up (`studio-bible/play.md`).

@@ -8,7 +8,7 @@ This is the first part of the game to be built, and the one everything else stan
 
 The first time Sarah opens the game on Christmas, she unwraps a gift, and it opens onto a red-brick Philly rowhouse on a snowy night with a line from Keegan. Every time after that, she lands on the same snowy house with a small menu: Continue, Sandbox, Life and Challenges.
 
-Inside is their future home in Philly: three floors of cozy rooms, Louie and Ralph, and their real things once Keegan's photos are drawn. She sees it in the diagonal view, zooms with two fingers, slides around, and flips the walls up, cut away or down to see inside.
+Inside is their future home in Philly: three floors of cozy rooms, Louie and Ralph, and their real things once Keegan's photos are drawn. She sees it in the diagonal view, zooms with two fingers, slides around, flips the walls up, cut away or down to see inside, and turns the whole home to see it from any of its 4 sides.
 
 Decorating is the heart of it. She opens the catalog, drags a sofa into the room, turns it, and taps it to pick new colors. Small things stack on tables and shelves, pictures hang on walls, and every piece can be painted part by part. Each piece comes dressed with little props, which she can switch off. She can save a room she loves as a favorite and take a clean picture of it.
 
@@ -24,7 +24,7 @@ The bible wins over this spec (`studio-bible/studio.md`, Specs). Rules are linke
 | `games/sarahs-sim/bible.md` | Homes and people | The starter home is their future Philly rowhouse; the cats; Keegan and Sarah; room size |
 | `games/sarahs-sim/bible.md` | Decorating | Catalog size and tabs, placing, picking a placed piece, swatches and paint mode, the Sandbox top bar |
 | `games/sarahs-sim/bible.md` | Decorating → Furniture art | Rich detail, texture under any color, props both ways, which pieces move, the chair rules |
-| `games/sarahs-sim/bible.md` | Building | The view controls (pinch, pan, walls up / cut / down, floors 1 to 3, no rotation) and lot sizes |
+| `games/sarahs-sim/bible.md` | Building | The view controls (pinch, pan, walls up / cut / down, floors 1 to 3, turning the home) and lot sizes |
 | `games/sarahs-sim/bible.md` | Play → Keeping designs | Favorites and the camera |
 | `games/sarahs-sim/bible.md` | Play → Coins and prices | Furniture prices in Life mode (read by spec 006) |
 | `games/sarahs-sim/bible.md` | Saves | One save per mode, favorites shared, backup files and reminders |
@@ -93,11 +93,22 @@ These rows already exist in the bible's Screens table. This PR points them at th
 - Pinch to zoom between the whole floor and a close view of one corner. Two fingers drag to slide around. The D-pad slides too.
 - The floors buttons (1, 2, 3) pick which floor she sees. The floor below shows dimmed under it.
 - The walls button cycles walls up, cut away (back walls up, front walls low) and down.
-- No whole-home rotation. Furniture turns 4 ways.
+- **Turning the home** (bible, Building, Turning the home): the turn button spins the whole home a quarter turn clockwise, so 4 taps bring it back to the front. Furniture still turns 4 ways on its own (part C).
+
+**What turning the home touches:**
+
+- **Where the button sits:** in the view controls on the right, under the walls button, the same size and style as the floors and walls buttons (`build-v1`), with a curved-arrow icon. It shows on every home screen, in every mode. *Claude default.*
+- **Buttons:** with nothing picked, Select turns the home. With a piece picked or held, Select turns the piece, as now (part C). The shell has no L or R (bible, Controls and screen). *Claude default.*
+- **Walls follow the view:** cut away and walls down always lower the walls nearest her in the view she's in, and keep the far walls up. December's string lights stay on the walls that are up.
+- **Wall pieces:** art, shelves, mirrors and clocks can hang on either side of any wall. Each piece remembers its side. When that side faces away, it's hidden behind the wall like in a real room, and shows again when the walls are cut away or down.
+- **Everything else turns with it:** furniture, stacked things, rugs, doors, windows, stairs, the yard, the cats and the two of them are drawn from the new side. Each piece uses the 4 turns already on the contact sheet, so no new art is needed for furniture.
+- **Taps and drags still land right:** placing, moving, stacking, tap-to-walk (spec 006) and the Build tools (spec 004) work the same in every view, and the D-pad moves a held piece in the direction it points on screen.
+- **The camera stays put:** the turn keeps the same spot in the middle of the screen and the same zoom. A quick spin or fade under half a second is fine, so she can tell which way it turned. *Claude default.*
+- **Saved:** each home remembers the view she left it in.
 
 **The cats and the two of them.** In Sandbox, Louie and Ralph wander, nap on furniture she places, and react to new pieces (bible, The cats). Keegan and Sarah stand or sit somewhere fitting in the home and can be tapped to open Style (spec 002). How they live their day is Life mode (spec 006).
 
-**Done when:** she can zoom, slide, flip floors and walls on a 3-floor home with one thumb and two fingers, at 375 × 667 and 320 × 480, and the view never shows a cut-off room or the tray over a selected piece.
+**Done when:** she can zoom, slide, flip floors and walls and turn the home to all 4 sides on a 3-floor home with one thumb and two fingers, at 375 × 667 and 320 × 480, and the view never shows a cut-off room or the tray over a selected piece.
 
 ## Part C: Placing pieces
 
@@ -238,6 +249,8 @@ These follow the bible but fill in details it doesn't set. Keegan can change any
 
 - Winter and December lights on the title are built first; the other seasons come before Dec 25 if time allows.
 - Select turns a held piece when she's using buttons.
+- Select turns the home when nothing is picked.
+- The turn button sits under the walls button, and the turn keeps the same spot and zoom with a quick spin or fade.
 - Undo covers the last 10 changes in a home.
 - The Start menu rows and the Homes list.
 - Using a room favorite places what fits and stores the rest.
