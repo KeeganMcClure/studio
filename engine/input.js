@@ -45,7 +45,7 @@
 
     // A, B, L, R, Start, Select: on tap
     [['#bA', 'a'], ['#bB', 'b'], ['#bL', 'l'], ['#bR', 'r'], ['#bStart', 'start'], ['#bSel', 'select']].forEach(function (p) {
-      $(p[0]).addEventListener('click', function () { press(p[1]); });
+      var el = $(p[0]); if (el) el.addEventListener('click', function () { press(p[1]); });   // L and R may be left out (shell.js)
     });
 
     // Keyboard, for testing on a computer

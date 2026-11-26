@@ -1,0 +1,7 @@
+{
+  "id": "sarahs-sim",
+  "title": "Sarah's Sim",
+  "savePrefix": "ss.",
+  "cover": "cover.js",
+  "channels": ["dev"]
+}
