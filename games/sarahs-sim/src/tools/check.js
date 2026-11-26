@@ -485,6 +485,60 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     await ctx.close();
   }
 
+  // ---------- 6b. Sarah's playtest bugs (Nov 26) ----------
+  {
+    const bad = [];
+    // 1. the charger hunt never takes over every tap: a tap on the floor stops looking and walks her there
+    {
+      const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+      await page.evaluate(() => { SSG.confirm = null; SS.setClock(14, 0); SSG.openMode('life'); SS.stopSarahIdle(SSG); SS.stopActions(SSG); SSG.setFloor(0); SS.startHunt(SSG); SSG.toastT = null; });
+      await page.waitForTimeout(200);
+      await tapAt(page, 120, 150);
+      const r = await page.evaluate(() => ({ hunt: !!SSG.hunt, walking: SSG.people.sarah.path.length > 0 }));
+      if (r.hunt) bad.push('a tap on the floor during the charger hunt does not stop looking');
+      if (!r.walking) bad.push('a tap on the floor during the charger hunt does not walk Sarah there');
+      const spots = await page.evaluate(() => { const G = SSG, W = G.W, by = u => ({ piece: W.pieces.find(p => W.def(p).use === u) });
+        return { keegan: SS.huntSpot(G, { agent: G.people.keegan }), fridge: SS.huntSpot(G, by('fridge')), sofa: SS.huntSpot(G, by('sofa')), bed: SS.huntSpot(G, by('bed')), cat: SS.huntSpot(G, { agent: G.cats.ralph }), floor: SS.huntSpot(G, null) }; });
+      if (spots.keegan || spots.fridge || spots.floor) bad.push('Keegan, the fridge or the floor count as charger guesses');
+      if (!spots.sofa || !spots.bed || !spots.cat) bad.push('a sofa, a bed or a cat does not count as a charger guess');
+      // 3. wall pieces never draw over a piece standing in front of them (the kitchen curtains over the counter)
+      const over = await page.evaluate(async () => {
+        const G = SSG, out = [];
+        for (const f of [0, 1, 2]) {
+          G.setFloor(f); await new Promise(r => setTimeout(r, 120));
+          const hits = G.lastHits || [];
+          hits.forEach(h => {
+            if (!h.p || h.rug || h.p.wall || h.p.host) return;
+            const d = h.sp.cv.getContext('2d').getImageData(0, 0, h.sp.cv.width, h.sp.cv.height).data, w = h.sp.cv.width;
+            let n = 0, by = null;
+            for (let y = 0; y < h.sp.cv.height; y += 2) for (let x = 0; x < w; x += 2) {
+              if (d[(y * w + x) * 4 + 3] < 200) continue;
+              const pk = SS.pick(hits, h.x + x + .5, h.y + y + .5, { noAgents: true });
+              if (pk && pk.piece && pk.piece.wall && G.W.def(pk.piece).w) { n++; by = pk.piece.id; }
+            }
+            if (n > 2) out.push(by + ' draws over the ' + h.p.id + ' on floor ' + (f + 1));
+          });
+        }
+        return out;
+      });
+      over.forEach(o => bad.push(o));
+      bad.push(...errors); await ctx.close();
+    }
+    // 4. the shell's title bar sits below a notched phone's status bar, and nothing falls off the bottom
+    for (const [w, h, top, bot] of [[375, 667, 20, 0], [375, 812, 47, 34], [390, 844, 47, 34]]) {
+      const { ctx, page, errors } = await fresh({ w, h, init: () => localStorage.setItem('ss.gift', '1') });
+      await page.evaluate(t => { document.documentElement.style.setProperty('--safe-top', t[0] + 'px'); document.documentElement.style.setProperty('--safe-bottom', t[1] + 'px'); }, [top, bot]);
+      await page.waitForTimeout(200);
+      const r = await page.evaluate(() => { const b = document.querySelector('.brand').getBoundingClientRect(), s = document.querySelector('.shell').getBoundingClientRect(); return { brand: b.top, shown: b.height > 0, shellBottom: s.bottom }; });
+      if (!r.shown) bad.push(w + ' x ' + h + ': the title bar is hidden');
+      if (r.brand < top) bad.push(w + ' x ' + h + ': the title bar sits under the status bar (' + Math.round(r.brand) + ' px from the top)');
+      if (r.shellBottom > h - bot + .5) bad.push(w + ' x ' + h + ': the shell runs under the home bar');
+      if (w === 375 && h === 812) await page.screenshot({ path: path.join(DIST, 'screen-notched-375x812.png') });
+      bad.push(...errors); await ctx.close();
+    }
+    report('Sarah\'s playtest (Nov 26): taps during the charger hunt, wall pieces behind what stands in front, the safe area', bad);
+  }
+
   // ---------- 7. test saves ----------
   {
     const dir = path.join(__dirname, '..', 'test-saves'), bad = [];
@@ -540,6 +594,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       ['paint', () => { SSG.openMode('sandbox'); SSG.select(SSG.W.pieces.find(p => p.id === 'club-armchair')); SSG.paint = { part: 0 }; }, null],
       ['menu', () => { SSG.openMode('sandbox'); SSG.openMenu(); }, null],
       ['life-night', () => { SS.setClock(21, 30); SSG.openMode('life'); }, null],
+      ['stairs', () => { SS.setClock(14, 0); SSG.openMode('life'); SSG.cam.zoom = 2; SSG.cam.x -= 40; }, null],
       ['life-bubble', () => { SS.setClock(10, 0); SSG.openMode('life'); SSG.setFloor(1); const k = SSG.people.keegan; SSG.bubble = { target: { agent: k }, actions: SS.ACTIONS.keegan, cur: 0, tip: [150, 150], title: 'KEEGAN · AT HIS DESK' }; }, null]
     ];
     for (const [name, fn] of shots) {

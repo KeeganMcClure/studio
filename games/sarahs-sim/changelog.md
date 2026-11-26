@@ -2,6 +2,35 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 26, 2026: Sarah's playtest bugs (Dev)
+
+Four bugs from Sarah's iPhone playtest of Nov 26, fixed on Dev.
+
+- **Every tap said "Not there" (spec 006 part B).** Tapping Sarah offers Charge, and once she was looking for the charger, every tap anywhere counted as a guess, with no way out except the B button. Now only a tap on a place the charger can hide (a sofa, a bed or a cat) is a guess. Any other tap stops looking and plays as usual: the floor walks her there, and a piece, a cat or Keegan opens the action bubble. The hunt's tip now says "Tap the floor to stop".
+- **The stairs read as stacked rectangles.** Each step's open side showed as its own tall box. Like `build-v1`, the open side is now one solid wooden side board (stringer) with a light top edge, and each step has a light front edge, so the flight reads as a staircase.
+- **The kitchen curtains drew over the counter.** Pieces on a wall (curtains, frames, shelves, the mirror, the clock) now sort as part of their wall. Anything standing in the room in front of them, like the counter and the sink under the kitchen window, always draws over them. Curtains also count the bit they hang past the window on each side.
+- **The title bar sat under the iPhone's clock and battery.** The game now keeps its shell below the phone's status bar and above the home bar (the iPhone "safe area"). On a phone without a notch it looks the same as before.
+
+### Checks
+
+- `npm run check` has a new section for these bugs:
+  - a floor tap during the charger hunt stops it and walks Sarah there;
+  - only sofas, beds and cats count as guesses;
+  - no wall piece draws over a piece standing in front of it, on all 3 floors;
+  - the title bar sits below the status bar at 375 × 667, 375 × 812 and 390 × 844, standing in for a notched phone's 47 px status bar and 34 px home bar.
+- New screens: `src/dist/screen-stairs-375x667.png` and `src/dist/screen-notched-375x812.png`.
+- Played in the browser at 375 × 667 and 375 × 812.
+
+### What's left
+
+- I couldn't test on a real iPhone here. The notch is stood in for in the browser, so it's worth a look on Sarah's phone.
+- Two older checks fail now and then and pass on a re-run: a save made just before a reload, and a cat knocking a thing off a table. They happened in 2 of 6 runs on this build and 0 of 3 on the build before it. These fixes don't touch that code. If they keep happening, I'll make those checks steadier.
+- Life After uses the same shared shell and may have the same status-bar problem. Black Lantern and Rushlight already handle it.
+
+### Changes from the spec
+
+- None.
+
 ## Nov 26, 2026: Christmas (Dev)
 
 Spec 009 build order 1: the Christmas season, Christmas Eve, Christmas morning and first snow, ready for Dec 25. Content and rules on the home screen, with no new screens.

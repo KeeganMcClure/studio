@@ -139,20 +139,32 @@
 
   // ---------- stairs and banisters ----------
   function stairItems(W, s, Z, items) { // a straight flight of steps rising toward its top, two steps a tile
-    var n = s.tiles.length * 2, dx = s.tiles[1][0] - s.tiles[0][0], dy = s.tiles[1][1] - s.tiles[0][1];
+    // Like build-v1: each step is a box with a light nosing on its front edge, and one solid stringer runs along the open
+    // side (the +x side of a flight along y, the +y side of a flight along x), so the run reads as one flight, not a stack.
+    var n = s.tiles.length * 2, L = s.tiles.length, dx = s.tiles[1][0] - s.tiles[0][0], dy = s.tiles[1][1] - s.tiles[0][1];
+    var rise = function (t) { return FH * ((t / L) * (n / (n + 1)) + 1 / (n + 1)); };   // the stringer's top, t tiles up the flight
     for (var k = 0; k < n; k++) {
       var tl = s.tiles[Math.floor(k / 2)], half = k % 2;
-      var x0 = tl[0] + (dx > 0 ? half * .5 : dx < 0 ? (1 - half) * .5 - 0 : 0), y0 = tl[1] + (dy > 0 ? half * .5 : dy < 0 ? (1 - half) * .5 : 0);
+      var x0 = tl[0] + (dx > 0 ? half * .5 : dx < 0 ? (1 - half) * .5 : 0), y0 = tl[1] + (dy > 0 ? half * .5 : dy < 0 ? (1 - half) * .5 : 0);
       var w = dx ? .5 : 1, d = dy ? .5 : 1;
-      if (dy < 0) y0 = tl[1] + (half ? 0 : .5);
-      if (dx < 0) x0 = tl[0] + (half ? 0 : .5);
       var h = FH * (k + 1) / (n + 1);
-      (function (x0, y0, w, d, h) {
+      (function (x0, y0, w, d, h, k) {
         items.push({ kind: 'step', x0: x0, x1: x0 + w, y0: y0, y1: y0 + d, z0: Z, z1: Z + h, draw: function (c) {
           I.box(c, x0, y0, w, d, h, Z, ['#ecbd8a', '#c48a58', '#a06a40']);
-          line(c, P(x0, y0 + d, Z + h), P(x0 + w, y0 + d, Z + h), '#fbe0bd');
+          // the nosing: the step's front edge, toward the bottom of the flight
+          if (dy) { var ny = dy < 0 ? y0 + d : y0; line(c, P(x0, ny, Z + h), P(x0 + w, ny, Z + h), '#fbe0bd'); }
+          else { var nx = dx < 0 ? x0 + w : x0; line(c, P(nx, y0, Z + h), P(nx, y0 + d, Z + h), '#fbe0bd'); }
+          // this step's slice of the stringer: no seams between slices, so the side is one solid board
+          var tA = k * .5, tB = (k + 1) * .5, a, b;   // a: the slice's lower end, b: its upper end
+          if (dy) { var xs = x0 + w; a = dy < 0 ? [xs, y0 + d] : [xs, y0]; b = dy < 0 ? [xs, y0] : [xs, y0 + d]; }
+          else { var ys = y0 + d; a = dx < 0 ? [x0 + w, ys] : [x0, ys]; b = dx < 0 ? [x0, ys] : [x0 + w, ys]; }
+          var zA = Z + rise(tA), zB = Z + rise(tB);
+          poly(c, [P(a[0], a[1], Z), P(a[0], a[1], zA), P(b[0], b[1], zB), P(b[0], b[1], Z)], '#8e5a37');
+          poly(c, [P(a[0], a[1], zA - 3), P(a[0], a[1], zA), P(b[0], b[1], zB), P(b[0], b[1], zB - 3)], '#b9804f');
+          line(c, P(a[0], a[1], zA), P(b[0], b[1], zB), '#55311d');
+          if (k === 0) line(c, P(a[0], a[1], Z), P(a[0], a[1], zA), '#55311d');
         } });
-      })(x0, y0, w, d, h);
+      })(x0, y0, w, d, h, k);
     }
   }
   function railItems(W, f, Z, items) { // banisters on the open sides of each stairwell on this floor
@@ -305,8 +317,11 @@
       if (!s || wallHeight(s, mode) < SS.WALL_UP) return null;   // wall pieces go with their wall when it's cut down
       var wp = W.wallPlace(p); place = { rot: wp.rot }; wx = wp.x; wy = wp.y; zl = 0;
       var sp0 = SS.pieceSprite(p, W, t, place), q0 = P(wx, wy, Z + wp.z);
-      var sz0 = p.wall[2] === 'x' ? [d.w, .2] : [.2, d.w];
-      return { kind: 'piece', p: p, sp: sp0, dx: Math.round(q0[0] - sp0.ox), dy: Math.round(q0[1] - sp0.oy), x0: wx, x1: wx + sz0[0], y0: wy, y1: wy + sz0[1], z0: Z + wp.z, z1: Z + wp.z + d.h };
+      // for sorting, a wall piece lies flat in its wall's own thickness, so anything standing in the room (a counter under a
+      // window, a fridge beside it) always draws in front of it. Curtains hang a little past the window on each side.
+      var wl = p.wall[2] === 'x' ? wp.y - .07 : wp.x - .07, pad = d.window ? .2 : 0, a0 = (p.wall[2] === 'x' ? wx : wy) - pad, a1 = (p.wall[2] === 'x' ? wx : wy) + d.w + pad;
+      var bx = p.wall[2] === 'x' ? [a0, a1, wl - .07, wl + .04] : [wl - .07, wl + .04, a0, a1];
+      return { kind: 'piece', p: p, sp: sp0, dx: Math.round(q0[0] - sp0.ox), dy: Math.round(q0[1] - sp0.oy), x0: bx[0], x1: bx[1], y0: bx[2], y1: bx[3], z0: Z + wp.z, z1: Z + wp.z + d.h };
     }
     if (p.host) {
       var host = W.hostOf(p), pos = W.spotPos(host, p.spot);

@@ -329,7 +329,9 @@
     var playing = G.mode === 'life' && G.trayState() === 'closed';
     if (playing) {
       G.bubble = null; G.meters = null;
-      if (G.hunt) { SS.huntTap(G, pick); return; }   // looking for the charger: each tap is a guess
+      // looking for the charger: a tap on a place it could hide (a sofa, a bed, a cat) is a guess; any other tap stops looking
+      // and plays as usual, so walking and the action bubble always work (Sarah's playtest, Nov 26)
+      if (G.hunt) { if (SS.huntSpot(G, pick)) { SS.huntTap(G, pick); return; } G.hunt = null; }
       if (pick && pick.agent) {
         if (pick.agent.who === 'sarah') { // her three meters (spec 006, part C), and Charge when her phone needs it (part D)
           if (SS.actionsFor(G, { agent: pick.agent })) { openBubble({ agent: pick.agent }, [p.x, p.y - 8]); G.meters = 'sarah'; } else G.meters = G.meters === 'sarah' ? null : 'sarah';

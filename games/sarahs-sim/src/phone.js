@@ -58,7 +58,14 @@
     var h = pickHide(G), S = G.save, first = !S.huntedOnce;
     G.hunt = { hide: h, hint: first };
     S.huntedOnce = true;
-    G.toast('WHERE\'S THE CHARGER?', 2400, first ? 'Tap where it might be. The glowing, marked spot is a good guess.' : 'It\'s never where she left it. Tap where it might be.');
+    G.toast('WHERE\'S THE CHARGER?', 2400, first ? 'Tap where it might be. The glowing, marked spot is a good guess. Tap the floor to stop.' : 'It\'s never where she left it. Tap where it might be, or the floor to stop.');
+  };
+  // could the charger hide here? Only these taps count as guesses during the hunt
+  SS.huntSpot = function (G, pick) {
+    if (!pick) return false;
+    if (pick.agent) return pick.agent.kind === 'cat';
+    var u = pick.piece && G.W.def(pick.piece).use;
+    return HIDES.some(function (h) { return h.use && h.use === u; });
   };
   // is this tap the charger's hiding spot? Returns true when the hunt is over
   SS.huntTap = function (G, pick) {
