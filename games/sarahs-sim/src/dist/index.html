@@ -458,8 +458,14 @@ button:focus-visible{outline:2px solid var(--scr-hi);outline-offset:2px}
 //   StudioIso.poly(c, pts, fill, stroke)  fill and/or stroke a point list
 //   StudioIso.sort(items)                orders items back to front. Each item has world bounds x0 x1 y0 y1 (tiles) and
 //                                        z0 z1 (px), and screen bounds l r t b. Items whose screen bounds overlap are
-//                                        ordered by which is behind: further along x, then y, then lower; anything else
-//                                        keeps the order given. Item.after (another item) forces it to draw after that one.
+//                                        ordered by which is behind: further along x and y (when those disagree, the one
+//                                        with the smaller x + y), then lower; anything else keeps the order given.
+//                                        Item.after (another item) forces it to draw after that one.
+//                                        Item.plane = {axis: 'x'|'y', at} marks a thin wall standing on the line y = at (axis 'x')
+//                                        or x = at (axis 'y'): an item wholly on the far side of that line draws behind it, and
+//                                        one wholly on the near side in front (exact for a flat wall); the boxes decide the rest.
+//                                        Two walls are never compared (they only meet at corners). Item.drawn = [l, t, r, b] is
+//                                        the drawing's own screen bounds when it spills past its box; it counts against walls.
 //   StudioIso.ramp(hex)                  a four-tone ramp [light, base, shade, deep] built from one color, for shading any
 //                                        painted part (art-style.md, Quality bar: Volume)
 //   StudioIso.camera(o)                  a zoom and pan camera over a world drawn at 1x: {zoom, x, y} is the world point at
@@ -501,8 +507,16 @@ button:focus-visible{outline:2px solid var(--scr-hi);outline-offset:2px}
   // back-to-front order: a stable topological sort over the "is behind" edges of items that overlap on screen
   function behind(a, b) { // true when a must be drawn before b
     var E = 1e-4;
-    if (a.x1 <= b.x0 + E) return true; if (b.x1 <= a.x0 + E) return false;
-    if (a.y1 <= b.y0 + E) return true; if (b.y1 <= a.y0 + E) return false;
+    if (!a.plane !== !b.plane) { // one is a flat wall: which side of its line is the other one on?
+      var w = a.plane ? a : b, o = a.plane ? b : a, lo = w.plane.axis === 'x' ? o.y0 : o.x0, hi = w.plane.axis === 'x' ? o.y1 : o.x1;
+      // only when it's wholly on one side; something straddling the line stands past the wall's end, and the boxes decide
+      if (lo >= w.plane.at - E || hi <= w.plane.at + E) { var oFront = lo >= w.plane.at - E; return a.plane ? oFront : !oFront; }
+    }
+    // apart along x and along y: when both say the same, that's the answer; when they disagree (one sits back-right of the
+    // other, side by side on screen), the one nearer the viewer (larger x + y) draws last, so the order never loops
+    var sx = a.x1 <= b.x0 + E ? 1 : b.x1 <= a.x0 + E ? -1 : 0, sy = a.y1 <= b.y0 + E ? 1 : b.y1 <= a.y0 + E ? -1 : 0;
+    if (sx && sy && sx !== sy) return a.x0 + a.x1 + a.y0 + a.y1 < b.x0 + b.x1 + b.y0 + b.y1;
+    if (sx) return sx > 0; if (sy) return sy > 0;
     if (a.z1 <= b.z0 + E) return true; if (b.z1 <= a.z0 + E) return false;
     return a._k < b._k;   // boxes that cut into each other keep the order given
   }
@@ -513,7 +527,10 @@ button:focus-visible{outline:2px solid var(--scr-hi);outline-offset:2px}
       var a = items[i], b = items[j];
       if (b.after === a) { deps[j].push(i); continue; }
       if (a.after === b) { deps[i].push(j); continue; }
-      if (a.r <= b.l || b.r <= a.l || a.b <= b.t || b.b <= a.t) continue;
+      if (a.plane && b.plane) continue;   // two walls only ever meet at a corner: keep the order given, so no loops
+      // against a wall, what's drawn counts (item.drawn = [l, t, r, b], when a drawing spills past its box); else the boxes
+      var ra = (a.plane || b.plane) && a.drawn || [a.l, a.t, a.r, a.b], rb = (a.plane || b.plane) && b.drawn || [b.l, b.t, b.r, b.b];
+      if (ra[2] <= rb[0] || rb[2] <= ra[0] || ra[3] <= rb[1] || rb[3] <= ra[1]) continue;
       if (behind(a, b)) deps[j].push(i); else deps[i].push(j);
     }
     var out = [], state = new Array(n);   // 0 new, 1 visiting, 2 done
@@ -3346,7 +3363,7 @@ var SS = window.SS = window.SS || {};
     // walls
     W.walls[f].forEach(function (s) {
       var th = .07, H = wallHeight(s, mode);
-      items.push({ kind: 'wall', s: s, x0: s.axis === 'x' ? s.x : s.x - th, x1: s.axis === 'x' ? s.x + 1 : s.x + th, y0: s.axis === 'x' ? s.y - th : s.y, y1: s.axis === 'x' ? s.y + th : s.y + 1, z0: Z, z1: Z + H,
+      items.push({ kind: 'wall', s: s, plane: { axis: s.axis, at: s.axis === 'x' ? s.y : s.x }, x0: s.axis === 'x' ? s.x : s.x - th, x1: s.axis === 'x' ? s.x + 1 : s.x + th, y0: s.axis === 'x' ? s.y - th : s.y, y1: s.axis === 'x' ? s.y + th : s.y + 1, z0: Z, z1: Z + H,
         draw: function (c) { drawWall(c, W, s, Z, mode, look, t); } });
     });
     W.stairs.forEach(function (s) { if (s.floor === f) stairItems(W, s, Z, items); });
@@ -3374,6 +3391,9 @@ var SS = window.SS = window.SS || {};
     items.forEach(function (it) {
       var pts = [P(it.x0, it.y0, it.z1), P(it.x1, it.y0, it.z1), P(it.x1, it.y1, it.z0), P(it.x0, it.y1, it.z0), P(it.x1, it.y1, it.z1), P(it.x0, it.y1, it.z1), P(it.x1, it.y0, it.z0)];
       var bb = SS.bounds(pts); it.l = bb[0]; it.t = bb[1]; it.r = bb[2]; it.b = bb[3];
+      // a piece's drawing can spill past its box (a plant's leaves, a lamp's shade, an easel's legs): against walls, sort by
+      // what's drawn
+      if (it.kind === 'piece') it.drawn = [Math.min(it.l, it.dx), Math.min(it.t, it.dy), Math.max(it.r, it.dx + it.sp.cv.width), Math.max(it.b, it.dy + it.sp.cv.height)];
     });
     StudioIso.sort(items).forEach(function (it) {
       if (it.kind === 'piece') {
@@ -3392,10 +3412,10 @@ var SS = window.SS = window.SS || {};
       if (!s || wallHeight(s, mode) < SS.WALL_UP) return null;   // wall pieces go with their wall when it's cut down
       var wp = W.wallPlace(p); place = { rot: wp.rot }; wx = wp.x; wy = wp.y; zl = 0;
       var sp0 = SS.pieceSprite(p, W, t, place), q0 = P(wx, wy, Z + wp.z);
-      // for sorting, a wall piece lies flat in its wall's own thickness, so anything standing in the room (a counter under a
+      // for sorting, a wall piece lies flat against the room side of its wall, so anything standing in the room (a counter under a
       // window, a fridge beside it) always draws in front of it. Curtains hang a little past the window on each side.
       var wl = p.wall[2] === 'x' ? wp.y - .07 : wp.x - .07, pad = d.window ? .2 : 0, a0 = (p.wall[2] === 'x' ? wx : wy) - pad, a1 = (p.wall[2] === 'x' ? wx : wy) + d.w + pad;
-      var bx = p.wall[2] === 'x' ? [a0, a1, wl - .07, wl + .04] : [wl - .07, wl + .04, a0, a1];
+      var bx = p.wall[2] === 'x' ? [a0, a1, wl, wl + .06] : [wl, wl + .06, a0, a1];   // its middle is just on the room side
       return { kind: 'piece', p: p, sp: sp0, dx: Math.round(q0[0] - sp0.ox), dy: Math.round(q0[1] - sp0.oy), x0: bx[0], x1: bx[1], y0: bx[2], y1: bx[3], z0: Z + wp.z, z1: Z + wp.z + d.h };
     }
     if (p.host) {
@@ -3406,7 +3426,9 @@ var SS = window.SS = window.SS || {};
     }
     place = { rot: p.r || 0 };
     var sp = SS.pieceSprite(p, W, t, place), q = P(p.x, p.y, Z), ft = W.foot(p);
-    var ins = d.kind === 'small' ? .3 : .05;
+    // the sort box sits inside the walls' thickness (.07 each side), so a piece pushed against a wall never overlaps it and
+    // always sorts on the right side of it (Keegan's playtest, Nov 26: pieces by the front walls drew over them with walls up)
+    var ins = d.kind === 'small' ? .3 : .1;
     return { kind: 'piece', p: p, sp: sp, dx: Math.round(q[0] - sp.ox), dy: Math.round(q[1] - sp.oy), x0: ft[0] + ins, x1: ft[2] - ins, y0: ft[1] + ins, y1: ft[3] - ins, z0: Z, z1: Z + (d.h || 20) };
   }
 

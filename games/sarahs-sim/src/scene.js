@@ -271,7 +271,7 @@
     // walls
     W.walls[f].forEach(function (s) {
       var th = .07, H = wallHeight(s, mode);
-      items.push({ kind: 'wall', s: s, x0: s.axis === 'x' ? s.x : s.x - th, x1: s.axis === 'x' ? s.x + 1 : s.x + th, y0: s.axis === 'x' ? s.y - th : s.y, y1: s.axis === 'x' ? s.y + th : s.y + 1, z0: Z, z1: Z + H,
+      items.push({ kind: 'wall', s: s, plane: { axis: s.axis, at: s.axis === 'x' ? s.y : s.x }, x0: s.axis === 'x' ? s.x : s.x - th, x1: s.axis === 'x' ? s.x + 1 : s.x + th, y0: s.axis === 'x' ? s.y - th : s.y, y1: s.axis === 'x' ? s.y + th : s.y + 1, z0: Z, z1: Z + H,
         draw: function (c) { drawWall(c, W, s, Z, mode, look, t); } });
     });
     W.stairs.forEach(function (s) { if (s.floor === f) stairItems(W, s, Z, items); });
@@ -299,6 +299,9 @@
     items.forEach(function (it) {
       var pts = [P(it.x0, it.y0, it.z1), P(it.x1, it.y0, it.z1), P(it.x1, it.y1, it.z0), P(it.x0, it.y1, it.z0), P(it.x1, it.y1, it.z1), P(it.x0, it.y1, it.z1), P(it.x1, it.y0, it.z0)];
       var bb = SS.bounds(pts); it.l = bb[0]; it.t = bb[1]; it.r = bb[2]; it.b = bb[3];
+      // a piece's drawing can spill past its box (a plant's leaves, a lamp's shade, an easel's legs): against walls, sort by
+      // what's drawn
+      if (it.kind === 'piece') it.drawn = [Math.min(it.l, it.dx), Math.min(it.t, it.dy), Math.max(it.r, it.dx + it.sp.cv.width), Math.max(it.b, it.dy + it.sp.cv.height)];
     });
     StudioIso.sort(items).forEach(function (it) {
       if (it.kind === 'piece') {
@@ -317,10 +320,10 @@
       if (!s || wallHeight(s, mode) < SS.WALL_UP) return null;   // wall pieces go with their wall when it's cut down
       var wp = W.wallPlace(p); place = { rot: wp.rot }; wx = wp.x; wy = wp.y; zl = 0;
       var sp0 = SS.pieceSprite(p, W, t, place), q0 = P(wx, wy, Z + wp.z);
-      // for sorting, a wall piece lies flat in its wall's own thickness, so anything standing in the room (a counter under a
+      // for sorting, a wall piece lies flat against the room side of its wall, so anything standing in the room (a counter under a
       // window, a fridge beside it) always draws in front of it. Curtains hang a little past the window on each side.
       var wl = p.wall[2] === 'x' ? wp.y - .07 : wp.x - .07, pad = d.window ? .2 : 0, a0 = (p.wall[2] === 'x' ? wx : wy) - pad, a1 = (p.wall[2] === 'x' ? wx : wy) + d.w + pad;
-      var bx = p.wall[2] === 'x' ? [a0, a1, wl - .07, wl + .04] : [wl - .07, wl + .04, a0, a1];
+      var bx = p.wall[2] === 'x' ? [a0, a1, wl, wl + .06] : [wl, wl + .06, a0, a1];   // its middle is just on the room side
       return { kind: 'piece', p: p, sp: sp0, dx: Math.round(q0[0] - sp0.ox), dy: Math.round(q0[1] - sp0.oy), x0: bx[0], x1: bx[1], y0: bx[2], y1: bx[3], z0: Z + wp.z, z1: Z + wp.z + d.h };
     }
     if (p.host) {
@@ -331,7 +334,9 @@
     }
     place = { rot: p.r || 0 };
     var sp = SS.pieceSprite(p, W, t, place), q = P(p.x, p.y, Z), ft = W.foot(p);
-    var ins = d.kind === 'small' ? .3 : .05;
+    // the sort box sits inside the walls' thickness (.07 each side), so a piece pushed against a wall never overlaps it and
+    // always sorts on the right side of it (Keegan's playtest, Nov 26: pieces by the front walls drew over them with walls up)
+    var ins = d.kind === 'small' ? .3 : .1;
     return { kind: 'piece', p: p, sp: sp, dx: Math.round(q[0] - sp.ox), dy: Math.round(q[1] - sp.oy), x0: ft[0] + ins, x1: ft[2] - ins, y0: ft[1] + ins, y1: ft[3] - ins, z0: Z, z1: Z + (d.h || 20) };
   }
 

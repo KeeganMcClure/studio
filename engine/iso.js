@@ -12,8 +12,14 @@
 //   StudioIso.poly(c, pts, fill, stroke)  fill and/or stroke a point list
 //   StudioIso.sort(items)                orders items back to front. Each item has world bounds x0 x1 y0 y1 (tiles) and
 //                                        z0 z1 (px), and screen bounds l r t b. Items whose screen bounds overlap are
-//                                        ordered by which is behind: further along x, then y, then lower; anything else
-//                                        keeps the order given. Item.after (another item) forces it to draw after that one.
+//                                        ordered by which is behind: further along x and y (when those disagree, the one
+//                                        with the smaller x + y), then lower; anything else keeps the order given.
+//                                        Item.after (another item) forces it to draw after that one.
+//                                        Item.plane = {axis: 'x'|'y', at} marks a thin wall standing on the line y = at (axis 'x')
+//                                        or x = at (axis 'y'): an item wholly on the far side of that line draws behind it, and
+//                                        one wholly on the near side in front (exact for a flat wall); the boxes decide the rest.
+//                                        Two walls are never compared (they only meet at corners). Item.drawn = [l, t, r, b] is
+//                                        the drawing's own screen bounds when it spills past its box; it counts against walls.
 //   StudioIso.ramp(hex)                  a four-tone ramp [light, base, shade, deep] built from one color, for shading any
 //                                        painted part (art-style.md, Quality bar: Volume)
 //   StudioIso.camera(o)                  a zoom and pan camera over a world drawn at 1x: {zoom, x, y} is the world point at
@@ -55,8 +61,16 @@
   // back-to-front order: a stable topological sort over the "is behind" edges of items that overlap on screen
   function behind(a, b) { // true when a must be drawn before b
     var E = 1e-4;
-    if (a.x1 <= b.x0 + E) return true; if (b.x1 <= a.x0 + E) return false;
-    if (a.y1 <= b.y0 + E) return true; if (b.y1 <= a.y0 + E) return false;
+    if (!a.plane !== !b.plane) { // one is a flat wall: which side of its line is the other one on?
+      var w = a.plane ? a : b, o = a.plane ? b : a, lo = w.plane.axis === 'x' ? o.y0 : o.x0, hi = w.plane.axis === 'x' ? o.y1 : o.x1;
+      // only when it's wholly on one side; something straddling the line stands past the wall's end, and the boxes decide
+      if (lo >= w.plane.at - E || hi <= w.plane.at + E) { var oFront = lo >= w.plane.at - E; return a.plane ? oFront : !oFront; }
+    }
+    // apart along x and along y: when both say the same, that's the answer; when they disagree (one sits back-right of the
+    // other, side by side on screen), the one nearer the viewer (larger x + y) draws last, so the order never loops
+    var sx = a.x1 <= b.x0 + E ? 1 : b.x1 <= a.x0 + E ? -1 : 0, sy = a.y1 <= b.y0 + E ? 1 : b.y1 <= a.y0 + E ? -1 : 0;
+    if (sx && sy && sx !== sy) return a.x0 + a.x1 + a.y0 + a.y1 < b.x0 + b.x1 + b.y0 + b.y1;
+    if (sx) return sx > 0; if (sy) return sy > 0;
     if (a.z1 <= b.z0 + E) return true; if (b.z1 <= a.z0 + E) return false;
     return a._k < b._k;   // boxes that cut into each other keep the order given
   }
@@ -67,7 +81,10 @@
       var a = items[i], b = items[j];
       if (b.after === a) { deps[j].push(i); continue; }
       if (a.after === b) { deps[i].push(j); continue; }
-      if (a.r <= b.l || b.r <= a.l || a.b <= b.t || b.b <= a.t) continue;
+      if (a.plane && b.plane) continue;   // two walls only ever meet at a corner: keep the order given, so no loops
+      // against a wall, what's drawn counts (item.drawn = [l, t, r, b], when a drawing spills past its box); else the boxes
+      var ra = (a.plane || b.plane) && a.drawn || [a.l, a.t, a.r, a.b], rb = (a.plane || b.plane) && b.drawn || [b.l, b.t, b.r, b.b];
+      if (ra[2] <= rb[0] || rb[2] <= ra[0] || ra[3] <= rb[1] || rb[3] <= ra[1]) continue;
       if (behind(a, b)) deps[j].push(i); else deps[i].push(j);
     }
     var out = [], state = new Array(n);   // 0 new, 1 visiting, 2 done

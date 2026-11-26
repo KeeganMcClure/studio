@@ -431,10 +431,11 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       Rr.play = .1; SS.chooseAction(G, { agent: G.cats.ralph }, SS.ACTIONS.cat[2]); for (let i = 0; i < 3000 && (G.act || G.people.sarah.path.length); i++) SS.updateAgents(G, .05);
       if (Rr.play < .99) out.push('the feather wand does not count double for Ralph');
       // bored: knocks a small thing off a table, and it can be picked back up (it's still a piece in the home)
-      const n0 = W.pieces.length, stacked0 = W.pieces.filter(p => p.host).length; L.play = .05; Rr.play = .05; L.hunger = 1; Rr.hunger = 1; L.litter = 1; Rr.litter = 1;
+      const stackedUids = W.pieces.filter(p => p.host && p.id !== 'plated-meal').map(p => p.uid), stacked0 = W.pieces.filter(p => p.host).length; L.play = .05; Rr.play = .05; L.hunger = 1; Rr.hunger = 1; L.litter = 1; Rr.litter = 1;
       let knocked = false; for (let i = 0; i < 12000 && !knocked; i++) { SS.updateAgents(G, .05); knocked = W.pieces.filter(p => p.host).length < stacked0; }
       if (!knocked) out.push('a bored cat never knocks a small thing off a table');
-      if (W.pieces.length !== n0) out.push('a knocked-over thing was lost');
+      // the thing knocked off is still a piece in the home (not counting a meal Keegan made, which Sarah may eat meanwhile)
+      if (stackedUids.some(u => !W.byUid[u])) out.push('a knocked-over thing was lost');
       return out;
     });
     cats.forEach(a => bad.push(a));
@@ -522,6 +523,28 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
         return out;
       });
       over.forEach(o => bad.push(o));
+      // with the walls up (and cut away), nothing behind a wall draws over it and nothing in front draws under it (Keegan, Nov 26)
+      const walls = await page.evaluate(async () => {
+        const G = SSG, out = [], sort = StudioIso.sort; let last = null;
+        StudioIso.sort = items => (last = sort(items));
+        for (const mode of ['up', 'cut']) for (const f of [0, 1, 2]) {
+          G.walls = mode; G.setFloor(f); last = null; await new Promise(r => setTimeout(r, 150));
+          if (!last) { out.push('nothing was drawn on floor ' + (f + 1)); continue; }
+          last.forEach((w, i) => {
+            if (!w.plane || w.kind !== 'wall') return;
+            last.forEach((o, j) => {
+              const d = o.drawn || [o.l, o.t, o.r, o.b]; if (o.kind !== 'piece' || d[2] <= w.l || w.r <= d[0] || d[3] <= w.t || w.b <= d[1]) return;
+              const lo = w.plane.axis === 'x' ? o.y0 : o.x0, hi = w.plane.axis === 'x' ? o.y1 : o.x1, at = w.plane.at;
+              if (lo < at - 1e-4 && hi > at + 1e-4) return;   // stands past the wall's end, across its line
+              const front = lo >= at - 1e-4;
+              if (front !== (j > i)) out.push(o.p.id + ' draws ' + (front ? 'behind' : 'over') + ' a wall on floor ' + (f + 1) + ' (walls ' + mode + ')');
+            });
+          });
+        }
+        StudioIso.sort = sort; G.walls = 'cut';
+        return [...new Set(out)];
+      });
+      walls.forEach(o => bad.push(o));
       bad.push(...errors); await ctx.close();
     }
     // 4. the shell's title bar sits below a notched phone's status bar, and nothing falls off the bottom
@@ -536,7 +559,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       if (w === 375 && h === 812) await page.screenshot({ path: path.join(DIST, 'screen-notched-375x812.png') });
       bad.push(...errors); await ctx.close();
     }
-    report('Sarah\'s playtest (Nov 26): taps during the charger hunt, wall pieces behind what stands in front, the safe area', bad);
+    report('Sarah\'s playtest (Nov 26): taps during the charger hunt, wall pieces behind what stands in front, pieces never through walls, the safe area', bad);
   }
 
   // ---------- 7. test saves ----------
@@ -595,6 +618,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       ['menu', () => { SSG.openMode('sandbox'); SSG.openMenu(); }, null],
       ['life-night', () => { SS.setClock(21, 30); SSG.openMode('life'); }, null],
       ['stairs', () => { SS.setClock(14, 0); SSG.openMode('life'); SSG.cam.zoom = 2; SSG.cam.x -= 40; }, null],
+      ['walls-up-floor2', () => { SS.setClock(8, 5); SSG.openMode('life'); SSG.setFloor(1); SSG.walls = 'up'; }, null],
       ['life-bubble', () => { SS.setClock(10, 0); SSG.openMode('life'); SSG.setFloor(1); const k = SSG.people.keegan; SSG.bubble = { target: { agent: k }, actions: SS.ACTIONS.keegan, cur: 0, tip: [150, 150], title: 'KEEGAN · AT HIS DESK' }; }, null]
     ];
     for (const [name, fn] of shots) {
