@@ -54,7 +54,7 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [x] Title and cover: the title screen and the 120 × 80 cover (`studio-bible/launcher.md`).
   Done Nov 25: set with Keegan and drawn in `mockups/title-v1` (winter). See Title and cover. Keegan writes the Christmas line.
 - [ ] Specs: one spec per build part, in this order: the Philly home and decorating (Sandbox), Outfits, Creator, Building, Garden and yard, Life mode (clock, needs, cat care, gigs, coins, idle life), Memory book and notes, Visitors and the neighborhood, Holidays, Challenges.
-- [ ] Challenges mode: the challenge list, rewards and its screen mockup (built last). (Nov 25: client briefs with a twist; draft list of 14 in Play, Challenges, for Keegan's review; mockup still to draw.)
+- [ ] Challenges mode: the challenge list, rewards and its screen mockup (built last). (Nov 25: client briefs with a twist; draft list of 14 in Play, Challenges, for Keegan's review; mockup `challenges-v1` approved Nov 26.)
 
 ### Bugs
 
@@ -88,7 +88,7 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Note found | Read a note from Keegan she found in the home | `specs/007-memory-book-and-notes.md` | `memory-book-v1`, state `note` (approved Nov 26, 2026) |
 | Favorites | Save and reuse whole rooms and outfits | `specs/001-home-and-decorating.md` | `favorites-v1` (approved Nov 25, 2026) |
 | Camera | Take a clean picture of a room or outfit | `specs/001-home-and-decorating.md` | `camera-v1` (approved Nov 25, 2026) |
-| Challenges | Pick a challenge and see how you did | `specs/010-challenges.md` | `challenges-v1` (drawn Nov 26, 2026, waiting on Keegan's review) |
+| Challenges | Pick a challenge and see how you did | `specs/010-challenges.md` | `challenges-v1` (approved Nov 26, 2026) |
 | Start menu | Save, homes, people, quit to title | `specs/001-home-and-decorating.md` | `start-menu-v1` (approved Nov 25, 2026) |
 
 ## Overview

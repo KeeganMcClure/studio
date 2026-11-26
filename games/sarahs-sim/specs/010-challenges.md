@@ -27,7 +27,7 @@ The bible wins over this spec (`studio-bible/studio.md`, Specs).
 
 | Screen | Mockup |
 | --- | --- |
-| Challenges (the board and the result card) | **To draw** before part A |
+| Challenges (the board and the result card) | `challenges-v1` (approved Nov 26, 2026) |
 
 ## Part A: The board
 
