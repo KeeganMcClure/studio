@@ -120,7 +120,10 @@ People have three soft needs (bible, Needs):
 - He moves from one activity to the next in his pool every 5 to 15 minutes of play. He's often cooking near mealtimes (morning, around noon and evening), and a meal he finishes goes on the table with a sparkle. Tapping it lets Sarah eat, which fills hunger (bible, Cooking).
 - **Together actions:** she taps Keegan for Chat, Hug, Kiss, Cuddle up, Cook together (part E), Wind down together, Play a game together and Go to bed. Each one walks them both to the right spot.
   - Romance follows the bible: flirty, with a fade to black, never explicit. The details are in the private project files.
-  - **Hug** has a few playful variations that turn up now and then, one of them a cheeky one Keegan asked for (Nov 25). The details are in the private data, and the repo keeps a placeholder (spec 007, Privacy).
+  - **Hug and kiss feel different** (Keegan, Nov 25). Each picks from its own pool of variations, with no repeats until the pool runs out (`studio-bible/play.md`):
+    - Hug is warm and comforting. Its variations include a cheeky one Keegan asked for. It fills a little fun and a little energy.
+    - Kiss is romantic and changes with the time of day. It fills more fun, and the first one is the "A kiss" memory book moment.
+    - The variations themselves are in the private data, and the repo keeps a placeholder (spec 007, Privacy).
   - Winding down uses the joint, the bong or a brownie, and fills fun and lowers hunger a little (the munchies). The bong is drawn from Keegan's reference photo (bible To do).
 - **Busy:** if Keegan is in the middle of something he can't stop (on a call or in class), the bubble says so, and she can queue the action for when he's done.
 
