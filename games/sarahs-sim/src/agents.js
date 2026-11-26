@@ -16,9 +16,10 @@
     a.draw = function (c, p) {
       var walking = a.path.length > 0, beat = Math.floor(a.walked * 4) % 4;
       var pose = walking ? (beat === 0 ? 'walk1' : beat === 2 ? 'walk2' : (a.kind === 'cat' ? 'walk2' : 'stand')) : a.pose;
-      if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: walking && a.back, flip: a.flip, t: performance.now() });
+      if (a.kind === 'person' && pose === 'bath') drawBath(c, a, p);
+      else if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: walking && a.back, flip: a.flip, t: performance.now(), arms: walking ? null : a.arms });
       else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: a.flip, hat: SS.G && SS.G.xmasDay });
-      var headY = p[1] - (a.kind === 'cat' ? 22 : (a.pose === 'sit' ? 36 : a.pose === 'lie' ? 16 : 42));
+      var headY = p[1] - (a.kind === 'cat' ? 22 : (a.pose === 'sit' ? 36 : a.pose === 'lie' ? 16 : a.pose === 'bath' ? 34 : 42));
       if (a.bar) { // the slim progress bar over her head
         var w = 18, k = Math.min(1, a.bar.k);
         c.fillStyle = '#3b2430'; c.fillRect(Math.round(p[0] - w / 2 - 1), Math.round(headY - 6), w + 2, 4);
@@ -30,6 +31,18 @@
       if (a.extra) a.extra(c, p);
     };
     return a;
+  }
+  // Sarah in the bath: drawn from her water line, clipped at the tub's front rim (its basin's lower edges on screen)
+  function drawBath(c, a, p) {
+    var G = SS.G, W = G && G.W, tub = W && a.on && W.byUid[a.on], clip = null, water = [p[0], p[1] - 7];
+    if (tub) {
+      var d = W.def(tub), M = SS.Model(null, d, tub, { x: tub.x, y: tub.y, rot: tub.r || 0 }), Z = W.floorOf(tub) * FH + 19;
+      var pts = [[.18, .22], [1.82, .22], [1.82, .78], [.18, .78]].map(function (q) { var w = M.wp(q[0], q[1]); return SS.I.p(w[0], w[1], Z); });
+      var L = pts.reduce(function (m, q) { return q[0] < m[0] ? q : m; }), R = pts.reduce(function (m, q) { return q[0] > m[0] ? q : m; }), B = pts.reduce(function (m, q) { return q[1] > m[1] ? q : m; });
+      clip = [L, B, R, [R[0], R[1] - 120], [L[0], L[1] - 120]];
+      var wq = SS.I.p(a.x, a.y, Z - 2); water = [wq[0], wq[1]];
+    }
+    SS.bathPerson(c, water[0], water[1], { flip: a.flip, t: performance.now(), clip: clip });
   }
   // a small thought bubble over a head: a heart, '!', 'z', '...', a note, a treat
   function drawBubble(c, x, y, b) {
@@ -74,7 +87,7 @@
     a.path = waypoints(nodes);
     return true;
   }
-  function getUp(W, a) { if (a.on || a.pose === 'sit' || a.pose === 'lie' || a.pose === 'loaf' || a.pose === 'curl') { var u = a.onTile; a.on = null; a.z = 0; a.pose = a.kind === 'cat' ? 'sit' : 'stand'; if (u) { a.x = u[0] + .5; a.y = u[1] + .5; } a.onTile = null; } }
+  function getUp(W, a) { if (a.on || a.pose === 'bath' || a.pose === 'sit' || a.pose === 'lie' || a.pose === 'loaf' || a.pose === 'curl') { var u = a.onTile; a.on = null; a.z = 0; a.pose = a.kind === 'cat' ? 'sit' : 'stand'; if (u) { a.x = u[0] + .5; a.y = u[1] + .5; } a.onTile = null; } }
   function step(a, dt) {
     if (!a.path.length) { if (a.arrive) { var done = a.arrive; a.arrive = null; done(); } return; }   // already there
     var wp = a.path[0];
@@ -401,7 +414,8 @@
     // face the target
     var tp = tg.agent ? { x: tg.agent.x, y: tg.agent.y } : tg.piece ? (function () { var ft = W.foot(tg.piece.host ? W.hostOf(tg.piece) : tg.piece.wall ? null : tg.piece) || [0, 0, 0, 0]; return tg.piece.wall ? { x: tg.piece.wall[0] + .5, y: tg.piece.wall[1] } : { x: (ft[0] + ft[2]) / 2, y: (ft[1] + ft[3]) / 2 }; })() : { x: s.x, y: s.y - 1 };
     var dx = tp.x - s.x, dy = tp.y - s.y; s.flip = (dx - dy) < 0; s.back = (dx + dy) < 0;
-    if (a.how === 'sit' || a.how === 'tub') seatOn(W, s, tg.piece, 'sit');
+    if (a.how === 'sit') seatOn(W, s, tg.piece, 'sit');
+    if (a.how === 'tub') seatOn(W, s, tg.piece, 'bath');   // she sits down in the water (art: sprites.js, the bath)
     if (a.how === 'lie') seatOn(W, s, tg.piece, 'lie');
     if (a.tv) { var tv = W.pieces.filter(function (p) { return W.def(p).use === 'tv' && W.floorOf(p) === s.f; })[0]; if (tv) { tv.lit = true; A.tv = tv; } }
     if (a.fx === 'paint' || a.fx === 'craft') { tg.piece.work = true; }

@@ -2300,7 +2300,7 @@ var SS = window.SS = window.SS || {};
       ctx.fillStyle = col; ctx.fillRect(X + xx * S, Y + yy * S, S, S);
     }
   }
-  function sarahSprite(c, x, y, s, t, glasses, outfit, style) {
+  function sarahSprite(c, x, y, s, t, glasses, outfit, style, arms) {
     at(c, x, y, s); var st = style || 'bun';
     if (st === 'bun') { E(9, 3, 4, 2, C.o); E(9, 3, 3, 1, C.sHair[1]); }   // pinned-up curls
     if (st === 'bob') { E(4, 4, 2, 2, C.o); E(9, 2, 3, 2, C.o); E(14, 4, 2, 2, C.o); E(4, 4, 1, 1, C.sHair[1]); E(9, 2, 2, 1, C.sHair[1]); E(14, 4, 1, 1, C.sHair[2]); }
@@ -2310,24 +2310,36 @@ var SS = window.SS = window.SS || {};
     if (st !== 'pony') [[2, 15], [5, 17], [13, 17], [16, 15]].forEach(function (p, k) { E(p[0], p[1], 2, 2, C.o); E(p[0], p[1], 1, 1, k < 2 ? C.sHair[1] : C.sHair[2]); });
     E(9, 11, 6, 6, C.o); E(9, 11, 5, 5, C.sk[1]); E(8, 10, 3, 3, C.sk[0]);
     R(4, 5, 11, 3, C.sHair[2]); R(5, 5, 4, 1, C.sHair[1]); R(9, 5, 1, 2, C.sk[1]); R(3, 7, 2, 7, C.sHair[2]); R(14, 7, 2, 7, C.sHair[3]);
-    R(6, 10, 2, 2, C.o); R(11, 10, 2, 2, C.o); R(6, 10, 1, 1, '#fff'); R(11, 10, 1, 1, '#fff');
+    if (arms === 'phone') { R(6, 11, 2, 1, C.o); R(11, 11, 2, 1, C.o); R(6, 10, 2, 1, C.sk[2]); R(11, 10, 2, 1, C.sk[2]); }   // eyes lowered to the screen
+    else { R(6, 10, 2, 2, C.o); R(11, 10, 2, 2, C.o); R(6, 10, 1, 1, '#fff'); R(11, 10, 1, 1, '#fff'); }
     if (glasses) { R(5, 9, 4, 1, C.glass); R(10, 9, 4, 1, C.glass); R(5, 12, 4, 1, C.glass); R(10, 12, 4, 1, C.glass); }
     R(5, 13, 1, 1, C.blush); R(13, 13, 1, 1, C.blush); R(8, 14, 3, 1, C.lip); R(4, 14, 1, 2, C.gold); R(14, 14, 1, 2, C.gold);
     if (outfit === 'orange') { // ORANGE ROCKS tee
       R(3, 17, 13, 11, C.o); R(4, 17, 11, 10, C.orange[1]); R(4, 17, 3, 9, C.orange[0]); R(12, 18, 3, 9, C.orange[2]); R(8, 17, 3, 1, C.orange[3]);
       R(6, 20, 7, 1, '#fff8ee'); R(6, 22, 7, 1, '#fff8ee'); R(7, 21, 5, 1, C.orange[2]);
-      R(2, 18, 2, 9, C.o); R(2, 18, 1, 3, C.orange[0]); R(2, 21, 1, 5, C.sk[1]); R(15, 18, 2, 9, C.o); R(16, 18, 1, 3, C.orange[2]); R(16, 21, 1, 5, C.sk[2]);
+      if (arms === 'phone') phoneArms(C.orange[0], C.orange[2], C.sk[1], C.sk[2]);
+      else { R(2, 18, 2, 9, C.o); R(2, 18, 1, 3, C.orange[0]); R(2, 21, 1, 5, C.sk[1]); R(15, 18, 2, 9, C.o); R(16, 18, 1, 3, C.orange[2]); R(16, 21, 1, 5, C.sk[2]); }
     } else {
     // rose flower cardigan over cream
     R(3, 17, 13, 11, C.o); R(4, 17, 11, 10, '#b9505a'); R(4, 17, 5, 9, '#c9636b'); R(8, 17, 3, 6, '#f3ead8');
     R(5, 20, 2, 2, '#e7a9c4'); R(12, 19, 2, 2, '#c8a6d8'); R(11, 24, 2, 2, '#f0b3c4'); R(5, 24, 1, 1, '#e8b85a');
-    R(2, 18, 2, 9, C.o); R(2, 18, 1, 8, '#c9636b'); R(15, 18, 2, 9, C.o); R(16, 18, 1, 8, '#9e4049');
+    if (arms === 'phone') phoneArms('#c9636b', '#9e4049', '#c9636b', '#9e4049');
+    else { R(2, 18, 2, 9, C.o); R(2, 18, 1, 8, '#c9636b'); R(15, 18, 2, 9, C.o); R(16, 18, 1, 8, '#9e4049'); }
     }
-    R(2, 26, 2, 2, C.sk[1]); R(15, 26, 2, 2, C.sk[2]); R(2, 27, 1, 1, C.nail);
+    if (arms !== 'phone') { R(2, 26, 2, 2, C.sk[1]); R(15, 26, 2, 2, C.sk[2]); R(2, 27, 1, 1, C.nail); }
     // straight jeans and tan boots
     R(4, 27, 11, 8, C.o); R(5, 27, 4, 7, C.jeans[0]); R(10, 27, 4, 7, C.jeans[1]); R(9, 28, 1, 6, C.jeans[2]);
     R(4, 34, 5, 4, C.o); R(5, 34, 3, 3, C.boot[0]); R(5, 37, 4, 1, C.boot[2]); R(10, 34, 5, 4, C.o); R(10, 34, 3, 3, C.boot[1]); R(10, 37, 4, 1, C.boot[2]);
     if (st === 'long') { [[3, 19], [3, 23], [15, 19], [15, 23]].forEach(function (q, k) { E(q[0], q[1], 2, 2, C.o); E(q[0], q[1], 1, 1, k < 2 ? C.sHair[1] : C.sHair[2]); }); }
+  }
+  // doomscrolling (spec 006, idle Sarah and her phone): elbows in at her sides, forearms up, both hands holding the phone at
+  // chest height with its screen toward her, so from the front you see the back of the phone between her hands
+  function phoneArms(lit, shade, lit2, shade2) {
+    R(2, 18, 2, 6, C.o); R(2, 18, 1, 5, lit); R(15, 18, 2, 6, C.o); R(16, 18, 1, 5, shade);          // upper arms, elbows at the waist
+    R(3, 22, 5, 3, C.o); R(3, 23, 4, 1, lit2); R(12, 22, 5, 3, C.o); R(13, 23, 4, 1, shade2);        // forearms coming in to the chest
+    R(7, 21, 2, 3, C.o); R(7, 22, 2, 1, C.sk[1]); R(11, 21, 2, 3, C.o); R(11, 22, 2, 1, C.sk[2]);    // her two hands
+    R(8, 19, 4, 6, C.o); R(9, 20, 2, 4, '#5a4650'); R(9, 20, 2, 1, '#7a6670');                      // the phone's back, held upright
+    R(8, 22, 1, 1, C.sk[1]); R(11, 22, 1, 1, C.sk[2]);                                             // fingers round its edges
   }
   function keeganSprite(c, x, y, s, t, capOn) {
     at(c, x, y, s);
@@ -2476,24 +2488,25 @@ var SS = window.SS = window.SS || {};
   var CACHE = {};
   function canvas(w, h) { var cv = document.createElement('canvas'); cv.width = w; cv.height = h; return cv; }
   // the base drawing of each person, front and back, cached
-  function base(who, back, look) {
-    var k = who + (back ? 'B' : 'F') + (look || '');
+  function base(who, back, look, arms) {
+    var k = who + (back ? 'B' : 'F') + (look || '') + (arms || '');
     if (CACHE[k]) return CACHE[k];
     var W = who === 'sarah' ? 20 : 22, H = who === 'sarah' ? 40 : 44, cv = canvas(W, H), c = cv.getContext('2d');
-    if (who === 'sarah') sarahSprite(c, 1, 2, 1, 0, false, look === 'orange' ? 'orange' : null, 'bun');
+    if (who === 'sarah') sarahSprite(c, 1, 2, 1, 0, false, look === 'orange' ? 'orange' : null, 'bun', arms);
     else keeganSprite(c, 1, 2, 1, 0, false);
     if (back) { // the back of the head: hair over the face, drawn with the sprite's own hair shapes
       at(c, 1, 2, 1);
       if (who === 'sarah') { E(9, 11, 6, 6, C.o); E(9, 11, 5, 5, C.sHair[2]); E(7, 9, 4, 3, C.sHair[1]); [[4, 16], [9, 17], [14, 16]].forEach(function (p, i) { E(p[0], p[1], 2, 2, C.o); E(p[0], p[1], 1, 1, i === 1 ? C.sHair[2] : C.sHair[1]); }); E(9, 3, 4, 2, C.o); E(9, 3, 3, 1, C.sHair[1]); }
+      if (who === 'sarah' && arms === 'phone') { R(7, 19, 6, 7, '#b9505a'); R(7, 19, 3, 7, '#c9636b'); R(8, 23, 3, 1, '#e7a9c4'); }   // from behind, her back hides the phone
       else { E(10, 11, 8, 8, C.o); E(10, 11, 7, 7, C.kHair[1]); E(8, 8, 4, 3, C.kHair[0]); R(4, 17, 12, 2, C.sk[2]); R(4, 17, 12, 1, C.o); R(2, 10, 2, 3, C.sk[2]); R(16, 10, 2, 3, C.sk[2]); }
     }
     CACHE[k] = cv; return cv;
   }
   // a pose, built from the base drawing: walk frames lift one leg and bob the body a pixel (art-style.md, Animation: 4 beats)
-  function posed(who, pose, back, look) {
-    var k = who + pose + (back ? 'B' : 'F') + (look || '');
+  function posed(who, pose, back, look, arms) {
+    var k = who + pose + (back ? 'B' : 'F') + (look || '') + (arms || '');
     if (CACHE[k]) return CACHE[k];
-    var b = base(who, back, look), W = b.width, H = b.height, hip = who === 'sarah' ? 29 : 33, cv = canvas(W, H), c = cv.getContext('2d'), mid = Math.floor(W / 2);
+    var b = base(who, back, look, arms), W = b.width, H = b.height, hip = who === 'sarah' ? 29 : 33, cv = canvas(W, H), c = cv.getContext('2d'), mid = Math.floor(W / 2);
     if (pose === 'walk1' || pose === 'walk2') {
       c.drawImage(b, 0, 0, W, hip, 0, 1, W, hip);
       var lift = pose === 'walk1' ? 0 : mid;
@@ -2510,19 +2523,68 @@ var SS = window.SS = window.SS || {};
     o = o || {};
     var pose = o.pose || 'stand', img;
     if (pose === 'lie') { // lying down: the drawing turned on its side, head toward the pillow
-      img = posed(who, 'stand', false, o.look);
-      c.save(); c.translate(Math.round(x), Math.round(y)); c.rotate(-Math.PI / 2 * (o.flip ? -1 : 1)); c.drawImage(img, -img.width / 2, -img.height + 4); c.restore(); return;
+      img = posed(who, 'stand', false, o.look, o.arms);
+      c.save(); c.translate(Math.round(x), Math.round(y)); c.rotate(-Math.PI / 2 * (o.flip ? -1 : 1)); c.drawImage(img, -img.width / 2, -img.height + 4);
+      if (o.arms === 'phone') phoneLight(c, -img.width / 2, -img.height + 4, false, 0, o.t, img.width);
+      c.restore(); return;
     }
-    img = posed(who, pose, o.back, o.look);
+    img = posed(who, pose, o.back, o.look, o.arms);
     var bob = pose === 'stand' && o.t !== undefined && StudioRig.idle(o.t, who === 'sarah' ? 1 : 2) ? 1 : 0;
     var dx = Math.round(x - img.width / 2), dy = Math.round(y - img.height + 2 + bob);
     if (pose !== 'sit') { c.fillStyle = 'rgba(90,45,40,.25)'; c.beginPath(); c.ellipse(x, y, 8, 3, 0, 0, 7); c.fill(); }
-    if (o.flip) { c.save(); c.translate(dx + img.width, dy); c.scale(-1, 1); c.drawImage(img, 0, 0); c.restore(); } else c.drawImage(img, dx, dy);
+    if (o.flip) { c.save(); c.translate(dx + img.width, dy); c.scale(-1, 1); c.drawImage(img, 0, 0); if (o.arms === 'phone') phoneLight(c, 0, 0, o.back, pose === 'sit' ? 6 : 0, o.t, img.width); c.restore(); }
+    else { c.drawImage(img, dx, dy); if (o.arms === 'phone') phoneLight(c, dx, dy, o.back, pose === 'sit' ? 6 : 0, o.t, img.width); }
     // blink (art-style.md, Animation: 150 ms every few seconds)
-    if (!o.back && o.t !== undefined && StudioRig.blink(o.t, who === 'sarah' ? 3 : 7)) {
+    if (!o.back && o.arms !== 'phone' && o.t !== undefined && StudioRig.blink(o.t, who === 'sarah' ? 3 : 7)) {
       var ex = who === 'sarah' ? [7, 12] : [7, 13], ey = (who === 'sarah' ? 12 : 12) + (pose === 'sit' ? 6 : 0) + (pose.indexOf('walk') === 0 ? 1 : 0);
       ex.forEach(function (e) { var px = o.flip ? dx + img.width - e - 2 : dx + e; c.fillStyle = who === 'sarah' ? C.sk[1] : C.sk[1]; c.fillRect(px, dy + ey, 2, 2); c.fillStyle = C.o; c.fillRect(px, dy + ey + 1, 2, 1); });
     }
+  };
+  // the screen's soft glow on her face and the thumb flicking up the screen about once a second (from behind: a glow around her)
+  function phoneLight(c, dx, dy, back, sy, t, w) {
+    var P = function (x, y, ww, hh, col) { c.fillStyle = col; c.fillRect(dx + x, dy + y + sy, ww, hh); };
+    // (canvas pixels: the sprite sits 1 right and 2 down in its canvas)
+    if (back) { P(2, 20, 1, 3, 'rgba(190,225,255,.55)'); P(w - 3, 20, 1, 3, 'rgba(190,225,255,.55)'); P(7, 20, 6, 1, 'rgba(190,225,255,.4)'); return; }
+    P(7, 15, 6, 2, 'rgba(190,225,255,.16)'); P(8, 17, 4, 1, 'rgba(190,225,255,.3)');   // her face lit from below
+    P(9, 20, 4, 1, 'rgba(200,235,255,.75)');                                             // light spilling over the phone's top
+    var flick = t !== undefined && (t % 1100) < 180;
+    P(11, flick ? 20 : 21, 1, 1, C.sk[1]);                                               // her thumb, flicking up
+  }
+  // in the bath (spec 006, Bath action): sitting down in the water, so only her head, bare shoulders and arms show, her hair
+  // up in a towel. (x, y) is the water line under her chin; clip is the tub's front rim as a screen polygon: nothing of her
+  // is drawn below it, so the rim always stays in front of her, in every turn.
+  function bathImg() {
+    if (CACHE.bath) return CACHE.bath;
+    var b = base('sarah', false), cv = canvas(28, 26), c = cv.getContext('2d');
+    c.drawImage(b, 0, 0, 20, 20, 4, 1, 20, 20);   // her head, from the top of the bun to the chin
+    at(c, 4, 1, 1);
+    // a towel wrapped up over her hair
+    E(10, 6, 8, 4, C.o); E(10, 6, 7, 3, '#fff6ea'); R(4, 7, 13, 1, '#e8dccd'); R(6, 5, 4, 1, '#e8dccd'); E(13, 2, 3, 2, C.o); E(13, 2, 2, 1, '#fff6ea'); R(12, 3, 2, 1, '#e8dccd');
+    // bare shoulders, and her arms resting out at her sides
+    R(2, 18, 15, 6, C.o); R(3, 18, 13, 6, C.sk[1]); R(3, 18, 13, 1, C.sk[2]); R(4, 19, 4, 2, C.sk[0]); R(9, 18, 1, 1, C.sk[2]);
+    R(-3, 20, 6, 3, C.o); R(-2, 21, 5, 1, C.sk[1]); R(16, 20, 6, 3, C.o); R(16, 21, 5, 1, C.sk[2]);
+    CACHE.bath = cv; return cv;
+  }
+  SS.bathPerson = function (c, x, y, o) {
+    o = o || {}; var img = bathImg(), t = (o.t || 0) / 1000;
+    c.save();
+    if (o.clip) { c.beginPath(); c.moveTo(o.clip[0][0], o.clip[0][1]); for (var i = 1; i < o.clip.length; i++) c.lineTo(o.clip[i][0], o.clip[i][1]); c.closePath(); c.clip(); }
+    var dx = Math.round(x - 14), dy = Math.round(y - 22);
+    if (o.flip) { c.save(); c.translate(dx + 28, dy); c.scale(-1, 1); c.drawImage(img, 0, 0); c.restore(); } else c.drawImage(img, dx, dy);
+    // bubbles piled around her, in front of her shoulders
+    [[-11, 0, 3], [-7, -1, 3], [-3, 1, 2], [2, 0, 3], [6, -1, 3], [10, 1, 2], [-9, 3, 3], [-1, 3, 3], [5, 3, 3], [12, 3, 2], [-14, 3, 2]].forEach(function (q, k) {
+      var r = q[2] + (Math.sin(t * 1.3 + k) > .6 ? 1 : 0), bx = Math.round(x + q[0]), by = Math.round(y + q[1]);
+      c.fillStyle = '#d9e6ee'; c.beginPath(); c.arc(bx, by + 1, r, 0, 7); c.fill();
+      c.fillStyle = '#ffffff'; c.beginPath(); c.arc(bx, by, r, 0, 7); c.fill();
+      c.fillStyle = '#cfe3f2'; c.fillRect(bx - 1, by - r + 1, 1, 1);
+    });
+    c.restore();
+    // a few bubbles drifting up, and wisps of steam (not clipped: they rise above the rim)
+    for (var k = 0; k < 3; k++) { var ph = (t * .35 + k / 3) % 1, bx2 = Math.round(x - 8 + k * 8 + Math.sin(t * 2 + k) * 2), by2 = Math.round(y - 4 - ph * 30);
+      c.globalAlpha = 1 - ph; c.strokeStyle = '#ffffff'; c.beginPath(); c.arc(bx2, by2, 1.5, 0, 7); c.stroke(); c.globalAlpha = 1; }
+    for (var w = 0; w < 2; w++) { var ph2 = (t * .25 + w / 2) % 1, sx = x + (w ? 9 : -10), sy = y - 26 - ph2 * 14;
+      c.fillStyle = 'rgba(255,255,255,' + (.35 * (1 - ph2)).toFixed(2) + ')';
+      for (var q = 0; q < 6; q++) c.fillRect(Math.round(sx + Math.sin(ph2 * 6 + q * .9) * 2), Math.round(sy - q * 2), 1, 2); }
   };
   SS.personSize = function (who) { var b = base(who, false); return [b.width, b.height]; };
 
@@ -2545,7 +2607,8 @@ var SS = window.SS = window.SS || {};
     var bob = walk && pose === 'walk2' ? 1 : 0;
     c.fillStyle = 'rgba(90,45,40,.25)'; c.beginPath(); c.ellipse(x, y, img.width * .38, 3, 0, 0, 7); c.fill();
     var dx = Math.round(x - img.width / 2), dy = Math.round(y - img.height + 1 - bob);
-    if (o.flip) { c.save(); c.translate(dx + img.width, dy); c.scale(-1, 1); c.drawImage(img, 0, 0); c.restore(); } else c.drawImage(img, dx, dy);
+    if (o.flip) { c.save(); c.translate(dx + img.width, dy); c.scale(-1, 1); c.drawImage(img, 0, 0); if (o.arms === 'phone') phoneLight(c, 0, 0, o.back, pose === 'sit' ? 6 : 0, o.t, img.width); c.restore(); }
+    else { c.drawImage(img, dx, dy); if (o.arms === 'phone') phoneLight(c, dx, dy, o.back, pose === 'sit' ? 6 : 0, o.t, img.width); }
     if (o.hat) { // a tiny Santa hat on Christmas (spec 009): on the head, which sits at the front of the loaf and the top of the sit
       var hx = pose === 'sit' ? dx + img.width / 2 : (o.flip ? dx + 6 : dx + img.width - 7), hy = pose === 'sit' ? dy : dy - 1;
       c.fillStyle = '#d2363c'; c.beginPath(); c.moveTo(hx - 4, hy + 2); c.lineTo(hx + 4, hy + 2); c.lineTo(hx + (o.flip ? -3 : 3), hy - 5); c.closePath(); c.fill();
@@ -3690,9 +3753,10 @@ var SS = window.SS = window.SS || {};
     a.draw = function (c, p) {
       var walking = a.path.length > 0, beat = Math.floor(a.walked * 4) % 4;
       var pose = walking ? (beat === 0 ? 'walk1' : beat === 2 ? 'walk2' : (a.kind === 'cat' ? 'walk2' : 'stand')) : a.pose;
-      if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: walking && a.back, flip: a.flip, t: performance.now() });
+      if (a.kind === 'person' && pose === 'bath') drawBath(c, a, p);
+      else if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: walking && a.back, flip: a.flip, t: performance.now(), arms: walking ? null : a.arms });
       else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: a.flip, hat: SS.G && SS.G.xmasDay });
-      var headY = p[1] - (a.kind === 'cat' ? 22 : (a.pose === 'sit' ? 36 : a.pose === 'lie' ? 16 : 42));
+      var headY = p[1] - (a.kind === 'cat' ? 22 : (a.pose === 'sit' ? 36 : a.pose === 'lie' ? 16 : a.pose === 'bath' ? 34 : 42));
       if (a.bar) { // the slim progress bar over her head
         var w = 18, k = Math.min(1, a.bar.k);
         c.fillStyle = '#3b2430'; c.fillRect(Math.round(p[0] - w / 2 - 1), Math.round(headY - 6), w + 2, 4);
@@ -3704,6 +3768,18 @@ var SS = window.SS = window.SS || {};
       if (a.extra) a.extra(c, p);
     };
     return a;
+  }
+  // Sarah in the bath: drawn from her water line, clipped at the tub's front rim (its basin's lower edges on screen)
+  function drawBath(c, a, p) {
+    var G = SS.G, W = G && G.W, tub = W && a.on && W.byUid[a.on], clip = null, water = [p[0], p[1] - 7];
+    if (tub) {
+      var d = W.def(tub), M = SS.Model(null, d, tub, { x: tub.x, y: tub.y, rot: tub.r || 0 }), Z = W.floorOf(tub) * FH + 19;
+      var pts = [[.18, .22], [1.82, .22], [1.82, .78], [.18, .78]].map(function (q) { var w = M.wp(q[0], q[1]); return SS.I.p(w[0], w[1], Z); });
+      var L = pts.reduce(function (m, q) { return q[0] < m[0] ? q : m; }), R = pts.reduce(function (m, q) { return q[0] > m[0] ? q : m; }), B = pts.reduce(function (m, q) { return q[1] > m[1] ? q : m; });
+      clip = [L, B, R, [R[0], R[1] - 120], [L[0], L[1] - 120]];
+      var wq = SS.I.p(a.x, a.y, Z - 2); water = [wq[0], wq[1]];
+    }
+    SS.bathPerson(c, water[0], water[1], { flip: a.flip, t: performance.now(), clip: clip });
   }
   // a small thought bubble over a head: a heart, '!', 'z', '...', a note, a treat
   function drawBubble(c, x, y, b) {
@@ -3748,7 +3824,7 @@ var SS = window.SS = window.SS || {};
     a.path = waypoints(nodes);
     return true;
   }
-  function getUp(W, a) { if (a.on || a.pose === 'sit' || a.pose === 'lie' || a.pose === 'loaf' || a.pose === 'curl') { var u = a.onTile; a.on = null; a.z = 0; a.pose = a.kind === 'cat' ? 'sit' : 'stand'; if (u) { a.x = u[0] + .5; a.y = u[1] + .5; } a.onTile = null; } }
+  function getUp(W, a) { if (a.on || a.pose === 'bath' || a.pose === 'sit' || a.pose === 'lie' || a.pose === 'loaf' || a.pose === 'curl') { var u = a.onTile; a.on = null; a.z = 0; a.pose = a.kind === 'cat' ? 'sit' : 'stand'; if (u) { a.x = u[0] + .5; a.y = u[1] + .5; } a.onTile = null; } }
   function step(a, dt) {
     if (!a.path.length) { if (a.arrive) { var done = a.arrive; a.arrive = null; done(); } return; }   // already there
     var wp = a.path[0];
@@ -4075,7 +4151,8 @@ var SS = window.SS = window.SS || {};
     // face the target
     var tp = tg.agent ? { x: tg.agent.x, y: tg.agent.y } : tg.piece ? (function () { var ft = W.foot(tg.piece.host ? W.hostOf(tg.piece) : tg.piece.wall ? null : tg.piece) || [0, 0, 0, 0]; return tg.piece.wall ? { x: tg.piece.wall[0] + .5, y: tg.piece.wall[1] } : { x: (ft[0] + ft[2]) / 2, y: (ft[1] + ft[3]) / 2 }; })() : { x: s.x, y: s.y - 1 };
     var dx = tp.x - s.x, dy = tp.y - s.y; s.flip = (dx - dy) < 0; s.back = (dx + dy) < 0;
-    if (a.how === 'sit' || a.how === 'tub') seatOn(W, s, tg.piece, 'sit');
+    if (a.how === 'sit') seatOn(W, s, tg.piece, 'sit');
+    if (a.how === 'tub') seatOn(W, s, tg.piece, 'bath');   // she sits down in the water (art: sprites.js, the bath)
     if (a.how === 'lie') seatOn(W, s, tg.piece, 'lie');
     if (a.tv) { var tv = W.pieces.filter(function (p) { return W.def(p).use === 'tv' && W.floorOf(p) === s.f; })[0]; if (tv) { tv.lit = true; A.tv = tv; } }
     if (a.fx === 'paint' || a.fx === 'craft') { tg.piece.work = true; }
@@ -4194,7 +4271,7 @@ var SS = window.SS = window.SS || {};
     G.idle = { text: act.text, phone: !!act.phone, piece: p.uid };
     G.setFloor(s.f);
   };
-  SS.stopSarahIdle = function (G) { if (!G.idle) return; var p = G.W.byUid[G.idle.piece]; if (p) p.work = false; G.idle = null; G.people.sarah.extra = null; };
+  SS.stopSarahIdle = function (G) { if (!G.idle) return; var p = G.W.byUid[G.idle.piece]; if (p) p.work = false; G.idle = null; G.people.sarah.extra = null; G.people.sarah.arms = null; };
   SS.tickPhone = function (G, dt) {
     if (G.mode !== 'life') return;
     var s = G.people.sarah, S = G.save;
@@ -4203,8 +4280,10 @@ var SS = window.SS = window.SS || {};
     else if (G.idle && G.idle.phone) S.phone = Math.max(0, S.phone - DRAIN * dt);
     var low = S.phone < .2;
     // scrolling on her phone, and the low-battery despair
-    s.extra = G.idle && G.idle.phone ? function (c, p) {
-      var x = Math.round(p[0] + (s.flip ? -6 : 3)), y = Math.round(p[1] - (s.pose === 'sit' ? 20 : 24) - (low ? 6 : 0));
+    // scrolling: both hands at her chest, eyes on the screen (sprites.js, the phone arms); the low-battery despair holds it up
+    s.arms = G.idle && G.idle.phone && !low ? 'phone' : null;
+    s.extra = G.idle && G.idle.phone && low ? function (c, p) {
+      var x = Math.round(p[0] + (s.flip ? -6 : 3)), y = Math.round(p[1] - (s.pose === 'sit' ? 20 : 24) - 6);
       c.fillStyle = '#3b2430'; c.fillRect(x, y, 4, 6); c.fillStyle = low ? '#5a4650' : '#a9c9e8'; c.fillRect(x + 1, y + 1, 2, 4);
       if (low && Math.floor(performance.now() / 400) % 2) { var bx = Math.round(p[0] - 4), by = Math.round(p[1] - 54); c.fillStyle = '#fff6ea'; c.fillRect(bx - 2, by - 2, 14, 9); c.fillStyle = '#d2363c'; c.fillRect(bx, by, 8, 5); c.fillRect(bx + 8, by + 1, 1, 3); c.fillStyle = '#fff6ea'; c.fillRect(bx + 2, by + 1, 5, 3); c.fillStyle = '#d2363c'; c.fillRect(bx + 1, by + 1, 1, 3); }
     } : (G.charging ? function (c, p) { var x = Math.round(p[0] - 4), y = Math.round(p[1] - 50); c.fillStyle = '#3b2430'; c.fillRect(x, y, 9, 5); c.fillStyle = '#8cc06a'; c.fillRect(x + 1, y + 1, Math.round(7 * S.phone), 3); c.fillRect(x + 9, y + 1, 1, 3); } : (G.act ? s.extra : null));

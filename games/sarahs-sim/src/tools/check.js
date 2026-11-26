@@ -400,6 +400,8 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       if (!G.idle) { out.push('Sarah is not in the middle of anything when Life opens'); return out; }
       G.idle.phone = true; G.save.phone = .5; run(1200);
       if (!(G.save.phone < .5)) out.push('the phone does not run down while she scrolls');
+      if (G.people.sarah.arms !== 'phone') out.push('scrolling does not use the phone-at-her-chest pose');
+      G.save.phone = .1; run(1); if (G.people.sarah.arms) out.push('a low phone still shows the scrolling pose, not the despair');
       G.save.phone = .1;
       if (!SS.actionsFor(G, { agent: G.people.sarah })) out.push('tapping Sarah with a low phone does not show Charge');
       SS.startHunt(G); const h = G.hunt.hide;
@@ -543,6 +545,19 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
         SS.stopActions(G); return out;
       });
       quick.forEach(o => bad.push(o));
+      // the bath: she sits down in the water (head, shoulders and arms over the rim), in all 4 turns of the tub, and steps out dressed
+      const bath = await page.evaluate(() => {
+        const G = SSG, out = [], s = G.people.sarah, tub = G.W.pieces.find(p => G.W.def(p).use === 'tub'), r0 = tub.r || 0;
+        for (let r = 0; r < 4; r++) {
+          tub.r = r; SS.forgetSprite(tub.uid); SS.stopActions(G);
+          SS.chooseAction(G, { piece: tub }, SS.ACTIONS.tub[0]); let t = 0; while (G.act && !G.act.started && t < 200) { SS.updateAgents(G, .05); t += .05; }
+          if (s.pose !== 'bath' || s.on !== tub.uid) out.push('in the bath (tub turned ' + r + ') she is not sitting in the water');
+          while (G.act && t < 400) { SS.updateAgents(G, .05); t += .05; }
+          if (s.pose === 'bath' || s.on) out.push('after the bath (tub turned ' + r + ') she does not step out');
+        }
+        tub.r = r0; SS.forgetSprite(tub.uid); return out;
+      });
+      bath.forEach(o => bad.push(o));
       if (!r.walking) bad.push('a tap on the floor during the charger hunt does not walk Sarah there');
       const spots = await page.evaluate(() => { const G = SSG, W = G.W, by = u => ({ piece: W.pieces.find(p => W.def(p).use === u) });
         return { keegan: SS.huntSpot(G, { agent: G.people.keegan }), fridge: SS.huntSpot(G, by('fridge')), sofa: SS.huntSpot(G, by('sofa')), bed: SS.huntSpot(G, by('bed')), cat: SS.huntSpot(G, { agent: G.cats.ralph }), floor: SS.huntSpot(G, null) }; });
@@ -632,7 +647,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     const { ctx, page, errors } = await fresh({ scale: 1, init: () => localStorage.setItem('ss.gift', '1') });
     const url2 = await page.evaluate(() => {
       const defs = SS.CATALOG, cw = 96, ch = 104, cols = 4 * 2, cv = document.createElement('canvas');
-      const extra = 2 * ch;
+      const extra = 3 * ch;
       cv.width = Math.max(cols * cw, 900); cv.height = Math.ceil(defs.length / 2) * ch + extra; const c = cv.getContext('2d');
       c.fillStyle = '#2a1b24'; c.fillRect(0, 0, cv.width, cv.height);
       defs.forEach((d, i) => {
@@ -649,6 +664,11 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       ['sarah', 'keegan'].forEach(who => ['stand', 'walk1', 'walk2', 'sit'].forEach(pose => [false, true].forEach(back => { SS.person(c, who, x + 12, y / 2 + 46, { pose, back }); x += 26; })));
       x = 4; ['louie', 'ralph'].forEach(who => ['sit', 'loaf', 'curl', 'walk1', 'walk2'].forEach(pose => { SS.cat(c, who, x + 20, y / 2 + 92, { pose }); x += 38; }));
       SS.person(c, 'sarah', x + 30, y / 2 + 92, { pose: 'lie' });
+      // Sarah doomscrolling in all 4 turns, sitting and standing, then lying in bed (spec 006, idle Sarah and her phone)
+      x = 4; ['sit', 'stand'].forEach(pose => [[false, false], [false, true], [true, false], [true, true]].forEach(([back, flip]) => { SS.person(c, 'sarah', x + 12, y / 2 + 142, { pose, back, flip, arms: 'phone', t: 0 }); x += 26; }));
+      SS.person(c, 'sarah', x + 30, y / 2 + 142, { pose: 'lie', arms: 'phone', t: 0 }); x += 56;
+      SS.person(c, 'sarah', x + 30, y / 2 + 142, { pose: 'lie', arms: 'phone', t: 0, flip: true });
+      x += 64; SS.bathPerson(c, x, y / 2 + 136, { t: 0 }); x += 36; SS.bathPerson(c, x, y / 2 + 136, { t: 0, flip: true });   // in the bath
       c.restore();
       return cv.toDataURL();
     });
