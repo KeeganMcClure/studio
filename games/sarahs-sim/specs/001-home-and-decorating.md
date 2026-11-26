@@ -47,7 +47,7 @@ These rows already exist in the bible's Screens table. This PR points them at th
 | Title | `title-v1` |
 | Home (decorate) | `decorate-v1` on the `look-iso-v1` room, pieces from `furniture-sheet-v1` |
 | Favorites | `favorites-v1` (approved) |
-| Camera | **To draw** before part E |
+| Camera | `camera-v1` (approved) |
 | Start menu | `start-menu-v1` (approved) |
 
 ## Part A: Opening the game
@@ -157,6 +157,8 @@ The colors follow the bible's Decorating section (Colors) and the `decorate-v1` 
 - **Placing:** after she picks a room favorite, the menu closes, a banner at the top shows the favorite with Cancel, and the room she's looking at glows. One tap on a room fills it. A note says pieces that don't fit go to storage.
 - **Outfits tab** (spec 002, part E): each outfit favorite shows on the person who wore it. Picking one from the Start menu asks who should wear it, then opens Style for them. Outfits are saved with the heart in Style, so this tab has no Save tile. *Claude default.*
 - **Camera:** a camera button frames the room she's looking at without the tray, top bar or buttons. One tap saves a clean picture to her phone's photos (through the share sheet) and adds it to the memory book's Photos tab (spec 007).
+- **The Camera screen** (`camera-v1`): everything outside the picture darkens, with corner marks showing exactly what she'll get. She can still pinch to zoom, slide and flip the walls. A close button sits at the top, and the heart is the shutter at the bottom.
+- **After the snap:** the picture drops in as a small print, tilted a little, with the home's name and the date under it. A note says it's saved to her photos and added to the memory book, with Share and Done. The saved file is only the picture, with no print frame or note. *Claude default:* the print and caption.
 
 **Done when:** a saved room favorite rebuilds in another home and in another mode, and a camera picture saves to the phone with no buttons in it.
 
