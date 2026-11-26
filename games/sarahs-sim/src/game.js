@@ -468,9 +468,10 @@
   function drawTitle(H, t) {
     var A = SS.titleArt; A.use(c); SS.use(c);
     var W = W0;
+    A.setSeason(SS.now());   // the scene follows the real date (bible, Title and cover)
     A.sky(W, H, t, 1); A.moon(W - 34, 62, 9);
     var gy = G.screen === 'open' ? H - 70 : H - 100;
-    A.street(W, H, t, gy, gy - 150); A.snowfall(W, H, t, 80, true);
+    A.street(W, H, t, gy, gy - 150); A.weather(W, H, t, 80, true);
     A.titleText(W, 14);
     if (G.screen === 'open') {
       for (var i = 0; i < 16; i++) { var x = (A.rnd(i + 200) * W), y = (A.rnd(i + 300) * H * .6 + t * 3) % (H * .7); A.R(x, y, 2, 3, i % 3 ? A.P.gold : A.P.rose); }

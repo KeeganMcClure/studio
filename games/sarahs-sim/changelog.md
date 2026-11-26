@@ -2,6 +2,20 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 26, 2026: the title and cover in every season (Dev)
+
+Spec 001 part A said winter came first and the other seasons would follow before Dec 25 if time allowed. They're done.
+
+- The title and the launcher cover follow the real date:
+  - **Winter** (December to February): snow, the wreath on the door and, in December, the tree in the front window.
+  - **Spring** (March to May): rain and flower boxes under the windows.
+  - **Summer** (June to August): a warm evening sky with fireflies.
+  - **Fall** (September to November): falling leaves, with two pumpkins on the stoop in October.
+- Outside December, the front window holds a potted plant instead of the tree.
+- The snowy ledges turn to plain stone outside winter.
+- The first-open gift keeps its snow, since it opens on Christmas.
+- Other holidays' small touches come with spec 009.
+
 ## Nov 26, 2026: needs and more together time (Dev)
 
 Spec 006 part C, and the together actions from part D. Rules and content on the home screen, with no new screens (the meters are drawn as in the approved `cooking-v1`), so this goes ahead while the playtest notes come in.
