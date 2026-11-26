@@ -35,6 +35,7 @@
     poly([A, B, C, D], 'rgba(40,60,30,.22)');
   }
   function ellipseShadow(px, py, rx) { c.fillStyle = WIN ? 'rgba(70,80,120,.22)' : 'rgba(40,60,30,.28)'; c.beginPath(); c.ellipse(px, py, rx, rx / 2, 0, 0, 7); c.fill(); }
+  function shade(hex, f) { var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; function k(v) { return Math.max(0, Math.min(255, Math.round(v * (1 + f)))); } return 'rgb(' + k(r) + ',' + k(g) + ',' + k(b) + ')'; }
   function hash(i, j) { var h = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return h - Math.floor(h); }
 
   var P = {
@@ -113,7 +114,14 @@
     }
     // the backs of the next street's rowhouses, behind the fence
     [[-1, 2.2, 66, '#9e5a4e'], [2.2, 5.4, 78, '#b46a5a'], [5.4, 8.6, 62, '#8f5d6b'], [8.6, 12, 72, '#a8644f']].forEach(function (b, k) {
-      var y = -3.2, a = iso(b[0], y), bb = iso(b[1], y);
+      var y = -3.2, a = iso(b[0], y), bb = iso(b[1], y), back = -9;
+      // a full building: its right side, its flat roof and parapet, then the back wall facing the yard
+      var sb = iso(b[1], back); poly([bb, sb, up(sb, b[2]), up(bb, b[2])], shade(b[3], -.18));
+      for (var sh = 6; sh < b[2]; sh += 6) line(up(bb, sh), up(sb, sh), 'rgba(60,30,30,.18)');
+      var ab = iso(b[0], back);
+      poly([up(a, b[2] + 3), up(bb, b[2] + 3), up(sb, b[2] + 3), up(ab, b[2] + 3)], WIN ? '#f7fbff' : '#7a6a6e');
+      poly([up(bb, b[2] + 3), up(sb, b[2] + 3), up(sb, b[2] + 6), up(bb, b[2] + 6)], WIN ? '#e8f0fa' : '#c9b5a3');
+      var ch = iso(b[0] + 1, -6); box(b[0] + .8, -6.2, .5, .5, 10, WIN ? ['#f7fbff', '#9e5a4e', '#7d3527'] : ['#8a4a3e', '#9e5a4e', '#7d3527'], b[2] + 3);
       poly([a, bb, up(bb, b[2]), up(a, b[2])], b[3]);
       poly([up(a, b[2]), up(bb, b[2]), up(bb, b[2] + 3), up(a, b[2] + 3)], WIN ? '#f7fbff' : '#e9d6c4');
       for (var wx = .5; wx < b[1] - b[0] - .4; wx += 1.1) for (var wh = 26; wh < b[2] - 8; wh += 20) {
@@ -134,8 +142,36 @@
   }
 
   // ---------- the back of their rowhouse (left plane, x = 0) ----------
+  // a neighbor's rowhouse, attached to theirs: back wall on the x = 0 line from y0 to y1, flat roof running back
+  function rowBack(y0, y1, h, brick, trim, door) {
+    var DEEP = -7, a = iso(0, y0), d = iso(0, y1), ad = iso(DEEP, y0), dd = iso(DEEP, y1);
+    poly([a, d, up(d, h), up(a, h)], brick);
+    for (var hh = 3; hh < h; hh += 4) line(up(a, hh), up(d, hh), 'rgba(60,25,20,.22)');
+    poly([a, d, up(d, 4), up(a, 4)], '#8a7a70');
+    var span = y1 - y0;
+    [[.18, 30, 60], [.62, 30, 60], [.4, h - 24, h - 6]].forEach(function (w) {
+      if (door && w[0] < .3 && w[1] < 40) { var e0 = up(iso(0, y0 + span * .14), 0), e1 = up(iso(0, y0 + span * .3), 0); poly([e0, e1, up(e1, 40), up(e0, 40)], trim); var f0 = up(iso(0, y0 + span * .16), 0), f1 = up(iso(0, y0 + span * .28), 0); poly([f0, f1, up(f1, 37), up(f0, 37)], '#5d4a6e'); return; }
+      var y = y0 + span * w[0], p0 = up(iso(0, y), w[1]), p1 = up(iso(0, y + span * .2), w[1]); poly([p0, p1, up(p1, w[2] - w[1]), up(p0, w[2] - w[1])], trim);
+      var q0 = up(iso(0, y + span * .02), w[1] + 2), q1 = up(iso(0, y + span * .18), w[1] + 2); poly([q0, q1, up(q1, w[2] - w[1] - 4), up(q0, w[2] - w[1] - 4)], WIN ? '#ffd98a' : '#8fb3cc');
+    });
+    poly([up(a, h), up(d, h), up(d, h + 4), up(a, h + 4)], WIN ? '#f7fbff' : trim);
+    poly([up(a, h + 4), up(d, h + 4), up(dd, h + 4), up(ad, h + 4)], WIN ? '#f7fbff' : '#7a6a6e');
+    poly([up(d, h + 4), up(dd, h + 4), up(dd, h + 7), up(d, h + 7)], WIN ? '#e8f0fa' : trim);
+    // the party wall line where it meets the next house
+    line(a, up(a, h + 4), 'rgba(40,20,20,.5)'); line(d, up(d, h + 4), 'rgba(40,20,20,.5)');
+  }
   function house(t) {
-    var A = iso(0, 0), D = iso(0, N);
+    var A = iso(0, 0), D = iso(0, N), DEEP = -7;
+    // the rest of the rowhouse: its side wall at the near end, and the flat roof with a parapet, chimney and roof hatch
+    var DS = iso(DEEP, N), AS = iso(DEEP, 0);
+    poly([D, DS, up(DS, HOUSE + 5), up(D, HOUSE + 5)], '#8f4334');
+    for (var hs = 3; hs < HOUSE; hs += 4) line(up(D, hs), up(DS, hs), 'rgba(60,25,20,.25)');
+    [[-2.2, 30, 62], [-5.0, 30, 62], [-3.6, HOUSE - 24, HOUSE - 4]].forEach(function (w) { var p0 = up(iso(w[0], N), w[1]), p1 = up(iso(w[0] - 1.1, N), w[1]); poly([p0, p1, up(p1, w[2] - w[1]), up(p0, w[2] - w[1])], '#efe2d2'); var q0 = up(iso(w[0] - .12, N), w[1] + 2), q1 = up(iso(w[0] - .98, N), w[1] + 2); poly([q0, q1, up(q1, w[2] - w[1] - 4), up(q0, w[2] - w[1] - 4)], WIN ? '#ffd98a' : '#9ec3dc'); });
+    poly([up(A, HOUSE + 5), up(D, HOUSE + 5), up(DS, HOUSE + 5), up(AS, HOUSE + 5)], WIN ? '#f7fbff' : '#7a6a6e');
+    for (var rs = DEEP + 1; rs < 0; rs += 1) line(up(iso(rs, 0), HOUSE + 5), up(iso(rs, N), HOUSE + 5), WIN ? 'rgba(180,195,220,.5)' : 'rgba(60,45,50,.3)');
+    poly([up(D, HOUSE + 5), up(DS, HOUSE + 5), up(DS, HOUSE + 9), up(D, HOUSE + 9)], WIN ? '#e8f0fa' : '#efe2d2');
+    box(-5.2, 6.6, .7, .7, 14, WIN ? ['#f7fbff', '#9e5a4e', '#7d3527'] : ['#6b3a30', '#9e5a4e', '#7d3527'], HOUSE + 5);
+    box(-3.4, 2.4, 1.0, 1.0, 5, WIN ? ['#f7fbff', '#c9bfb2', '#a8a096'] : ['#b9b4ae', '#c9bfb2', '#a8a096'], HOUSE + 5);
     poly([A, D, up(D, HOUSE), up(A, HOUSE)], P.brick[1]);
     for (var h = 3, row = 0; h < HOUSE; h += 4, row++) { // brick courses and joints
       line(up(A, h), up(D, h), P.mortar);
@@ -507,7 +543,9 @@
     st = st || 'seeds'; c = ctx; t = t || 0; WIN = st === 'winter';
     backdrop(W, H, t);
     surround();
+    rowBack(-3.4, 0, HOUSE + 8, '#a8644f', '#e9d6c4', false); // next door, up the row
     house(t);
+    rowBack(N, N + 9, HOUSE - 12, '#9e5a4e', '#dfe9e4', true); // next door, down the row
     fence(t);
     ground();
     patio(0, 0, 3, 5);
