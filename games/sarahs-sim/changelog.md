@@ -112,11 +112,10 @@ New screens: `src/dist/screen-turn0` to `screen-turn3-375x667.png`. The button c
 ### What's left
 
 - The Build tools (spec 004) aren't built yet; they'll use the same view when they are.
-- A question for Keegan: what a wall piece does when its wall is cut away (below).
 
 ### Changes from the spec
 
-- A wall piece on a wall that's cut away or down is hidden along with its wall, as before. The spec says a piece facing away "shows again when the walls are cut away or down". With its wall lowered there's nothing for it to hang on, so I kept it hidden. Asked Keegan.
+- A wall piece on a wall that's cut away or down is hidden along with its wall, as before. The spec says a piece facing away "shows again when the walls are cut away or down". With its wall lowered there's nothing for it to hang on, so I kept it hidden. Keegan agreed (Nov 26): hide it with its wall.
 - There was no To do line for turning in the bible, so there was nothing to tick.
 
 ## Nov 26, 2026: quicker hugs, the charger's hiding spots, Sarah's bubble, and new art (Dev)
