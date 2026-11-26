@@ -69,7 +69,7 @@
     else { poly([D, C, [C[0], C[1] + 2], [D[0], D[1] + 2]], '#ffffff'); poly([B, C, [C[0], C[1] + 2], [B[0], B[1] + 2]], '#e8f0fa'); }
   }
   function surround() { // the brick alley and sidewalk around the yard, so the yard sits on solid ground
-    var pts = [iso(0, 0), iso(30, 0), iso(30, 30), iso(-30, 30), iso(-30, N), iso(0, N)];
+    var pts = [iso(0, -3.2), iso(30, -3.2), iso(30, 30), iso(-30, 30), iso(-30, N), iso(0, N)]; // the alley behind the fence too
     poly(pts, WIN ? '#e4ebf4' : '#b27a63');
     c.save(); c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]); c.closePath(); c.clip();
     var mortar = WIN ? 'rgba(170,185,210,.5)' : 'rgba(120,70,50,.55)';
