@@ -204,7 +204,7 @@
     if (WIN) stringLightsOn(x0, x1, h, t);
   }
   function vtF(s, p, col) { c.font = '8px "VT323", monospace'; c.fillStyle = col; c.textAlign = 'left'; c.textBaseline = 'alphabetic'; c.fillText(s, p[0] + 1, p[1] + 5); }
-  function catInWindow(xa, w, hb) { // Louie's shape on the sill, watching the street
+  function catInWindow(xa, w, hb) { // Ralph's shape on the sill, watching the street
     var p = F(xa + w * .62, hb); var col = WIN ? '#c46a2e' : '#d9813a';
     R(p[0] - 5, p[1] - 6, 9, 6, col); R(p[0] - 4, p[1] - 10, 6, 5, col); R(p[0] - 4, p[1] - 11, 1, 2, col); R(p[0] + 1, p[1] - 11, 1, 2, col); R(p[0] - 3, p[1] - 8, 1, 1, '#2b2226'); R(p[0], p[1] - 8, 1, 1, '#2b2226'); R(p[0] + 4, p[1] - 3, 3, 2, col);
   }
