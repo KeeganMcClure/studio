@@ -113,6 +113,10 @@
     for (var s = 0; s < 3; s++) { R(sx - s * 3, gy - 14 + s * 5, 36 + s * 6, 5, s % 2 ? '#e9e4ee' : '#f3eff6'); R(sx - s * 3, gy - 10 + s * 5, 36 + s * 6, 1, '#c9c3dc'); R(sx - s * 3 + 2, gy - 15 + s * 5, 30 + s * 6, 2, P.snow); }
     if (SEASON === 'fall' && MONTH === 9) { pumpkin(sx + 30, gy - 14); pumpkin(sx + 2, gy - 4); }
     c.strokeStyle = '#2f2430'; c.beginPath(); c.moveTo(sx + 36 + 6, gy - 30); c.lineTo(sx + 42, gy); c.moveTo(sx - 8, gy - 30 + 14); c.lineTo(sx - 8, gy); c.stroke();
+    if (MONTH === 11) { // Christmas on the street: a wreath on the neighbor's door, lights along the cornices
+      wreath(223, gy - 30);
+      for (var lx2 = -4; lx2 < W; lx2 += 6) { var on2 = (Math.floor(t / 2) + lx2 / 6) % 4 !== 0, ly2 = lx2 < hx || lx2 > hx + hw ? top + 4 + (lx2 > hx ? -4 : 0) : top - 2; R(lx2, ly2 + (lx2 / 6 % 2), 2, 2, on2 ? ['#ffd56b', '#e46f8b', '#8fd0ff', '#fff3a8'][(lx2 / 6 | 0) % 4] : '#5a5060'); }
+    }
     // sidewalk and snow
     R(0, gy, W, H - gy, '#8c7c94'); for (var bx = 0; bx < W; bx += 12) R(bx, gy, 1, H - gy, '#7a6a82');
     R(0, gy, W, 4, P.snow); for (var k = 0; k < W; k += 7) R(k, gy + 3, 4 + (k % 3), 2, P.snow);

@@ -17,7 +17,7 @@
       var walking = a.path.length > 0, beat = Math.floor(a.walked * 4) % 4;
       var pose = walking ? (beat === 0 ? 'walk1' : beat === 2 ? 'walk2' : (a.kind === 'cat' ? 'walk2' : 'stand')) : a.pose;
       if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: walking && a.back, flip: a.flip, t: performance.now() });
-      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: a.flip });
+      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: a.flip, hat: SS.G && SS.G.xmasDay });
       var headY = p[1] - (a.kind === 'cat' ? 22 : (a.pose === 'sit' ? 36 : a.pose === 'lie' ? 16 : 42));
       if (a.bar) { // the slim progress bar over her head
         var w = 18, k = Math.min(1, a.bar.k);
@@ -292,6 +292,7 @@
     bowl: [{ name: 'FILL', sub: 'THE BOWL', icon: 'treat', dur: 4, how: 'stand', fx: 'fill' }],
     litter: [{ name: 'SCOOP', icon: 'star', dur: 6, how: 'stand', fx: 'scoop' }],
     sarah: [{ name: 'CHARGE', sub: 'HER PHONE', icon: 'lamp', fx: 'charge', instant: true }],
+    gift: [{ name: 'OPEN', sub: 'THE GIFT', icon: 'heart', dur: 3, how: 'stand', fx: 'open', fill: { fun: .2 } }],
     meal: [{ name: 'EAT', icon: 'snack', dur: 8, how: 'stand', fx: 'eat', fill: { hunger: .6, fun: .05 } }],
     backdoor: [{ name: 'GO TO', sub: 'THE YARD', icon: 'star', soon: 'The yard comes in its own part.' }]
   };
@@ -299,7 +300,9 @@
   SS.actionsFor = function (G, target) {
     if (target.agent) { if (target.agent.kind === 'cat') return ACTIONS.cat; if (target.agent.who === 'keegan') return ACTIONS.keegan; return SS.phoneOf(G) < .99 && !G.charging && !G.hunt ? ACTIONS.sarah : null; }
     if (target.door) return ACTIONS.backdoor;
-    var d = G.W.def(target.piece); return d.use ? ACTIONS[d.use] : null;
+    var d = G.W.def(target.piece), own = d.use ? ACTIONS[d.use] : null;
+    if (target.piece.dress && d.use !== 'gift') return [{ name: 'KEEP IT', icon: 'heart', fx: 'keep', instant: true }].concat(own || []);   // day dressing she can keep (spec 009)
+    return own;
   };
   // she picked an action: do it now, or line it up (up to 3)
   SS.chooseAction = function (G, target, act) {
@@ -414,6 +417,7 @@
     if (a.fx === 'play') SS.fillCats(G, 'play', tg.agent.who === 'ralph' ? 1 : .5, tg.agent.who);   // the feather wand: Ralph's favorite, double
     if (a.fx === 'treat') SS.fillCats(G, 'hunger', .2, tg.agent.who);
     if (a.fx === 'fill') { SS.fillCats(G, 'hunger', 1); [G.cats.louie, G.cats.ralph].forEach(function (cat) { cat.bubble = { icon: 'heart', until: performance.now() + 2500 }; cat.wait = Math.min(cat.wait, .5); }); G.catFull = true; G.version++; }
+    if (a.fx === 'open') SS.openGift(G, tg.piece);
     if (a.fx === 'eat') { W.remove(tg.piece); G.changed(true); }
     if (a.fx === 'scoop') { SS.fillCats(G, 'litter', 1); G.litterLow = false; G.version++; }
   }

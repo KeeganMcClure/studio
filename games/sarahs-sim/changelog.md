@@ -2,6 +2,37 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 26, 2026: Christmas (Dev)
+
+Spec 009 build order 1: the Christmas season, Christmas Eve, Christmas morning and first snow, ready for Dec 25. Content and rules on the home screen, with no new screens.
+
+- **The Christmas set in the Holiday tab:** the tree, a wreath, stockings, a holiday garland (it twinkles and turns on like a lamp), a poinsettia, a gift stack, an ornament bowl, cookies and milk, and a snow globe.
+  - In Life, December 1 to January 6, the set shows "This season".
+  - The rest of the year it shows "Back in December" and can't be taken, unless she already has the piece.
+  - Sandbox always has everything. Buying and prices still wait for spec 006 part F.
+- **Christmas Eve, from 5 PM:** stockings go up on a wall and cookies and milk go out on a table, near her tree.
+- **Christmas morning:**
+  - Three gifts wait under her tree. If she hasn't placed a tree, a little tree goes up.
+  - Open a gift from its bubble. One holds Keegan's note, and each of the others becomes a free Christmas piece in its place.
+  - The cats wear tiny Santa hats all day, and Keegan's special breakfast waits on the table.
+  - Gifts never repeat in the same year (saved).
+- **Day dressing is for the day:** it goes away the next day unless she taps it and picks Keep it.
+- **First snow:** the first time she opens the game on or after Dec 21, a note says snow is falling. Once a winter.
+- **The street in December** (the title): a wreath on the neighbor's door and lights along the cornices.
+- **Testing:** `?date=2026-12-25&clock=8:30` sets the date and time, in Dev builds and the checks only, never in the build Sarah plays (spec 009, Testing). The `?clock=` override is now limited the same way.
+- **The note is private data.** The placeholder file holds dummy text (`treeNote`). Keegan's real words go in `src/private.js`.
+- `npm run check` now tests:
+  - the set in and out of season in Life and Sandbox;
+  - Christmas Eve's dressing, Keep it, and the dressing going away the next day;
+  - three gifts with one note, opening them, the hats and the breakfast;
+  - the gifts not coming back.
+
+### Changes from the spec
+
+- The note shows in a card over the home for now. Its own "Note found" screen (`memory-book-v1`, state `note`) comes with spec 007.
+- Parties (part C) wait for the Visitor screens (spec 008).
+- The memory book moments wait for the memory book.
+
 ## Nov 26, 2026: idle Sarah and her phone (Dev)
 
 Spec 006 part D, the rest that doesn't wait on another part. Rules and content, with no new screens.

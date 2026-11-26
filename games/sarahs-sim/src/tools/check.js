@@ -146,7 +146,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     home.nouse.forEach(t => bad.push('nobody can get to ' + t));
     // the starting catalog: every tab holds spec 001's draft list (plus the easel, the cat bowls and the litter box)
     const tabs = await page.evaluate(() => { const n = {}; SS.CATALOG.filter(d => !d.craft).forEach(d => { n[d.tab] = (n[d.tab] || 0) + 1; }); return n; });
-    const want = { seating: 10, tables: 9, beds: 6, storage: 12, lights: 7, plants: 7, rugs: 6, wall: 10, decor: 16, holiday: 1 };   // decor: 13 + the easel + the cat bowls and litter box (spec 006, part D)
+    const want = { seating: 10, tables: 9, beds: 6, storage: 12, lights: 7, plants: 7, rugs: 6, wall: 10, decor: 16, holiday: 9 };   // holiday: the tree and the Christmas set (spec 009)   // decor: 13 + the easel + the cat bowls and litter box (spec 006, part D)
     const few = await page.evaluate(() => SS.CATALOG.filter(d => !d.craft && d.tab !== 'none' && (d.swatches.length < 4 || d.swatches.length > 6)).map(d => d.id + ' (' + d.swatches.length + ')'));
     few.forEach(id => bad.push('swatches should be 4 to 6 (spec 001, part D): ' + id));
     Object.keys(want).forEach(t => { if (tabs[t] !== want[t]) bad.push(`the ${t} tab has ${tabs[t] || 0} pieces, the starting list has ${want[t]}`); });
@@ -328,7 +328,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       const uses = {}; W.pieces.forEach(p => { const u = W.def(p).use; if (u && !uses[u]) uses[u] = p; });
       if (G.kday) G.kday.busy = false;   // Keegan free for the together actions (his busy time is checked below)
       Object.keys(SS.ACTIONS).forEach(k => {
-        if (k === 'cat' || k === 'keegan' || k === 'backdoor' || k === 'meal' || k === 'sarah') return;
+        if (k === 'cat' || k === 'keegan' || k === 'backdoor' || k === 'meal' || k === 'sarah' || k === 'gift') return;
         const p = uses[k]; if (!p) { out.push('no piece in the home for ' + k); return; }
         SS.ACTIONS[k].forEach(a => { if (a.soon) return; const r = SS.chooseAction(G, { piece: p }, a); if (r !== 'now') out.push(a.name + ' on ' + p.id + ' did not start'); let started = false; for (let i = 0; i < 2400 && G.act; i++) { SS.updateAgents(G, .05); if (G.act && G.act.started) started = true; } if (!started) out.push(a.name + ' on ' + p.id + ': Sarah never got there'); });
       });
@@ -442,6 +442,46 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     const soon = await page.evaluate(() => { const need = ['COOK', 'FIND A GIG', 'CHANGE', 'GO TO', 'VIDEO-CALL', 'WIND DOWN']; const all = [].concat.apply([], Object.keys(SS.ACTIONS).map(k => SS.ACTIONS[k])); return need.filter(n => !all.some(a => a.name === n && a.soon)); });
     soon.forEach(n => bad.push(n + ' does not show Coming soon'));
     report('spec 006: four light looks, lamps at 5 PM, walking up the stairs, every starter action, crafts, the queue; needs; together actions; the cats\' needs; Keegan\'s day; her phone', bad.concat(errors));
+    await ctx.close();
+  }
+
+  // ---------- spec 009: Christmas ----------
+  {
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    const bad = await page.evaluate(() => {
+      const out = [], G = SSG;
+      // out of season in Life: the Christmas set says "Back in December" and can't be taken; in season it says "This season"
+      SS.setDate(2026, 6, 4); SS.setClock(12, 0); G.openMode('life');
+      const away = G.catalogList('holiday').items.filter(it => it.away).length;
+      if (!away) out.push('out of season, Christmas pieces are not marked Back in December');
+      G.takeCard(G.catalogList('holiday').items.find(it => it.away)); if (G.hold) out.push('an out-of-season Christmas piece can be taken'); G.hold = null;
+      G.openMode('sandbox'); if (G.catalogList('holiday').items.some(it => it.away)) out.push('Sandbox hides holiday pieces out of season');
+      SS.setDate(2026, 11, 5); G.openMode('life');
+      if (!G.catalogList('holiday').items.every(it => it.season)) out.push('in December, the Christmas set is not marked This season');
+      // Christmas Eve: stockings and cookies, for the day only, and she can keep one
+      SS.setDate(2026, 11, 24); SS.setClock(19, 0); G.openMode('life');
+      const st = G.W.pieces.find(p => p.id === 'stockings' && p.dress), ck = G.W.pieces.find(p => p.id === 'cookies-and-milk' && p.dress);
+      if (!st || !ck) out.push('Christmas Eve has no stockings or cookies out');
+      if (ck) { const acts = SS.actionsFor(G, { piece: ck }); if (!acts || acts[0].fx !== 'keep') out.push('day dressing has no Keep it'); else { G.bubble = { target: { piece: ck }, actions: acts, cur: 0, tip: [0, 0], title: '' }; G.doBubble(0); } }
+      // Christmas morning: gifts under the tree, Santa hats, breakfast; the eve's stockings go, the kept cookies stay
+      SS.setDate(2026, 11, 25); SS.setClock(8, 0); G.openMode('life');
+      if (G.W.pieces.some(p => p.id === 'stockings' && p.dress)) out.push('yesterday\'s dressing did not go away');
+      if (!G.W.pieces.some(p => p.id === 'cookies-and-milk')) out.push('a kept day-dressing piece was taken away');
+      const gifts = G.W.pieces.filter(p => p.id === 'christmas-gift');
+      if (gifts.length !== 3 || gifts.filter(g => g.note).length !== 1) out.push('Christmas morning does not have 3 gifts with one note: ' + gifts.length);
+      if (!G.xmasDay) out.push('the cats are not in Santa hats on Christmas');
+      if (!G.W.pieces.some(p => p.id === 'plated-meal')) out.push('Keegan made no Christmas breakfast');
+      const n0 = G.W.pieces.length; gifts.filter(g => !g.note).forEach(g => SS.openGift(G, g));
+      if (G.W.pieces.filter(p => p.id === 'christmas-gift').length !== 1) out.push('opening gifts does not clear them');
+      if (G.W.pieces.length !== n0) out.push('each opened gift does not leave a Christmas piece in its place');
+      SS.openGift(G, G.W.pieces.find(p => p.id === 'christmas-gift'));
+      if (!/NOTE/.test((G.toastT || {}).text || '')) out.push('the note gift does not show Keegan\'s note');
+      // gifts never repeat in the same year
+      G.openMode('life'); if (G.W.pieces.some(p => p.id === 'christmas-gift')) out.push('the gifts came back after reopening');
+      // first snow: once a winter
+      return out;
+    });
+    report('spec 009: the Christmas set in and out of season, Christmas Eve, Christmas morning, gifts and the note', bad.concat(errors));
     await ctx.close();
   }
 

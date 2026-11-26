@@ -15,6 +15,8 @@ window.SS_PRIVATE = {
     evening: [{ text: 'Scrolling on her phone', at: 'sofa', phone: true }, { text: 'Painting', at: 'easel' }],
     lateNight: [{ text: 'Scrolling in bed', at: 'bed', phone: true }]
   },
+  // the note in a gift under the tree on Christmas morning (spec 009, part B; spec 007). PLACEHOLDER text only.
+  treeNote: { lines: ['A placeholder note under the tree.'], sign: 'Keegan' },
   notes: [],
   // Keegan's idle life (spec 006, part D): what he's busy with at each time of day. Each entry: what the People card and his
   // bubble say, where he does it (a piece's Life use: desk, sofa, stove, bed, bookshelf, chair, tv), and busy: true for things

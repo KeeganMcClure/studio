@@ -48,7 +48,7 @@
     G.tray.open = mode === 'sandbox';
     G.floor = 0; G.walls = 'cut';
     SS.makeAgents(G); G.sarahF = undefined; G.idle = null; G.hunt = null; G.charging = false; SS.startKeeganDay(G);
-    G.sel = null; centerCam(true); SS.startSarahIdle(G);
+    G.sel = null; centerCam(true); SS.startSarahIdle(G); SS.applyHolidays(G);
     G.screen = 'home';
     G.changed(true);
   }
@@ -110,13 +110,20 @@
   G.catalogList = function (tab) {
     var defs = SS.CATALOG.filter(function (d) { return d.tab === tab && (!d.craft || G.mode === 'sandbox' || G.save.made.indexOf(d.id) >= 0); });
     if (tab === 'storage') defs.sort(function (a, b) { return (a.row ? (a.row === 'kitchen' ? 1 : 2) : 0) - (b.row ? (b.row === 'kitchen' ? 1 : 2) : 0); });
-    var items = defs.map(function (d) { return { id: d.id, def: d, sw: 0, stored: G.save.stored.filter(function (s) { return s.id === d.id; }).length }; });
+    var now = SS.now();
+    var items = defs.map(function (d) {
+      var it = { id: d.id, def: d, sw: 0, stored: G.save.stored.filter(function (s) { return s.id === d.id; }).length };
+      // holiday pieces in Life: "This season" in season, "Back in December" out of it, unless they're already hers (spec 009)
+      if (d.holiday && G.mode === 'life') { if (SS.inSeason(d.holiday, now)) it.season = 'THIS SEASON'; else if (G.save.made.indexOf(d.id) < 0 && !it.stored) it.away = 'BACK IN DECEMBER'; }
+      return it;
+    });
     if (tab === 'ours') items.unshift({ soon: true });
     return { items: items, total: SS.CATALOG.filter(function (d) { return !d.craft; }).length };
   };
   // taking a card: the piece comes up held in the middle of the view (buttons) or under the finger (a drag)
   G.takeCard = function (it, p) {
     if (it.soon) return;
+    if (it.away) { G.toast(it.away, 1600, 'Christmas pieces are in the shop from December 1 to January 6.'); return; }
     G.deselect(); G.bubble = null;
     var d = it.def, st = G.save.stored.filter(function (s) { return s.id === d.id; })[0];
     var inst = { id: d.id, sw: st ? st.sw : 0, props: st ? st.props !== false : true };
@@ -294,6 +301,7 @@
     var b = G.bubble; if (!b) return; var a = b.actions[i]; G.bubble = null;
     if (a.soon) { G.toast(a.name + (a.sub ? ' ' + a.sub : '') + ': COMING SOON', 1800, a.soon); return; }
     if (a.fx === 'charge') { G.meters = null; SS.startHunt(G); return; }
+    if (a.fx === 'keep') { b.target.piece.dress = null; G.changed(true); G.toast('IT\'S YOURS TO KEEP', 1500); return; }
     G.meters = null;
     var r = SS.chooseAction(G, b.target, a);
     if (r === 'busy') G.toast('KEEGAN IS ' + G.kday.text.toUpperCase(), 2000, 'It\'s lined up for when he\'s done.');

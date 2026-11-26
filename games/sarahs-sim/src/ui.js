@@ -135,6 +135,8 @@
       drawThumb(c, it.id, sx + 3, sy + 3, 28, 21, it.sw);
       // small dots for its color choices (bible, Decorating, Catalog tabs)
       it.def.swatches.slice(0, 4).forEach(function (s, k) { var base = s[it.def.parts[0] ? it.def.parts[0][0] : 'x'] || '#c88d5a'; R(sx + 34 + (k % 2) * 9, sy + 5 + Math.floor(k / 2) * 9, 7, 7, '#3b2430'); R(sx + 35 + (k % 2) * 9, sy + 6 + Math.floor(k / 2) * 9, 5, 5, base); });
+      if (it.season) { R(sx + 1, sy + 1, 38, 7, P.rose); txt(it.season, sx + 20, sy + 2, '#fff', 4, 'center'); }
+      if (it.away) { R(sx, sy, 55, 27, 'rgba(251,238,221,.7)'); R(sx + 1, sy + 9, 53, 9, P.trayEdge); txt('BACK IN', sx + 27, sy + 10, P.ink, 4, 'center'); txt('DECEMBER', sx + 27, sy + 14, P.ink, 4, 'center'); }
       if (it.stored) { R(sx + 33, sy + 19, 20, 7, P.sage[1]); txt('×' + it.stored, sx + 43, sy + 20, '#fff', 5, 'center'); }
       if (focused) { c.strokeStyle = P.rose; c.lineWidth = 2; c.strokeRect(sx + 1, sy + 1, 53, 25); c.lineWidth = 1; }
       hit(G, sx, sy, 55, 27, function () { G.takeCard(it); }, { card: it });
