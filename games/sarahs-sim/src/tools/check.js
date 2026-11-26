@@ -735,6 +735,15 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       if (!end || end[0] !== tgt.x || end[1] !== tgt.y) bad.push('view ' + k + ': tapping tile ' + tgt.x + ',' + tgt.y + ' walks Sarah to ' + JSON.stringify(end));
     }
     await page.evaluate(() => { SS.view.k = 0; SSG.openMode('sandbox'); });
+    // sitting (Keegan, Nov 26): the hips at the seat, and the legs below them, not feet on the seat (the sit drawing reaches
+    // below the point she sits at, and is wider than her body: the thighs come forward)
+    const sitOk = await page.evaluate(() => { const out = [];
+      const drawn = o => { const c = document.createElement('canvas'); c.width = 60; c.height = 80; const x = c.getContext('2d'); SS.person(x, o.who, 30, 50, o);
+        const d = x.getImageData(0, 0, 60, 80).data; let below = 0, l = 60, r = 0; for (let y = 0; y < 80; y++) for (let xx = 0; xx < 60; xx++) if (d[(y * 60 + xx) * 4 + 3] > 200) { if (y > 51) below++; l = Math.min(l, xx); r = Math.max(r, xx); } return { below, w: r - l }; };
+      ['sarah', 'keegan'].forEach(w => { const stand = drawn({ who: w, pose: 'stand' }); [5, 13, 17].forEach(h => { const sit = drawn({ who: w, pose: 'sit', seatH: h });
+        if (sit.below < 10) out.push(w + ' sitting on a seat ' + h + ' px high has no legs below the seat');
+        if (h >= 9 && sit.w < stand.w + 2) out.push(w + ' sitting on a seat ' + h + ' px high has no lap coming forward'); }); }); return out; });
+    sitOk.forEach(o => bad.push(o));
     // lying in bed (Keegan, Nov 26): both heads rest on the bed, not off its side, in every view
     await page.evaluate(() => { const G = SSG; SS.setClock(8, 20); G.openMode('life'); SS.stopSarahIdle(G); SS.stopActions(G); G.kday = null;
       const bed = G.W.pieces.find(p => G.W.def(p).use === 'bed' && G.W.def(p).w >= 2); SS.chooseAction(G, { piece: bed }, SS.ACTIONS.bed.find(a => a.name === 'LIE IN'));

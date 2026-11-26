@@ -2,6 +2,24 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 26, 2026: sitting reads as sitting (Dev)
+
+Keegan's bug: the sit pose was the standing drawing pushed down a little, so on the window seat she looked like she was standing on the cushion.
+
+### What was built
+
+- A new sitting drawing, the L of a seated person:
+  - her hips are at the seat;
+  - her thighs come forward toward the way she's facing, with light catching their tops;
+  - her shins drop from the knees, with a boot at the bottom, toes forward.
+- It's the same for Keegan, on every seat (sofa, chairs, the window seat), and the scrolling pose sits the same way.
+- On a low seat like the floor cushion, they sit cross-legged, with a boot out at each knee.
+- Blinks, the phone glow and the low-battery icon moved to match. The contact sheet shows the new sit.
+
+### Checks
+
+- `npm run check`: sitting on seats 5, 13 and 17 px high has legs below the seat, and on the taller ones a lap coming forward, wider than standing.
+
 ## Nov 26, 2026: lying in bed reads as in bed (Dev)
 
 Keegan's bug: in bed, Keegan was drawn as his standing sprite turned on its side, flat across the screen, so he hung off the bed.

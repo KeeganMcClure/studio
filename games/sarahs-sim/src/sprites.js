@@ -254,6 +254,34 @@
     } else c.drawImage(b, 0, 0);
     CACHE[k] = cv; return cv;
   }
+  // sitting (Keegan, Nov 26: the old sit was the standing drawing pushed down, so she seemed to stand on the seat). Her hips
+  // are at the seat; under them her lap (thighs coming toward you, so only a short band), a knee line, then her shins and
+  // boots hang down in front of the seat. On a low seat (a floor cushion) she sits cross-legged, boots out to each side.
+  var HIP = { sarah: 29, keegan: 33 };
+  function sitImg(who, back, look, arms, seatH) {
+    var k = 'sit2' + who + (back ? 'B' : 'F') + (look || '') + (arms || '') + seatH; if (CACHE[k]) return CACHE[k];
+    var b = base(who, back, look, arms), W = b.width, H = b.height, hip = HIP[who], low = seatH < 9;
+    var below = low ? 6 : 13, cv = canvas(W + 8, hip + below), c = cv.getContext('2d'), ox = 4;
+    c.drawImage(b, 0, 0, W, hip, ox, 0, W, hip);                                        // head and body down to the hips
+    if (low) { // cross-legged: the lap wide, a boot at each knee
+      c.drawImage(b, 2, hip, W - 4, 3, ox - 2, hip, W + 4, 3);
+      c.fillStyle = C.o; c.fillRect(ox - 2, hip + 3, W + 4, 1);
+      c.drawImage(b, 3, H - 4, 6, 4, ox - 3, hip + 1, 6, 4); c.drawImage(b, W - 9, H - 4, 6, 4, ox + W - 3, hip + 1, 6, 4);
+    } else { // the L of a sitting person: thighs forward toward the way she faces, then the shins drop from the knees
+      var px = b.getContext('2d').getImageData(0, 0, W, H).data, col = function (x, y) { var i = (y * W + x) * 4; return 'rgb(' + px[i] + ',' + px[i + 1] + ',' + px[i + 2] + ')'; };
+      var lit = col(6, hip + 2), shade = col(W - 7, hip + 2), deep = col(Math.floor(W / 2), hip + 3);
+      var x0 = ox + 4, x1 = ox + W + 3;                                                    // hips to knees
+      c.fillStyle = C.o; c.fillRect(x0, hip - 1, x1 - x0 + 1, 5);
+      c.fillStyle = shade; c.fillRect(x0 + 1, hip, x1 - x0 - 1, 3);
+      c.fillStyle = lit; c.fillRect(x0 + 1, hip, x1 - x0 - 1, 1);                          // the top of the thighs, catching the light
+      c.fillStyle = deep; c.fillRect(x0 + 1, hip + 2, x1 - x0 - 1, 1);
+      c.fillStyle = C.o; c.fillRect(x1 - 5, hip + 3, 6, 6);                                // shins, down from the knees
+      c.fillStyle = shade; c.fillRect(x1 - 4, hip + 3, 4, 5); c.fillStyle = lit; c.fillRect(x1 - 4, hip + 3, 1, 5);
+      c.drawImage(b, W - 10, H - 4, 6, 4, x1 - 5, hip + 8, 6, 4);                          // a boot, toes forward
+      c.drawImage(b, 2, 0, W - 4, hip, ox + 2, 0, W - 4, hip);                             // the body again, over the near hip
+    }
+    CACHE[k] = cv; return cv;
+  }
   SS.person = function (c, who, x, y, o) {
     o = o || {};
     var pose = o.pose || 'stand', img;
@@ -263,16 +291,17 @@
       if (o.arms === 'phone') phoneLight(c, -img.width / 2, -img.height + 4, false, 0, o.t, img.width);
       c.restore(); return;
     }
-    img = posed(who, pose, o.back, o.look, o.arms);
+    var sit = pose === 'sit';
+    img = sit ? sitImg(who, o.back, o.look, o.arms, Math.round(o.seatH === undefined ? 14 : o.seatH)) : posed(who, pose, o.back, o.look, o.arms);
     var bob = pose === 'stand' && o.t !== undefined && StudioRig.idle(o.t, who === 'sarah' ? 1 : 2) ? 1 : 0;
-    var dx = Math.round(x - img.width / 2), dy = Math.round(y - img.height + 2 + bob);
+    var dx = Math.round(x - img.width / 2), dy = sit ? Math.round(y - HIP[who]) : Math.round(y - img.height + 2 + bob), sx0 = sit ? 4 : 0;
     if (pose !== 'sit') { c.fillStyle = 'rgba(90,45,40,.25)'; c.beginPath(); c.ellipse(x, y, 8, 3, 0, 0, 7); c.fill(); }
-    if (o.flip) { c.save(); c.translate(dx + img.width, dy); c.scale(-1, 1); c.drawImage(img, 0, 0); if (o.arms === 'phone') phoneLight(c, 0, 0, o.back, pose === 'sit' ? 6 : 0, o.t, img.width); c.restore(); }
-    else { c.drawImage(img, dx, dy); if (o.arms === 'phone') phoneLight(c, dx, dy, o.back, pose === 'sit' ? 6 : 0, o.t, img.width); }
+    if (o.flip) { c.save(); c.translate(dx + img.width, dy); c.scale(-1, 1); c.drawImage(img, 0, 0); if (o.arms === 'phone') phoneLight(c, sx0, 0, o.back, 0, o.t, img.width - sx0 * 2); c.restore(); }
+    else { c.drawImage(img, dx, dy); if (o.arms === 'phone') phoneLight(c, dx + sx0, dy, o.back, 0, o.t, img.width - sx0 * 2); }
     // blink (art-style.md, Animation: 150 ms every few seconds)
     if (!o.back && o.arms !== 'phone' && o.t !== undefined && StudioRig.blink(o.t, who === 'sarah' ? 3 : 7)) {
-      var ex = who === 'sarah' ? [7, 12] : [7, 13], ey = (who === 'sarah' ? 12 : 12) + (pose === 'sit' ? 6 : 0) + (pose.indexOf('walk') === 0 ? 1 : 0);
-      ex.forEach(function (e) { var px = o.flip ? dx + img.width - e - 2 : dx + e; c.fillStyle = who === 'sarah' ? C.sk[1] : C.sk[1]; c.fillRect(px, dy + ey, 2, 2); c.fillStyle = C.o; c.fillRect(px, dy + ey + 1, 2, 1); });
+      var ex = who === 'sarah' ? [7, 12] : [7, 13], ey = 12 + (pose.indexOf('walk') === 0 ? 1 : 0);
+      ex.forEach(function (e) { e += sx0; var px = o.flip ? dx + img.width - e - 2 : dx + e; c.fillStyle = who === 'sarah' ? C.sk[1] : C.sk[1]; c.fillRect(px, dy + ey, 2, 2); c.fillStyle = C.o; c.fillRect(px, dy + ey + 1, 2, 1); });
     }
   };
   // the screen's soft glow on her face and the thumb flicking up the screen about once a second (from behind: a glow around her)
@@ -349,8 +378,8 @@
     var bob = walk && pose === 'walk2' ? 1 : 0;
     c.fillStyle = 'rgba(90,45,40,.25)'; c.beginPath(); c.ellipse(x, y, img.width * .38, 3, 0, 0, 7); c.fill();
     var dx = Math.round(x - img.width / 2), dy = Math.round(y - img.height + 1 - bob);
-    if (o.flip) { c.save(); c.translate(dx + img.width, dy); c.scale(-1, 1); c.drawImage(img, 0, 0); if (o.arms === 'phone') phoneLight(c, 0, 0, o.back, pose === 'sit' ? 6 : 0, o.t, img.width); c.restore(); }
-    else { c.drawImage(img, dx, dy); if (o.arms === 'phone') phoneLight(c, dx, dy, o.back, pose === 'sit' ? 6 : 0, o.t, img.width); }
+    if (o.flip) { c.save(); c.translate(dx + img.width, dy); c.scale(-1, 1); c.drawImage(img, 0, 0); if (o.arms === 'phone') phoneLight(c, sx0, 0, o.back, 0, o.t, img.width - sx0 * 2); c.restore(); }
+    else { c.drawImage(img, dx, dy); if (o.arms === 'phone') phoneLight(c, dx + sx0, dy, o.back, 0, o.t, img.width - sx0 * 2); }
     if (o.hat) { // a tiny Santa hat on Christmas (spec 009): on the head, which sits at the front of the loaf and the top of the sit
       var hx = pose === 'sit' ? dx + img.width / 2 : (o.flip ? dx + 6 : dx + img.width - 7), hy = pose === 'sit' ? dy : dy - 1;
       c.fillStyle = '#d2363c'; c.beginPath(); c.moveTo(hx - 4, hy + 2); c.lineTo(hx + 4, hy + 2); c.lineTo(hx + (o.flip ? -3 : 3), hy - 5); c.closePath(); c.fill();
