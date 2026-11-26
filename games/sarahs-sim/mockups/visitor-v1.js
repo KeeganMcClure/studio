@@ -153,6 +153,7 @@
     else if (t % 2 === 0) { c.fillStyle = P.rose; c.beginPath(); c.moveTo(W - 22, by + bh - 14); c.lineTo(W - 14, by + bh - 14); c.lineTo(W - 18, by + bh - 9); c.closePath(); c.fill(); }
   }
 
+  window.SS_DOT = function (ctx, X, Y, S, t, noFlowers) { c = ctx; dotSprite(X, Y, S, t, noFlowers); }; window.SS_DOT_HEAD = function (ctx, X, Y, S, t) { c = ctx; dotHead(X, Y, S, t); }; // shared with later mockups
   window.drawVisitor = function (ctx, W, H, t, st) {
     c = ctx; t = t || 0; st = st || 'chat';
     c.fillStyle = '#22171f'; c.fillRect(0, 0, W, H);
