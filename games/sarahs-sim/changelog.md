@@ -2,6 +2,168 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 26, 2026: Christmas (Dev)
+
+Spec 009 build order 1: the Christmas season, Christmas Eve, Christmas morning and first snow, ready for Dec 25. Content and rules on the home screen, with no new screens.
+
+- **The Christmas set in the Holiday tab:** the tree, a wreath, stockings, a holiday garland (it twinkles and turns on like a lamp), a poinsettia, a gift stack, an ornament bowl, cookies and milk, and a snow globe.
+  - In Life, December 1 to January 6, the set shows "This season".
+  - The rest of the year it shows "Back in December" and can't be taken, unless she already has the piece.
+  - Sandbox always has everything. Buying and prices still wait for spec 006 part F.
+- **Christmas Eve, from 5 PM:** stockings go up on a wall and cookies and milk go out on a table, near her tree.
+- **Christmas morning:**
+  - Three gifts wait under her tree. If she hasn't placed a tree, a little tree goes up.
+  - Open a gift from its bubble. One holds Keegan's note, and each of the others becomes a free Christmas piece in its place.
+  - The cats wear tiny Santa hats all day, and Keegan's special breakfast waits on the table.
+  - Gifts never repeat in the same year (saved).
+- **Day dressing is for the day:** it goes away the next day unless she taps it and picks Keep it.
+- **First snow:** the first time she opens the game on or after Dec 21, a note says snow is falling. Once a winter.
+- **The street in December** (the title): a wreath on the neighbor's door and lights along the cornices.
+- **Testing:** `?date=2026-12-25&clock=8:30` sets the date and time, in Dev builds and the checks only, never in the build Sarah plays (spec 009, Testing). The `?clock=` override is now limited the same way.
+- **The note is private data.** The placeholder file holds dummy text (`treeNote`). Keegan's real words go in `src/private.js`.
+- `npm run check` now tests:
+  - the set in and out of season in Life and Sandbox;
+  - Christmas Eve's dressing, Keep it, and the dressing going away the next day;
+  - three gifts with one note, opening them, the hats and the breakfast;
+  - the gifts not coming back.
+
+### Changes from the spec
+
+- The note shows in a card over the home for now. Its own "Note found" screen (`memory-book-v1`, state `note`) comes with spec 007.
+- Parties (part C) wait for the Visitor screens (spec 008).
+- The memory book moments wait for the memory book.
+
+## Nov 26, 2026: idle Sarah and her phone (Dev)
+
+Spec 006 part D, the rest that doesn't wait on another part. Rules and content, with no new screens.
+
+- **Idle Sarah:** when Life opens, Sarah is in the middle of something from the time of day's pool: scrolling on her phone on the sofa (or in bed, late at night), painting, or reading. As soon as she taps anything, Sarah stops and is hers to play.
+- **The pool is private data.** The placeholder file has a short generic list built from the bible's public summary.
+- **Her phone:**
+  - While she scrolls, the battery runs down, only while the game is open (about 15 minutes of scrolling from full).
+  - When it's low, a red low-battery icon blinks over her head and she holds the phone up.
+  - Tapping Sarah shows her battery and Charge beside her meters. Charge starts the hunt: the charger is never where she left it. It's under a couch cushion, in the bed sheets, or under Ralph, from a pool that doesn't repeat until it's used up (saved).
+  - Tapping the wrong spot gets a sigh; the right one finds it. Her phone then charges over about 3 minutes of play.
+  - The first time, a bouncing marker shows the spot as a hint. B gives up for now.
+- **What a dead phone affects:** calls and photos aren't built yet, so a dead phone changes nothing else today.
+- `npm run check` now tests:
+  - Sarah starts idle;
+  - the battery runs down while she scrolls;
+  - Charge shows when it's low;
+  - a wrong guess, the right spot, and charging to full;
+  - no repeated hiding spot before the pool runs out.
+
+### Changes from the spec
+
+- Keegan handing her his charger when he walks by is left for later. It's a small extra moment, and it fits better once his day has more to it.
+
+## Nov 26, 2026: Keegan's day (Dev)
+
+Spec 006 part D, Keegan's idle life. Rules and content, with no new screens.
+
+- **His day:** when she opens Life, Keegan is already busy with something from the time of day's pool (morning, daytime, evening, late night), in the right spot: at his desk, on the sofa, at the stove, by the bookshelf or in bed. Every 5 to 15 minutes of play he moves on to the next. Picks don't repeat until the pool runs out, and the shown list is saved. His bubble says what he's doing ("Keegan · Doing school work").
+- **Cooking:** near mealtimes (7 to 9, 12 to 1, 6 to 8) he cooks, and Ralph turns up by the stove.
+- **Meals:** when he finishes cooking, the meal goes on the dining table with a sparkle. Tap it and choose Eat: it fills hunger and clears the plate.
+- **Busy:** some activities are busy (in class). A together action she picks then waits, with a note, and starts as soon as he's done.
+- **After a together action** he goes back to what he was doing.
+- **The pools are private data** (bible, Overview, Private data). The placeholder file has a short generic list built from the bible's public summary (coffee, school work, class, gaming, reading, cooking, sleeping) with the same shape. Keegan's real list goes in `src/private.js`.
+- **Fixed:** someone already standing where they needed to be never settled in (sat down or lay down). They now do.
+- `npm run check` now tests Keegan starting busy, a busy action waiting and starting, the meal going on the table and being eaten, and no repeats before the pool runs out.
+
+### Still to come in spec 006 part D
+
+- The after-moments (private data).
+- Sarah's phone and the charger hunt.
+- Winding down (it needs its pieces).
+- Cook together (it comes with the Cooking screen).
+
+## Nov 26, 2026: the cats' needs (Dev)
+
+Spec 006 part D, the cats. Rules and content, with no new screens.
+
+- **Hunger, play and the litter box** for Louie and Ralph, in Life only. They drain at the same rate as people's needs, only while she's playing, and are saved.
+- **When one is low, the cat only nudges her** (bible, The cats: never bad):
+  - Hungry: Louie sits by the bowl, chatting. Ralph flops by the fridge.
+  - Bored: a cat knocks a small thing off a table onto the floor. It's still there to pick back up.
+  - A dirty box: a grumpy face by it.
+- **The fixes:**
+  - Fill the bowl: tap the cat bowls, then Fill. Both cats come running.
+  - Scoop the box: tap the litter box, then Scoop.
+  - Play with a cat (the feather wand). It counts double for Ralph.
+  - A treat helps hunger a little.
+- **Two new pieces in Decor**, because spec 006 names them: cat bowls (kibble shows when they're fed) and a litter box (it shows clumps when it needs a scoop). A new home starts with the bowls in the kitchen and the litter box in the bathroom.
+- **Saves already on the phone** keep their home as it was. Place the bowls and the box from Decor to start caring for the cats.
+- `npm run check` now tests each nudge and each fix, and that a knocked-over thing is never lost.
+
+## Nov 26, 2026: the title and cover in every season (Dev)
+
+Spec 001 part A said winter came first and the other seasons would follow before Dec 25 if time allowed. They're done.
+
+- The title and the launcher cover follow the real date:
+  - **Winter** (December to February): snow, the wreath on the door and, in December, the tree in the front window.
+  - **Spring** (March to May): rain and flower boxes under the windows.
+  - **Summer** (June to August): a warm evening sky with fireflies.
+  - **Fall** (September to November): falling leaves, with two pumpkins on the stoop in October.
+- Outside December, the front window holds a potted plant instead of the tree.
+- The snowy ledges turn to plain stone outside winter.
+- The first-open gift keeps its snow, since it opens on Christmas.
+- Other holidays' small touches come with spec 009.
+
+## Nov 26, 2026: needs and more together time (Dev)
+
+Spec 006 part C, and the together actions from part D. Rules and content on the home screen, with no new screens (the meters are drawn as in the approved `cooking-v1`), so this goes ahead while the playtest notes come in.
+
+### What was built
+
+- **Needs (006 C).** Sarah and Keegan have energy, hunger and fun. They go down only while the game is open, from full to low in about 40 minutes of play, and are saved with Life (Sandbox has none). Actions fill them as spec 006 part B's table says. For example, Sleep fills energy, Snack fills hunger, and Paint, Read and Watch a show fill fun.
+- **When a need is low:** below a quarter, Sarah yawns, sighs or her tummy rumbles now and then while she's idle, and her actions take a quarter longer. That's all; nothing can go wrong.
+- **Meters:** tapping Sarah shows her three meters (an icon, a word and a bar each, with LOW in words, so color is never the only sign). Tapping Keegan shows his beside his bubble, as in `cooking-v1`. Keegan looks after his own needs.
+- **Together actions (006 D):** Keegan's bubble now has Chat, Hug, Kiss, Cuddle up, Play a game, Go to bed, Cook together ("Coming soon", it comes with the Cooking screen) and Wind down ("Coming soon", it needs its own pieces). Cuddle up and Lie in also work from a sofa's or bed's bubble. Keegan walks over from wherever he is, even another floor, and settles in beside her; both their needs fill. Afterwards he goes back to his desk.
+- **Hug and kiss pools:** each picks a line from its own pool with no repeats until the pool runs out (saved). The real variations are private data, so the placeholder file holds one line each for now.
+- `npm run check` now also tests:
+  - the drain rate, and that a low need nudges and slows Sarah;
+  - that a snack fills hunger;
+  - that every together action brings Keegan along and fills his needs;
+  - that needs are saved, and that Sandbox has none.
+
+### Changes from the spec
+
+- Keegan's needs are shown and filled by together actions, but he only tops himself up gently on his own. His real day (idle life) is still to come.
+- The first kiss's memory book moment waits for the memory book.
+
+### What's left in spec 006
+
+- Part D: Keegan's idle life (it needs the private pools), the cats' needs (the bowl and the litter box aren't in the catalog yet), Sarah's phone.
+- Parts E and F (Cooking, gigs and coins) come after Keegan's playtest notes, since they add screens.
+
+## Nov 26, 2026: the rest of the starting catalog (Dev)
+
+Keegan's call, Nov 26: while the playtest notes come in, finish the catalog (content only, no new screens, so it can go ahead under `studio-bible/studio.md`, Playtests).
+
+### What was built
+
+- **The other 39 pieces of spec 001's starting list**, so every tab now holds the full draft of 80 (plus the easel):
+  - Seating: loveseat, reading chair with ottoman, kitchen stool, floor cushion.
+  - Tables: long dining table, console table, kitchen island (in the kitchen and bath row), bistro table.
+  - Beds: single bed, daybed, bunk bed, cat tree (the cats nap up top).
+  - Storage: low cabinet, wardrobe (Change outfit, "Coming soon"), corner counter.
+  - Lights: mushroom lamp (from `decorate-v1`), string lights (hang on a wall and twinkle), pendant light (set on a table, it hangs over it), candle cluster, salt lamp. All of them glow and turn on and off like the lamps.
+  - Plants: fiddle leaf fig, pothos on a shelf, herb pots, hanging plant.
+  - Rugs: runner, braided rug, sheepskin.
+  - Wall: gallery set, macramé hanging, cork board, mounted TV (Watch a show), window plants shelf (goes on a window).
+  - Decor: throw pillow, knit throw, laundry basket, cat toy basket, candles, globe, fruit bowl.
+- Each has 4 to 6 swatches (the check now tests that for every piece), paintable parts, props where it has any, and all four turns. Beds, the daybed, the reading chair, the floor cushion and the stool get their Life actions (Sleep, Nap, Sit).
+- The Philly home gained a few: string lights in the living room and the bedroom, the pendant over the dining table, herb pots on a counter, a cat tree in the craft corner, a wardrobe and a sheepskin in the bedroom.
+- `npm run check` now also checks each tab holds the starting list's count, and the new pieces are on the contact sheet.
+
+### Changes from the spec
+
+- The pendant light is a small piece set on a table (it hangs above it from the ceiling), since there's no ceiling to place on yet. The kitchen island sits in Tables, in its kitchen row.
+
+### What's left
+
+- Same as the slice entry below; buying (prices) still waits for spec 006 part F.
+
 ## Nov 26, 2026: first playtest slice (Dev)
 
 Built from the Designer's playtest prompt of Nov 26: spec 001 parts A, B, C, D and F, and spec 006 parts A and B, with a first batch of the catalog.

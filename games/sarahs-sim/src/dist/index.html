@@ -741,8 +741,27 @@ window.SS_PRIVATE = {
   // the first-open gift card (spec 001, part A): lines in order, then who signed it
   christmas: { lines: ['Merry Christmas,', 'Sarah.'], sign: 'Keegan' },
   // for later specs; the placeholder keeps the shape so nothing breaks when they're built
+  // idle Sarah (spec 006, part D): what she's in the middle of when Life opens. PLACEHOLDER: generic entries from the bible's
+  // public summary (doomscrolling, painting, reading); phone: true means she's on her phone (its battery runs down)
+  sarahIdle: {
+    morning: [{ text: 'Scrolling on her phone', at: 'sofa', phone: true }, { text: 'Painting', at: 'easel' }],
+    daytime: [{ text: 'Scrolling on her phone', at: 'sofa', phone: true }, { text: 'Reading', at: 'bookshelf' }],
+    evening: [{ text: 'Scrolling on her phone', at: 'sofa', phone: true }, { text: 'Painting', at: 'easel' }],
+    lateNight: [{ text: 'Scrolling in bed', at: 'bed', phone: true }]
+  },
+  // the note in a gift under the tree on Christmas morning (spec 009, part B; spec 007). PLACEHOLDER text only.
+  treeNote: { lines: ['A placeholder note under the tree.'], sign: 'Keegan' },
   notes: [],
-  idleLife: { morning: [], daytime: [], evening: [], lateNight: [] },
+  // Keegan's idle life (spec 006, part D): what he's busy with at each time of day. Each entry: what the People card and his
+  // bubble say, where he does it (a piece's Life use: desk, sofa, stove, bed, bookshelf, chair, tv), and busy: true for things
+  // he can't stop (her together action waits until he's done). PLACEHOLDER: generic entries from the bible's public summary
+  // (Play, Idle life: cooking, school work, gaming, reading, couch time, sleeping). The real list is in the private files.
+  idleLife: {
+    morning: [{ text: 'Making coffee', at: 'stove' }, { text: 'Doing school work', at: 'desk' }, { text: 'Reading', at: 'bookshelf' }],
+    daytime: [{ text: 'In class', at: 'desk', busy: true }, { text: 'Doing school work', at: 'desk' }, { text: 'Gaming', at: 'sofa' }],
+    evening: [{ text: 'Cooking dinner', at: 'stove' }, { text: 'Gaming', at: 'sofa' }, { text: 'Reading', at: 'bookshelf' }],
+    lateNight: [{ text: 'Gaming', at: 'sofa' }, { text: 'Sleeping', at: 'bed' }]
+  },
   hugs: ['A warm hug.'],
   kisses: ['A kiss.'],
   people: []
@@ -1663,6 +1682,566 @@ var SS = window.SS = window.SS || {};
 })();
 
 </script>
+<script>/* catalog3.js */
+// Sarah's Sim catalog, part 3: the rest of spec 001's starting list (The starting catalog), so every tab holds the full
+// draft of 80 (Keegan's call, Nov 26: the rest of the catalog next, while the playtest notes come in). Same rules as parts
+// 1 and 2: one row per piece, drawn from boxes in local space so all four turns work, texture as light shading only,
+// swatches that always look good together, props on a switch.
+(function () {
+  var C = SS.CATALOG, INK = 'rgba(59,36,48,.85)';
+  function line(c, a, b, col, w) { SS.line(c, a, b, col, w); }
+  function R(c, x, y, w, h, col) { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
+  function add(def) { def.parts = def.parts || []; def.swatches = def.swatches || [{}]; def.spots = def.spots || []; C.push(def); return def; }
+  function legs(M, u0, v0, u1, v1, s, h, part, z) { [[u0, v0], [u1 - s, v0], [u0, v1 - s], [u1 - s, v1 - s]].forEach(function (q) { M.box(q[0], q[1], s, s, h, z || 0, part, { hi: false }); }); }
+  function fq(M, u0, u1, h0, h1, vv) { return SS.fq(M, u0, u1, h0, h1, vv); }
+  function glow(c, x, y, r, a) { var g = c.createRadialGradient(x, y, 1, x, y, r); g.addColorStop(0, 'rgba(255,214,140,' + a + ')'); g.addColorStop(1, 'rgba(255,214,140,0)'); c.fillStyle = g; c.fillRect(x - r, y - r, r * 2, r * 2); }
+  function small(M, fn, e) { M.spr(.5, .5, 0, function (c, x, y) { c.fillStyle = 'rgba(90,45,40,.25)'; c.beginPath(); c.ellipse(x + 1, y, 5, 2, 0, 0, 7); c.fill(); fn(c, x, y); }, e || [.15, 12]); }
+  function cushionedSeat(M, u, v, w, d, h, z, part) { var b = M.box(u, v, w, d, h, z, part); M.on(b, function (c) { var q = M.p(u + w / 2, v + d / 2, z + h); R(c, q[0] - 3, q[1], 6, 1, 'rgba(255,255,255,.4)'); }); return b; }
+
+  // ---------- seating ----------
+  add({ id: 'loveseat', name: 'Loveseat', tab: 'seating', w: 2, d: 1, kind: 'floor', h: 30, price: 380, use: 'sofa', seat: 15, nap: true,
+    parts: [['fabric', 'fab'], ['wood', 'wood']],
+    swatches: [{ fabric: '#c8a6d8', wood: '#8e5a37' }, { fabric: '#e99a70', wood: '#55311d' }, { fabric: '#9cc1b6', wood: '#cf9d68' }, { fabric: '#f39bb0', wood: '#fff1e2' }, { fabric: '#7d93c4', wood: '#55311d' }],
+    draw: function (M) { // a little curved-back two-seater: one long cushion, low rounded arms with scrolls
+      var F = M.ramp('fabric');
+      M.shadow(.05, .05, 1.9, .9);
+      [[.15, .15], [1.75, .15], [.15, .78], [1.75, .78]].forEach(function (q) { M.box(q[0], q[1], .08, .08, 5, 0, 'wood', { hi: false }); });
+      var back = M.box(.08, .08, 1.84, .26, 20, 5, 'fabric');
+      M.on(back, function (c) { var a = M.p(.1, .21, 25), b = M.p(1.9, .21, 25), m = M.p(1, .21, 29); c.strokeStyle = F[0]; c.lineWidth = 3; c.beginPath(); c.moveTo(a[0], a[1]); c.quadraticCurveTo(m[0], m[1] - 4, b[0], b[1]); c.stroke(); c.lineWidth = 1; });
+      M.box(.08, .34, .2, .6, 11, 5, 'fabric');
+      var seat = cushionedSeat(M, .28, .34, 1.44, .6, 6, 8, 'fabric');
+      M.on(seat, function (c) { if (M.vis('+v')) line(c, M.p(.28, .94, 9), M.p(1.72, .94, 9), F[0]); });
+      M.box(1.72, .34, .2, .6, 11, 5, 'fabric');
+      [.08, 1.72].forEach(function (u) { M.spr(u + .1, .94, 14, function (c, x, y) { if (!M.vis('+v')) return; c.fillStyle = F[1]; c.beginPath(); c.ellipse(x, y, 3, 3, 0, 0, 7); c.fill(); c.strokeStyle = INK; c.stroke(); }, [.1, 4]); });
+      if (M.props()) M.box(.4, .36, .34, .1, 8, 14, '#f3d38a', { tex: 'fab' });
+    } });
+  add({ id: 'reading-chair', name: 'Reading chair with ottoman', tab: 'seating', w: 1, d: 2, kind: 'floor', h: 34, price: 320, use: 'chair', seat: 15, nap: true,
+    parts: [['fabric', 'fab'], ['wood', 'wood']],
+    swatches: [{ fabric: '#c96f45', wood: '#55311d' }, { fabric: '#7fa7a0', wood: '#8e5a37' }, { fabric: '#e6d3b0', wood: '#55311d' }, { fabric: '#4f6a9e', wood: '#cf9d68' }, { fabric: '#e46f8b', wood: '#fff1e2' }],
+    draw: function (M) { // a wingback chair at the back of its two tiles, the ottoman in front of it
+      M.shadow(0, 0, 1, 2);
+      legs(M, .1, .1, .9, .9, .08, 4, 'wood');
+      M.box(.08, .08, .84, .22, 28, 4, 'fabric');
+      M.box(.08, .3, .18, .6, 16, 4, 'fabric'); M.box(.74, .3, .18, .6, 16, 4, 'fabric');
+      M.box(.26, .3, .48, .62, 8, 4, 'fabric');
+      cushionedSeat(M, .26, .3, .48, .6, 4, 12, 'fabric');
+      legs(M, .2, 1.25, .8, 1.85, .07, 4, 'wood');
+      cushionedSeat(M, .18, 1.22, .64, .66, 7, 4, 'fabric');
+      if (M.props()) M.box(.25, 1.35, .45, .3, 2, 11, '#fbe9e2', { tex: 'fab' });
+    } });
+  add({ id: 'kitchen-stool', name: 'Kitchen stool', tab: 'seating', w: 1, d: 1, kind: 'floor', h: 26, price: 90, use: 'chair', seat: 20,
+    parts: [['seat', 'fab'], ['legs', 'wood']],
+    swatches: [{ seat: '#e46f8b', legs: '#cf9d68' }, { seat: '#7fa7a0', legs: '#55311d' }, { seat: '#f3d38a', legs: '#8e5a37' }, { seat: '#fff1e2', legs: '#3b3236' }],
+    draw: function (M) {
+      M.eshadow(.5, .5, 6);
+      legs(M, .3, .3, .7, .7, .06, 19, 'legs');
+      M.box(.32, .32, .36, .02, 1, 8, 'legs', { hi: false });
+      M.cyl(.5, .5, .24, 3, 19, 'seat');
+    } });
+  add({ id: 'floor-cushion', name: 'Floor cushion', tab: 'seating', w: 1, d: 1, kind: 'floor', h: 8, price: 60, use: 'chair', seat: 5, nap: true,
+    parts: [['fabric', 'fab']], swatches: [{ fabric: '#f3d38a' }, { fabric: '#e46f8b' }, { fabric: '#9cc1b6' }, { fabric: '#c8a6d8' }, { fabric: '#e99a70' }],
+    draw: function (M) {
+      M.eshadow(.5, .55, 9);
+      var b = M.box(.15, .2, .7, .7, 5, 0, 'fabric');
+      M.on(b, function (c) { var q = M.p(.5, .55, 5); c.fillStyle = M.ramp('fabric')[3]; c.fillRect(Math.round(q[0]) - 1, Math.round(q[1]) - 1, 2, 2); [[.2, .25], [.8, .25], [.2, .85], [.8, .85]].forEach(function (t) { var p = M.p(t[0], t[1], 5); R(c, p[0], p[1] - 1, 1, 2, M.ramp('fabric')[0]); }); });
+    } });
+
+  // ---------- tables ----------
+  add({ id: 'long-dining-table', name: 'Long dining table', tab: 'tables', w: 3, d: 1, kind: 'floor', h: 24, top: 17, price: 380,
+    parts: [['wood', 'wood']], spots: [[.6, .5], [1.5, .5], [2.4, .5]],
+    swatches: [{ wood: '#cf9d68' }, { wood: '#8e5a37' }, { wood: '#fff1e2' }, { wood: '#55311d' }],
+    draw: function (M, t, free) {
+      M.shadow(.05, .05, 2.9, .9);
+      legs(M, .12, .12, 2.88, .88, .1, 14, 'wood');
+      M.box(.05, .05, 2.9, .9, 3, 14, 'wood');
+      if (M.props()) { var run = M.box(.2, .38, 2.6, .24, 1, 17, '#fff6ea', { tex: 'fab', line: false }); if (free(1)) M.spr(1.5, .5, 18, function (c, x, y) { R(c, x - 5, y - 2, 10, 3, '#f6ead0'); [[-3, '#e46f8b'], [0, '#f3d38a'], [3, '#8fc47b']].forEach(function (f) { c.fillStyle = f[1]; c.beginPath(); c.arc(x + f[0], y - 3, 2, 0, 7); c.fill(); }); }, [.15, 6]); }
+    } });
+  add({ id: 'console-table', name: 'Console table', tab: 'tables', w: 2, d: 1, kind: 'floor', h: 24, top: 20, price: 180,
+    parts: [['wood', 'wood']], spots: [[.5, .3], [1.5, .3]],
+    swatches: [{ wood: '#b9804f' }, { wood: '#fff1e2' }, { wood: '#55311d' }, { wood: '#9cc1b6' }],
+    draw: function (M, t, free) { // a narrow table against the wall, with a low shelf
+      M.shadow(.1, .05, 1.8, .45);
+      legs(M, .12, .07, 1.88, .5, .07, 17, 'wood');
+      M.box(.15, .1, 1.7, .37, 1, 4, 'wood');
+      M.box(.1, .05, 1.8, .45, 3, 17, 'wood');
+      if (M.props() && free(0)) M.spr(.5, .3, 20, function (c, x, y) { R(c, x - 3, y - 2, 7, 2, '#e46f8b'); R(c, x - 2, y - 4, 5, 2, '#7fa7a0'); }, [.15, 5]);
+    } });
+  add({ id: 'kitchen-island', name: 'Kitchen island', tab: 'tables', row: 'kitchen', w: 2, d: 1, kind: 'floor', h: 26, top: 22, price: 420,
+    parts: [['cabinet', 'wood'], ['top', 'plain']], spots: [[.5, .5], [1.5, .5]],
+    swatches: [{ cabinet: '#7fa7a0', top: '#e8dccd' }, { cabinet: '#fff1e2', top: '#cf9d68' }, { cabinet: '#4f6a9e', top: '#e8dccd' }, { cabinet: '#e46f8b', top: '#fff1e2' }],
+    draw: function (M, t, free) {
+      M.shadow(.05, .1, 1.9, .8);
+      var b = M.box(.08, .12, 1.84, .76, 19, 0, 'cabinet');
+      M.on(b, function (c) { if (!M.vis('+v')) return; [.15, 1.05].forEach(function (u) { SS.poly(c, fq(M, u, u + .8, 3, 16, .881), null, 'rgba(59,36,48,.35)'); var k = M.p(u + .7, .881, 12); R(c, k[0], k[1], 1, 3, '#e7bb4f'); }); });
+      M.box(0, .05, 2, .9, 3, 19, 'top');
+      if (M.props() && free(1)) M.spr(1.5, .5, 22, function (c, x, y) { c.fillStyle = '#cf9d68'; c.beginPath(); c.ellipse(x, y - 1, 5, 2.5, 0, 0, 7); c.fill(); [[-2, '#e46f6a'], [1, '#f3d38a'], [3, '#8fc47b']].forEach(function (f) { c.fillStyle = f[1]; c.beginPath(); c.arc(x + f[0], y - 3, 1.8, 0, 7); c.fill(); }); }, [.15, 5]);
+    } });
+  add({ id: 'bistro-table', name: 'Bistro table', tab: 'tables', w: 1, d: 1, kind: 'floor', h: 24, top: 17, price: 150,
+    parts: [['top', 'plain'], ['metal', 'metal']], spots: [[.5, .5]],
+    swatches: [{ top: '#fff1e2', metal: '#3b3236' }, { top: '#9cc1b6', metal: '#fff1e2' }, { top: '#e8dccd', metal: '#c78f3e' }, { top: '#f39bb0', metal: '#3b3236' }],
+    draw: function (M, t, free) {
+      M.eshadow(.5, .5, 7);
+      M.cyl(.5, .5, .2, 1, 0, 'metal');
+      M.cyl(.5, .5, .05, 14, 1, 'metal');
+      M.cyl(.5, .5, .38, 2, 15, 'top');
+      if (M.props() && free(0)) M.spr(.5, .5, 17, function (c, x, y) { R(c, x - 1, y - 6, 3, 6, '#a9c9e8'); R(c, x, y - 9, 1, 3, '#5f8f4e'); R(c, x - 1, y - 10, 3, 2, '#e46f8b'); }, [.1, 10]);
+    } });
+
+  // ---------- beds ----------
+  add({ id: 'single-bed', name: 'Single bed', tab: 'beds', w: 1, d: 2, kind: 'floor', h: 28, price: 380, use: 'bed', seat: 13, nap: true,
+    parts: [['wood', 'wood'], ['quilt', 'fab'], ['sheets', 'fab']],
+    swatches: [{ wood: '#fff1e2', quilt: '#9cc1b6', sheets: '#fff3e6' }, { wood: '#8e5a37', quilt: '#f3d38a', sheets: '#fbe9e2' }, { wood: '#cf9d68', quilt: '#e46f8b', sheets: '#fff3e6' }, { wood: '#55311d', quilt: '#7d93c4', sheets: '#f6ead0' }],
+    draw: function (M) {
+      M.shadow(0, 0, 1, 2);
+      M.box(.04, .02, .92, .16, 24, 0, 'wood');
+      M.box(.06, .18, .88, 1.76, 7, 0, 'wood');
+      M.box(.1, .18, .8, 1.72, 4, 7, 'sheets');
+      var Q = M.box(.08, .75, .84, 1.17, 2, 11, 'quilt');
+      M.on(Q, function (c) { if (M.vis('+v')) line(c, M.p(.08, 1.92, 10), M.p(.92, 1.92, 10), '#fff1e2'); line(c, M.p(.08, 1.05, 13), M.p(.92, 1.05, 13), 'rgba(255,255,255,.45)'); });
+      M.box(.2, .26, .6, .35, 4, 11, '#ffffff', { tex: 'fab' });
+      if (M.props()) M.box(.15, 1.5, .7, .3, 3, 13, '#fbe9e2', { tex: 'fab' });
+    } });
+  add({ id: 'daybed', name: 'Daybed', tab: 'beds', w: 2, d: 1, kind: 'floor', h: 26, price: 420, use: 'sofa', seat: 13, nap: true,
+    parts: [['wood', 'wood'], ['mattress', 'fab']],
+    swatches: [{ wood: '#fff1e2', mattress: '#f39bb0' }, { wood: '#8e5a37', mattress: '#9cc1b6' }, { wood: '#cf9d68', mattress: '#f6ead0' }, { wood: '#55311d', mattress: '#c8a6d8' }],
+    draw: function (M) { // a bed frame with a back and two ends, made up like a sofa
+      M.shadow(.02, .05, 1.96, .9);
+      M.box(.04, .06, 1.92, .14, 22, 0, 'wood');
+      M.box(.04, .2, .12, .74, 18, 0, 'wood');
+      M.box(.16, .2, 1.68, .74, 8, 0, 'wood');
+      cushionedSeat(M, .16, .2, 1.68, .74, 5, 8, 'mattress');
+      M.box(1.84, .2, .12, .74, 18, 0, 'wood');
+      M.box(.3, .22, .4, .1, 8, 13, '#ffffff', { tex: 'fab' }); M.box(1.3, .22, .4, .1, 8, 13, '#ffffff', { tex: 'fab' });
+      if (M.props()) M.box(.6, .55, .7, .35, 2, 13, '#f3d38a', { tex: 'fab' });
+    } });
+  add({ id: 'bunk-bed', name: 'Bunk bed', tab: 'beds', w: 1, d: 2, kind: 'floor', h: 48, price: 520, use: 'bed', seat: 9, nap: true,
+    parts: [['wood', 'wood'], ['quilt', 'fab']],
+    swatches: [{ wood: '#cf9d68', quilt: '#7fa7a0' }, { wood: '#fff1e2', quilt: '#e46f8b' }, { wood: '#8e5a37', quilt: '#f3d38a' }, { wood: '#55311d', quilt: '#7d93c4' }],
+    draw: function (M) {
+      M.shadow(0, 0, 1, 2);
+      [[.04, .04], [.84, .04], [.04, 1.84], [.84, 1.84]].forEach(function (q) { M.box(q[0], q[1], .12, .12, 46, 0, 'wood', { hi: false }); });
+      [3, 27].forEach(function (z, k) {
+        M.box(.16, .16, .68, 1.68, 4, z, 'wood');
+        M.box(.18, .16, .64, 1.66, 3, z + 4, '#fff3e6', { tex: 'fab' });
+        M.box(.17, .7, .66, 1.12, 2, z + 7, 'quilt');
+        M.box(.25, .2, .5, .3, 3, z + 7, '#ffffff', { tex: 'fab' });
+      });
+      var lad = M.spr(.5, 1.9, 0, function (c, x, y) { if (!M.vis('+v')) return; var W = M.ramp('wood'); R(c, x - 6, y - 34, 1, 34, W[2]); R(c, x + 5, y - 34, 1, 34, W[2]); for (var k = 6; k < 34; k += 7) R(c, x - 6, y - k, 12, 1, W[1]); }, [.1, 34]);
+      M.box(.16, .16, .68, .08, 6, 37, 'wood');
+    } });
+  add({ id: 'cat-tree', name: 'Cat tree', tab: 'beds', w: 1, d: 1, kind: 'floor', h: 50, price: 220, nap: true, seat: 40,
+    parts: [['carpet', 'fab'], ['post', 'plain']],
+    swatches: [{ carpet: '#e6d3b0', post: '#cf9d68' }, { carpet: '#9cc1b6', post: '#e8dccd' }, { carpet: '#f39bb0', post: '#e8dccd' }, { carpet: '#7d93c4', post: '#cf9d68' }],
+    draw: function (M) { // posts wrapped in rope, carpeted platforms and a cubby (Louie's favorite kind of spot)
+      M.eshadow(.5, .5, 10);
+      M.box(.1, .1, .8, .8, 4, 0, 'carpet');
+      var post = M.cyl(.35, .35, .08, 34, 4, 'post');
+      M.on(post, function (c) { for (var y = 4; y < 36; y += 3) { var q = M.p(.35, .35, y); R(c, q[0] - 2, q[1], 4, 1, 'rgba(110,70,40,.35)'); } });
+      var cub = M.box(.45, .45, .45, .45, 14, 4, 'carpet');
+      M.on(cub, function (c) { if (M.vis('+v')) { var q = M.p(.67, .9, 10); c.fillStyle = '#3b2430'; c.beginPath(); c.ellipse(q[0], q[1], 3.5, 4, 0, 0, 7); c.fill(); } });
+      M.box(.1, .1, .55, .5, 3, 22, 'carpet');
+      M.box(.15, .15, .5, .5, 3, 38, 'carpet');
+      if (M.props()) M.spr(.75, .2, 4, function (c, x, y) { R(c, x, y - 18, 1, 14, '#c7bfb5'); c.fillStyle = '#e46f8b'; c.beginPath(); c.arc(x, y - 3, 2, 0, 7); c.fill(); }, [.05, 18]);
+    } });
+
+  // ---------- storage ----------
+  add({ id: 'low-cabinet', name: 'Low cabinet', tab: 'storage', w: 2, d: 1, kind: 'floor', h: 22, top: 16, price: 220,
+    parts: [['wood', 'wood'], ['knob', 'metal']], spots: [[.5, .45], [1.0, .45], [1.5, .45]],
+    swatches: [{ wood: '#7fa7a0', knob: '#e7bb4f' }, { wood: '#cf9d68', knob: '#3b3236' }, { wood: '#fff1e2', knob: '#c78f3e' }, { wood: '#55311d', knob: '#e7bb4f' }, { wood: '#f39bb0', knob: '#fff1e2' }],
+    draw: function (M, t, free) {
+      M.shadow(.08, .1, 1.84, .75);
+      legs(M, .12, .14, 1.88, .82, .07, 3, 'wood');
+      var b = M.box(.08, .1, 1.84, .75, 13, 3, 'wood');
+      M.on(b, function (c) { if (!M.vis('+v')) return; var k = M.ramp('knob'); [.15, .7, 1.25].forEach(function (u) { SS.poly(c, fq(M, u, u + .5, 5, 14, .851), null, 'rgba(59,36,48,.35)'); line(c, M.p(u + .1, .851, 7), M.p(u + .4, .851, 12), 'rgba(255,255,255,.18)'); var q = M.p(u + .42, .851, 10); R(c, q[0], q[1], 1, 1, k[0]); }); });
+      if (M.props() && free(2)) M.spr(1.5, .45, 16, function (c, x, y) { R(c, x - 3, y - 6, 6, 6, '#e8a28c'); c.fillStyle = '#6aa361'; c.beginPath(); c.arc(x - 1, y - 8, 3, 0, 7); c.arc(x + 2, y - 9, 2.5, 0, 7); c.fill(); }, [.15, 11]);
+    } });
+  add({ id: 'wardrobe', name: 'Wardrobe', tab: 'storage', w: 2, d: 1, kind: 'floor', h: 56, price: 460, use: 'wardrobe',
+    parts: [['wood', 'wood'], ['knob', 'metal']],
+    swatches: [{ wood: '#fff1e2', knob: '#c78f3e' }, { wood: '#cf9d68', knob: '#3b3236' }, { wood: '#9cc1b6', knob: '#fff1e2' }, { wood: '#55311d', knob: '#e7bb4f' }],
+    draw: function (M) {
+      M.shadow(.08, .08, 1.84, .7);
+      legs(M, .12, .12, 1.88, .74, .07, 3, 'wood');
+      var b = M.box(.08, .08, 1.84, .7, 50, 3, 'wood');
+      M.on(b, function (c) {
+        var k = M.ramp('knob');
+        if (M.vis('+v')) { line(c, M.p(1, .781, 6), M.p(1, .781, 50), 'rgba(59,36,48,.45)'); [[.2, .9], [1.1, 1.8]].forEach(function (d) { SS.poly(c, fq(M, d[0], d[1], 10, 46, .781), null, 'rgba(59,36,48,.25)'); }); [.92, 1.08].forEach(function (u) { var q = M.p(u, .781, 30); R(c, q[0], q[1] - 3, 1, 4, k[0]); }); }
+        var cr = M.p(.1, .08, 53), cr2 = M.p(1.9, .08, 53); line(c, cr, cr2, M.ramp('wood')[0], 2);
+      });
+    } });
+  add({ id: 'corner-counter', name: 'Corner counter', tab: 'storage', row: 'kitchen', w: 1, d: 1, kind: 'floor', h: 24, top: 22, price: 220,
+    parts: [['cabinet', 'wood'], ['top', 'plain']], spots: [[.35, .35]],
+    swatches: [{ cabinet: '#7fa7a0', top: '#e8dccd' }, { cabinet: '#fff1e2', top: '#cf9d68' }, { cabinet: '#e46f8b', top: '#fff1e2' }, { cabinet: '#4f6a9e', top: '#e8dccd' }, { cabinet: '#8e5a37', top: '#f6ead0' }],
+    draw: function (M, t, free) { // the L at the end of a run: the counter top wraps the corner, a door on each side
+      var b = M.box(.02, .02, .9, .9, 19, 0, 'cabinet');
+      M.on(b, function (c) { if (M.vis('+v')) { SS.poly(c, fq(M, .12, .8, 3, 16, .921), null, 'rgba(59,36,48,.35)'); var q = M.p(.7, .921, 12); R(c, q[0], q[1], 1, 3, '#e7bb4f'); } });
+      M.box(0, 0, 1, 1, 3, 19, 'top');
+      if (M.props() && free(0)) M.spr(.35, .35, 22, function (c, x, y) { R(c, x - 3, y - 7, 6, 7, '#fff6ea'); R(c, x - 3, y - 7, 6, 1, '#8e5a37'); R(c, x - 2, y - 5, 4, 3, '#f3d38a'); }, [.12, 8]);
+    } });
+
+  // ---------- lights ----------
+  add({ id: 'mushroom-lamp', name: 'Mushroom lamp', tab: 'lights', w: 1, d: 1, kind: 'small', h: 16, price: 80, lamp: true, use: 'lamp', moves: 'glow',
+    parts: [['cap', 'plain'], ['stem', 'plain']], light: { u: .5, v: .5, h: 8, r: 30 },
+    swatches: [{ cap: '#e46f6a', stem: '#fff1e2' }, { cap: '#f3d38a', stem: '#fff1e2' }, { cap: '#9cc1b6', stem: '#f6ead0' }, { cap: '#c8a6d8', stem: '#fff1e2' }],
+    draw: function (M) { // from mockups/decorate-v1 (the Ours sample): a red-capped mushroom with white spots
+      M.spr(.5, .5, 0, function (c, x, y) {
+        var Cp = M.ramp('cap'), S = M.ramp('stem'), on = M.inst && M.inst.lit;
+        R(c, x - 2, y - 6, 4, 6, S[1]); R(c, x + 1, y - 6, 1, 6, S[2]); R(c, x - 3, y - 1, 6, 1, S[2]);
+        c.fillStyle = '#3b2430'; c.beginPath(); c.ellipse(x, y - 7, 8, 6, 0, Math.PI, 0); c.fill();
+        c.fillStyle = Cp[1]; c.beginPath(); c.ellipse(x, y - 7, 7, 5, 0, Math.PI, 0); c.fill();
+        c.fillStyle = Cp[0]; c.beginPath(); c.ellipse(x - 2, y - 8, 4, 3, 0, Math.PI, 0); c.fill();
+        R(c, x - 7, y - 7, 14, 1, on ? '#ffe6a8' : S[2]);
+        [[-4, -10], [1, -11], [4, -9], [-1, -8]].forEach(function (d) { R(c, x + d[0], y + d[1], 2, 1, '#fff6ea'); });
+      }, [.15, 14]);
+    } });
+  add({ id: 'string-lights', name: 'String lights', tab: 'lights', w: 2, d: .1, kind: 'wall', mount: 36, h: 10, price: 70, lamp: true, use: 'lamp', moves: 'twinkle', anim: 8,
+    parts: [['bulbs', 'plain']], light: { u: 1, v: .1, h: -10, r: 26 },
+    swatches: [{ bulbs: '#ffd56b' }, { bulbs: '#f39bb0' }, { bulbs: '#9cc1b6' }, { bulbs: '#fff3a8' }],
+    draw: function (M, t) {
+      M.spr(1, .05, 0, function (c) {
+        var B = M.ramp('bulbs'), on = M.inst && M.inst.lit;
+        var pts = []; for (var k = 0; k <= 12; k++) { var u = .05 + k / 12 * 1.9, sag = Math.sin(k / 12 * Math.PI * 2) * 2 - 3 * Math.sin(k / 12 * Math.PI); pts.push([M.p(u, .06, 0), sag]); }
+        c.strokeStyle = '#6b4250'; c.beginPath(); pts.forEach(function (q, i) { var x = q[0][0], y = q[0][1] - q[1]; if (i) c.lineTo(x, y); else c.moveTo(x, y); }); c.stroke();
+        pts.forEach(function (q, i) { if (i % 2) return; var x = q[0][0], y = q[0][1] - q[1] + 1, lit = on && (Math.floor(t / 2) + i) % 5 !== 0; if (lit) { c.fillStyle = 'rgba(255,225,150,.4)'; c.beginPath(); c.arc(x + 1, y + 1, 2.5, 0, 7); c.fill(); } R(c, x, y, 2, 2, lit ? (i % 4 ? B[0] : B[1]) : '#a08880'); });
+      }, [1, 10]);
+    } });
+  add({ id: 'pendant-light', name: 'Pendant light', tab: 'lights', w: 1, d: 1, kind: 'small', h: 40, price: 140, lamp: true, use: 'lamp', moves: 'glow',
+    parts: [['shade', 'plain']], light: { u: .5, v: .5, h: 22, r: 50 },
+    swatches: [{ shade: '#f3d38a' }, { shade: '#7fa7a0' }, { shade: '#fff1e2' }, { shade: '#e46f8b' }, { shade: '#3b3236' }],
+    draw: function (M) { // hangs from the ceiling over whatever it's set on: a dome shade on a cord
+      M.spr(.5, .5, 0, function (c, x, y) {
+        var S = M.ramp('shade'), on = M.inst && M.inst.lit, top = y - 28;
+        R(c, x, top - 20, 1, 20, '#3b2430');
+        c.fillStyle = '#3b2430'; c.beginPath(); c.ellipse(x, top + 4, 9, 7, 0, Math.PI, 0); c.fill();
+        c.fillStyle = S[1]; c.beginPath(); c.ellipse(x, top + 4, 8, 6, 0, Math.PI, 0); c.fill();
+        c.fillStyle = S[0]; c.beginPath(); c.ellipse(x - 3, top + 3, 3, 4, 0, Math.PI, 0); c.fill();
+        R(c, x - 8, top + 4, 16, 1, S[2]);
+        if (on) { R(c, x - 3, top + 5, 6, 2, '#fff3cf'); }
+      }, [.15, 40]);
+    } });
+  add({ id: 'candle-cluster', name: 'Candle cluster', tab: 'lights', w: 1, d: 1, kind: 'small', h: 12, price: 45, lamp: true, use: 'lamp', moves: 'flicker', anim: 4,
+    parts: [['wax', 'plain']], light: { u: .5, v: .5, h: 8, r: 24 },
+    swatches: [{ wax: '#fff1e2' }, { wax: '#f39bb0' }, { wax: '#f3d38a' }, { wax: '#9cc1b6' }],
+    draw: function (M, t) {
+      M.spr(.5, .5, 0, function (c, x, y) {
+        var Wx = M.ramp('wax'), on = M.inst && M.inst.lit;
+        R(c, x - 6, y - 1, 12, 2, '#cf9d68');
+        [[-4, 7], [0, 10], [4, 5]].forEach(function (cd, i) { R(c, x + cd[0] - 1, y - cd[1], 3, cd[1], Wx[1]); R(c, x + cd[0] - 1, y - cd[1], 1, cd[1], Wx[0]); R(c, x + cd[0], y - cd[1] - 1, 1, 1, '#3b2430'); if (on) R(c, x + cd[0], y - cd[1] - 3 - ((t + i) % 2), 1, 2, '#ffd56b'); });
+      }, [.15, 12]);
+    } });
+  add({ id: 'salt-lamp', name: 'Salt lamp', tab: 'lights', w: 1, d: 1, kind: 'small', h: 12, price: 60, lamp: true, use: 'lamp', moves: 'glow',
+    parts: [['rock', 'plain']], light: { u: .5, v: .5, h: 6, r: 26 },
+    swatches: [{ rock: '#f2a65a' }, { rock: '#f39bb0' }, { rock: '#f6ead0' }, { rock: '#e99a70' }],
+    draw: function (M) {
+      M.spr(.5, .5, 0, function (c, x, y) {
+        var K = M.ramp('rock'), on = M.inst && M.inst.lit;
+        R(c, x - 4, y - 2, 8, 2, '#8e5a37');
+        c.fillStyle = on ? K[0] : K[1]; c.beginPath(); c.moveTo(x - 4, y - 2); c.lineTo(x - 5, y - 6); c.lineTo(x - 2, y - 11); c.lineTo(x + 2, y - 10); c.lineTo(x + 4, y - 6); c.lineTo(x + 3, y - 2); c.closePath(); c.fill();
+        c.fillStyle = K[2]; c.beginPath(); c.moveTo(x + 1, y - 2); c.lineTo(x + 2, y - 10); c.lineTo(x + 4, y - 6); c.lineTo(x + 3, y - 2); c.closePath(); c.fill();
+        R(c, x - 3, y - 8, 2, 1, 'rgba(255,255,255,.5)');
+      }, [.12, 11]);
+    } });
+
+  // ---------- plants ----------
+  add({ id: 'fiddle-leaf-fig', name: 'Fiddle leaf fig', tab: 'plants', w: 1, d: 1, kind: 'floor', h: 56, price: 140, moves: 'sway', anim: 24,
+    parts: [['pot', 'plain']], swatches: [{ pot: '#fff1e2' }, { pot: '#cf9d68' }, { pot: '#7fa7a0' }, { pot: '#2f2228' }, { pot: '#e46f8b' }],
+    draw: function (M, t) {
+      M.eshadow(.5, .5, 8);
+      M.cyl(.5, .5, .24, 12, 0, 'pot');
+      M.spr(.5, .5, 12, function (c, x, y) {
+        var sw = Math.sin(t / 3.8) * 1.2;
+        R(c, x, y - 34, 2, 34, '#7a4e33'); R(c, x - 4, y - 24, 5, 1, '#7a4e33'); R(c, x + 1, y - 18, 5, 1, '#7a4e33');
+        [[-8, -40, -.3], [6, -42, .3], [-1, -46, 0], [-10, -30, -.5], [9, -32, .5], [-6, -24, -.4], [7, -22, .4], [0, -36, 0]].forEach(function (L, i) {
+          var lx = x + L[0] + (i % 2 ? sw : -sw * .6), ly = y + L[1];
+          c.fillStyle = '#437a47'; c.beginPath(); c.ellipse(lx, ly, 4.5, 6, L[2], 0, 7); c.fill();
+          c.fillStyle = '#6aa361'; c.beginPath(); c.ellipse(lx - 1, ly - 1, 3.5, 4.8, L[2], 0, 7); c.fill();
+          R(c, lx - 1, ly - 3, 1, 5, '#8fc47b');
+        });
+      }, [.3, 46]);
+    } });
+  add({ id: 'pothos-shelf', name: 'Pothos on a shelf', tab: 'plants', w: 1, d: .3, kind: 'wall', mount: 34, h: 26, price: 80, moves: 'sway', anim: 24,
+    parts: [['wood', 'wood'], ['pot', 'plain']], swatches: [{ wood: '#cf9d68', pot: '#e8a28c' }, { wood: '#fff1e2', pot: '#7fa7a0' }, { wood: '#55311d', pot: '#fff1e2' }, { wood: '#7fa7a0', pot: '#f3d38a' }],
+    draw: function (M, t) {
+      M.box(.1, 0, .8, .28, 2, 0, 'wood');
+      M.box(.35, .05, .3, .2, 6, 2, 'pot');
+      M.spr(.5, .15, 8, function (c, x, y) {
+        var sw = Math.round(Math.sin(t / 3.8));
+        [[-6, 4, 12], [5, 2, 16], [0, 0, 8]].forEach(function (v, i) { for (var k = 0; k < v[2]; k += 3) { var lx = x + v[0] + Math.round(Math.sin(k / 4 + i) * 2) + (k > 6 ? sw : 0), ly = y + v[1] + k; c.fillStyle = k % 6 ? '#6aa361' : '#8fc47b'; c.beginPath(); c.ellipse(lx, ly, 2.4, 1.8, .4, 0, 7); c.fill(); } });
+        [[-3, -3], [2, -4], [0, -2]].forEach(function (q) { c.fillStyle = '#6aa361'; c.beginPath(); c.ellipse(x + q[0], y + q[1], 2.6, 2, 0, 0, 7); c.fill(); });
+      }, [.3, 22]);
+    } });
+  add({ id: 'herb-pots', name: 'Herb pots', tab: 'plants', w: 1, d: 1, kind: 'small', h: 12, price: 50,
+    parts: [['pots', 'plain']], swatches: [{ pots: '#e8a28c' }, { pots: '#fff1e2' }, { pots: '#7fa7a0' }, { pots: '#f3d38a' }],
+    draw: function (M) {
+      small(M, function (c, x, y) {
+        var Pp = M.ramp('pots');
+        [[-5, '#6aa361', 'round'], [0, '#8fc47b', 'tall'], [5, '#5f8f4e', 'round']].forEach(function (h) {
+          R(c, x + h[0] - 2, y - 4, 4, 4, Pp[1]); R(c, x + h[0] - 2, y - 4, 1, 4, Pp[0]); R(c, x + h[0] - 2, y - 5, 4, 1, Pp[2]);
+          if (h[2] === 'tall') { R(c, x + h[0] - 1, y - 11, 1, 6, h[1]); R(c, x + h[0] + 1, y - 10, 1, 5, h[1]); R(c, x + h[0], y - 12, 1, 7, '#a9d38f'); }
+          else { c.fillStyle = h[1]; c.beginPath(); c.arc(x + h[0], y - 7, 2.6, 0, 7); c.fill(); R(c, x + h[0] - 1, y - 9, 1, 1, '#a9d38f'); }
+        });
+      }, [.2, 12]);
+    } });
+  add({ id: 'hanging-plant', name: 'Hanging plant', tab: 'plants', w: 1, d: .3, kind: 'wall', mount: 26, h: 26, price: 70, moves: 'sway', anim: 24,
+    parts: [['pot', 'plain']], swatches: [{ pot: '#fff1e2' }, { pot: '#e8a28c' }, { pot: '#9cc1b6' }, { pot: '#c8a6d8' }],
+    draw: function (M, t) { // a macramé hanger from a hook, trailing leaves
+      M.spr(.5, .2, 0, function (c, x, y) {
+        var Pp = M.ramp('pot'), sw = Math.round(Math.sin(t / 3.8));
+        line(c, [x, y - 22], [x - 5, y - 4], '#e6d3b0'); line(c, [x, y - 22], [x + 5, y - 4], '#e6d3b0'); R(c, x - 1, y - 24, 2, 2, '#8e5a37');
+        R(c, x - 5, y - 5, 10, 5, Pp[1]); R(c, x - 5, y - 5, 3, 5, Pp[0]); R(c, x + 3, y - 5, 2, 5, Pp[2]);
+        for (var k = 0; k < 14; k += 3) { [[-5, 1], [5, 1], [0, 0]].forEach(function (v, i) { if (i === 2 && k > 6) return; var lx = x + v[0] + Math.round(Math.sin(k / 3 + i)) + (k > 4 ? sw : 0), ly = y - 4 + k; c.fillStyle = k % 6 ? '#6aa361' : '#8fc47b'; c.beginPath(); c.ellipse(lx, ly, 2.4, 1.8, .4, 0, 7); c.fill(); }); }
+      }, [.2, 24]);
+    } });
+
+  // ---------- rugs ----------
+  add({ id: 'runner', name: 'Runner', tab: 'rugs', w: 3, d: 1, kind: 'rug', h: 1, price: 110,
+    parts: [['field', 'fab'], ['stripe', 'plain']],
+    swatches: [{ field: '#9cc1b6', stripe: '#fff1e2' }, { field: '#e99a70', stripe: '#f3d38a' }, { field: '#c8a6d8', stripe: '#e46f8b' }, { field: '#e6d3b0', stripe: '#7fa7a0' }],
+    draw: function (M) {
+      M.spr(1.5, .5, 0, function (c) {
+        var F = M.ramp('field'), S = M.ramp('stripe'), q = function (a, b, cc, d) { return [M.p(a, b), M.p(cc, b), M.p(cc, d), M.p(a, d)]; };
+        SS.poly(c, q(.1, .2, 2.9, .8), F[1]);
+        [.4, .7, 2.3, 2.6].forEach(function (u) { SS.poly(c, q(u, .2, u + .1, .8), S[1]); });
+        SS.poly(c, q(1.2, .35, 1.8, .65), S[0]);
+        for (var k = .25; k < .8; k += .12) { var e = M.p(2.9, k), e2 = M.p(.1, k); R(c, e[0], e[1], 2, 1, '#fff1e2'); R(c, e2[0] - 2, e2[1], 2, 1, '#fff1e2'); }
+      }, [1.4, 1]);
+    } });
+  add({ id: 'braided-rug', name: 'Braided rug', tab: 'rugs', w: 2, d: 2, kind: 'rug', h: 1, price: 150,
+    parts: [['outer', 'plain'], ['inner', 'plain']],
+    swatches: [{ outer: '#c96f45', inner: '#f3d38a' }, { outer: '#7fa7a0', inner: '#f6ead0' }, { outer: '#e46f8b', inner: '#fff1e2' }, { outer: '#7d93c4', inner: '#e6d3b0' }],
+    draw: function (M) {
+      M.spr(1, 1, 0, function (c, x, y) {
+        var O = M.ramp('outer'), In = M.ramp('inner'), rx = .9 * 15.6, ry = rx / 2;
+        for (var k = 0; k < 7; k++) { var f = 1 - k * .13; c.fillStyle = [O[1], In[1], O[2], In[0], O[1], In[1], O[0]][k]; c.beginPath(); c.ellipse(x, y, rx * f, ry * f, 0, 0, 7); c.fill(); }
+        c.strokeStyle = 'rgba(59,36,48,.18)'; for (var j = 0; j < 7; j++) { var g = 1 - j * .13; c.beginPath(); c.ellipse(x, y, rx * g, ry * g, 0, 0, 7); c.stroke(); }
+      }, [.9, 1]);
+    } });
+  add({ id: 'sheepskin', name: 'Sheepskin', tab: 'rugs', w: 1, d: 1, kind: 'rug', h: 2, price: 90,
+    parts: [['wool', 'plain']], swatches: [{ wool: '#fbf6ef' }, { wool: '#e6d3b0' }, { wool: '#d9d0c4' }, { wool: '#f39bb0' }],
+    draw: function (M) {
+      M.spr(.5, .5, 0, function (c, x, y) {
+        var K = M.ramp('wool');
+        c.fillStyle = K[2]; c.beginPath(); c.ellipse(x, y + 1, 11, 6, 0, 0, 7); c.fill();
+        c.fillStyle = K[1]; c.beginPath(); c.ellipse(x, y, 10, 5, 0, 0, 7); c.fill();
+        [[-9, 2], [9, 2], [-6, -4], [6, -4], [-3, 5], [3, 5]].forEach(function (q) { c.fillStyle = K[1]; c.beginPath(); c.arc(x + q[0], y + q[1], 2.4, 0, 7); c.fill(); });
+        for (var k = 0; k < 10; k++) R(c, x - 8 + (k * 7) % 16, y - 3 + (k * 5) % 6, 2, 1, K[0]);
+      }, [.5, 2]);
+    } });
+
+  // ---------- wall ----------
+  add({ id: 'gallery-set', name: 'Gallery set', tab: 'wall', w: 2, d: .15, kind: 'wall', mount: 20, h: 30, price: 160,
+    parts: [['frames', 'wood']], swatches: [{ frames: '#8e5a37' }, { frames: '#fff1e2' }, { frames: '#2f2228' }, { frames: '#e7bb4f' }],
+    draw: function (M) { // four frames of different sizes (decorate-v1's Ours sample), two of them the cats
+      var arts = ['#f6ead0', '#9cc1b6', '#f3d38a', '#f39bb0'];
+      [[.15, .7, 14, 28], [.85, 1.25, 16, 28], [1.35, 1.85, 6, 24], [.25, .65, 0, 11]].forEach(function (f, i) {
+        var b = M.box(f[0], 0, f[1] - f[0], .06, f[3] - f[2], f[2], 'frames');
+        M.on(b, function (c) { var q = fq(M, f[0] + .06, f[1] - .06, f[2] + 2, f[3] - 2, .061); SS.poly(c, q, arts[i]); var m = SS.lerp(q[0], q[2], .5); if (i === 0) { R(c, m[0] - 2, m[1] - 1, 4, 3, '#8d8a98'); } if (i === 1) { R(c, m[0] - 2, m[1] - 1, 4, 3, '#d9853f'); } if (i === 2) { c.fillStyle = '#e46f8b'; c.beginPath(); c.arc(m[0], m[1], 2, 0, 7); c.fill(); } });
+      });
+    } });
+  add({ id: 'macrame-hanging', name: 'Macramé hanging', tab: 'wall', w: 1, d: .1, kind: 'wall', mount: 18, h: 26, price: 60,
+    parts: [['cord', 'plain'], ['rod', 'wood']], swatches: [{ cord: '#f6ead0', rod: '#8e5a37' }, { cord: '#f39bb0', rod: '#cf9d68' }, { cord: '#9cc1b6', rod: '#fff1e2' }, { cord: '#f3d38a', rod: '#55311d' }],
+    draw: function (M) {
+      M.spr(.5, .05, 0, function (c, x, y) {
+        var K = M.ramp('cord'), Ro = M.ramp('rod');
+        R(c, x - 9, y - 26, 18, 2, Ro[1]);
+        for (var k = -7; k <= 7; k += 2) { line(c, [x + k, y - 24], [x + k * .4, y - 8], K[1]); }
+        [[0, -20], [-3, -16], [3, -16], [0, -12]].forEach(function (q) { R(c, x + q[0] - 1, y + q[1] - 1, 3, 3, K[2]); });
+        for (var f = -4; f <= 4; f++) R(c, x + f, y - 8, 1, 6 - Math.abs(f) * .5, K[0]);
+      }, [.3, 26]);
+    } });
+  add({ id: 'cork-board', name: 'Cork board', tab: 'wall', w: 1, d: .1, kind: 'wall', mount: 22, h: 20, price: 50,
+    parts: [['frame', 'wood']], swatches: [{ frame: '#cf9d68' }, { frame: '#fff1e2' }, { frame: '#2f2228' }, { frame: '#7fa7a0' }],
+    draw: function (M) {
+      var b = M.box(.12, 0, .76, .05, 20, 0, 'frame');
+      M.on(b, function (c) { var q = fq(M, .17, .83, 2, 18, .051); SS.poly(c, q, '#c9a06a'); var p = SS.lerp(q[0], q[2], .3), p2 = SS.lerp(q[0], q[2], .7); R(c, p[0] - 3, p[1] - 3, 6, 5, '#fff6ea'); R(c, p[0] - 1, p[1] - 4, 2, 2, '#e46f8b'); R(c, p2[0] - 2, p2[1] - 4, 5, 6, '#f3d38a'); R(c, p2[0], p2[1] - 5, 1, 1, '#7fa7a0'); R(c, p[0] + 3, p2[1], 5, 3, '#9cc1b6'); });
+    } });
+  add({ id: 'mounted-tv', name: 'Mounted TV', tab: 'wall', w: 2, d: .1, kind: 'wall', mount: 18, h: 22, price: 380, use: 'tv',
+    parts: [['frame', 'plain']], swatches: [{ frame: '#2f2228' }, { frame: '#fff1e2' }, { frame: '#3b3236' }, { frame: '#8e5a37' }],
+    draw: function (M, t) {
+      var b = M.box(.2, 0, 1.6, .06, 20, 0, 'frame');
+      M.on(b, function (c) { var on = M.inst && M.inst.lit, q = fq(M, .26, 1.74, 2, 18, .061); SS.poly(c, q, on ? ['#7d93c4', '#a9c9e8', '#8fb3d4', '#c8a6d8'][Math.floor(t / 2) % 4] : '#46404a'); SS.clip(c, q, function () { line(c, SS.lerp(q[0], q[3], .2), SS.lerp(q[1], q[2], .6), 'rgba(255,255,255,.18)', 3); }); });
+    } });
+  add({ id: 'window-plants-shelf', name: 'Window plants shelf', tab: 'wall', w: 1, d: .3, kind: 'wall', mount: 12, h: 14, price: 90, window: true, moves: 'sway', anim: 24,
+    parts: [['wood', 'wood']], swatches: [{ wood: '#fff1e2' }, { wood: '#cf9d68' }, { wood: '#7fa7a0' }, { wood: '#55311d' }],
+    draw: function (M, t) { // a shelf across the window glass, with three little pots
+      M.box(.05, 0, .9, .28, 2, 0, 'wood');
+      [.2, .5, .8].forEach(function (u, i) { M.spr(u, .14, 2, function (c, x, y) { R(c, x - 2, y - 4, 4, 4, ['#e8a28c', '#fff1e2', '#9cc1b6'][i]); var sw = Math.round(Math.sin(t / 3.8 + i)); c.fillStyle = '#6aa361'; c.beginPath(); c.arc(x + sw, y - 6, 2.5, 0, 7); c.fill(); R(c, x - 1 + sw, y - 8, 1, 1, '#a9d38f'); }, [.08, 9]); });
+    } });
+
+  // ---------- decor ----------
+  add({ id: 'throw-pillow', name: 'Throw pillow', tab: 'decor', w: 1, d: 1, kind: 'small', h: 8, price: 30,
+    parts: [['fabric', 'fab']], swatches: [{ fabric: '#e46f8b' }, { fabric: '#f3d38a' }, { fabric: '#9cc1b6' }, { fabric: '#c8a6d8' }, { fabric: '#fff1e2' }],
+    draw: function (M) { M.box(.3, .38, .4, .14, 8, 0, 'fabric'); } });
+  add({ id: 'knit-throw', name: 'Knit throw', tab: 'decor', w: 1, d: 1, kind: 'small', h: 5, price: 45,
+    parts: [['yarn', 'fab']], swatches: [{ yarn: '#fbe9e2' }, { yarn: '#f3d38a' }, { yarn: '#9cc1b6' }, { yarn: '#e46f8b' }],
+    draw: function (M) { var b = M.box(.25, .3, .5, .4, 4, 0, 'yarn'); M.on(b, function (c) { var Y = M.ramp('yarn'); for (var k = .3; k < .75; k += .1) line(c, M.p(.25, k, 4), M.p(.75, k, 4), Y[2]); if (M.vis('+v')) for (var f = .28; f < .75; f += .08) { var q = M.p(f, .7, 1); R(c, q[0], q[1], 1, 3, Y[1]); } }); } });
+  add({ id: 'laundry-basket', name: 'Laundry basket', tab: 'decor', w: 1, d: 1, kind: 'small', h: 14, price: 40,
+    parts: [['basket', 'wood']], swatches: [{ basket: '#e8c08e' }, { basket: '#fff1e2' }, { basket: '#9cc1b6' }, { basket: '#f39bb0' }],
+    draw: function (M) {
+      var b = M.box(.22, .25, .56, .5, 10, 0, 'basket');
+      M.on(b, function (c) { [3, 6].forEach(function (h) { line(c, M.p(.22, .75, h), M.p(.78, .75, h), 'rgba(110,60,30,.35)'); }); if (M.props()) { var q = M.p(.5, .5, 11); c.fillStyle = '#f39bb0'; c.beginPath(); c.ellipse(q[0] - 2, q[1], 4, 2, 0, 0, 7); c.fill(); c.fillStyle = '#a9c9e8'; c.beginPath(); c.ellipse(q[0] + 2, q[1] - 1, 3.5, 2, 0, 0, 7); c.fill(); } });
+    } });
+  add({ id: 'cat-toy-basket', name: 'Cat toy basket', tab: 'decor', w: 1, d: 1, kind: 'small', h: 14, price: 35,
+    parts: [['basket', 'wood']], swatches: [{ basket: '#cf9d68' }, { basket: '#e46f8b' }, { basket: '#7fa7a0' }, { basket: '#f3d38a' }],
+    draw: function (M) { // Ralph's pile: a little basket with a feather wand and yarn balls
+      var b = M.box(.3, .3, .4, .4, 7, 0, 'basket');
+      M.on(b, function (c) { line(c, M.p(.3, .7, 4), M.p(.7, .7, 4), 'rgba(110,60,30,.35)'); if (!M.props()) return; var q = M.p(.5, .5, 8); c.fillStyle = '#e46f8b'; c.beginPath(); c.arc(q[0] - 2, q[1], 2, 0, 7); c.fill(); c.fillStyle = '#9cc1b6'; c.beginPath(); c.arc(q[0] + 2, q[1] - 1, 2, 0, 7); c.fill(); line(c, [q[0] + 1, q[1] - 1], [q[0] + 4, q[1] - 10], '#8e5a37'); R(c, q[0] + 3, q[1] - 13, 3, 4, '#f3d38a'); });
+    } });
+  add({ id: 'candles', name: 'Candles', tab: 'decor', w: 1, d: 1, kind: 'small', h: 10, price: 30, moves: 'flicker', anim: 4,
+    parts: [['wax', 'plain']], swatches: [{ wax: '#fff1e2' }, { wax: '#e46f8b' }, { wax: '#f3d38a' }, { wax: '#9cc1b6' }],
+    draw: function (M, t) { small(M, function (c, x, y) { var Wx = M.ramp('wax'); [[-2, 6], [2, 8]].forEach(function (cd, i) { R(c, x + cd[0] - 1, y - cd[1], 3, cd[1], Wx[1]); R(c, x + cd[0] - 1, y - cd[1], 1, cd[1], Wx[0]); R(c, x + cd[0], y - cd[1] - 2 - ((t + i) % 2), 1, 2, '#ffd56b'); }); }, [.12, 10]); } });
+  add({ id: 'globe', name: 'Globe', tab: 'decor', w: 1, d: 1, kind: 'small', h: 14, price: 55,
+    parts: [['stand', 'wood']], swatches: [{ stand: '#8e5a37' }, { stand: '#e7bb4f' }, { stand: '#2f2228' }, { stand: '#fff1e2' }],
+    draw: function (M) { small(M, function (c, x, y) { var S = M.ramp('stand'); R(c, x - 3, y - 2, 6, 2, S[1]); R(c, x, y - 4, 1, 2, S[1]); c.fillStyle = '#7d93c4'; c.beginPath(); c.arc(x, y - 9, 5, 0, 7); c.fill(); c.fillStyle = '#8fc47b'; c.fillRect(x - 3, y - 11, 3, 2); c.fillRect(x + 1, y - 8, 2, 3); R(c, x - 3, y - 12, 2, 1, 'rgba(255,255,255,.5)'); c.strokeStyle = S[1]; c.beginPath(); c.arc(x, y - 9, 6, 2.2, 5.2); c.stroke(); }, [.12, 14]); } });
+  add({ id: 'fruit-bowl', name: 'Fruit bowl', tab: 'decor', w: 1, d: 1, kind: 'small', h: 8, price: 35,
+    parts: [['bowl', 'plain']], swatches: [{ bowl: '#fff1e2' }, { bowl: '#7fa7a0' }, { bowl: '#cf9d68' }, { bowl: '#e46f8b' }],
+    draw: function (M) { small(M, function (c, x, y) { var B = M.ramp('bowl'); [[-3, '#e46f6a'], [0, '#f3d38a'], [3, '#8fc47b'], [-1, '#f2a65a']].forEach(function (f, i) { c.fillStyle = f[1]; c.beginPath(); c.arc(x + f[0], y - 5 - (i === 3 ? 2 : 0), 2.2, 0, 7); c.fill(); }); c.fillStyle = B[1]; c.beginPath(); c.ellipse(x, y - 3, 6, 3, 0, 0, Math.PI); c.fill(); R(c, x - 6, y - 4, 12, 1, B[0]); }, [.15, 8]); } });
+
+  // cat care (spec 006, part D: tap the bowl, then Fill; tap the box, then Scoop). Not in spec 001's list of 80, but part D
+  // names them, so they sit in Decor beside the cat toy basket.
+  add({ id: 'cat-bowls', name: 'Cat bowls', tab: 'decor', w: 1, d: 1, kind: 'small', h: 6, price: 30, use: 'bowl',
+    parts: [['bowls', 'plain']], swatches: [{ bowls: '#7fa7a0' }, { bowls: '#e46f8b' }, { bowls: '#fff1e2' }, { bowls: '#f3d38a' }],
+    draw: function (M) { small(M, function (c, x, y) {
+      var B = M.ramp('bowls'), full = SS.G && SS.G.catFull;
+      [[-4, '#a9c9e8'], [4, null]].forEach(function (b) { c.fillStyle = B[2]; c.beginPath(); c.ellipse(x + b[0], y - 1, 4, 2, 0, 0, 7); c.fill(); c.fillStyle = B[1]; c.beginPath(); c.ellipse(x + b[0], y - 2, 4, 1.8, 0, 0, 7); c.fill();
+        c.fillStyle = b[1] || (full ? '#b9804f' : B[3]); c.beginPath(); c.ellipse(x + b[0], y - 2.3, 2.6, 1, 0, 0, 7); c.fill(); if (!b[1] && full) { R(c, x + b[0] - 1, y - 3, 1, 1, '#8e5a37'); R(c, x + b[0] + 1, y - 3, 1, 1, '#dca474'); } });
+    }, [.2, 5]); } });
+  add({ id: 'litter-box', name: 'Litter box', tab: 'decor', w: 1, d: 1, kind: 'floor', h: 10, price: 60, use: 'litter',
+    parts: [['box', 'plain']], swatches: [{ box: '#9cc1b6' }, { box: '#e6d3b0' }, { box: '#f39bb0' }, { box: '#d9d0c4' }],
+    draw: function (M) {
+      M.shadow(.15, .2, .7, .6);
+      var b = M.box(.15, .2, .7, .6, 7, 0, 'box');
+      M.on(b, function (c) { var clean = !(SS.G && SS.G.litterLow); SS.poly(c, [M.p(.22, .27, 6), M.p(.78, .27, 6), M.p(.78, .73, 6), M.p(.22, .73, 6)], '#e8d9b8'); if (!clean) [[.35, .4], [.6, .55], [.45, .62]].forEach(function (q) { var p = M.p(q[0], q[1], 6); R(c, p[0], p[1], 2, 1, '#b9a17a'); }); });
+    } });
+  // a meal Keegan made (spec 006, part D): it goes on the table with a sparkle, and Sarah can eat it. Not in the catalog.
+  add({ id: 'plated-meal', name: 'Dinner Keegan made', tab: 'none', w: 1, d: 1, kind: 'small', h: 8, price: 0, use: 'meal', moves: 'twinkle', anim: 8,
+    parts: [], swatches: [{}],
+    draw: function (M, t) { small(M, function (c, x, y) {
+      c.fillStyle = '#fff6ea'; c.beginPath(); c.ellipse(x, y - 2, 6, 3, 0, 0, 7); c.fill(); c.fillStyle = '#e8dccd'; c.beginPath(); c.ellipse(x, y - 1.5, 6, 2.6, 0, 0, Math.PI); c.fill();
+      R(c, x - 3, y - 4, 3, 2, '#c96f45'); R(c, x, y - 4, 3, 2, '#f3d38a'); R(c, x - 1, y - 5, 2, 1, '#6aa361'); R(c, x + 2, y - 3, 2, 1, '#e46f6a');
+      if (t % 8 < 5) { var sx = x + [-6, 5, -2, 4, 0][t % 5], sy = y - 9 - (t % 3) * 2; R(c, sx, sy, 1, 3, '#fff3a8'); R(c, sx - 1, sy + 1, 3, 1, '#fff3a8'); }
+    }, [.2, 10]); } });
+  SS.DEF = {}; C.forEach(function (d) { SS.DEF[d.id] = d; });
+})();
+
+</script>
+<script>/* holidays.js */
+// Sarah's Sim holidays (spec 009), Christmas first: it's the holiday the game is opened on.
+//   Part A: the holiday follows the real date. Christmas's season is Dec 1 to Jan 6; its days are Dec 24 evening and Dec 25.
+//     First snow is a weather moment the first time she opens the game on or after Dec 21.
+//   Part B: the Christmas set in the Holiday tab (in Life, "This season" in season and "Back in December" out of it; in Sandbox
+//     always there). Day dressing, only for that day, on top of her own design: Christmas Eve hangs stockings and leaves cookies
+//     out; Christmas morning puts gifts under her tree (or a little tree if she hasn't placed one): one holds Keegan's note, each
+//     of the others is a free Christmas piece; the cats wear tiny Santa hats; Keegan makes a special breakfast. She can keep any
+//     day-dressing piece; the rest go away the next day. Gifts never repeat in the same year (saved).
+// Parties (part C) wait for the Visitor screens (spec 008). The note is private data (a placeholder in the repo).
+(function () {
+  var C = SS.CATALOG, INK = 'rgba(59,36,48,.85)';
+  function R(c, x, y, w, h, col) { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
+  function add(def) { def.parts = def.parts || []; def.swatches = def.swatches || [{}]; def.spots = def.spots || []; def.holiday = def.holiday || 'christmas'; C.push(def); return def; }
+  function small(M, fn, e) { M.spr(.5, .5, 0, function (c, x, y) { c.fillStyle = 'rgba(90,45,40,.25)'; c.beginPath(); c.ellipse(x + 1, y, 5, 2, 0, 0, 7); c.fill(); fn(c, x, y); }, e || [.15, 12]); }
+  SS.DEF['christmas-tree'].holiday = 'christmas';
+
+  // ---------- the Christmas set (Holiday tab) ----------
+  add({ id: 'christmas-wreath', name: 'Christmas wreath', tab: 'holiday', w: 1, d: .1, kind: 'wall', mount: 26, h: 18, price: 80,
+    parts: [['bow', 'plain']], swatches: [{ bow: '#d2363c' }, { bow: '#e7bb4f' }, { bow: '#fff1e2' }, { bow: '#7fa7a0' }],
+    draw: function (M) { M.spr(.5, .05, 0, function (c, x, y) { var B = M.ramp('bow'), cy = y - 9; c.strokeStyle = '#3f6e4a'; c.lineWidth = 5; c.beginPath(); c.arc(x, cy, 6, 0, 7); c.stroke(); c.lineWidth = 1; c.strokeStyle = '#6aa361'; c.beginPath(); c.arc(x - 1, cy - 1, 6, 3.4, 5.6); c.stroke(); [[-5, -3], [4, -4], [0, 6], [-4, 4], [5, 3]].forEach(function (b) { R(c, x + b[0], cy + b[1], 2, 2, '#e46f6a'); }); R(c, x - 4, cy + 5, 8, 3, B[1]); R(c, x - 1, cy + 8, 2, 4, B[2]); R(c, x - 3, cy + 5, 2, 1, B[0]); }, [.3, 18]); } });
+  add({ id: 'stockings', name: 'Stockings', tab: 'holiday', w: 1, d: .1, kind: 'wall', mount: 16, h: 16, price: 60,
+    parts: [['knit', 'fab']], swatches: [{ knit: '#d2363c' }, { knit: '#3f6e4a' }, { knit: '#f39bb0' }, { knit: '#7d93c4' }],
+    draw: function (M) { [[.22, 'knit'], [.5, '#3f6e4a'], [.78, 'knit']].forEach(function (st, i) { M.spr(st[0], .05, 0, function (c, x, y) { var K = st[1] === 'knit' ? M.ramp('knit') : StudioIso.ramp(st[1]); R(c, x - 1, y - 16, 1, 2, '#8e5a37'); R(c, x - 3, y - 14, 6, 3, '#fff6ea'); R(c, x - 3, y - 11, 5, 7, K[1]); R(c, x - 3, y - 11, 2, 7, K[0]); R(c, x - 3, y - 5, 8, 3, K[1]); R(c, x + 2, y - 5, 3, 3, K[2]); if (i === 1) { R(c, x - 1, y - 9, 2, 1, '#fff6ea'); } }, [.1, 16]); }); } });
+  add({ id: 'holiday-garland', name: 'Holiday garland', tab: 'holiday', w: 2, d: .1, kind: 'wall', mount: 34, h: 12, price: 90, lamp: true, use: 'lamp', moves: 'twinkle', anim: 8,
+    parts: [['bulbs', 'plain']], light: { u: 1, v: .1, h: -8, r: 24 }, swatches: [{ bulbs: '#ffd56b' }, { bulbs: '#e46f8b' }, { bulbs: '#8fd0ff' }, { bulbs: '#fff3a8' }],
+    draw: function (M, t) { M.spr(1, .05, 0, function (c) { var on = M.inst && M.inst.lit, B = M.ramp('bulbs'); var pts = []; for (var k = 0; k <= 14; k++) pts.push([M.p(.05 + k / 14 * 1.9, .06, 0), Math.sin(k / 14 * Math.PI) * 5]); c.strokeStyle = '#3f6e4a'; c.lineWidth = 3; c.beginPath(); pts.forEach(function (q, i) { if (i) c.lineTo(q[0][0], q[0][1] + q[1]); else c.moveTo(q[0][0], q[0][1] + q[1]); }); c.stroke(); c.lineWidth = 1; pts.forEach(function (q, i) { if (i % 2) return; var lit = on && (Math.floor(t / 2) + i) % 4 !== 0; R(c, q[0][0], q[0][1] + q[1] + 1, 2, 2, lit ? [B[0], '#e46f8b', '#8fd0ff'][i % 3] : '#a08880'); }); }, [1, 12]); } });
+  add({ id: 'poinsettia', name: 'Poinsettia', tab: 'holiday', w: 1, d: 1, kind: 'small', h: 12, price: 45,
+    parts: [['pot', 'plain']], swatches: [{ pot: '#e7bb4f' }, { pot: '#fff1e2' }, { pot: '#d2363c' }, { pot: '#3f6e4a' }],
+    draw: function (M) { small(M, function (c, x, y) { var Pp = M.ramp('pot'); R(c, x - 3, y - 4, 6, 4, Pp[1]); R(c, x - 3, y - 4, 2, 4, Pp[0]); [[-4, -7, .4], [3, -7, -.4], [0, -10, 0], [-2, -6, .8], [2, -6, -.8]].forEach(function (l) { c.fillStyle = '#d2363c'; c.beginPath(); c.ellipse(x + l[0], y + l[1], 3, 1.6, l[2], 0, 7); c.fill(); }); R(c, x - 1, y - 8, 2, 2, '#ffd56b'); R(c, x - 5, y - 5, 2, 1, '#437a47'); R(c, x + 4, y - 5, 2, 1, '#437a47'); }, [.15, 12]); } });
+  add({ id: 'gift-stack', name: 'Gift stack', tab: 'holiday', w: 1, d: 1, kind: 'small', h: 14, price: 40,
+    parts: [['paper', 'plain']], swatches: [{ paper: '#e46f8b' }, { paper: '#7fa7a0' }, { paper: '#e7bb4f' }, { paper: '#7d93c4' }],
+    draw: function (M) { var P0 = M.ramp('paper'); M.box(.25, .3, .5, .4, 7, 0, 'paper'); M.box(.32, .36, .34, .28, 6, 7, '#fff1e2'); M.spr(.5, .5, 13, function (c, x, y) { R(c, x - 1, y - 2, 3, 2, '#e7bb4f'); }, [.05, 2]); } });
+  add({ id: 'ornament-bowl', name: 'Ornament bowl', tab: 'holiday', w: 1, d: 1, kind: 'small', h: 8, price: 35,
+    parts: [['bowl', 'plain']], swatches: [{ bowl: '#fff1e2' }, { bowl: '#c7ced2' }, { bowl: '#3f6e4a' }, { bowl: '#e7bb4f' }],
+    draw: function (M) { small(M, function (c, x, y) { var B = M.ramp('bowl'); [[-3, '#d2363c'], [0, '#e7bb4f'], [3, '#7fa7a0'], [-1, '#c8a6d8']].forEach(function (o, i) { c.fillStyle = o[1]; c.beginPath(); c.arc(x + o[0], y - 5 - (i === 3 ? 2 : 0), 2, 0, 7); c.fill(); R(c, x + o[0] - 1, y - 6 - (i === 3 ? 2 : 0), 1, 1, 'rgba(255,255,255,.7)'); }); c.fillStyle = B[1]; c.beginPath(); c.ellipse(x, y - 3, 6, 3, 0, 0, Math.PI); c.fill(); R(c, x - 6, y - 4, 12, 1, B[0]); }, [.15, 8]); } });
+  add({ id: 'cookies-and-milk', name: 'Cookies and milk', tab: 'holiday', w: 1, d: 1, kind: 'small', h: 8, price: 25,
+    parts: [['plate', 'plain']], swatches: [{ plate: '#fff6ea' }, { plate: '#d2363c' }, { plate: '#7fa7a0' }, { plate: '#e7bb4f' }],
+    draw: function (M) { small(M, function (c, x, y) { var Pl = M.ramp('plate'); c.fillStyle = Pl[1]; c.beginPath(); c.ellipse(x - 2, y - 1, 5, 2.3, 0, 0, 7); c.fill(); [[-4, -2], [-1, -3], [-2, -1]].forEach(function (k) { R(c, x + k[0], y + k[1], 2, 1, '#c78f3e'); R(c, x + k[0], y + k[1], 1, 1, '#6e4429'); }); R(c, x + 3, y - 7, 3, 6, '#fbf6ef'); R(c, x + 3, y - 7, 1, 6, '#ffffff'); }, [.15, 8]); } });
+  add({ id: 'snow-globe', name: 'Snow globe', tab: 'holiday', w: 1, d: 1, kind: 'small', h: 10, price: 50, moves: 'twinkle', anim: 8,
+    parts: [['base', 'wood']], swatches: [{ base: '#8e5a37' }, { base: '#d2363c' }, { base: '#e7bb4f' }, { base: '#2f2228' }],
+    draw: function (M, t) { small(M, function (c, x, y) { var B = M.ramp('base'); R(c, x - 4, y - 3, 8, 3, B[1]); c.fillStyle = 'rgba(200,225,245,.8)'; c.beginPath(); c.arc(x, y - 7, 4.5, 0, 7); c.fill(); R(c, x - 1, y - 8, 2, 4, '#b9584a'); R(c, x - 2, y - 9, 4, 1, '#fff6ea'); for (var k = 0; k < 4; k++) R(c, x - 3 + ((k * 3 + t) % 6), y - 10 + ((k * 2 + t) % 6), 1, 1, '#fff'); R(c, x - 3, y - 10, 1, 2, 'rgba(255,255,255,.8)'); }, [.15, 10]); } });
+  // a gift under the tree on Christmas morning: not in the catalog
+  add({ id: 'christmas-gift', name: 'A gift', tab: 'none', w: 1, d: 1, kind: 'small', h: 12, price: 0, use: 'gift',
+    parts: [], swatches: [{}],
+    draw: function (M) { var col = ['#e46f8b', '#7fa7a0', '#e7bb4f', '#7d93c4'][(M.inst && M.inst.gift || 0) % 4]; M.box(.25, .3, .5, .45, 9, 0, col); M.spr(.5, .52, 9, function (c, x, y) { R(c, x - 1, y - 1, 2, 2, '#fff1e2'); R(c, x - 4, y - 2, 3, 2, '#fff1e2'); R(c, x + 1, y - 2, 3, 2, '#fff1e2'); }, [.05, 3]); } });
+  SS.DEF = {}; C.forEach(function (d) { SS.DEF[d.id] = d; });
+
+  // ---------- the calendar (part A) ----------
+  SS.inSeason = function (holiday, d) { var m = d.getMonth(), day = d.getDate(); if (holiday === 'christmas') return m === 11 || (m === 0 && day <= 6); return true; };
+  function key(name, d) { return name + '.' + d.getFullYear(); }
+
+  // ---------- the day (part B): dressing for the day, gifts, hats, breakfast ----------
+  SS.applyHolidays = function (G) {
+    var W = G.W, S = G.save, d = SS.now(), m = d.getMonth(), day = d.getDate(), h = d.getHours();
+    S.hol = S.hol || {};
+    var today = m === 11 && day === 24 && h >= 17 ? 'eve' : m === 11 && day === 25 ? 'xmas' : null;
+    // yesterday's dressing goes away, unless she kept it
+    W.pieces.filter(function (p) { return p.dress && p.dress !== today + '.' + d.getFullYear(); }).forEach(function (p) { W.remove(p); });
+    G.xmasDay = m === 11 && day === 25;
+    // first snow: the first time she opens the game on or after Dec 21 (a weather moment)
+    var winterYear = m === 11 ? d.getFullYear() : d.getFullYear() - 1, snowKey = 'snow.' + winterYear;
+    if (((m === 11 && day >= 21) || m < 2) && !S.hol[snowKey]) { S.hol[snowKey] = Date.now(); G.toast('FIRST SNOW', 2400, 'Snow is falling past the windows.'); }
+    if (G.mode !== 'life' || !today) { G.changed(true); return; }
+    var k = key(today, d);
+    if (S.hol[k]) return;
+    S.hol[k] = Date.now();
+    if (today === 'eve') {
+      place(G, 'stockings', { wall: true, near: 'christmas-tree' }, k);
+      place(G, 'cookies-and-milk', { table: true, near: 'christmas-tree' }, k);
+      G.toast('CHRISTMAS EVE', 2600, 'Stockings are up, and cookies are out for the night.');
+    } else {
+      var tree = W.pieces.filter(function (p) { return p.id === 'christmas-tree'; })[0];
+      if (!tree) tree = place(G, 'christmas-tree', { floor: true }, k);
+      var gifts = 0;
+      for (var i = 0; i < 3; i++) { var g = place(G, 'christmas-gift', { floor: true, near: tree && tree.uid }, k); if (g) { g.gift = i; if (i === 0) g.note = true; gifts++; } }
+      // Keegan's special breakfast, on the table with a sparkle
+      if (h < 12) { var meal = place(G, 'plated-meal', { table: true }, k); if (meal) meal.special = true; }
+      G.toast('MERRY CHRISTMAS', 3000, gifts ? 'There are gifts under the tree. Tap one to open it.' : 'Keegan made Christmas breakfast.');
+    }
+    G.changed(true);
+  };
+  // put a day-dressing piece near something, on a wall, a table or the floor; it's marked as dressing for that day
+  function place(G, id, o, k) {
+    var W = G.W, near = o.near ? (typeof o.near === 'number' ? W.byUid[o.near] : W.pieces.filter(function (p) { return p.id === o.near; })[0]) : null;
+    var f = near ? W.floorOf(near) : 0, ft = near ? W.foot(near.host ? W.hostOf(near) : near) : [W.ax + 4, W.ay + 8, W.ax + 5, W.ay + 9];
+    var cx = (ft[0] + ft[2]) / 2, cy = (ft[1] + ft[3]) / 2, best = null;
+    function tryC(cd, dd) { cd.id = id; cd.f = f; if (W.check(cd).ok && (!best || dd < best.d)) best = { d: dd, cd: cd }; }
+    if (o.wall) W.walls[f].forEach(function (s) { if (s.b && !s.op && !s.win) tryC({ wall: [s.x, s.y, s.axis] }, Math.hypot(s.x - cx, s.y - cy)); });
+    if (o.table) W.pieces.forEach(function (hst) { var hd = W.def(hst); if (!hd.spots.length || !/table|island|counter/.test(hst.id)) return; hd.spots.forEach(function (sp, i) { var pos = W.spotPos(hst, i); tryC({ host: hst.uid, spot: i }, Math.hypot(pos.x - cx, pos.y - cy)); }); });
+    if (o.floor || !best) for (var x = W.ax; x < W.ax + W.home.w; x++) for (var y = W.ay; y < W.ay + W.home.d; y++) tryC({ x: x, y: y, r: 0 }, Math.hypot(x + .5 - cx, y + .5 - cy));
+    if (!best) return null;
+    var p = { id: id, sw: 0, props: true, dress: k }; for (var q in best.cd) if (q !== 'id') p[q] = best.cd[q];
+    if (p.host) delete p.f; W.add(p); if (p.host) p.f = W.floorOf(p);
+    return p;
+  }
+  // opening a gift: the one with Keegan's note shows it; each of the others is a free Christmas piece
+  SS.openGift = function (G, gift) {
+    var W = G.W, S = G.save;
+    if (gift.note) {
+      var n = (window.SS_PRIVATE || {}).treeNote || { lines: ['Merry Christmas.'], sign: 'Keegan' };
+      G.toast('A NOTE FROM ' + n.sign.toUpperCase(), 6000, n.lines.join(' '));
+      W.remove(gift); G.changed(true); return;
+    }
+    var set = SS.CATALOG.filter(function (d) { return d.holiday === 'christmas' && d.tab === 'holiday' && d.id !== 'christmas-tree'; }).map(function (d) { return d.id; });
+    S.hol.given = S.hol.given || []; var left = set.filter(function (id) { return S.hol.given.indexOf(id) < 0; }); if (!left.length) left = set;
+    var id = left[Math.floor(Math.random() * left.length)]; S.hol.given.push(id);
+    var spot = { x: gift.x, y: gift.y, f: gift.f }; W.remove(gift);
+    var p = { id: id, sw: 0, props: true };
+    if (SS.DEF[id].kind === 'wall') { if (!SS.placeNear(G, id, W.pieces.filter(function (q) { return q.id === 'christmas-tree'; })[0] || W.pieces[0])) {} }
+    else { p.f = spot.f; p.x = spot.x; p.y = spot.y; p.r = 0; if (W.check(p).ok) W.add(p); else SS.placeNear(G, id, W.pieces[0]); }
+    if (S.made.indexOf(id) < 0) S.made.push(id);
+    G.changed(true);
+    G.toast('A GIFT: ' + SS.DEF[id].name.toUpperCase(), 2600, 'It\'s yours to keep and place anywhere.');
+  };
+})();
+
+</script>
 <script>/* sprites.js */
 // Sarah's Sim people and cats on the map: Sarah and Keegan from mockups/people-v1, Louie from mockups/louie-v1 and Ralph
 // from mockups/ralph-v1 (all approved Nov 25 as the reference sheet). The drawing code below is ported from those files
@@ -1947,6 +2526,11 @@ var SS = window.SS = window.SS || {};
     c.fillStyle = 'rgba(90,45,40,.25)'; c.beginPath(); c.ellipse(x, y, img.width * .38, 3, 0, 0, 7); c.fill();
     var dx = Math.round(x - img.width / 2), dy = Math.round(y - img.height + 1 - bob);
     if (o.flip) { c.save(); c.translate(dx + img.width, dy); c.scale(-1, 1); c.drawImage(img, 0, 0); c.restore(); } else c.drawImage(img, dx, dy);
+    if (o.hat) { // a tiny Santa hat on Christmas (spec 009): on the head, which sits at the front of the loaf and the top of the sit
+      var hx = pose === 'sit' ? dx + img.width / 2 : (o.flip ? dx + 6 : dx + img.width - 7), hy = pose === 'sit' ? dy : dy - 1;
+      c.fillStyle = '#d2363c'; c.beginPath(); c.moveTo(hx - 4, hy + 2); c.lineTo(hx + 4, hy + 2); c.lineTo(hx + (o.flip ? -3 : 3), hy - 5); c.closePath(); c.fill();
+      c.fillStyle = '#fff6ea'; c.fillRect(Math.round(hx - 4), Math.round(hy + 1), 8, 2); c.fillRect(Math.round(hx + (o.flip ? -4 : 3)), Math.round(hy - 6), 2, 2);
+    }
     if (walk) { c.fillStyle = CATS[who].pal.o || '#3b2f33'; var f = pose === 'walk1' ? 0 : 2; c.fillRect(dx + 4 + f, y, 2, 1); c.fillRect(dx + img.width - 8 - f, y, 2, 1); }
   };
   SS.catSize = function (who, pose) { var i = catImg(who, pose || 'sit'); return [i.width, i.height]; };
@@ -1963,6 +2547,29 @@ var SS = window.SS = window.SS || {};
   var INK = '#3b2430';
   var P = { sky0: '#171127', sky1: '#2b1d3a', sky2: '#4a2c45', brick: ['#b9584a', '#9c463b', '#7d3530'], brickL: ['#a8786a', '#8c6155', '#6e4a42'], brickR: ['#8f5b6a', '#774a58', '#5c3846'],
     cream: '#fff1e2', creamSh: '#e3cdb8', snow: '#f4f1fb', snowSh: '#c9c3dc', glass: ['#ffe3a0', '#ffc96e', '#f0a95a'], rose: '#e46f8b', roseHi: '#f39bb0', roseSh: '#b44f63', gold: '#ffd56b', goldSh: '#c78f3e', tray: '#fff6ea', trayEdge: '#e8cdb4', ink: '#6b4250', soft: '#b38a8f' };
+  // the seasons (bible, Title and cover: winter has snow with Christmas lights in December; spring has rain and flower boxes;
+  // summer is a warm evening with fireflies; fall has falling leaves, with a pumpkin on the stoop near Halloween)
+  var SEASON = 'winter', MONTH = 11;
+  var SKIES = { winter: ['#171127', '#2b1d3a', '#4a2c45'], spring: ['#1b2236', '#2f3a52', '#4d5068'], summer: ['#1d1638', '#4a2e5c', '#b0606a'], fall: ['#1a1226', '#3a2236', '#7a3e3a'] };
+  var LEDGE = { winter: '#f4f1fb', spring: '#d9cbbd', summer: '#e3d3bf', fall: '#d2c0a8' };
+  function setSeason(d) {
+    var m = d.getMonth(); MONTH = m;
+    SEASON = m === 11 || m < 2 ? 'winter' : m < 5 ? 'spring' : m < 8 ? 'summer' : 'fall';
+    P.snow = LEDGE[SEASON]; P.snowSh = SEASON === 'winter' ? '#c9c3dc' : '#b8a798';
+    P.sky0 = SKIES[SEASON][0]; P.sky1 = SKIES[SEASON][1]; P.sky2 = SKIES[SEASON][2];
+  }
+  function weather(W, H, t, n, big) {
+    if (SEASON === 'winter') return snowfall(W, H, t, n, big);
+    for (var i = 0; i < n; i++) {
+      var x0 = rnd(i) * W, y0 = rnd(i + 50) * H;
+      if (SEASON === 'spring') { var y = (y0 + t * 9 * (.8 + rnd(i + 7) * .4)) % H, x = (x0 - t * 1.5 + W * 4) % W; c.fillStyle = 'rgba(190,210,235,.5)'; c.fillRect(Math.round(x), Math.round(y), 1, 4); }
+      else if (SEASON === 'summer') { if (i % 3) continue; var fx = (x0 + Math.sin((t + i * 7) / 6) * 6 + W) % W, fy = H * .45 + (y0 % (H * .5)) + Math.cos((t + i) / 5) * 4, on = (Math.floor(t / 3) + i) % 4 !== 0; if (on) { glow(fx, fy, 5, .35); R(fx, fy, 1, 1, '#fff3a8'); } }
+      else { if (i % 2) continue; var ly = (y0 + t * 1.6 * (.6 + rnd(i + 3) * .6)) % H, lx = (x0 + Math.sin((t + i * 3) / 4) * 5 + W) % W; R(lx, ly, 2, 1, ['#c96f45', '#e7b75f', '#b44f63', '#e99a70'][i % 4]); R(lx + 1, ly + 1, 1, 1, '#8e5a37'); }
+    }
+  }
+  function plantInWindow(x, y, w, h) { c.fillStyle = '#437a47'; c.beginPath(); c.arc(x + w / 2 + 4, y + h - 10, 7, 0, 7); c.fill(); c.fillStyle = '#6aa361'; c.beginPath(); c.arc(x + w / 2 + 2, y + h - 12, 5, 0, 7); c.fill(); R(x + w / 2, y + h - 5, 8, 5, '#c0674f'); }
+  function flowerBox(x, y, w) { R(x - 1, y, w + 2, 4, '#8e5a37'); R(x - 1, y, w + 2, 1, '#b9804f'); for (var k = 1; k < w; k += 3) { R(x + k, y - 3, 1, 3, '#5f8f4e'); R(x + k - 1, y - 5, 3, 2, ['#f39bb0', '#f3d38a', '#c8a6d8', '#fff1e2'][(k / 3 | 0) % 4]); } }
+  function pumpkin(x, y) { c.fillStyle = '#e7863a'; c.beginPath(); c.ellipse(x, y - 4, 6, 4.5, 0, 0, 7); c.fill(); c.fillStyle = '#c96f2a'; c.fillRect(x - 1, y - 8, 2, 8); R(x - 1, y - 10, 2, 2, '#5f8f4e'); R(x - 3, y - 5, 2, 1, '#ffd56b'); R(x + 1, y - 5, 2, 1, '#ffd56b'); }
   function R(x, y, w, h, col) { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
   function txt(s, x, y, col, size, align) { c.font = (size || 8) + 'px "Press Start 2P", monospace'; c.fillStyle = col; c.textAlign = align || 'left'; c.textBaseline = 'top'; c.fillText(s, x, y); }
   function heart(x, y, col, s) { s = s || 1; [[1, 0, 2], [4, 0, 2], [0, 1, 7], [0, 2, 7], [1, 3, 5], [2, 4, 3], [3, 5, 1]].forEach(function (r) { R(x + r[0] * s, y + r[1] * s, r[2] * s, s, col); }); }
@@ -2038,13 +2645,19 @@ var SS = window.SS = window.SS || {};
     var dx = hx + 12, dy = gy - 54;
     R(dx - 3, dy - 10, 30, 3, '#d9cbbd'); R(dx - 2, dy - 7, 28, 7, P.cream); var tg = c.createLinearGradient(0, dy - 6, 0, dy); tg.addColorStop(0, P.glass[0]); tg.addColorStop(1, P.glass[2]); c.fillStyle = tg; c.fillRect(dx, dy - 6, 24, 5); for (var m = dx + 4; m < dx + 24; m += 5) R(m, dy - 6, 1, 5, P.cream);
     R(dx - 2, dy, 28, 40, P.cream); R(dx, dy + 1, 24, 39, '#3d6b5c'); R(dx + 2, dy + 3, 9, 15, '#4a7d6c'); R(dx + 13, dy + 3, 9, 15, '#4a7d6c'); R(dx + 2, dy + 21, 9, 16, '#4a7d6c'); R(dx + 13, dy + 21, 9, 16, '#4a7d6c'); R(dx + 19, dy + 21, 2, 2, P.gold);
-    wreath(dx + 12, dy + 12);
+    if (SEASON === 'winter') wreath(dx + 12, dy + 12);
     glow(dx + 12, dy - 4, 26, .2); R(dx + 27, dy + 6, 3, 5, '#2f2430'); R(dx + 27, dy + 6, 3, 3, P.glass[0]); // porch light
-    win(hx + 54, gy - 52, 40, 32, true, t, function (x, y, w, h) { tinyTree(x + w / 2 + 4, y + h, 24, t); }, true);
+    win(hx + 54, gy - 52, 40, 32, true, t, function (x, y, w, h) { if (MONTH === 11) tinyTree(x + w / 2 + 4, y + h, 24, t); else plantInWindow(x, y, w, h); }, true);
+    if (SEASON === 'spring') [[hx + 14, top + 47], [hx + 66, top + 47], [hx + 14, top + 95], [hx + 66, top + 95]].forEach(function (b) { flowerBox(b[0], b[1], 24); });
     // white marble stoop, with snow, and an iron railing
     var sx = dx - 6;
     for (var s = 0; s < 3; s++) { R(sx - s * 3, gy - 14 + s * 5, 36 + s * 6, 5, s % 2 ? '#e9e4ee' : '#f3eff6'); R(sx - s * 3, gy - 10 + s * 5, 36 + s * 6, 1, '#c9c3dc'); R(sx - s * 3 + 2, gy - 15 + s * 5, 30 + s * 6, 2, P.snow); }
+    if (SEASON === 'fall' && MONTH === 9) { pumpkin(sx + 30, gy - 14); pumpkin(sx + 2, gy - 4); }
     c.strokeStyle = '#2f2430'; c.beginPath(); c.moveTo(sx + 36 + 6, gy - 30); c.lineTo(sx + 42, gy); c.moveTo(sx - 8, gy - 30 + 14); c.lineTo(sx - 8, gy); c.stroke();
+    if (MONTH === 11) { // Christmas on the street: a wreath on the neighbor's door, lights along the cornices
+      wreath(223, gy - 30);
+      for (var lx2 = -4; lx2 < W; lx2 += 6) { var on2 = (Math.floor(t / 2) + lx2 / 6) % 4 !== 0, ly2 = lx2 < hx || lx2 > hx + hw ? top + 4 + (lx2 > hx ? -4 : 0) : top - 2; R(lx2, ly2 + (lx2 / 6 % 2), 2, 2, on2 ? ['#ffd56b', '#e46f8b', '#8fd0ff', '#fff3a8'][(lx2 / 6 | 0) % 4] : '#5a5060'); }
+    }
     // sidewalk and snow
     R(0, gy, W, H - gy, '#8c7c94'); for (var bx = 0; bx < W; bx += 12) R(bx, gy, 1, H - gy, '#7a6a82');
     R(0, gy, W, 4, P.snow); for (var k = 0; k < W; k += 7) R(k, gy + 3, 4 + (k % 3), 2, P.snow);
@@ -2102,6 +2715,7 @@ var SS = window.SS = window.SS || {};
 
   SS.titleArt = {
     use: function (ctx) { c = ctx; },
+    setSeason: setSeason, weather: weather, season: function () { return SEASON; },
     sky: sky, moon: moon, street: street, snowfall: snowfall, titleText: titleText, gift: gift, heart: heart, txt: txt, R: R, P: P, rnd: rnd
   };
 })();
@@ -2173,6 +2787,7 @@ var SS = window.SS = window.SS || {};
         { id: 'christmas-tree', f: 0, x: 7, y: 11, r: 0 },
         { id: 'record-player', f: 0, x: 6, y: 11, r: 0 },
         { id: 'framed-print', f: 0, wall: [6, 7, 'x'] },
+        { id: 'string-lights', f: 0, wall: [1, 7, 'x'] },
         // dining nook
         { id: 'round-dining-table', f: 0, x: 4, y: 4, r: 0 },
         { id: 'dining-chair', f: 0, x: 3, y: 5, r: 3 },
@@ -2189,9 +2804,12 @@ var SS = window.SS = window.SS || {};
         { id: 'mugs', f: 0, on: 'kitchen-counter#2@0' },
         { id: 'kitchen-counter', f: 0, x: 7, y: 0, r: 0 },
         { id: 'vase-of-flowers', f: 0, on: 'kitchen-counter#3@0' },
+        { id: 'herb-pots', f: 0, on: 'kitchen-counter#4@0' },
+        { id: 'pendant-light', f: 0, on: 'round-dining-table@0' },
         { id: 'curtains', f: 0, wall: [2, 0, 'x'] },
         { id: 'curtains', f: 0, wall: [3, 0, 'x'] },
         { id: 'wall-clock', f: 0, wall: [0, 2, 'y'] },
+        { id: 'cat-bowls', f: 0, x: 5, y: 3, r: 0 },
         // bathroom
         { id: 'bath-tub', f: 1, x: 6, y: 0, r: 0 },
         { id: 'bathroom-sink', f: 1, x: 3, y: 0, r: 0 },
@@ -2199,6 +2817,7 @@ var SS = window.SS = window.SS || {};
         { id: 'bath-mat', f: 1, x: 6, y: 1, r: 0 },
         { id: 'mirror', f: 1, wall: [3, 0, 'x'] },
         { id: 'small-succulent', f: 1, x: 7, y: 3, r: 0 },
+        { id: 'litter-box', f: 1, x: 2, y: 3, r: 0 },
         // study
         { id: 'round-rug', f: 1, x: 4, y: 5, r: 0, sw: 1 },
         { id: 'desk', f: 1, x: 5, y: 4, r: 0 },
@@ -2215,6 +2834,7 @@ var SS = window.SS = window.SS || {};
         { id: 'club-armchair', f: 1, x: 3, y: 10, r: 3, sw: 2 },
         { id: 'framed-print', f: 1, wall: [4, 8, 'x'], sw: 2 },
         { id: 'cat-bed', f: 1, x: 3, y: 11, r: 0 },
+        { id: 'cat-tree', f: 1, x: 6, y: 11, r: 0 },
         // bedroom
         { id: 'round-rug', f: 2, x: 3, y: 5, r: 0 },
         { id: 'double-bed', f: 2, x: 3, y: 0, r: 0, sw: 0 },
@@ -2223,6 +2843,9 @@ var SS = window.SS = window.SS || {};
         { id: 'table-lamp', f: 2, on: 'nightstand#1@0', sw: 1 },
         { id: 'table-lamp', f: 2, on: 'nightstand#2@0', sw: 1 },
         { id: 'dresser', f: 2, x: 7, y: 5, r: 3 },
+        { id: 'wardrobe', f: 2, x: 0, y: 3, r: 3 },
+        { id: 'sheepskin', f: 2, x: 6, y: 2, r: 0 },
+        { id: 'string-lights', f: 2, wall: [0, 0, 'x'], sw: 1 },
         { id: 'window-seat-cushion', f: 2, x: 3, y: 11, r: 2 },
         { id: 'framed-print', f: 2, wall: [6, 0, 'x'], sw: 1 },
         { id: 'floor-lamp', f: 2, x: 1, y: 1, r: 0, sw: 1 },
@@ -2631,6 +3254,8 @@ var SS = window.SS = window.SS || {};
     var anim = d.anim ? t % d.anim : 0;
     if (d.moves === 'tick') anim = new Date().getMinutes();
     if (d.use === 'tv' && p.lit) anim = Math.floor(t / 2) % 4 + 10;
+    if (d.use === 'bowl') anim = SS.G && SS.G.catFull ? 1 : 0;
+    if (d.use === 'litter') anim = SS.G && SS.G.litterLow ? 1 : 0;
     var free = W ? d.spots.map(function (_, i) { return W.spotFree(p, i) ? 1 : 0; }).join('') : '';
     return [p.id, p.r || 0, p.wall ? p.wall[2] : '', p.sw || 0, JSON.stringify(p.colors || 0), JSON.stringify(p.pats || 0), p.props === false ? 0 : 1, p.lit ? 1 : 0, p.work ? 1 : 0, free, anim].join('|');
   };
@@ -2786,6 +3411,7 @@ var SS = window.SS = window.SS || {};
       var d = W.def(p); if (!d.light || !p.lit || W.floorOf(p) !== F) return;
       var pos, Z = F * FH;
       if (p.host) { var sp = W.spotPos(W.hostOf(p), p.spot); pos = P(sp.x, sp.y, Z + sp.z + d.light.h); }
+      else if (p.wall) { var wp = W.wallPlace(p), Mw = SS.Model(null, d, p, { x: wp.x, y: wp.y, rot: wp.rot }), qw = Mw.wp(d.light.u, d.light.v); pos = P(qw[0], qw[1], Z + wp.z + d.light.h); }
       else { var M = SS.Model(null, d, p, { x: p.x, y: p.y, rot: p.r || 0 }); var q = M.wp(d.light.u, d.light.v); pos = P(q[0], q[1], Z + d.light.h); }
       var a = (.2 + .03 * Math.sin(o.t / 3 + p.uid)) * k, r = d.light.r * (.8 + .5 * Math.min(1.2, k));
       var g = c.createRadialGradient(pos[0], pos[1], 2, pos[0], pos[1] + 10, r); g.addColorStop(0, 'rgba(255,200,120,' + a + ')'); g.addColorStop(1, 'rgba(255,200,120,0)');
@@ -2857,11 +3483,14 @@ var SS = window.SS = window.SS || {};
   SS.dayText = function (d) { return DAYS[d.getDay()] + ' ' + MONTHS[d.getMonth()] + ' ' + d.getDate(); };
   SS.timeText = function (d) { var h = d.getHours() % 12 || 12, m = ('0' + d.getMinutes()).slice(-2); return h + ':' + m + (d.getHours() < 12 ? ' AM' : ' PM'); };
   SS.weekday = function (d) { return DAYS[d.getDay()]; };
-  // the time she's playing at: the phone's clock, or a set clock for testing (?clock=21:30, or SS.setClock)
-  var fixed = null;
-  try { var q = new URLSearchParams(location.search).get('clock'); if (q) { var p = q.split(':'); fixed = [+p[0], +(p[1] || 0)]; } } catch (e) {}
-  SS.setClock = function (h, m) { fixed = h === null ? null : [h, m || 0]; };
-  SS.now = function () { var d = new Date(); if (fixed) d.setHours(fixed[0], fixed[1], 0, 0); return d; };
+  // the time she's playing at: the phone's clock, or, for testing, a set clock and date (?clock=21:30&date=2026-12-25, or
+  // SS.setClock and SS.setDate). Only in Dev builds and the checks, never in the build Sarah plays (spec 009, Testing).
+  var fixed = null, fixedDate = null;
+  var testing = location.protocol === 'file:' || (window.Studio && Studio.channel === 'dev');
+  try { var qs = new URLSearchParams(location.search), q = qs.get('clock'), qd = qs.get('date'); if (testing && q) { var p = q.split(':'); fixed = [+p[0], +(p[1] || 0)]; } if (testing && qd) { var dp = qd.split('-'); fixedDate = [+dp[0], +dp[1] - 1, +dp[2]]; } } catch (e) {}
+  SS.setClock = function (h, m) { if (testing) fixed = h === null ? null : [h, m || 0]; };
+  SS.setDate = function (y, mo, d) { if (testing) fixedDate = y === null ? null : [y, mo, d]; };
+  SS.now = function () { var d = new Date(); if (fixedDate) d.setFullYear(fixedDate[0], fixedDate[1], fixedDate[2]); if (fixed) d.setHours(fixed[0], fixed[1], 0, 0); return d; };
 })();
 
 </script>
@@ -2931,6 +3560,77 @@ var SS = window.SS = window.SS || {};
 })();
 
 </script>
+<script>/* needs.js */
+// Sarah's Sim needs (spec 006, part C). People have three soft needs: energy (moon), hunger (bowl) and fun (star).
+//   - Each goes down slowly only while the game is open: full to low in about 40 minutes of play (Claude default). Nothing
+//     drains while she's away (bible, Away from the game).
+//   - Actions fill them (spec 006, part B's table). Below a quarter Sarah yawns, sighs or her tummy rumbles, and actions take
+//     a little longer. That's all: no need can hurt her, stop her or end anything (pillar 3).
+//   - Tapping Sarah shows her three meters, each with its icon and word (studio-bible/ui.md, color is never the only label);
+//     tapping Keegan shows his beside his bubble. Hidden the rest of the time. Keegan looks after his own (idle life).
+//   - Sandbox has no needs (bible, Modes).
+// Meters drawn as in the approved mockups/cooking-v1 ('bubble' state).
+(function () {
+  var LOW = .25, RATE = .75 / (40 * 60);   // from full to low in about 40 minutes of play
+  var KEYS = ['energy', 'hunger', 'fun'];
+  SS.NEED_KEYS = KEYS;
+  SS.needsOf = function (G, who) {
+    var S = G.save; if (!S.needs) S.needs = { sarah: { energy: .8, hunger: .7, fun: .75 }, keegan: { energy: .85, hunger: .75, fun: .8 } };
+    return S.needs[who];
+  };
+  SS.lowNeed = function (G, who) { if (G.mode !== 'life') return null; var n = SS.needsOf(G, who); var low = KEYS.filter(function (k) { return n[k] < LOW; }); return low.length ? low.sort(function (a, b) { return n[a] - n[b]; })[0] : null; };
+  SS.fillNeeds = function (G, who, fill, k) { if (G.mode !== 'life' || !fill) return; var n = SS.needsOf(G, who); KEYS.forEach(function (key) { if (fill[key]) n[key] = Math.max(0, Math.min(1, n[key] + fill[key] * k)); }); };
+  var nudgeIn = 20, saveIn = 15;
+  SS.tickNeeds = function (G, dt) {
+    if (G.mode !== 'life') return;
+    var s = SS.needsOf(G, 'sarah'), kn = SS.needsOf(G, 'keegan');
+    KEYS.forEach(function (k) { s[k] = Math.max(0, s[k] - RATE * dt); kn[k] = Math.max(0, kn[k] - RATE * dt); if (kn[k] < .45) kn[k] = Math.min(1, kn[k] + RATE * 4 * dt); });
+    // a low need only shows: a yawn, a sigh or a rumbling tummy now and then while she's idle
+    nudgeIn -= dt;
+    var low = SS.lowNeed(G, 'sarah'), sa = G.people.sarah;
+    if (low && nudgeIn <= 0 && !G.act && !sa.path.length) { sa.bubble = { icon: low === 'energy' ? 'yawn' : low === 'hunger' ? 'rumble' : 'dots', until: performance.now() + 2200 }; nudgeIn = 25 + Math.random() * 15; }
+    SS.tickCats(G, dt);
+    saveIn -= dt; if (saveIn <= 0) { saveIn = 15; G.changed(true); }
+  };
+  // ---------- the cats' needs (spec 006, part D): hunger, play and the litter box, in Life only ----------
+  // They drain at the same rate as people's, only while she's playing. Never bad (bible, The cats): a cat only nudges.
+  SS.catNeedsOf = function (G, who) {
+    var S = G.save; if (!S.catNeeds) S.catNeeds = { louie: { hunger: .8, play: .7, litter: .9 }, ralph: { hunger: .75, play: .7, litter: .9 } };
+    return S.catNeeds[who];
+  };
+  SS.catLow = function (G, who) { if (G.mode !== 'life') return null; var n = SS.catNeedsOf(G, who); return ['hunger', 'litter', 'play'].filter(function (k) { return n[k] < LOW; })[0] || null; };
+  SS.tickCats = function (G, dt) {
+    if (G.mode !== 'life') { G.catFull = true; G.litterLow = false; return; }
+    ['louie', 'ralph'].forEach(function (w) { var n = SS.catNeedsOf(G, w); ['hunger', 'play', 'litter'].forEach(function (k) { n[k] = Math.max(0, n[k] - RATE * dt); }); });
+    var L = SS.catNeedsOf(G, 'louie'), Rr = SS.catNeedsOf(G, 'ralph');
+    var full = Math.min(L.hunger, Rr.hunger) > .5, low = Math.min(L.litter, Rr.litter) < LOW;
+    if (full !== G.catFull || low !== G.litterLow) { G.catFull = full; G.litterLow = low; G.version = (G.version || 0) + 1; }
+  };
+  SS.fillCats = function (G, key, amount, who) { if (G.mode !== 'life') return; (who ? [who] : ['louie', 'ralph']).forEach(function (w) { var n = SS.catNeedsOf(G, w); n[key] = Math.min(1, n[key] + amount); }); };
+
+  // the meters card (cooking-v1): name, then each need with its icon, its word and a bar
+  SS.drawMeters = function (G, x, y, who) {
+    var c = G.c, P = SS.P, R = SS.R, n = SS.needsOf(G, who);
+    SS.card(x, y, 88, 62, P.sage[1]);
+    SS.txt(who.toUpperCase(), x + 6, y + 5, P.ink, 6);
+    var icons = [
+      function (ix, iy) { c.fillStyle = '#8fa6d8'; c.beginPath(); c.arc(ix + 4.5, iy + 4.5, 4.5, 0, 7); c.fill(); c.fillStyle = P.tray; c.beginPath(); c.arc(ix + 6.5, iy + 3, 3.8, 0, 7); c.fill(); },
+      function (ix, iy) { R(ix, iy + 4, 9, 1, '#6b4250'); R(ix + 1, iy + 5, 7, 2, '#e46f6a'); R(ix + 2, iy + 7, 5, 1, '#b44f63'); R(ix + 2, iy + 2, 5, 2, '#f3d38a'); R(ix + 3, iy, 1, 2, 'rgba(160,140,140,.6)'); R(ix + 5, iy - 1, 1, 2, 'rgba(160,140,140,.6)'); },
+      function (ix, iy) { var cx = ix + 4.5, cy = iy + 4.5; c.fillStyle = '#e7a43a'; c.beginPath(); for (var p = 0; p < 10; p++) { var r = p % 2 ? 2.2 : 5, a = -Math.PI / 2 + p * Math.PI / 5; c.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); } c.closePath(); c.fill(); c.fillStyle = '#ffd56b'; c.beginPath(); c.arc(cx - .5, cy - .3, 2, 0, 7); c.fill(); }
+    ];
+    ['ENERGY', 'HUNGER', 'FUN'].forEach(function (word, i) {
+      var yy = y + 17 + i * 14, v = n[KEYS[i]];
+      icons[i](x + 6, yy);
+      SS.vt(word, x + 18, yy - 2, P.ink, 11);
+      R(x + 50, yy + 1, 33, 7, '#3b2430'); R(x + 51, yy + 2, 31, 5, '#e8dccd');
+      R(x + 51, yy + 2, Math.round(31 * v), 5, v < LOW ? '#f2a65a' : '#8cc06a'); R(x + 51, yy + 2, Math.round(31 * v), 1, v < LOW ? '#ffd0a0' : '#c4e39a');
+      if (v < LOW) SS.vt('LOW', x + 82, yy + 6, P.soft, 9, 'right');
+    });
+    SS.hit(G, x, y, 88, 62, function () { G.meters = null; });
+  };
+})();
+
+</script>
 <script>/* agents.js */
 // Sarah's Sim people and cats in the home.
 //   Sandbox (spec 001, part B): Louie and Ralph wander, nap on furniture she places and react to new pieces (bible, The cats);
@@ -2951,7 +3651,7 @@ var SS = window.SS = window.SS || {};
       var walking = a.path.length > 0, beat = Math.floor(a.walked * 4) % 4;
       var pose = walking ? (beat === 0 ? 'walk1' : beat === 2 ? 'walk2' : (a.kind === 'cat' ? 'walk2' : 'stand')) : a.pose;
       if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: walking && a.back, flip: a.flip, t: performance.now() });
-      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: a.flip });
+      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: a.flip, hat: SS.G && SS.G.xmasDay });
       var headY = p[1] - (a.kind === 'cat' ? 22 : (a.pose === 'sit' ? 36 : a.pose === 'lie' ? 16 : 42));
       if (a.bar) { // the slim progress bar over her head
         var w = 18, k = Math.min(1, a.bar.k);
@@ -2977,6 +3677,9 @@ var SS = window.SS = window.SS || {};
     else if (b.icon === 'dots') { c.fillStyle = '#6b4250'; [-3, 0, 3].forEach(function (d, i) { if (Math.floor(t / 250) % 4 > i) c.fillRect(x + d, y, 2, 2); }); }
     else if (b.icon === 'note') { c.fillStyle = '#7fa7a0'; c.fillRect(x, y - 3, 1, 5); c.fillRect(x - 2, y + 1, 3, 2); c.fillRect(x + 1, y - 3, 2, 1); }
     else if (b.icon === 'treat') { c.fillStyle = '#c96f45'; c.fillRect(x - 2, y - 1, 4, 3); c.fillStyle = '#f3d38a'; c.fillRect(x - 1, y - 1, 1, 1); }
+    else if (b.icon === 'yawn') { c.fillStyle = '#6b4250'; c.beginPath(); c.ellipse(x, y, 2.5, 3, 0, 0, 7); c.fill(); c.fillStyle = '#e46f8b'; c.fillRect(x - 1, y + 1, 2, 1); }
+    else if (b.icon === 'rumble') { c.fillStyle = '#e46f6a'; c.fillRect(x - 3, y, 7, 2); c.fillStyle = '#6b4250'; c.fillRect(x - 4, y - 1, 9, 1); c.fillStyle = '#b38a8f'; c.fillRect(x - 1, y - 4, 1, 2); c.fillRect(x + 1, y - 3, 1, 2); }
+    else if (b.icon === 'grumpy') { c.fillStyle = '#6b4250'; c.fillRect(x - 3, y - 2, 2, 1); c.fillRect(x + 2, y - 2, 2, 1); c.fillRect(x - 2, y + 2, 5, 1); c.fillRect(x - 3, y + 1, 1, 1); c.fillRect(x + 3, y + 1, 1, 1); }
     else if (b.icon === 'star') { c.fillStyle = '#e7b75f'; c.fillRect(x - 1, y - 3, 2, 6); c.fillRect(x - 3, y - 1, 6, 2); }
   }
   SS.drawBubble = drawBubble;
@@ -3007,7 +3710,7 @@ var SS = window.SS = window.SS || {};
   }
   function getUp(W, a) { if (a.on || a.pose === 'sit' || a.pose === 'lie' || a.pose === 'loaf' || a.pose === 'curl') { var u = a.onTile; a.on = null; a.z = 0; a.pose = a.kind === 'cat' ? 'sit' : 'stand'; if (u) { a.x = u[0] + .5; a.y = u[1] + .5; } a.onTile = null; } }
   function step(a, dt) {
-    if (!a.path.length) return;
+    if (!a.path.length) { if (a.arrive) { var done = a.arrive; a.arrive = null; done(); } return; }   // already there
     var wp = a.path[0];
     if (wp.lift) { a.z = wp.z; a.f = wp.f; a.path.shift(); return; }
     var dx = wp.x - a.x, dy = wp.y - a.y, d = Math.hypot(dx, dy), mv = a.speed * dt * (a.slow || 1);
@@ -3028,11 +3731,14 @@ var SS = window.SS = window.SS || {};
     var d = W.def(p), ft = W.foot(p), from = a.tile();
     var M = SS.Model(null, d, p, { x: p.x, y: p.y, rot: p.r || 0 });
     var spots = [];
-    if (d.use === 'bed' || p.id === 'cat-bed') spots = [[d.w / 2, d.d * .55]];
+    if (d.use === 'bed' && d.w >= 2) spots = [[d.w * .3, d.d * .5], [d.w * .7, d.d * .5]];
+    else if (d.use === 'bed' || p.id === 'cat-bed') spots = [[d.w / 2, d.d * .55]];
     else if (d.kind === 'rug') spots = [[d.w / 2, d.d / 2]];
     else { var n = Math.max(1, Math.round(d.w)); for (var k = 0; k < n; k++) spots.push([(k + .5) * d.w / n, d.use === 'tub' ? .5 : .62]); }
     var best = null;
-    spots.forEach(function (sp) { var q = M.wp(sp[0], sp[1]); var dd = Math.hypot(q[0] - from.x - .5, q[1] - from.y - .5); if (!best || dd < best.d) best = { q: q, d: dd }; });
+    var others = (SS.G && SS.G.agents || []).filter(function (o) { return o !== a && o.on === p.uid; });
+    spots.forEach(function (sp) { var q = M.wp(sp[0], sp[1]); if (others.some(function (o) { return Math.hypot(o.x - q[0], o.y - q[1]) < .3; })) return; var dd = Math.hypot(q[0] - from.x - .5, q[1] - from.y - .5); if (!best || dd < best.d) best = { q: q, d: dd }; });
+    if (!best) { var q0 = M.wp(spots[0][0], spots[0][1]); best = { q: [q0[0] + .2, q0[1] + .2] }; }
     a.onTile = [from.x, from.y]; a.on = p.uid; a.x = best.q[0]; a.y = best.q[1]; a.z = d.kind === 'rug' ? 0 : (d.seat || 12);
     a.pose = pose;
     var r = p.r || 0; a.flip = r === 0 || r === 1; a.back = r === 1 || r === 2;   // face the way the piece faces
@@ -3052,6 +3758,7 @@ var SS = window.SS = window.SS || {};
     }
     if (a.path.length) return;
     a.wait -= dt;
+    if (a.wait <= 0 && catNudge(G, a)) return;
     if (a.wait > 0) return;
     if (a.next) { var np = W.byUid[a.next]; a.next = null; a.react = null; if (np && (W.def(np).nap || W.def(np).kind === 'rug')) { seatOn(W, a, np, a.who === 'louie' ? 'curl' : 'loaf'); a.bubble = { icon: 'z', until: performance.now() + 9000 }; a.wait = rand(14, 30); return; } }
     getUp(W, a); a.bubble = null;
@@ -3072,6 +3779,38 @@ var SS = window.SS = window.SS || {};
     if (tries < 30 && walkTo(W, a, function (ff, x, y) { return ff === f && x === gx && y === gy; })) a.arrive = function () { a.pose = 'sit'; a.wait = rand(3, 9); };
     else a.wait = rand(2, 5);
   }
+  // a cat with a low need nudges her (spec 006, part D): hungry, Louie sits by the bowl and chats and Ralph flops by the
+  // fridge; bored, a cat knocks a small thing off a table (it can always be picked back up); a dirty box, a grumpy face by it
+  function catNudge(G, a) {
+    var W = G.W, low = SS.catLow(G, a.who);
+    if (!low || Math.random() < .35) return false;
+    var spot = low === 'hunger' ? W.pieces.find(function (p) { return p.id === (a.who === 'ralph' ? 'fridge' : 'cat-bowls'); }) || W.pieces.find(function (p) { return p.id === 'cat-bowls'; })
+      : low === 'litter' ? W.pieces.find(function (p) { return p.id === 'litter-box'; }) : null;
+    if (low === 'play') {
+      var smalls = W.pieces.filter(function (p) { return p.host && W.floorOf(p) === a.f && W.def(p).kind === 'small' && !W.def(p).lamp; });
+      var thing = smalls[Math.floor(Math.random() * smalls.length)];
+      if (!thing) return false;
+      var hostP = W.hostOf(thing);
+      if (!walkTo(W, a, function (f, x, y) { return f === W.floorOf(hostP) && W.useTiles(hostP).some(function (q) { return q[0] === x && q[1] === y; }); })) return false;
+      a.arrive = function () {
+        if (!W.byUid[thing.uid] || !thing.host) return;
+        var t0 = a.tile(), q = StudioMove.nearestOpen(t0.x, t0.y, W.lot, W.lot, function (x, y) { return W.check({ id: thing.id, f: t0.f, x: x, y: y, r: 0 }, thing).ok; });
+        if (!q) return;
+        delete thing.host; delete thing.spot; thing.f = t0.f; thing.x = q[0]; thing.y = q[1]; thing.r = 0; SS.forgetSprite(thing.uid);
+        a.bubble = { icon: '!', until: performance.now() + 1800 }; a.wait = 4; G.changed(true);
+      };
+      return true;
+    }
+    if (!spot) return false;
+    if (!walkTo(W, a, function (f, x, y) { return f === W.floorOf(spot) && W.useTiles(spot).some(function (q) { return q[0] === x && q[1] === y; }); })) return false;
+    a.arrive = function () {
+      a.pose = low === 'hunger' && a.who === 'ralph' ? 'loaf' : 'sit';
+      a.bubble = { icon: low === 'litter' ? 'grumpy' : a.who === 'louie' ? 'dots' : 'treat', until: performance.now() + 6000 };
+      a.wait = 8 + Math.random() * 6;
+    };
+    return true;
+  }
+
   // a new piece: the nearest cat on the same floor walks over to see it, and naps on it if it's cozy (bible, The cats)
   SS.catsNotice = function (G, p) {
     var f = G.W.floorOf(p), cats = [G.cats.louie, G.cats.ralph].filter(function (a) { return a.f === f && !a.held; });
@@ -3098,6 +3837,57 @@ var SS = window.SS = window.SS || {};
     G.agents = [sarah, keegan, louie, ralph];
     G.queue = []; G.act = null;
   };
+  // ---------- Keegan's day (spec 006, part D, Idle life) ----------
+  // When she opens Life he's already busy with something from the current time of day's pool; he moves on every 5 to 15
+  // minutes of play, cooks near mealtimes, and a meal he finishes goes on the table with a sparkle. Picks don't repeat until
+  // the pool runs out (studio-bible/play.md); the shown list is saved. The pools are private data (placeholder in the repo).
+  function partOfDay(d) { var h = d.getHours(); return h >= 6 && h < 11 ? 'morning' : h >= 11 && h < 17 ? 'daytime' : h >= 17 && h < 22 ? 'evening' : 'lateNight'; }
+  function mealtime(d) { var h = d.getHours(); return (h >= 7 && h < 9) || (h >= 12 && h < 13) || (h >= 18 && h < 20); }
+  function pickActivity(G) {
+    var pool = ((window.SS_PRIVATE || {}).idleLife || {})[partOfDay(SS.now())] || [];
+    if (!pool.length) return null;
+    if (mealtime(SS.now())) { var cook = pool.filter(function (x) { return x.at === 'stove'; })[0]; if (cook && (!G.kday || G.kday.at !== 'stove')) return cook; }
+    var S = G.save; S.shown = S.shown || {}; var key = 'idle.' + partOfDay(SS.now()), sh = S.shown[key] || (S.shown[key] = []);
+    var left = pool.filter(function (x) { return sh.indexOf(x.text) < 0; }); if (!left.length) { sh.length = 0; left = pool.slice(); }
+    var a = left[Math.floor(Math.random() * left.length)]; sh.push(a.text); return a;
+  }
+  function startActivity(G, first) {
+    var K = G.people.keegan, W = G.W, act = pickActivity(G);
+    if (!act) return;
+    var spots = W.pieces.filter(function (p) { var u = W.def(p).use; return (u === act.at || (act.at === 'desk' && u === 'desk')) && W.useTiles(p).length; });
+    if (act.at === 'desk') { var chair = W.pieces.filter(function (p) { return p.id === 'desk-chair'; })[0]; if (chair) spots = [chair]; }
+    var p = spots[Math.floor(Math.random() * spots.length)];
+    G.kday = { text: act.text, at: act.at, busy: !!act.busy, left: (5 + Math.random() * 10) * 60, piece: p ? p.uid : null };
+    if (!p) return;
+    var settle = function () { var d = W.def(p); if (d.seat && act.at !== 'stove' && act.at !== 'bookshelf') seatOn(W, K, p, d.use === 'bed' ? 'lie' : 'sit'); K.bubble = act.at === 'bed' ? { icon: 'z' } : null; if (act.at === 'stove') callRalph(G, p); };
+    getUp(W, K);
+    if (first) { var ut = W.useTiles(p)[0]; if (ut) { K.f = W.floorOf(p); K.x = ut[0] + .5; K.y = ut[1] + .5; K.path = []; settle(); } }
+    else if (walkTo(W, K, function (f, x, y) { return f === W.floorOf(p) && W.useTiles(p).some(function (q) { return q[0] === x && q[1] === y; }); })) K.arrive = settle;
+  }
+  function callRalph(G, stove) { // Ralph turns up whenever Keegan cooks (bible, Ralph)
+    var Rl = G.cats.ralph, W = G.W; if (Rl.held || Rl.on) return;
+    if (walkTo(W, Rl, function (f, x, y) { return f === W.floorOf(stove) && Math.abs(x - stove.x) + Math.abs(y - stove.y) <= 3; })) Rl.arrive = function () { Rl.pose = 'sit'; Rl.bubble = { icon: 'heart', until: performance.now() + 3000 }; Rl.wait = 20; };
+  }
+  function serveMeal(G) { // a finished meal on the table, with a sparkle (bible, Cooking)
+    var W = G.W, best = null;
+    W.pieces.forEach(function (h) { var d = W.def(h); if (!d.spots.length || !/dining|bistro|island/.test(h.id)) return; d.spots.forEach(function (sp, i) { if (!best && W.check({ id: 'plated-meal', host: h.uid, spot: i }).ok) best = { host: h.uid, spot: i }; }); });
+    if (!best) return;
+    var p = W.add({ id: 'plated-meal', host: best.host, spot: best.spot, sw: 0, props: true }); p.f = W.floorOf(p);
+    G.changed(true); G.toast('KEEGAN MADE DINNER', 2200, 'It\'s on the table. Tap it to eat.');
+  }
+  function startActivityBack(G) { var K = G.people.keegan, W = G.W, p = W.byUid[G.kday.piece]; if (walkTo(W, K, function (f, x, y) { return f === W.floorOf(p) && W.useTiles(p).some(function (q) { return q[0] === x && q[1] === y; }); })) K.arrive = function () { var d = W.def(p); if (d.seat && G.kday.at !== 'stove' && G.kday.at !== 'bookshelf') seatOn(W, K, p, d.use === 'bed' ? 'lie' : 'sit'); }; }
+  SS.startKeeganDay = function (G) { if (G.mode === 'life') { G.kday = null; startActivity(G, true); } };
+  function keeganDay(G, dt) {
+    var K = G.people.keegan, kd = G.kday;
+    if (!kd) return;
+    if (G.act && (G.act.job.act.together || G.act.job.act.both)) return;   // he's with her
+    kd.left -= dt;
+    if (kd.left > 0) return;
+    if (kd.at === 'stove' && /cook|dinner|breakfast|lunch/i.test(kd.text)) serveMeal(G);
+    startActivity(G, false);
+    if (G.waitK0) { var job = G.waitK0; G.waitK0 = null; SS.chooseAction(G, job.target, job.act); }
+  }
+
   SS.updateAgents = function (G, dt) {
     var now = performance.now();
     G.agents.forEach(function (a) {
@@ -3106,42 +3896,66 @@ var SS = window.SS = window.SS || {};
       if (a.kind === 'cat') catThink(G, a, dt);
       if (a.on && !G.W.byUid[a.on]) getUp(G.W, a);   // her seat was moved or put away
     });
-    if (G.mode === 'life') runActions(G, dt);
+    if (G.mode === 'life') { runActions(G, dt); SS.tickNeeds(G, dt); keeganDay(G, dt); SS.tickPhone(G, dt); }
   };
   SS.agentGetUp = function (G, a) { getUp(G.W, a); };
+  SS.seatSarah = function (G, p, pose) { seatOn(G.W, G.people.sarah, p, pose); };
 
   // ---------- Sarah's actions (spec 006, part B, Starter actions) ----------
   // dur in seconds. how: 'sit' | 'lie' | 'stand' | 'tub'. soon: shows "Coming soon" in the bubble (parts not built yet)
+  // fill: how much each need fills over the whole action (spec 006, part B's Fills column; part C). together: Keegan joins
+  // (spec 006, part D); with: the piece the two of them go to when she asks Keegan
   var ACTIONS = {
-    bed: [{ name: 'SLEEP', icon: 'z', dur: 30, how: 'lie', sleep: true }, { name: 'NAP', icon: 'z', dur: 15, how: 'lie' }, { name: 'LIE IN', sub: 'WITH KEEGAN', icon: 'heart', soon: 'Lying in with Keegan comes with his day (spec 006, part D).' }],
-    sofa: [{ name: 'SIT', icon: 'seat', dur: 10, how: 'sit' }, { name: 'WATCH', sub: 'A SHOW', icon: 'tv', dur: 20, how: 'sit', tv: true }, { name: 'CUDDLE UP', sub: 'WITH KEEGAN', icon: 'heart', soon: 'Cuddling up with Keegan comes with his day.' }],
-    chair: [{ name: 'SIT', icon: 'seat', dur: 10, how: 'sit' }],
-    fridge: [{ name: 'SNACK', icon: 'snack', dur: 6, how: 'stand', fx: 'snack' }, { name: 'COOK', icon: 'pan', soon: 'Cooking comes in its own part.' }],
+    bed: [{ name: 'SLEEP', icon: 'z', dur: 30, how: 'lie', sleep: true, fill: { energy: 1 } }, { name: 'NAP', icon: 'z', dur: 15, how: 'lie', fill: { energy: .4 } }, { name: 'LIE IN', sub: 'WITH KEEGAN', icon: 'heart', dur: 20, how: 'lie', together: true, fill: { energy: .3, fun: .2 } }],
+    sofa: [{ name: 'SIT', icon: 'seat', dur: 10, how: 'sit', fill: { energy: .08, fun: .05 } }, { name: 'WATCH', sub: 'A SHOW', icon: 'tv', dur: 20, how: 'sit', tv: true, fill: { fun: .3, energy: .08 } }, { name: 'CUDDLE UP', sub: 'WITH KEEGAN', icon: 'heart', dur: 18, how: 'sit', together: true, fill: { fun: .3, energy: .1 } }],
+    chair: [{ name: 'SIT', icon: 'seat', dur: 10, how: 'sit', fill: { energy: .08, fun: .05 } }],
+    fridge: [{ name: 'SNACK', icon: 'snack', dur: 6, how: 'stand', fx: 'snack', fill: { hunger: .35 } }, { name: 'COOK', icon: 'pan', soon: 'Cooking comes in its own part.' }],
     stove: [{ name: 'COOK', icon: 'pan', soon: 'Cooking comes in its own part.' }],
-    easel: [{ name: 'PAINT', icon: 'brush', dur: 20, how: 'stand', fx: 'paint' }, { name: 'SEASONAL', sub: 'CRAFT', icon: 'star', dur: 20, how: 'stand', fx: 'craft' }],
-    tub: [{ name: 'BATH', icon: 'bath', dur: 25, how: 'tub', fx: 'bath' }],
-    bookshelf: [{ name: 'READ', icon: 'book', dur: 15, how: 'stand', fx: 'read' }],
+    easel: [{ name: 'PAINT', icon: 'brush', dur: 20, how: 'stand', fx: 'paint', fill: { fun: .35 } }, { name: 'SEASONAL', sub: 'CRAFT', icon: 'star', dur: 20, how: 'stand', fx: 'craft', fill: { fun: .35 } }],
+    tub: [{ name: 'BATH', icon: 'bath', dur: 25, how: 'tub', fx: 'bath', fill: { energy: .25, fun: .2 } }],
+    bookshelf: [{ name: 'READ', icon: 'book', dur: 15, how: 'stand', fx: 'read', fill: { fun: .25 } }],
     desk: [{ name: 'FIND A GIG', icon: 'star', soon: 'Gigs come in their own part.' }, { name: 'VIDEO-CALL', sub: 'MOM', icon: 'chat', soon: 'Calls home come with idle life.' }],
     wardrobe: [{ name: 'CHANGE', sub: 'OUTFIT', icon: 'heart', soon: 'Style comes in its own part.' }],
     lamp: [{ name: 'LIGHT', sub: 'ON / OFF', icon: 'lamp', dur: 1, how: 'stand', fx: 'lamp' }],
-    tv: [{ name: 'WATCH', sub: 'A SHOW', icon: 'tv', dur: 20, how: 'stand', tv: true }],
-    cat: [{ name: 'PET', icon: 'heart', dur: 4, how: 'stand', fx: 'pet' }, { name: 'TREAT', icon: 'treat', dur: 5, how: 'stand', fx: 'treat' }, { name: 'PLAY', icon: 'star', dur: 10, how: 'stand', fx: 'play' }],
-    keegan: [{ name: 'CHAT', icon: 'chat', dur: 10, how: 'stand', fx: 'chat' }, { name: 'HUG', icon: 'heart', dur: 5, how: 'stand', fx: 'hug' }],
+    tv: [{ name: 'WATCH', sub: 'A SHOW', icon: 'tv', dur: 20, how: 'stand', tv: true, fill: { fun: .3 } }],
+    cat: [{ name: 'PET', icon: 'heart', dur: 4, how: 'stand', fx: 'pet', fill: { fun: .1 } }, { name: 'TREAT', icon: 'treat', dur: 5, how: 'stand', fx: 'treat', fill: { fun: .08 } }, { name: 'PLAY', icon: 'star', dur: 10, how: 'stand', fx: 'play', fill: { fun: .25 } }],
+    keegan: [{ name: 'CHAT', icon: 'chat', dur: 10, how: 'stand', fx: 'chat', fill: { fun: .2 }, both: true }, { name: 'HUG', icon: 'heart', dur: 5, how: 'stand', fx: 'hug', fill: { fun: .12, energy: .1 }, both: true, pool: 'hugs' },
+      { name: 'KISS', icon: 'heart', dur: 5, how: 'stand', fx: 'kiss', fill: { fun: .3 }, both: true, pool: 'kisses' }, { name: 'CUDDLE UP', icon: 'seat', dur: 18, how: 'sit', together: true, with: 'sofa', fill: { fun: .3, energy: .1 } },
+      { name: 'PLAY', sub: 'A GAME', icon: 'tv', dur: 20, how: 'sit', together: true, with: 'sofa', tv: true, fill: { fun: .4 } }, { name: 'GO TO BED', icon: 'z', dur: 30, how: 'lie', together: true, with: 'bed', sleep: true, fill: { energy: 1 } },
+      { name: 'COOK', sub: 'TOGETHER', icon: 'pan', soon: 'Cooking together comes with the Cooking screen.' }, { name: 'WIND DOWN', sub: 'TOGETHER', icon: 'star', soon: 'Winding down comes with its own pieces.' }],
+    bowl: [{ name: 'FILL', sub: 'THE BOWL', icon: 'treat', dur: 4, how: 'stand', fx: 'fill' }],
+    litter: [{ name: 'SCOOP', icon: 'star', dur: 6, how: 'stand', fx: 'scoop' }],
+    sarah: [{ name: 'CHARGE', sub: 'HER PHONE', icon: 'lamp', fx: 'charge', instant: true }],
+    gift: [{ name: 'OPEN', sub: 'THE GIFT', icon: 'heart', dur: 3, how: 'stand', fx: 'open', fill: { fun: .2 } }],
+    meal: [{ name: 'EAT', icon: 'snack', dur: 8, how: 'stand', fx: 'eat', fill: { hunger: .6, fun: .05 } }],
     backdoor: [{ name: 'GO TO', sub: 'THE YARD', icon: 'star', soon: 'The yard comes in its own part.' }]
   };
   SS.ACTIONS = ACTIONS;
   SS.actionsFor = function (G, target) {
-    if (target.agent) { if (target.agent.kind === 'cat') return ACTIONS.cat; if (target.agent.who === 'keegan') return ACTIONS.keegan; return null; }
+    if (target.agent) { if (target.agent.kind === 'cat') return ACTIONS.cat; if (target.agent.who === 'keegan') return ACTIONS.keegan; return SS.phoneOf(G) < .99 && !G.charging && !G.hunt ? ACTIONS.sarah : null; }
     if (target.door) return ACTIONS.backdoor;
-    var d = G.W.def(target.piece); return d.use ? ACTIONS[d.use] : null;
+    var d = G.W.def(target.piece), own = d.use ? ACTIONS[d.use] : null;
+    if (target.piece.dress && d.use !== 'gift') return [{ name: 'KEEP IT', icon: 'heart', fx: 'keep', instant: true }].concat(own || []);   // day dressing she can keep (spec 009)
+    return own;
   };
   // she picked an action: do it now, or line it up (up to 3)
   SS.chooseAction = function (G, target, act) {
+    if (act.soon || !act.dur) return 'soon';
+    SS.stopSarahIdle(G);   // she taps anything: Sarah stops and is hers to play
+    if (G.kday && G.kday.busy && (act.together || act.both)) { G.waitK0 = { target: target, act: act }; return 'busy'; }
+    if (act.with) {
+      var W = G.W, s = G.people.sarah, f = s.f;
+      var ps = W.pieces.filter(function (p) { return W.def(p).use === act.with && W.useTiles(p).length; });
+      ps.sort(function (a, b) { return (W.floorOf(a) === f ? 0 : 100) + Math.hypot(a.x - s.x, a.y - s.y) - (W.floorOf(b) === f ? 0 : 100) - Math.hypot(b.x - s.x, b.y - s.y); });
+      if (!ps.length) { G.toast('THERE\'S NO ' + act.with.toUpperCase() + ' YET', 1400); return 'none'; }
+      target = { piece: ps[0] };
+    }
     var job = { target: target, act: act };
     if (G.act || G.people.sarah.path.length) { if (G.queue.length < 3) { G.queue.push(job); return 'queued'; } return 'full'; }
     startJob(G, job); return 'now';
   };
   SS.stopActions = function (G) { // tapping anywhere else stops the action; nothing is lost
+    SS.stopSarahIdle(G);
     var s = G.people.sarah; if (G.act) finishJob(G, true); G.queue = []; s.path = []; s.arrive = null; getUp(G.W, s);
   };
   function targetTiles(G, tg) {
@@ -3165,6 +3979,16 @@ var SS = window.SS = window.SS || {};
     var s = G.people.sarah, A = G.act; if (!A) return;
     var a = A.job.act, tg = A.job.target, W = G.W;
     A.started = true; A.t = 0;
+    A.dur = a.dur * (SS.lowNeed(G, 'sarah') ? 1.25 : 1);   // a low need only slows her a little (spec 006, part C)
+    if (a.pool) { // hugs and kisses each pick from their own pool, no repeats until it runs out (private data; placeholder here)
+      var pool = (window.SS_PRIVATE && window.SS_PRIVATE[a.pool]) || [], S = G.save; S.shown = S.shown || {}; var sh = S.shown[a.pool] || (S.shown[a.pool] = []);
+      if (pool.length) { var left = pool.filter(function (x, i) { return sh.indexOf(i) < 0; }); if (!left.length) { sh.length = 0; left = pool.slice(); } var pick = left[Math.floor(Math.random() * left.length)]; sh.push(pool.indexOf(pick)); G.toast(a.name, Math.min(2600, a.dur * 1000), pick); }
+    }
+    if (a.together) { // Keegan comes too, to the spot beside her
+      var K0 = G.people.keegan, piece = tg.piece; A.keegan = { seat: K0.on, tile: K0.onTile }; getUp(W, K0); A.waitK = true;
+      if (walkTo(W, K0, function (f, x, y) { return f === W.floorOf(piece) && W.useTiles(piece).some(function (q) { return q[0] === x && q[1] === y; }); })) K0.arrive = function () { if (G.act === A) { seatOn(W, K0, piece, a.how === 'lie' ? 'lie' : 'sit'); K0.bubble = { icon: 'heart', until: performance.now() + 2000 }; } A.waitK = false; };
+      else A.waitK = false;
+    }
     // face the target
     var tp = tg.agent ? { x: tg.agent.x, y: tg.agent.y } : tg.piece ? (function () { var ft = W.foot(tg.piece.host ? W.hostOf(tg.piece) : tg.piece.wall ? null : tg.piece) || [0, 0, 0, 0]; return tg.piece.wall ? { x: tg.piece.wall[0] + .5, y: tg.piece.wall[1] } : { x: (ft[0] + ft[2]) / 2, y: (ft[1] + ft[3]) / 2 }; })() : { x: s.x, y: s.y - 1 };
     var dx = tp.x - s.x, dy = tp.y - s.y; s.flip = (dx - dy) < 0; s.back = (dx + dy) < 0;
@@ -3175,7 +3999,7 @@ var SS = window.SS = window.SS || {};
     if (a.fx === 'bath') { // Louie may hop up on the tub edge (bible, Louie)
       var L = G.cats.louie; if (L.f === s.f && Math.random() < .7) { getUp(W, L); L.held = true; var ut = W.useTiles(tg.piece); if (ut[1]) walkTo(W, L, function (f, x, y) { return f === s.f && x === ut[1][0] && y === ut[1][1]; }); L.arrive = function () { L.pose = 'sit'; L.z = 14; L.bubble = { icon: 'heart', until: performance.now() + 2500 }; }; A.louie = L; }
     }
-    if (a.fx === 'chat' || a.fx === 'hug') { var K = G.people.keegan; A.keegan = { seat: K.on, tile: K.onTile }; getUp(W, K); K.flip = !s.flip; K.back = !s.back; }
+    if (a.fx === 'chat' || a.fx === 'hug' || a.fx === 'kiss') { var K = G.people.keegan; A.keegan = { seat: K.on, tile: K.onTile }; getUp(W, K); K.flip = !s.flip; K.back = !s.back; }
     if (a.fx === 'pet' || a.fx === 'treat' || a.fx === 'play') { var cat = tg.agent; getUp(W, cat); cat.flip = !s.flip; }
     s.bar = { k: 0 };
   }
@@ -3187,7 +4011,7 @@ var SS = window.SS = window.SS || {};
     if (tg.piece && tg.piece.work) { tg.piece.work = false; }
     if (A.louie) { A.louie.held = false; A.louie.z = 0; A.louie.wait = 2; }
     if (tg.agent && tg.agent.kind === 'cat') { tg.agent.held = false; tg.agent.wait = 3; }
-    if (A.keegan) { var K = G.people.keegan; K.bubble = null; K.extra = null; var seat = A.keegan.seat && W.byUid[A.keegan.seat]; if (seat) seatOn(W, K, seat, 'sit'); }
+    if (A.keegan) { var K = G.people.keegan; K.bubble = null; K.extra = null; K.path = []; K.arrive = null; getUp(W, K); var seat = A.keegan.seat && W.byUid[A.keegan.seat]; if (G.kday && G.kday.piece && W.byUid[G.kday.piece]) { G.kday.left = Math.max(G.kday.left, 60); startActivityBack(G); seat = null; } if (seat && !seat.host) { var ut = W.useTiles(seat)[0]; if (ut) { K.f = W.floorOf(seat); K.x = ut[0] + .5; K.y = ut[1] + .5; } seatOn(W, K, seat, 'sit'); } }
     if (!cancelled && A.started) effect(G, a, tg);
     if (a.how === 'sit' || a.how === 'lie' || a.how === 'tub') getUp(W, s);
     G.act = null;
@@ -3198,20 +4022,25 @@ var SS = window.SS = window.SS || {};
     if (!G.act && G.queue.length && !s.path.length) startJob(G, G.queue.shift());
     var A = G.act; if (!A || !A.started) return;
     var a = A.job.act;
-    A.t += dt; s.bar.k = A.t / a.dur;
+    if (A.waitK && A.t < 1) { A.wk = (A.wk || 0) + dt; if (A.wk < 25) return; A.waitK = false; }
+    var dur = A.dur || a.dur, step = Math.min(dt, Math.max(0, dur - A.t));
+    A.t += dt; s.bar.k = A.t / dur;
+    SS.fillNeeds(G, 'sarah', a.fill, step / dur);
+    if (a.together || a.both) SS.fillNeeds(G, 'keegan', a.fill, step / dur);
     var now = performance.now();
     // the short animations, made from the sprites (plain stand-ins until each gets its own frames)
     if (a.fx === 'pet' || a.fx === 'hug') s.bubble = { icon: 'heart' };
     if (a.fx === 'treat') { s.bubble = { icon: 'treat' }; if (A.t > 2) A.job.target.agent.bubble = { icon: 'heart', until: now + 1500 }; }
     if (a.fx === 'play') { var tgt = A.job.target.agent; tgt.pose = Math.floor(A.t * 2) % 2 ? 'sit' : 'loaf'; s.extra = function (c, p) { var k = Math.sin(A.t * 5); c.strokeStyle = '#8e5a37'; c.beginPath(); c.moveTo(p[0] + 4, p[1] - 22); c.lineTo(p[0] + 14 + k * 3, p[1] - 30); c.stroke(); c.fillStyle = '#e46f8b'; c.fillRect(Math.round(p[0] + 13 + k * 3), Math.round(p[1] - 32), 3, 4); }; }
     if (a.fx === 'chat') { var K = G.people.keegan; var talk = Math.floor(A.t / 1.4) % 2; s.bubble = talk ? { icon: 'dots' } : null; K.bubble = talk ? null : { icon: Math.floor(A.t / 2.8) % 2 ? 'heart' : 'dots' }; }
-    if (a.fx === 'hug') { var K2 = G.people.keegan; K2.bubble = { icon: 'heart' }; }
+    if (a.fx === 'hug' || a.fx === 'kiss') { var K2 = G.people.keegan; K2.bubble = { icon: 'heart' }; s.bubble = { icon: 'heart' }; }
+    if (a.together) { var K3 = G.people.keegan; if (!A.waitK && Math.floor(A.t / 3) % 2) K3.bubble = { icon: 'heart' }; else K3.bubble = null; }
     if (a.fx === 'read') s.extra = function (c, p) { c.fillStyle = '#7fa7a0'; c.fillRect(Math.round(p[0] - 4), Math.round(p[1] - 24), 8, 5); c.fillStyle = '#fff6ea'; c.fillRect(Math.round(p[0] - 3), Math.round(p[1] - 23), 6, 3); };
     if (a.fx === 'snack') s.bubble = { icon: Math.floor(A.t * 2) % 2 ? 'treat' : 'heart' };
     if (a.fx === 'paint' || a.fx === 'craft') s.extra = function (c, p) { var k = Math.floor(A.t * 3) % 2; c.fillStyle = '#8e5a37'; c.fillRect(Math.round(p[0] + (s.flip ? -8 : 6)), Math.round(p[1] - 22 - k), 1, 5); c.fillStyle = '#e46f8b'; c.fillRect(Math.round(p[0] + (s.flip ? -8 : 6)), Math.round(p[1] - 23 - k), 1, 1); };
     if (a.how === 'lie') s.bubble = { icon: 'z' };
     if (a.sleep) G.sleeping = true;
-    if (A.t >= a.dur) finishJob(G, false);
+    if (A.t >= dur) finishJob(G, false);
   }
   function effect(G, a, tg) {
     var W = G.W, s = G.people.sarah;
@@ -3219,6 +4048,12 @@ var SS = window.SS = window.SS || {};
     if (a.fx === 'paint') makeCraft(G, 'painting', tg.piece);
     if (a.fx === 'craft') makeCraft(G, SS.season(SS.now()), tg.piece);
     if (a.fx === 'pet') tg.agent.bubble = { icon: 'heart', until: performance.now() + 2000 };
+    if (a.fx === 'play') SS.fillCats(G, 'play', tg.agent.who === 'ralph' ? 1 : .5, tg.agent.who);   // the feather wand: Ralph's favorite, double
+    if (a.fx === 'treat') SS.fillCats(G, 'hunger', .2, tg.agent.who);
+    if (a.fx === 'fill') { SS.fillCats(G, 'hunger', 1); [G.cats.louie, G.cats.ralph].forEach(function (cat) { cat.bubble = { icon: 'heart', until: performance.now() + 2500 }; cat.wait = Math.min(cat.wait, .5); }); G.catFull = true; G.version++; }
+    if (a.fx === 'open') SS.openGift(G, tg.piece);
+    if (a.fx === 'eat') { W.remove(tg.piece); G.changed(true); }
+    if (a.fx === 'scoop') { SS.fillCats(G, 'litter', 1); G.litterLow = false; G.version++; }
   }
   // a finished painting or craft: from a pool that doesn't repeat until each has been made (studio-bible/play.md); it goes in
   // her Ours tab, and the first copy appears near where she made it
@@ -3233,6 +4068,93 @@ var SS = window.SS = window.SS || {};
     G.changed(true, true);
     G.toast((SS.DEF[id].name).toUpperCase() + '!', 2200, placed ? 'IT\'S UP NEARBY, AND IN YOUR OURS TAB.' : 'IT\'S IN YOUR OURS TAB.');
   }
+})();
+
+</script>
+<script>/* phone.js */
+// Sarah's Sim: idle Sarah and her phone (spec 006, part D).
+//   - Idle Sarah: the game opens with Sarah in the middle of something from the time of day's pool (private data; a generic
+//     placeholder in the repo). As soon as she taps anything, Sarah stops and is hers to play.
+//   - Her phone is always about to die (Keegan, Nov 25): its battery runs down while she scrolls, only while the game is open.
+//     When it's low, a red low-battery icon pops over her head and she holds the phone up in despair. Tapping her shows Charge,
+//     and she goes looking for the charger, which is never where she left it: under a couch cushion, in the bed sheets, or
+//     under Ralph, from a pool that doesn't repeat until it's used up (saved). Finding it is a tap on the right spot; the first
+//     time, the spot glows as a hint. A dead phone only means no calls or photos until it's charged; nothing else is lost.
+(function () {
+  var DRAIN = 1 / (15 * 60), CHARGE = 1 / (3 * 60);   // a full battery lasts about 15 minutes of scrolling; charging takes about 3
+  SS.phoneOf = function (G) { var S = G.save; if (S.phone === undefined) S.phone = .6; return S.phone; };
+  var HIDES = [
+    { key: 'cushion', where: 'under a couch cushion', use: 'sofa' },
+    { key: 'sheets', where: 'in the bed sheets', use: 'bed' },
+    { key: 'ralph', where: 'under Ralph', cat: 'ralph' }
+  ];
+  function pickHide(G) {
+    var S = G.save; S.shown = S.shown || {}; var sh = S.shown.charger || (S.shown.charger = []);
+    var ok = HIDES.filter(function (h) { return h.cat || G.W.pieces.some(function (p) { return G.W.def(p).use === h.use; }); });
+    var left = ok.filter(function (h) { return sh.indexOf(h.key) < 0; }); if (!left.length) { sh.length = 0; left = ok.slice(); }
+    var h = left[Math.floor(Math.random() * left.length)]; sh.push(h.key); return h;
+  }
+  // the idle activity she's in when Life opens
+  SS.startSarahIdle = function (G) {
+    if (G.mode !== 'life') return;
+    var d = SS.now(), h = d.getHours(), part = h >= 6 && h < 11 ? 'morning' : h >= 11 && h < 17 ? 'daytime' : h >= 17 && h < 22 ? 'evening' : 'lateNight';
+    var pool = (((window.SS_PRIVATE || {}).sarahIdle || {})[part]) || [];
+    if (!pool.length) return;
+    var S = G.save; S.shown = S.shown || {}; var key = 'sarah.' + part, sh = S.shown[key] || (S.shown[key] = []);
+    var left = pool.filter(function (x) { return sh.indexOf(x.text) < 0; }); if (!left.length) { sh.length = 0; left = pool.slice(); }
+    var act = left[Math.floor(Math.random() * left.length)]; sh.push(act.text);
+    var W = G.W, s = G.people.sarah, ps = W.pieces.filter(function (p) { return W.def(p).use === act.at && W.useTiles(p).length; });
+    var p = ps[0]; if (!p) return;
+    var ut = W.useTiles(p)[0]; s.f = W.floorOf(p); s.x = ut[0] + .5; s.y = ut[1] + .5; s.path = [];
+    var d2 = W.def(p); if (d2.seat && act.at !== 'easel' && act.at !== 'bookshelf') SS.seatSarah(G, p, d2.use === 'bed' ? 'lie' : 'sit');
+    if (act.at === 'easel') p.work = true;
+    G.idle = { text: act.text, phone: !!act.phone, piece: p.uid };
+    G.setFloor(s.f);
+  };
+  SS.stopSarahIdle = function (G) { if (!G.idle) return; var p = G.W.byUid[G.idle.piece]; if (p) p.work = false; G.idle = null; G.people.sarah.extra = null; };
+  SS.tickPhone = function (G, dt) {
+    if (G.mode !== 'life') return;
+    var s = G.people.sarah, S = G.save;
+    SS.phoneOf(G);
+    if (G.charging) { S.phone = Math.min(1, S.phone + CHARGE * dt); if (S.phone >= 1) { G.charging = false; s.bubble = { icon: 'heart', until: performance.now() + 2000 }; G.toast('PHONE CHARGED', 1600); } }
+    else if (G.idle && G.idle.phone) S.phone = Math.max(0, S.phone - DRAIN * dt);
+    var low = S.phone < .2;
+    // scrolling on her phone, and the low-battery despair
+    s.extra = G.idle && G.idle.phone ? function (c, p) {
+      var x = Math.round(p[0] + (s.flip ? -6 : 3)), y = Math.round(p[1] - (s.pose === 'sit' ? 20 : 24) - (low ? 6 : 0));
+      c.fillStyle = '#3b2430'; c.fillRect(x, y, 4, 6); c.fillStyle = low ? '#5a4650' : '#a9c9e8'; c.fillRect(x + 1, y + 1, 2, 4);
+      if (low && Math.floor(performance.now() / 400) % 2) { var bx = Math.round(p[0] - 4), by = Math.round(p[1] - 54); c.fillStyle = '#fff6ea'; c.fillRect(bx - 2, by - 2, 14, 9); c.fillStyle = '#d2363c'; c.fillRect(bx, by, 8, 5); c.fillRect(bx + 8, by + 1, 1, 3); c.fillStyle = '#fff6ea'; c.fillRect(bx + 2, by + 1, 5, 3); c.fillStyle = '#d2363c'; c.fillRect(bx + 1, by + 1, 1, 3); }
+    } : (G.charging ? function (c, p) { var x = Math.round(p[0] - 4), y = Math.round(p[1] - 50); c.fillStyle = '#3b2430'; c.fillRect(x, y, 9, 5); c.fillStyle = '#8cc06a'; c.fillRect(x + 1, y + 1, Math.round(7 * S.phone), 3); c.fillRect(x + 9, y + 1, 1, 3); } : (G.act ? s.extra : null));
+  };
+  // Charge: the hunt for the charger
+  SS.startHunt = function (G) {
+    SS.stopSarahIdle(G);
+    var h = pickHide(G), S = G.save, first = !S.huntedOnce;
+    G.hunt = { hide: h, hint: first };
+    S.huntedOnce = true;
+    G.toast('WHERE\'S THE CHARGER?', 2400, first ? 'Tap where it might be. The glowing, marked spot is a good guess.' : 'It\'s never where she left it. Tap where it might be.');
+  };
+  // is this tap the charger's hiding spot? Returns true when the hunt is over
+  SS.huntTap = function (G, pick) {
+    var h = G.hunt.hide, W = G.W, found = false;
+    if (h.cat && pick && pick.agent && pick.agent.who === h.cat) found = true;
+    if (h.use && pick && pick.piece && W.def(pick.piece).use === h.use) found = true;
+    if (!found) { G.toast('NOT THERE', 900, 'She looks, and sighs.'); G.people.sarah.bubble = { icon: 'dots', until: performance.now() + 1200 }; return false; }
+    G.hunt = null; G.charging = true;
+    G.people.sarah.bubble = { icon: '!', until: performance.now() + 1500 };
+    G.toast('FOUND IT!', 1800, 'It was ' + h.where + '. Her phone is charging.');
+    G.changed(true);
+    return true;
+  };
+  // where the hint glows: the tiles under the spot, the first time
+  SS.huntGlow = function (G) {
+    if (!G.hunt || !G.hunt.hint) return null;
+    var h = G.hunt.hide, W = G.W;
+    if (h.cat) { var c = G.cats[h.cat]; return { f: c.f, tiles: [[Math.floor(c.x), Math.floor(c.y)]], agent: c }; }
+    var p = W.pieces.filter(function (q) { return W.def(q).use === h.use; }).sort(function (a, b) { return (W.floorOf(a) === G.floor ? 0 : 1) - (W.floorOf(b) === G.floor ? 0 : 1); })[0];
+    if (!p) return null; var ft = W.foot(p), t = []; for (var x = ft[0]; x < ft[2]; x++) for (var y = ft[1]; y < ft[3]; y++) t.push([x, y]);
+    return { f: W.floorOf(p), tiles: t, piece: p };
+  };
 })();
 
 </script>
@@ -3374,6 +4296,8 @@ var SS = window.SS = window.SS || {};
       drawThumb(c, it.id, sx + 3, sy + 3, 28, 21, it.sw);
       // small dots for its color choices (bible, Decorating, Catalog tabs)
       it.def.swatches.slice(0, 4).forEach(function (s, k) { var base = s[it.def.parts[0] ? it.def.parts[0][0] : 'x'] || '#c88d5a'; R(sx + 34 + (k % 2) * 9, sy + 5 + Math.floor(k / 2) * 9, 7, 7, '#3b2430'); R(sx + 35 + (k % 2) * 9, sy + 6 + Math.floor(k / 2) * 9, 5, 5, base); });
+      if (it.season) { R(sx + 1, sy + 1, 38, 7, P.rose); txt(it.season, sx + 20, sy + 2, '#fff', 4, 'center'); }
+      if (it.away) { R(sx, sy, 55, 27, 'rgba(251,238,221,.7)'); R(sx + 1, sy + 9, 53, 9, P.trayEdge); txt('BACK IN', sx + 27, sy + 10, P.ink, 4, 'center'); txt('DECEMBER', sx + 27, sy + 14, P.ink, 4, 'center'); }
       if (it.stored) { R(sx + 33, sy + 19, 20, 7, P.sage[1]); txt('×' + it.stored, sx + 43, sy + 20, '#fff', 5, 'center'); }
       if (focused) { c.strokeStyle = P.rose; c.lineWidth = 2; c.strokeRect(sx + 1, sy + 1, 53, 25); c.lineWidth = 1; }
       hit(G, sx, sy, 55, 27, function () { G.takeCard(it); }, { card: it });
@@ -3463,6 +4387,8 @@ var SS = window.SS = window.SS || {};
     var x = Math.max(4, Math.min(W - w - 28, tx - w / 2)), y = ty - h - 10;
     if (y < 24) y = Math.min(ty + 14, G.viewBottom - h - 4);
     y = Math.max(24, y);
+    if (G.meters) x = 4;   // the meters sit beside it (cooking-v1)
+    G.bubbleTop = y;
     SS.card(x, y, w, h);
     if (ty > y + h) { c.fillStyle = P.tray; c.beginPath(); c.moveTo(Math.max(x + 8, Math.min(x + w - 8, tx)) - 6, y + h - 1); c.lineTo(Math.max(x + 8, Math.min(x + w - 8, tx)) + 6, y + h - 1); c.lineTo(tx, ty); c.closePath(); c.fill(); c.strokeStyle = P.rose; c.beginPath(); c.moveTo(Math.max(x + 8, Math.min(x + w - 8, tx)) - 6, y + h - .5); c.lineTo(tx, ty); c.lineTo(Math.max(x + 8, Math.min(x + w - 8, tx)) + 6, y + h - .5); c.stroke(); }
     txt(b.title, x + 6, y + 6, P.soft, 5);
@@ -3472,7 +4398,7 @@ var SS = window.SS = window.SS || {};
       R(bx, by, bw, 19, sel ? P.rose : P.cell); R(bx, by + 18, bw, 1, sel ? P.roseSh : P.trayEdge); if (sel) R(bx, by, bw, 1, P.roseHi);
       SS.actIcon(c, it.icon, bx + 4, by + 5, sel);
       txt(it.name, bx + 17, by + (it.sub ? 3 : 7), sel ? '#fff' : P.ink, 5); if (it.sub) txt(it.sub, bx + 17, by + 11, sel ? '#fff' : P.ink, 5);
-      if (it.soon) { R(bx + bw - 22, by + 12, 21, 6, sel ? '#fff' : P.honey[0]); txt('SOON', bx + bw - 11.5, by + 13, P.ink, 4, 'center'); }
+      if (it.soon) { R(bx + bw - 21, by + 1, 20, 6, sel ? '#fff' : P.honey[0]); txt('SOON', bx + bw - 11, by + 2, P.ink, 4, 'center'); }
       if (i === 0) { R(bx + bw - 10, by - 5, 12, 12, '#3b2430'); R(bx + bw - 9, by - 4, 10, 10, P.rose); txt('A', bx + bw - 7, by - 2, '#fff', 6); }
       hit(G, bx, by, bw, 19, function () { G.doBubble(i); });
     });
@@ -3594,8 +4520,8 @@ var SS = window.SS = window.SS || {};
     if (mode === 'life') lampPhase(true);
     G.tray.open = mode === 'sandbox';
     G.floor = 0; G.walls = 'cut';
-    SS.makeAgents(G); G.sarahF = undefined;
-    G.sel = null; centerCam(true);
+    SS.makeAgents(G); G.sarahF = undefined; G.idle = null; G.hunt = null; G.charging = false; SS.startKeeganDay(G);
+    G.sel = null; centerCam(true); SS.startSarahIdle(G); SS.applyHolidays(G);
     G.screen = 'home';
     G.changed(true);
   }
@@ -3657,13 +4583,20 @@ var SS = window.SS = window.SS || {};
   G.catalogList = function (tab) {
     var defs = SS.CATALOG.filter(function (d) { return d.tab === tab && (!d.craft || G.mode === 'sandbox' || G.save.made.indexOf(d.id) >= 0); });
     if (tab === 'storage') defs.sort(function (a, b) { return (a.row ? (a.row === 'kitchen' ? 1 : 2) : 0) - (b.row ? (b.row === 'kitchen' ? 1 : 2) : 0); });
-    var items = defs.map(function (d) { return { id: d.id, def: d, sw: 0, stored: G.save.stored.filter(function (s) { return s.id === d.id; }).length }; });
+    var now = SS.now();
+    var items = defs.map(function (d) {
+      var it = { id: d.id, def: d, sw: 0, stored: G.save.stored.filter(function (s) { return s.id === d.id; }).length };
+      // holiday pieces in Life: "This season" in season, "Back in December" out of it, unless they're already hers (spec 009)
+      if (d.holiday && G.mode === 'life') { if (SS.inSeason(d.holiday, now)) it.season = 'THIS SEASON'; else if (G.save.made.indexOf(d.id) < 0 && !it.stored) it.away = 'BACK IN DECEMBER'; }
+      return it;
+    });
     if (tab === 'ours') items.unshift({ soon: true });
     return { items: items, total: SS.CATALOG.filter(function (d) { return !d.craft; }).length };
   };
   // taking a card: the piece comes up held in the middle of the view (buttons) or under the finger (a drag)
   G.takeCard = function (it, p) {
     if (it.soon) return;
+    if (it.away) { G.toast(it.away, 1600, 'Christmas pieces are in the shop from December 1 to January 6.'); return; }
     G.deselect(); G.bubble = null;
     var d = it.def, st = G.save.stored.filter(function (s) { return s.id === d.id; })[0];
     var inst = { id: d.id, sw: st ? st.sw : 0, props: st ? st.props !== false : true };
@@ -3833,14 +4766,18 @@ var SS = window.SS = window.SS || {};
   function openBubble(target, tip) {
     var acts = SS.actionsFor(G, target);
     if (!acts) { G.toast('NOTHING TO DO WITH THIS YET', 1000); return; }
-    var title = target.agent ? (target.agent.who.toUpperCase() + (target.agent.who === 'keegan' ? ' · AT HIS DESK' : '')) : target.door ? 'BACK DOOR' : SS.DEF[target.piece.id].name.toUpperCase();
-    if (target.agent && target.agent.who === 'keegan' && !target.agent.on) title = 'KEEGAN';
+    var title = target.agent && target.agent.who === 'sarah' ? 'SARAH · ' + Math.round(SS.phoneOf(G) * 100) + '% BATTERY' : target.agent ? (target.agent.who.toUpperCase() + (target.agent.who === 'keegan' ? ' · AT HIS DESK' : '')) : target.door ? 'BACK DOOR' : SS.DEF[target.piece.id].name.toUpperCase();
+    if (target.agent && target.agent.who === 'keegan') title = 'KEEGAN' + (G.kday ? ' · ' + G.kday.text.toUpperCase() : '');
     G.bubble = { target: target, actions: acts, cur: 0, tip: tip, title: title };
   }
   G.doBubble = function (i) {
     var b = G.bubble; if (!b) return; var a = b.actions[i]; G.bubble = null;
     if (a.soon) { G.toast(a.name + (a.sub ? ' ' + a.sub : '') + ': COMING SOON', 1800, a.soon); return; }
+    if (a.fx === 'charge') { G.meters = null; SS.startHunt(G); return; }
+    if (a.fx === 'keep') { b.target.piece.dress = null; G.changed(true); G.toast('IT\'S YOURS TO KEEP', 1500); return; }
+    G.meters = null;
     var r = SS.chooseAction(G, b.target, a);
+    if (r === 'busy') G.toast('KEEGAN IS ' + G.kday.text.toUpperCase(), 2000, 'It\'s lined up for when he\'s done.');
     if (r === 'queued') G.toast('LINED UP', 700); if (r === 'full') G.toast('3 THINGS ARE LINED UP ALREADY', 1200);
   };
 
@@ -3864,10 +4801,14 @@ var SS = window.SS = window.SS || {};
     var pick = SS.pick(G.lastHits || [], w[0], w[1]);
     var playing = G.mode === 'life' && G.trayState() === 'closed';
     if (playing) {
-      G.bubble = null;
+      G.bubble = null; G.meters = null;
+      if (G.hunt) { SS.huntTap(G, pick); return; }   // looking for the charger: each tap is a guess
       if (pick && pick.agent) {
-        if (pick.agent.who === 'sarah') { G.toast('THAT\'S SARAH', 900, 'Tap the floor to walk, or tap things to do.'); return; }
-        openBubble({ agent: pick.agent }, [p.x, p.y - 8]); return;
+        if (pick.agent.who === 'sarah') { // her three meters (spec 006, part C), and Charge when her phone needs it (part D)
+          if (SS.actionsFor(G, { agent: pick.agent })) { openBubble({ agent: pick.agent }, [p.x, p.y - 8]); G.meters = 'sarah'; } else G.meters = G.meters === 'sarah' ? null : 'sarah';
+          return;
+        }
+        openBubble({ agent: pick.agent }, [p.x, p.y - 8]); G.meters = pick.agent.who === 'keegan' ? 'keegan' : null; return;
       }
       if (pick && pick.piece) { var d = W.def(pick.piece); if (d.use) { openBubble({ piece: pick.piece }, [p.x, p.y - 8]); return; } }
       var door = backDoorAt(w); if (door) { openBubble({ door: door }, [p.x, p.y]); return; }
@@ -3945,7 +4886,9 @@ var SS = window.SS = window.SS || {};
     }
     if (G.toastT && k === 'a' && !G.hold && !G.bubble) { G.toastT = null; return; }
     if (k === 'start') { G.openMenu(); return; }
-    if (G.bubble) { var b = G.bubble; if (k === 'left' || k === 'up') b.cur = (b.cur + b.actions.length - 1) % b.actions.length; if (k === 'right' || k === 'down') b.cur = (b.cur + 1) % b.actions.length; if (k === 'a') G.doBubble(b.cur); if (k === 'b') G.bubble = null; return; }
+    if (G.meters && k === 'b' && !G.bubble) { G.meters = null; return; }
+    if (G.hunt && k === 'b') { G.hunt = null; G.toast('MAYBE LATER', 800); return; }
+    if (G.bubble) { var b = G.bubble; if (k === 'b') G.meters = null; if (k === 'left' || k === 'up') b.cur = (b.cur + b.actions.length - 1) % b.actions.length; if (k === 'right' || k === 'down') b.cur = (b.cur + 1) % b.actions.length; if (k === 'a') G.doBubble(b.cur); if (k === 'b') G.bubble = null; return; }
     if (G.hold) { if (k === 'a') placeHold(); else if (k === 'b') cancelHold(false); else if (k === 'select') turnHold(); else if (DIRS[k]) moveHold(k); return; }
     if (G.focus === 'cards') {
       var T = G.tray, list = G.catalogList(T.tab).items;
@@ -4013,9 +4956,10 @@ var SS = window.SS = window.SS || {};
   function drawTitle(H, t) {
     var A = SS.titleArt; A.use(c); SS.use(c);
     var W = W0;
+    A.setSeason(SS.now());   // the scene follows the real date (bible, Title and cover)
     A.sky(W, H, t, 1); A.moon(W - 34, 62, 9);
     var gy = G.screen === 'open' ? H - 70 : H - 100;
-    A.street(W, H, t, gy, gy - 150); A.snowfall(W, H, t, 80, true);
+    A.street(W, H, t, gy, gy - 150); A.weather(W, H, t, 80, true);
     A.titleText(W, 14);
     if (G.screen === 'open') {
       for (var i = 0; i < 16; i++) { var x = (A.rnd(i + 200) * W), y = (A.rnd(i + 300) * H * .6 + t * 3) % (H * .7); A.R(x, y, 2, 3, i % 3 ? A.P.gold : A.P.rose); }
@@ -4065,6 +5009,7 @@ var SS = window.SS = window.SS || {};
       ghost = ghostItem(Hd, t);
     }
     G.cam.fit(W0, H);
+    var hg = SS.huntGlow(G); if (hg && hg.f === G.floor) glows.push({ tiles: hg.tiles, ok: true });
     var selP = G.sel && W.byUid[G.sel];
     if (selP && !selP.wall && W.floorOf(selP) === G.floor) { var fs = W.foot(selP.host ? W.hostOf(selP) : selP), st = []; for (var sx2 = fs[0]; sx2 < fs[2]; sx2++) for (var sy2 = fs[1]; sy2 < fs[3]; sy2++) st.push([sx2, sy2]); glows.push({ tiles: st, sel: true }); }
     var hits = SS.drawScene(wc, W, { version: G.version + ':' + (G.hold ? G.hold.from : ''), floor: G.floor, walls: G.walls, t: t, look: G.look, agents: G.agents, glows: glows, ghost: ghost, sel: G.sel });
@@ -4092,12 +5037,21 @@ var SS = window.SS = window.SS || {};
     var hint = G.hold ? (G.hold.ok ? 'DRAG TO MOVE · TAP IT TO TURN · OK PLACES' : (G.hold.why === 'DOORWAY' ? 'KEEP DOORWAYS CLEAR' : G.hold.why === 'NEEDS A WINDOW' ? 'CURTAINS GO ON A WINDOW' : G.hold.why === 'STAIRS' ? 'KEEP THE STAIRS CLEAR' : 'IT DOESN\'T FIT HERE'))
       : G.trayState() === 'catalog' ? 'DRAG A PIECE INTO THE ROOM' : G.trayState() === 'closed' && G.mode === 'life' ? 'TAP THE FLOOR TO WALK · TAP THINGS TO DO' : G.sel ? 'TAP A SWATCH · PAINT ANY PART' : '';
     if (hint && !G.menu) SS.txt(hint, W0 / 2, H - trayH - 12, 'rgba(255,241,226,.85)', 5, 'center');
+    // the charger hunt's hint: a bouncing marker over the spot, the first time (spec 006, part D)
+    var hint = SS.huntGlow(G);
+    if (hint && hint.f === G.floor) {
+      var hp = hint.agent ? I.p(hint.agent.x, hint.agent.y, hint.f * FH + 26) : selTop(hint.piece), hs = toScreen(hp[0], hp[1]), bob = Math.round(Math.sin(now / 200) * 2);
+      var mx = Math.round(hs[0]), my = Math.round(hs[1] - 6 + bob);
+      SS.R(mx - 5, my - 11, 11, 10, '#3b2430'); SS.R(mx - 4, my - 10, 9, 8, SS.P.rose); SS.txt('?', mx + 1, my - 9, '#fff', 6, 'center');
+      SS.R(mx - 1, my - 2, 3, 2, SS.P.rose); SS.R(mx, my, 1, 2, SS.P.rose);
+    }
     if (G.sleeping) sleepScene(H - trayH, now);
     SS.drawTopBar(G, W0);
     SS.drawViewControls(G, W0, G.mode === 'life' && (G.act || G.queue.length) ? 40 : 24, H - trayH - 16);
     SS.drawTray(G, W0, H);
     if (G.slideBack) slideBackAnim(now, H);
     if (G.bubble) SS.drawBubble2(G, W0, G.bubble);
+    if (G.meters && G.mode === 'life') SS.drawMeters(G, G.bubble ? W0 - 92 : 4, G.bubble ? G.bubbleTop + 2 : 40, G.meters);   // beside the bubble, as in cooking-v1
   }
   function markFit(x, y, ok) { if (ok) SS.check(x - 4, y + 2, '#8fd08c'); else SS.cross(x - 3, y + 2, '#e46f8b'); }
   function selTop(p) { var W = G.W, d = W.def(p), f = W.floorOf(p), Z = f * FH; if (p.wall) { var wp = W.wallPlace(p); return I.p(wp.x + (p.wall[2] === 'x' ? d.w / 2 : 0), wp.y + (p.wall[2] === 'y' ? d.w / 2 : 0), Z + wp.z + d.h); } if (p.host) { var pos = W.spotPos(W.hostOf(p), p.spot); return I.p(pos.x, pos.y, Z + pos.z + d.h + 6); } var ft = W.foot(p); return I.p((ft[0] + ft[2]) / 2, (ft[1] + ft[3]) / 2, Z + Math.min(60, d.h + 8)); }

@@ -281,6 +281,11 @@
     c.fillStyle = 'rgba(90,45,40,.25)'; c.beginPath(); c.ellipse(x, y, img.width * .38, 3, 0, 0, 7); c.fill();
     var dx = Math.round(x - img.width / 2), dy = Math.round(y - img.height + 1 - bob);
     if (o.flip) { c.save(); c.translate(dx + img.width, dy); c.scale(-1, 1); c.drawImage(img, 0, 0); c.restore(); } else c.drawImage(img, dx, dy);
+    if (o.hat) { // a tiny Santa hat on Christmas (spec 009): on the head, which sits at the front of the loaf and the top of the sit
+      var hx = pose === 'sit' ? dx + img.width / 2 : (o.flip ? dx + 6 : dx + img.width - 7), hy = pose === 'sit' ? dy : dy - 1;
+      c.fillStyle = '#d2363c'; c.beginPath(); c.moveTo(hx - 4, hy + 2); c.lineTo(hx + 4, hy + 2); c.lineTo(hx + (o.flip ? -3 : 3), hy - 5); c.closePath(); c.fill();
+      c.fillStyle = '#fff6ea'; c.fillRect(Math.round(hx - 4), Math.round(hy + 1), 8, 2); c.fillRect(Math.round(hx + (o.flip ? -4 : 3)), Math.round(hy - 6), 2, 2);
+    }
     if (walk) { c.fillStyle = CATS[who].pal.o || '#3b2f33'; var f = pose === 'walk1' ? 0 : 2; c.fillRect(dx + 4 + f, y, 2, 1); c.fillRect(dx + img.width - 8 - f, y, 2, 1); }
   };
   SS.catSize = function (who, pose) { var i = catImg(who, pose || 'sit'); return [i.width, i.height]; };

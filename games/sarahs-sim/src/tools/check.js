@@ -144,6 +144,12 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     home.unreach.forEach(t => bad.push('tile ' + t + ' cannot be walked to'));
     home.bad.forEach(t => bad.push('a starting piece breaks the placing rules: ' + t));
     home.nouse.forEach(t => bad.push('nobody can get to ' + t));
+    // the starting catalog: every tab holds spec 001's draft list (plus the easel, the cat bowls and the litter box)
+    const tabs = await page.evaluate(() => { const n = {}; SS.CATALOG.filter(d => !d.craft).forEach(d => { n[d.tab] = (n[d.tab] || 0) + 1; }); return n; });
+    const want = { seating: 10, tables: 9, beds: 6, storage: 12, lights: 7, plants: 7, rugs: 6, wall: 10, decor: 16, holiday: 9 };   // holiday: the tree and the Christmas set (spec 009)   // decor: 13 + the easel + the cat bowls and litter box (spec 006, part D)
+    const few = await page.evaluate(() => SS.CATALOG.filter(d => !d.craft && d.tab !== 'none' && (d.swatches.length < 4 || d.swatches.length > 6)).map(d => d.id + ' (' + d.swatches.length + ')'));
+    few.forEach(id => bad.push('swatches should be 4 to 6 (spec 001, part D): ' + id));
+    Object.keys(want).forEach(t => { if (tabs[t] !== want[t]) bad.push(`the ${t} tab has ${tabs[t] || 0} pieces, the starting list has ${want[t]}`); });
     report('part F: the furnished Philly home on 3 floors, the cats and the two of them, everything reachable', bad.concat(errors));
 
     // placing rules and every kind of piece, by buttons
@@ -320,14 +326,15 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     const acts = await page.evaluate(() => {
       const G = SSG, W = G.W, out = [], run = () => { for (let i = 0; i < 2400 && (G.act || G.queue.length || G.people.sarah.path.length); i++) SS.updateAgents(G, .05); };
       const uses = {}; W.pieces.forEach(p => { const u = W.def(p).use; if (u && !uses[u]) uses[u] = p; });
+      if (G.kday) G.kday.busy = false;   // Keegan free for the together actions (his busy time is checked below)
       Object.keys(SS.ACTIONS).forEach(k => {
-        if (k === 'cat' || k === 'keegan' || k === 'backdoor') return;
+        if (k === 'cat' || k === 'keegan' || k === 'backdoor' || k === 'meal' || k === 'sarah' || k === 'gift') return;
         const p = uses[k]; if (!p) { out.push('no piece in the home for ' + k); return; }
         SS.ACTIONS[k].forEach(a => { if (a.soon) return; const r = SS.chooseAction(G, { piece: p }, a); if (r !== 'now') out.push(a.name + ' on ' + p.id + ' did not start'); let started = false; for (let i = 0; i < 2400 && G.act; i++) { SS.updateAgents(G, .05); if (G.act && G.act.started) started = true; } if (!started) out.push(a.name + ' on ' + p.id + ': Sarah never got there'); });
       });
       // the cats: pet, treat, play; Keegan: chat and hug
       ['pet', 'treat', 'play'].forEach((fx, i) => { const a = SS.ACTIONS.cat[i]; SS.chooseAction(G, { agent: G.cats.louie }, a); let st = false; for (let j = 0; j < 2400 && G.act; j++) { SS.updateAgents(G, .05); if (G.act && G.act.started) st = true; } if (!st) out.push(a.name + ' on Louie did not happen'); });
-      SS.ACTIONS.keegan.forEach(a => { SS.chooseAction(G, { agent: G.people.keegan }, a); let st = false; for (let j = 0; j < 2400 && G.act; j++) { SS.updateAgents(G, .05); if (G.act && G.act.started) st = true; } if (!st) out.push(a.name + ' with Keegan did not happen'); });
+      SS.ACTIONS.keegan.filter(a => !a.soon).forEach(a => { SS.chooseAction(G, { agent: G.people.keegan }, a); let st = false; for (let j = 0; j < 2400 && G.act; j++) { SS.updateAgents(G, .05); if (G.act && G.act.started) st = true; } if (!st) out.push(a.name + ' with Keegan did not happen'); });
       if (!G.save.made.some(id => SS.PAINTING_POOL.indexOf(id) >= 0)) out.push('Paint did not make a painting');
       if (!G.save.made.some(id => SS.DEF[id].craft && SS.DEF[id].craft !== 'painting')) out.push('the seasonal craft did not make anything');
       // up to 3 lined up, a fourth is refused; tapping elsewhere stops everything and nothing is lost
@@ -339,9 +346,142 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       return out;
     });
     acts.forEach(a => bad.push(a));
-    const soon = await page.evaluate(() => { const need = ['COOK', 'FIND A GIG', 'CHANGE', 'GO TO', 'VIDEO-CALL']; const all = [].concat.apply([], Object.keys(SS.ACTIONS).map(k => SS.ACTIONS[k])); return need.filter(n => !all.some(a => a.name === n && a.soon)); });
+    // spec 006, part C: needs drain only while playing, fill from actions, a low need only nudges and slows; Sandbox has none
+    const needs = await page.evaluate(() => {
+      const G = SSG, out = [], n = SS.needsOf(G, 'sarah'); SS.stopActions(G);
+      n.energy = .9; n.hunger = .9; n.fun = .9; const e0 = n.energy;
+      for (let i = 0; i < 1200; i++) SS.updateAgents(G, .05);   // a minute of play
+      const per = (e0 - n.energy); if (!(per > 0 && Math.abs(per - .75 / 40) < .004)) out.push('energy does not go down about 1/40 of the way to low per minute: ' + per.toFixed(4));
+      n.hunger = .1; const fridge = G.W.pieces.find(p => p.id === 'fridge');
+      if (SS.lowNeed(G, 'sarah') !== 'hunger') out.push('a hunger of 0.1 is not low');
+      SS.chooseAction(G, { piece: fridge }, SS.ACTIONS.fridge[0]); let st = 0; for (let i = 0; i < 3000 && G.act; i++) { SS.updateAgents(G, .05); if (G.act && G.act.started && !st) { st = 1; if (!(G.act.dur > SS.ACTIONS.fridge[0].dur)) out.push('a low need does not slow the action down'); } }
+      if (!(n.hunger > .4)) out.push('a snack does not fill hunger: ' + n.hunger.toFixed(2));
+      // every together action brings Keegan along and fills both of them
+      SS.ACTIONS.keegan.filter(a => a.together).concat([SS.ACTIONS.keegan[1], SS.ACTIONS.keegan[2]]).forEach(a => {
+        const k = SS.needsOf(G, 'keegan'); k.fun = .3; let joined = false; if (G.kday) { G.kday.busy = false; G.kday.left = 1e9; }
+        SS.chooseAction(G, { agent: G.people.keegan }, a);
+        for (let i = 0; i < 4000 && (G.act || G.people.sarah.path.length); i++) { SS.updateAgents(G, .05); if (G.act && a.together && G.people.keegan.on === (G.act.job.target.piece || {}).uid) joined = true; }
+        if (a.together && !joined) out.push(a.name + ': Keegan did not join her');
+        if (!(k.fun > .3)) out.push(a.name + ' did not fill Keegan\'s fun');
+      });
+      // nothing drains while she's away: needs are saved and come back as they were
+      G.changed(true); const saved = JSON.parse(localStorage.getItem(SS.PRE + 'life')).needs.sarah.fun; if (Math.abs(saved - n.fun) > 1e-9) out.push('needs are not saved');
+      return out;
+    });
+    needs.forEach(a => bad.push(a));
+    // spec 006, part D: Keegan's day. He starts busy with something from this time of day's pool; a busy one makes her together
+    // action wait for him; cooking ends with a meal on the table that she can eat
+    const day = await page.evaluate(() => {
+      const G = SSG, out = [], W = G.W, run = n => { for (let i = 0; i < n; i++) SS.updateAgents(G, .05); };
+      SS.stopActions(G); SS.startKeeganDay(G);
+      if (!G.kday || !G.kday.text) { out.push('Keegan is not busy with anything when Life opens'); return out; }
+      G.kday.busy = true; const r = SS.chooseAction(G, { agent: G.people.keegan }, SS.ACTIONS.keegan[0]);
+      if (r !== 'busy') out.push('a together action does not wait while Keegan is busy');
+      G.kday.left = 0; run(2); if (!G.act && !G.people.sarah.path.length) out.push('the waiting action does not start when he is done');
+      for (let i = 0; i < 4000 && (G.act || G.people.sarah.path.length); i++) SS.updateAgents(G, .05);
+      SS.setClock(18, 30); G.kday = { text: 'Cooking dinner', at: 'stove', left: 0, piece: (W.pieces.find(p => p.id === 'stove') || {}).uid }; run(2);
+      const meals0 = W.pieces.filter(p => p.id === 'plated-meal').length, meal = W.pieces.filter(p => p.id === 'plated-meal').pop();
+      if (!meal) { out.push('a finished meal does not go on the table'); return out; }
+      const n = SS.needsOf(G, 'sarah'); n.hunger = .2;
+      SS.chooseAction(G, { piece: meal }, SS.ACTIONS.meal[0]); for (let i = 0; i < 4000 && (G.act || G.people.sarah.path.length); i++) SS.updateAgents(G, .05);
+      if (W.pieces.filter(p => p.id === 'plated-meal').length !== meals0 - 1) out.push('eating does not clear the plate');
+      if (!(n.hunger > .6)) out.push('eating Keegan\'s meal does not fill hunger');
+      // picks don't repeat until the pool runs out
+      const pool = SS_PRIVATE.idleLife.evening.filter(a => a.at !== 'stove'), seen = [];
+      SS.setClock(21, 0); G.save.shown = {}; for (let i = 0; i < pool.length; i++) { G.kday.left = 0; run(1); seen.push(G.kday.text); }
+      if (new Set(seen).size !== seen.length) out.push('Keegan repeats an activity before the pool runs out: ' + seen);
+      return out;
+    });
+    day.forEach(a => bad.push(a));
+    // spec 006, part D: idle Sarah and her phone
+    const phone = await page.evaluate(() => {
+      const G = SSG, out = [], W = G.W, run = n => { for (let i = 0; i < n; i++) SS.updateAgents(G, .05); };
+      SS.stopActions(G); G.hunt = null; G.charging = false; SS.setClock(20, 0); SS.startSarahIdle(G);
+      if (!G.idle) { out.push('Sarah is not in the middle of anything when Life opens'); return out; }
+      G.idle.phone = true; G.save.phone = .5; run(1200);
+      if (!(G.save.phone < .5)) out.push('the phone does not run down while she scrolls');
+      G.save.phone = .1;
+      if (!SS.actionsFor(G, { agent: G.people.sarah })) out.push('tapping Sarah with a low phone does not show Charge');
+      SS.startHunt(G); const h = G.hunt.hide;
+      const wrong = W.pieces.find(p => W.def(p).use === 'desk');
+      SS.huntTap(G, { piece: wrong }); if (!G.hunt) out.push('a wrong guess finds the charger');
+      const right = h.cat ? { agent: G.cats[h.cat] } : { piece: W.pieces.find(p => W.def(p).use === h.use) };
+      SS.huntTap(G, right); if (G.hunt || !G.charging) out.push('the right spot does not find the charger (' + h.key + ')');
+      run(4000); if (G.save.phone < .99) out.push('the phone does not charge in a few minutes of play');
+      // the hiding spots don't repeat until they're used up
+      G.save.shown.charger = []; const keys = []; for (let i = 0; i < 3; i++) { SS.startHunt(G); keys.push(G.hunt.hide.key); G.hunt = null; }
+      if (new Set(keys).size !== 3) out.push('the charger hides in the same spot twice before the pool runs out: ' + keys);
+      return out;
+    });
+    phone.forEach(a => bad.push(a));
+    // spec 006, part D: the cats' needs only nudge, and each one's fix clears it
+    const cats = await page.evaluate(() => {
+      const G = SSG, out = [], W = G.W, run = n => { for (let i = 0; i < n; i++) SS.updateAgents(G, .05); };
+      SS.stopActions(G);
+      const L = SS.catNeedsOf(G, 'louie'), Rr = SS.catNeedsOf(G, 'ralph');
+      const bowl = W.pieces.find(p => p.id === 'cat-bowls'), box = W.pieces.find(p => p.id === 'litter-box');
+      if (!bowl || !box) { out.push('the home has no cat bowls or litter box'); return out; }
+      L.hunger = .1; Rr.hunger = .9; L.play = .9; Rr.play = .9; L.litter = .9; Rr.litter = .9;
+      let near = false; for (let i = 0; i < 6000 && !near; i++) { SS.updateAgents(G, .05); const lc = G.cats.louie; near = !lc.path.length && W.useTiles(bowl).some(q => q[0] === Math.floor(lc.x) && q[1] === Math.floor(lc.y) && lc.f === W.floorOf(bowl)) && !!lc.bubble; }
+      if (!near) out.push('a hungry Louie does not go and sit by the bowl');
+      SS.chooseAction(G, { piece: bowl }, SS.ACTIONS.bowl[0]); for (let i = 0; i < 3000 && (G.act || G.people.sarah.path.length); i++) SS.updateAgents(G, .05);
+      if (L.hunger < .9) out.push('Fill does not feed the cats');
+      L.litter = .1; SS.chooseAction(G, { piece: box }, SS.ACTIONS.litter[0]); for (let i = 0; i < 3000 && (G.act || G.people.sarah.path.length); i++) SS.updateAgents(G, .05);
+      if (L.litter < .9) out.push('Scoop does not clean the litter box');
+      Rr.play = .1; SS.chooseAction(G, { agent: G.cats.ralph }, SS.ACTIONS.cat[2]); for (let i = 0; i < 3000 && (G.act || G.people.sarah.path.length); i++) SS.updateAgents(G, .05);
+      if (Rr.play < .99) out.push('the feather wand does not count double for Ralph');
+      // bored: knocks a small thing off a table, and it can be picked back up (it's still a piece in the home)
+      const n0 = W.pieces.length, stacked0 = W.pieces.filter(p => p.host).length; L.play = .05; Rr.play = .05; L.hunger = 1; Rr.hunger = 1; L.litter = 1; Rr.litter = 1;
+      let knocked = false; for (let i = 0; i < 12000 && !knocked; i++) { SS.updateAgents(G, .05); knocked = W.pieces.filter(p => p.host).length < stacked0; }
+      if (!knocked) out.push('a bored cat never knocks a small thing off a table');
+      if (W.pieces.length !== n0) out.push('a knocked-over thing was lost');
+      return out;
+    });
+    cats.forEach(a => bad.push(a));
+    if (await page.evaluate(() => { SSG.openMode('sandbox'); return !!SS.lowNeed(SSG, 'sarah') || SSG.mode !== 'sandbox'; })) bad.push('Sandbox has needs');
+    const soon = await page.evaluate(() => { const need = ['COOK', 'FIND A GIG', 'CHANGE', 'GO TO', 'VIDEO-CALL', 'WIND DOWN']; const all = [].concat.apply([], Object.keys(SS.ACTIONS).map(k => SS.ACTIONS[k])); return need.filter(n => !all.some(a => a.name === n && a.soon)); });
     soon.forEach(n => bad.push(n + ' does not show Coming soon'));
-    report('spec 006: four light looks, lamps at 5 PM, walking up the stairs, every starter action, crafts, the queue', bad.concat(errors));
+    report('spec 006: four light looks, lamps at 5 PM, walking up the stairs, every starter action, crafts, the queue; needs; together actions; the cats\' needs; Keegan\'s day; her phone', bad.concat(errors));
+    await ctx.close();
+  }
+
+  // ---------- spec 009: Christmas ----------
+  {
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    const bad = await page.evaluate(() => {
+      const out = [], G = SSG;
+      // out of season in Life: the Christmas set says "Back in December" and can't be taken; in season it says "This season"
+      SS.setDate(2026, 6, 4); SS.setClock(12, 0); G.openMode('life');
+      const away = G.catalogList('holiday').items.filter(it => it.away).length;
+      if (!away) out.push('out of season, Christmas pieces are not marked Back in December');
+      G.takeCard(G.catalogList('holiday').items.find(it => it.away)); if (G.hold) out.push('an out-of-season Christmas piece can be taken'); G.hold = null;
+      G.openMode('sandbox'); if (G.catalogList('holiday').items.some(it => it.away)) out.push('Sandbox hides holiday pieces out of season');
+      SS.setDate(2026, 11, 5); G.openMode('life');
+      if (!G.catalogList('holiday').items.every(it => it.season)) out.push('in December, the Christmas set is not marked This season');
+      // Christmas Eve: stockings and cookies, for the day only, and she can keep one
+      SS.setDate(2026, 11, 24); SS.setClock(19, 0); G.openMode('life');
+      const st = G.W.pieces.find(p => p.id === 'stockings' && p.dress), ck = G.W.pieces.find(p => p.id === 'cookies-and-milk' && p.dress);
+      if (!st || !ck) out.push('Christmas Eve has no stockings or cookies out');
+      if (ck) { const acts = SS.actionsFor(G, { piece: ck }); if (!acts || acts[0].fx !== 'keep') out.push('day dressing has no Keep it'); else { G.bubble = { target: { piece: ck }, actions: acts, cur: 0, tip: [0, 0], title: '' }; G.doBubble(0); } }
+      // Christmas morning: gifts under the tree, Santa hats, breakfast; the eve's stockings go, the kept cookies stay
+      SS.setDate(2026, 11, 25); SS.setClock(8, 0); G.openMode('life');
+      if (G.W.pieces.some(p => p.id === 'stockings' && p.dress)) out.push('yesterday\'s dressing did not go away');
+      if (!G.W.pieces.some(p => p.id === 'cookies-and-milk')) out.push('a kept day-dressing piece was taken away');
+      const gifts = G.W.pieces.filter(p => p.id === 'christmas-gift');
+      if (gifts.length !== 3 || gifts.filter(g => g.note).length !== 1) out.push('Christmas morning does not have 3 gifts with one note: ' + gifts.length);
+      if (!G.xmasDay) out.push('the cats are not in Santa hats on Christmas');
+      if (!G.W.pieces.some(p => p.id === 'plated-meal')) out.push('Keegan made no Christmas breakfast');
+      const n0 = G.W.pieces.length; gifts.filter(g => !g.note).forEach(g => SS.openGift(G, g));
+      if (G.W.pieces.filter(p => p.id === 'christmas-gift').length !== 1) out.push('opening gifts does not clear them');
+      if (G.W.pieces.length !== n0) out.push('each opened gift does not leave a Christmas piece in its place');
+      SS.openGift(G, G.W.pieces.find(p => p.id === 'christmas-gift'));
+      if (!/NOTE/.test((G.toastT || {}).text || '')) out.push('the note gift does not show Keegan\'s note');
+      // gifts never repeat in the same year
+      G.openMode('life'); if (G.W.pieces.some(p => p.id === 'christmas-gift')) out.push('the gifts came back after reopening');
+      // first snow: once a winter
+      return out;
+    });
+    report('spec 009: the Christmas set in and out of season, Christmas Eve, Christmas morning, gifts and the note', bad.concat(errors));
     await ctx.close();
   }
 

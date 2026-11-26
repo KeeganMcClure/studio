@@ -182,6 +182,8 @@
     var anim = d.anim ? t % d.anim : 0;
     if (d.moves === 'tick') anim = new Date().getMinutes();
     if (d.use === 'tv' && p.lit) anim = Math.floor(t / 2) % 4 + 10;
+    if (d.use === 'bowl') anim = SS.G && SS.G.catFull ? 1 : 0;
+    if (d.use === 'litter') anim = SS.G && SS.G.litterLow ? 1 : 0;
     var free = W ? d.spots.map(function (_, i) { return W.spotFree(p, i) ? 1 : 0; }).join('') : '';
     return [p.id, p.r || 0, p.wall ? p.wall[2] : '', p.sw || 0, JSON.stringify(p.colors || 0), JSON.stringify(p.pats || 0), p.props === false ? 0 : 1, p.lit ? 1 : 0, p.work ? 1 : 0, free, anim].join('|');
   };
@@ -337,6 +339,7 @@
       var d = W.def(p); if (!d.light || !p.lit || W.floorOf(p) !== F) return;
       var pos, Z = F * FH;
       if (p.host) { var sp = W.spotPos(W.hostOf(p), p.spot); pos = P(sp.x, sp.y, Z + sp.z + d.light.h); }
+      else if (p.wall) { var wp = W.wallPlace(p), Mw = SS.Model(null, d, p, { x: wp.x, y: wp.y, rot: wp.rot }), qw = Mw.wp(d.light.u, d.light.v); pos = P(qw[0], qw[1], Z + wp.z + d.light.h); }
       else { var M = SS.Model(null, d, p, { x: p.x, y: p.y, rot: p.r || 0 }); var q = M.wp(d.light.u, d.light.v); pos = P(q[0], q[1], Z + d.light.h); }
       var a = (.2 + .03 * Math.sin(o.t / 3 + p.uid)) * k, r = d.light.r * (.8 + .5 * Math.min(1.2, k));
       var g = c.createRadialGradient(pos[0], pos[1], 2, pos[0], pos[1] + 10, r); g.addColorStop(0, 'rgba(255,200,120,' + a + ')'); g.addColorStop(1, 'rgba(255,200,120,0)');

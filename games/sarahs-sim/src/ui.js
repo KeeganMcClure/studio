@@ -135,6 +135,8 @@
       drawThumb(c, it.id, sx + 3, sy + 3, 28, 21, it.sw);
       // small dots for its color choices (bible, Decorating, Catalog tabs)
       it.def.swatches.slice(0, 4).forEach(function (s, k) { var base = s[it.def.parts[0] ? it.def.parts[0][0] : 'x'] || '#c88d5a'; R(sx + 34 + (k % 2) * 9, sy + 5 + Math.floor(k / 2) * 9, 7, 7, '#3b2430'); R(sx + 35 + (k % 2) * 9, sy + 6 + Math.floor(k / 2) * 9, 5, 5, base); });
+      if (it.season) { R(sx + 1, sy + 1, 38, 7, P.rose); txt(it.season, sx + 20, sy + 2, '#fff', 4, 'center'); }
+      if (it.away) { R(sx, sy, 55, 27, 'rgba(251,238,221,.7)'); R(sx + 1, sy + 9, 53, 9, P.trayEdge); txt('BACK IN', sx + 27, sy + 10, P.ink, 4, 'center'); txt('DECEMBER', sx + 27, sy + 14, P.ink, 4, 'center'); }
       if (it.stored) { R(sx + 33, sy + 19, 20, 7, P.sage[1]); txt('×' + it.stored, sx + 43, sy + 20, '#fff', 5, 'center'); }
       if (focused) { c.strokeStyle = P.rose; c.lineWidth = 2; c.strokeRect(sx + 1, sy + 1, 53, 25); c.lineWidth = 1; }
       hit(G, sx, sy, 55, 27, function () { G.takeCard(it); }, { card: it });
@@ -224,6 +226,8 @@
     var x = Math.max(4, Math.min(W - w - 28, tx - w / 2)), y = ty - h - 10;
     if (y < 24) y = Math.min(ty + 14, G.viewBottom - h - 4);
     y = Math.max(24, y);
+    if (G.meters) x = 4;   // the meters sit beside it (cooking-v1)
+    G.bubbleTop = y;
     SS.card(x, y, w, h);
     if (ty > y + h) { c.fillStyle = P.tray; c.beginPath(); c.moveTo(Math.max(x + 8, Math.min(x + w - 8, tx)) - 6, y + h - 1); c.lineTo(Math.max(x + 8, Math.min(x + w - 8, tx)) + 6, y + h - 1); c.lineTo(tx, ty); c.closePath(); c.fill(); c.strokeStyle = P.rose; c.beginPath(); c.moveTo(Math.max(x + 8, Math.min(x + w - 8, tx)) - 6, y + h - .5); c.lineTo(tx, ty); c.lineTo(Math.max(x + 8, Math.min(x + w - 8, tx)) + 6, y + h - .5); c.stroke(); }
     txt(b.title, x + 6, y + 6, P.soft, 5);
@@ -233,7 +237,7 @@
       R(bx, by, bw, 19, sel ? P.rose : P.cell); R(bx, by + 18, bw, 1, sel ? P.roseSh : P.trayEdge); if (sel) R(bx, by, bw, 1, P.roseHi);
       SS.actIcon(c, it.icon, bx + 4, by + 5, sel);
       txt(it.name, bx + 17, by + (it.sub ? 3 : 7), sel ? '#fff' : P.ink, 5); if (it.sub) txt(it.sub, bx + 17, by + 11, sel ? '#fff' : P.ink, 5);
-      if (it.soon) { R(bx + bw - 22, by + 12, 21, 6, sel ? '#fff' : P.honey[0]); txt('SOON', bx + bw - 11.5, by + 13, P.ink, 4, 'center'); }
+      if (it.soon) { R(bx + bw - 21, by + 1, 20, 6, sel ? '#fff' : P.honey[0]); txt('SOON', bx + bw - 11, by + 2, P.ink, 4, 'center'); }
       if (i === 0) { R(bx + bw - 10, by - 5, 12, 12, '#3b2430'); R(bx + bw - 9, by - 4, 10, 10, P.rose); txt('A', bx + bw - 7, by - 2, '#fff', 6); }
       hit(G, bx, by, bw, 19, function () { G.doBubble(i); });
     });

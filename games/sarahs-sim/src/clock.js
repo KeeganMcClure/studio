@@ -41,9 +41,12 @@
   SS.dayText = function (d) { return DAYS[d.getDay()] + ' ' + MONTHS[d.getMonth()] + ' ' + d.getDate(); };
   SS.timeText = function (d) { var h = d.getHours() % 12 || 12, m = ('0' + d.getMinutes()).slice(-2); return h + ':' + m + (d.getHours() < 12 ? ' AM' : ' PM'); };
   SS.weekday = function (d) { return DAYS[d.getDay()]; };
-  // the time she's playing at: the phone's clock, or a set clock for testing (?clock=21:30, or SS.setClock)
-  var fixed = null;
-  try { var q = new URLSearchParams(location.search).get('clock'); if (q) { var p = q.split(':'); fixed = [+p[0], +(p[1] || 0)]; } } catch (e) {}
-  SS.setClock = function (h, m) { fixed = h === null ? null : [h, m || 0]; };
-  SS.now = function () { var d = new Date(); if (fixed) d.setHours(fixed[0], fixed[1], 0, 0); return d; };
+  // the time she's playing at: the phone's clock, or, for testing, a set clock and date (?clock=21:30&date=2026-12-25, or
+  // SS.setClock and SS.setDate). Only in Dev builds and the checks, never in the build Sarah plays (spec 009, Testing).
+  var fixed = null, fixedDate = null;
+  var testing = location.protocol === 'file:' || (window.Studio && Studio.channel === 'dev');
+  try { var qs = new URLSearchParams(location.search), q = qs.get('clock'), qd = qs.get('date'); if (testing && q) { var p = q.split(':'); fixed = [+p[0], +(p[1] || 0)]; } if (testing && qd) { var dp = qd.split('-'); fixedDate = [+dp[0], +dp[1] - 1, +dp[2]]; } } catch (e) {}
+  SS.setClock = function (h, m) { if (testing) fixed = h === null ? null : [h, m || 0]; };
+  SS.setDate = function (y, mo, d) { if (testing) fixedDate = y === null ? null : [y, mo, d]; };
+  SS.now = function () { var d = new Date(); if (fixedDate) d.setFullYear(fixedDate[0], fixedDate[1], fixedDate[2]); if (fixed) d.setHours(fixed[0], fixed[1], 0, 0); return d; };
 })();

@@ -6,6 +6,29 @@
   var INK = '#3b2430';
   var P = { sky0: '#171127', sky1: '#2b1d3a', sky2: '#4a2c45', brick: ['#b9584a', '#9c463b', '#7d3530'], brickL: ['#a8786a', '#8c6155', '#6e4a42'], brickR: ['#8f5b6a', '#774a58', '#5c3846'],
     cream: '#fff1e2', creamSh: '#e3cdb8', snow: '#f4f1fb', snowSh: '#c9c3dc', glass: ['#ffe3a0', '#ffc96e', '#f0a95a'], rose: '#e46f8b', roseHi: '#f39bb0', roseSh: '#b44f63', gold: '#ffd56b', goldSh: '#c78f3e', tray: '#fff6ea', trayEdge: '#e8cdb4', ink: '#6b4250', soft: '#b38a8f' };
+  // the seasons (bible, Title and cover: winter has snow with Christmas lights in December; spring has rain and flower boxes;
+  // summer is a warm evening with fireflies; fall has falling leaves, with a pumpkin on the stoop near Halloween)
+  var SEASON = 'winter', MONTH = 11;
+  var SKIES = { winter: ['#171127', '#2b1d3a', '#4a2c45'], spring: ['#1b2236', '#2f3a52', '#4d5068'], summer: ['#1d1638', '#4a2e5c', '#b0606a'], fall: ['#1a1226', '#3a2236', '#7a3e3a'] };
+  var LEDGE = { winter: '#f4f1fb', spring: '#d9cbbd', summer: '#e3d3bf', fall: '#d2c0a8' };
+  function setSeason(d) {
+    var m = d.getMonth(); MONTH = m;
+    SEASON = m === 11 || m < 2 ? 'winter' : m < 5 ? 'spring' : m < 8 ? 'summer' : 'fall';
+    P.snow = LEDGE[SEASON]; P.snowSh = SEASON === 'winter' ? '#c9c3dc' : '#b8a798';
+    P.sky0 = SKIES[SEASON][0]; P.sky1 = SKIES[SEASON][1]; P.sky2 = SKIES[SEASON][2];
+  }
+  function weather(W, H, t, n, big) {
+    if (SEASON === 'winter') return snowfall(W, H, t, n, big);
+    for (var i = 0; i < n; i++) {
+      var x0 = rnd(i) * W, y0 = rnd(i + 50) * H;
+      if (SEASON === 'spring') { var y = (y0 + t * 9 * (.8 + rnd(i + 7) * .4)) % H, x = (x0 - t * 1.5 + W * 4) % W; c.fillStyle = 'rgba(190,210,235,.5)'; c.fillRect(Math.round(x), Math.round(y), 1, 4); }
+      else if (SEASON === 'summer') { if (i % 3) continue; var fx = (x0 + Math.sin((t + i * 7) / 6) * 6 + W) % W, fy = H * .45 + (y0 % (H * .5)) + Math.cos((t + i) / 5) * 4, on = (Math.floor(t / 3) + i) % 4 !== 0; if (on) { glow(fx, fy, 5, .35); R(fx, fy, 1, 1, '#fff3a8'); } }
+      else { if (i % 2) continue; var ly = (y0 + t * 1.6 * (.6 + rnd(i + 3) * .6)) % H, lx = (x0 + Math.sin((t + i * 3) / 4) * 5 + W) % W; R(lx, ly, 2, 1, ['#c96f45', '#e7b75f', '#b44f63', '#e99a70'][i % 4]); R(lx + 1, ly + 1, 1, 1, '#8e5a37'); }
+    }
+  }
+  function plantInWindow(x, y, w, h) { c.fillStyle = '#437a47'; c.beginPath(); c.arc(x + w / 2 + 4, y + h - 10, 7, 0, 7); c.fill(); c.fillStyle = '#6aa361'; c.beginPath(); c.arc(x + w / 2 + 2, y + h - 12, 5, 0, 7); c.fill(); R(x + w / 2, y + h - 5, 8, 5, '#c0674f'); }
+  function flowerBox(x, y, w) { R(x - 1, y, w + 2, 4, '#8e5a37'); R(x - 1, y, w + 2, 1, '#b9804f'); for (var k = 1; k < w; k += 3) { R(x + k, y - 3, 1, 3, '#5f8f4e'); R(x + k - 1, y - 5, 3, 2, ['#f39bb0', '#f3d38a', '#c8a6d8', '#fff1e2'][(k / 3 | 0) % 4]); } }
+  function pumpkin(x, y) { c.fillStyle = '#e7863a'; c.beginPath(); c.ellipse(x, y - 4, 6, 4.5, 0, 0, 7); c.fill(); c.fillStyle = '#c96f2a'; c.fillRect(x - 1, y - 8, 2, 8); R(x - 1, y - 10, 2, 2, '#5f8f4e'); R(x - 3, y - 5, 2, 1, '#ffd56b'); R(x + 1, y - 5, 2, 1, '#ffd56b'); }
   function R(x, y, w, h, col) { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
   function txt(s, x, y, col, size, align) { c.font = (size || 8) + 'px "Press Start 2P", monospace'; c.fillStyle = col; c.textAlign = align || 'left'; c.textBaseline = 'top'; c.fillText(s, x, y); }
   function heart(x, y, col, s) { s = s || 1; [[1, 0, 2], [4, 0, 2], [0, 1, 7], [0, 2, 7], [1, 3, 5], [2, 4, 3], [3, 5, 1]].forEach(function (r) { R(x + r[0] * s, y + r[1] * s, r[2] * s, s, col); }); }
@@ -81,13 +104,19 @@
     var dx = hx + 12, dy = gy - 54;
     R(dx - 3, dy - 10, 30, 3, '#d9cbbd'); R(dx - 2, dy - 7, 28, 7, P.cream); var tg = c.createLinearGradient(0, dy - 6, 0, dy); tg.addColorStop(0, P.glass[0]); tg.addColorStop(1, P.glass[2]); c.fillStyle = tg; c.fillRect(dx, dy - 6, 24, 5); for (var m = dx + 4; m < dx + 24; m += 5) R(m, dy - 6, 1, 5, P.cream);
     R(dx - 2, dy, 28, 40, P.cream); R(dx, dy + 1, 24, 39, '#3d6b5c'); R(dx + 2, dy + 3, 9, 15, '#4a7d6c'); R(dx + 13, dy + 3, 9, 15, '#4a7d6c'); R(dx + 2, dy + 21, 9, 16, '#4a7d6c'); R(dx + 13, dy + 21, 9, 16, '#4a7d6c'); R(dx + 19, dy + 21, 2, 2, P.gold);
-    wreath(dx + 12, dy + 12);
+    if (SEASON === 'winter') wreath(dx + 12, dy + 12);
     glow(dx + 12, dy - 4, 26, .2); R(dx + 27, dy + 6, 3, 5, '#2f2430'); R(dx + 27, dy + 6, 3, 3, P.glass[0]); // porch light
-    win(hx + 54, gy - 52, 40, 32, true, t, function (x, y, w, h) { tinyTree(x + w / 2 + 4, y + h, 24, t); }, true);
+    win(hx + 54, gy - 52, 40, 32, true, t, function (x, y, w, h) { if (MONTH === 11) tinyTree(x + w / 2 + 4, y + h, 24, t); else plantInWindow(x, y, w, h); }, true);
+    if (SEASON === 'spring') [[hx + 14, top + 47], [hx + 66, top + 47], [hx + 14, top + 95], [hx + 66, top + 95]].forEach(function (b) { flowerBox(b[0], b[1], 24); });
     // white marble stoop, with snow, and an iron railing
     var sx = dx - 6;
     for (var s = 0; s < 3; s++) { R(sx - s * 3, gy - 14 + s * 5, 36 + s * 6, 5, s % 2 ? '#e9e4ee' : '#f3eff6'); R(sx - s * 3, gy - 10 + s * 5, 36 + s * 6, 1, '#c9c3dc'); R(sx - s * 3 + 2, gy - 15 + s * 5, 30 + s * 6, 2, P.snow); }
+    if (SEASON === 'fall' && MONTH === 9) { pumpkin(sx + 30, gy - 14); pumpkin(sx + 2, gy - 4); }
     c.strokeStyle = '#2f2430'; c.beginPath(); c.moveTo(sx + 36 + 6, gy - 30); c.lineTo(sx + 42, gy); c.moveTo(sx - 8, gy - 30 + 14); c.lineTo(sx - 8, gy); c.stroke();
+    if (MONTH === 11) { // Christmas on the street: a wreath on the neighbor's door, lights along the cornices
+      wreath(223, gy - 30);
+      for (var lx2 = -4; lx2 < W; lx2 += 6) { var on2 = (Math.floor(t / 2) + lx2 / 6) % 4 !== 0, ly2 = lx2 < hx || lx2 > hx + hw ? top + 4 + (lx2 > hx ? -4 : 0) : top - 2; R(lx2, ly2 + (lx2 / 6 % 2), 2, 2, on2 ? ['#ffd56b', '#e46f8b', '#8fd0ff', '#fff3a8'][(lx2 / 6 | 0) % 4] : '#5a5060'); }
+    }
     // sidewalk and snow
     R(0, gy, W, H - gy, '#8c7c94'); for (var bx = 0; bx < W; bx += 12) R(bx, gy, 1, H - gy, '#7a6a82');
     R(0, gy, W, 4, P.snow); for (var k = 0; k < W; k += 7) R(k, gy + 3, 4 + (k % 3), 2, P.snow);
@@ -145,6 +174,7 @@
 
   SS.titleArt = {
     use: function (ctx) { c = ctx; },
+    setSeason: setSeason, weather: weather, season: function () { return SEASON; },
     sky: sky, moon: moon, street: street, snowfall: snowfall, titleText: titleText, gift: gift, heart: heart, txt: txt, R: R, P: P, rnd: rnd
   };
 })();

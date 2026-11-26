@@ -47,8 +47,8 @@
     if (mode === 'life') lampPhase(true);
     G.tray.open = mode === 'sandbox';
     G.floor = 0; G.walls = 'cut';
-    SS.makeAgents(G); G.sarahF = undefined;
-    G.sel = null; centerCam(true);
+    SS.makeAgents(G); G.sarahF = undefined; G.idle = null; G.hunt = null; G.charging = false; SS.startKeeganDay(G);
+    G.sel = null; centerCam(true); SS.startSarahIdle(G); SS.applyHolidays(G);
     G.screen = 'home';
     G.changed(true);
   }
@@ -110,13 +110,20 @@
   G.catalogList = function (tab) {
     var defs = SS.CATALOG.filter(function (d) { return d.tab === tab && (!d.craft || G.mode === 'sandbox' || G.save.made.indexOf(d.id) >= 0); });
     if (tab === 'storage') defs.sort(function (a, b) { return (a.row ? (a.row === 'kitchen' ? 1 : 2) : 0) - (b.row ? (b.row === 'kitchen' ? 1 : 2) : 0); });
-    var items = defs.map(function (d) { return { id: d.id, def: d, sw: 0, stored: G.save.stored.filter(function (s) { return s.id === d.id; }).length }; });
+    var now = SS.now();
+    var items = defs.map(function (d) {
+      var it = { id: d.id, def: d, sw: 0, stored: G.save.stored.filter(function (s) { return s.id === d.id; }).length };
+      // holiday pieces in Life: "This season" in season, "Back in December" out of it, unless they're already hers (spec 009)
+      if (d.holiday && G.mode === 'life') { if (SS.inSeason(d.holiday, now)) it.season = 'THIS SEASON'; else if (G.save.made.indexOf(d.id) < 0 && !it.stored) it.away = 'BACK IN DECEMBER'; }
+      return it;
+    });
     if (tab === 'ours') items.unshift({ soon: true });
     return { items: items, total: SS.CATALOG.filter(function (d) { return !d.craft; }).length };
   };
   // taking a card: the piece comes up held in the middle of the view (buttons) or under the finger (a drag)
   G.takeCard = function (it, p) {
     if (it.soon) return;
+    if (it.away) { G.toast(it.away, 1600, 'Christmas pieces are in the shop from December 1 to January 6.'); return; }
     G.deselect(); G.bubble = null;
     var d = it.def, st = G.save.stored.filter(function (s) { return s.id === d.id; })[0];
     var inst = { id: d.id, sw: st ? st.sw : 0, props: st ? st.props !== false : true };
@@ -286,14 +293,18 @@
   function openBubble(target, tip) {
     var acts = SS.actionsFor(G, target);
     if (!acts) { G.toast('NOTHING TO DO WITH THIS YET', 1000); return; }
-    var title = target.agent ? (target.agent.who.toUpperCase() + (target.agent.who === 'keegan' ? ' · AT HIS DESK' : '')) : target.door ? 'BACK DOOR' : SS.DEF[target.piece.id].name.toUpperCase();
-    if (target.agent && target.agent.who === 'keegan' && !target.agent.on) title = 'KEEGAN';
+    var title = target.agent && target.agent.who === 'sarah' ? 'SARAH · ' + Math.round(SS.phoneOf(G) * 100) + '% BATTERY' : target.agent ? (target.agent.who.toUpperCase() + (target.agent.who === 'keegan' ? ' · AT HIS DESK' : '')) : target.door ? 'BACK DOOR' : SS.DEF[target.piece.id].name.toUpperCase();
+    if (target.agent && target.agent.who === 'keegan') title = 'KEEGAN' + (G.kday ? ' · ' + G.kday.text.toUpperCase() : '');
     G.bubble = { target: target, actions: acts, cur: 0, tip: tip, title: title };
   }
   G.doBubble = function (i) {
     var b = G.bubble; if (!b) return; var a = b.actions[i]; G.bubble = null;
     if (a.soon) { G.toast(a.name + (a.sub ? ' ' + a.sub : '') + ': COMING SOON', 1800, a.soon); return; }
+    if (a.fx === 'charge') { G.meters = null; SS.startHunt(G); return; }
+    if (a.fx === 'keep') { b.target.piece.dress = null; G.changed(true); G.toast('IT\'S YOURS TO KEEP', 1500); return; }
+    G.meters = null;
     var r = SS.chooseAction(G, b.target, a);
+    if (r === 'busy') G.toast('KEEGAN IS ' + G.kday.text.toUpperCase(), 2000, 'It\'s lined up for when he\'s done.');
     if (r === 'queued') G.toast('LINED UP', 700); if (r === 'full') G.toast('3 THINGS ARE LINED UP ALREADY', 1200);
   };
 
@@ -317,10 +328,14 @@
     var pick = SS.pick(G.lastHits || [], w[0], w[1]);
     var playing = G.mode === 'life' && G.trayState() === 'closed';
     if (playing) {
-      G.bubble = null;
+      G.bubble = null; G.meters = null;
+      if (G.hunt) { SS.huntTap(G, pick); return; }   // looking for the charger: each tap is a guess
       if (pick && pick.agent) {
-        if (pick.agent.who === 'sarah') { G.toast('THAT\'S SARAH', 900, 'Tap the floor to walk, or tap things to do.'); return; }
-        openBubble({ agent: pick.agent }, [p.x, p.y - 8]); return;
+        if (pick.agent.who === 'sarah') { // her three meters (spec 006, part C), and Charge when her phone needs it (part D)
+          if (SS.actionsFor(G, { agent: pick.agent })) { openBubble({ agent: pick.agent }, [p.x, p.y - 8]); G.meters = 'sarah'; } else G.meters = G.meters === 'sarah' ? null : 'sarah';
+          return;
+        }
+        openBubble({ agent: pick.agent }, [p.x, p.y - 8]); G.meters = pick.agent.who === 'keegan' ? 'keegan' : null; return;
       }
       if (pick && pick.piece) { var d = W.def(pick.piece); if (d.use) { openBubble({ piece: pick.piece }, [p.x, p.y - 8]); return; } }
       var door = backDoorAt(w); if (door) { openBubble({ door: door }, [p.x, p.y]); return; }
@@ -398,7 +413,9 @@
     }
     if (G.toastT && k === 'a' && !G.hold && !G.bubble) { G.toastT = null; return; }
     if (k === 'start') { G.openMenu(); return; }
-    if (G.bubble) { var b = G.bubble; if (k === 'left' || k === 'up') b.cur = (b.cur + b.actions.length - 1) % b.actions.length; if (k === 'right' || k === 'down') b.cur = (b.cur + 1) % b.actions.length; if (k === 'a') G.doBubble(b.cur); if (k === 'b') G.bubble = null; return; }
+    if (G.meters && k === 'b' && !G.bubble) { G.meters = null; return; }
+    if (G.hunt && k === 'b') { G.hunt = null; G.toast('MAYBE LATER', 800); return; }
+    if (G.bubble) { var b = G.bubble; if (k === 'b') G.meters = null; if (k === 'left' || k === 'up') b.cur = (b.cur + b.actions.length - 1) % b.actions.length; if (k === 'right' || k === 'down') b.cur = (b.cur + 1) % b.actions.length; if (k === 'a') G.doBubble(b.cur); if (k === 'b') G.bubble = null; return; }
     if (G.hold) { if (k === 'a') placeHold(); else if (k === 'b') cancelHold(false); else if (k === 'select') turnHold(); else if (DIRS[k]) moveHold(k); return; }
     if (G.focus === 'cards') {
       var T = G.tray, list = G.catalogList(T.tab).items;
@@ -466,9 +483,10 @@
   function drawTitle(H, t) {
     var A = SS.titleArt; A.use(c); SS.use(c);
     var W = W0;
+    A.setSeason(SS.now());   // the scene follows the real date (bible, Title and cover)
     A.sky(W, H, t, 1); A.moon(W - 34, 62, 9);
     var gy = G.screen === 'open' ? H - 70 : H - 100;
-    A.street(W, H, t, gy, gy - 150); A.snowfall(W, H, t, 80, true);
+    A.street(W, H, t, gy, gy - 150); A.weather(W, H, t, 80, true);
     A.titleText(W, 14);
     if (G.screen === 'open') {
       for (var i = 0; i < 16; i++) { var x = (A.rnd(i + 200) * W), y = (A.rnd(i + 300) * H * .6 + t * 3) % (H * .7); A.R(x, y, 2, 3, i % 3 ? A.P.gold : A.P.rose); }
@@ -518,6 +536,7 @@
       ghost = ghostItem(Hd, t);
     }
     G.cam.fit(W0, H);
+    var hg = SS.huntGlow(G); if (hg && hg.f === G.floor) glows.push({ tiles: hg.tiles, ok: true });
     var selP = G.sel && W.byUid[G.sel];
     if (selP && !selP.wall && W.floorOf(selP) === G.floor) { var fs = W.foot(selP.host ? W.hostOf(selP) : selP), st = []; for (var sx2 = fs[0]; sx2 < fs[2]; sx2++) for (var sy2 = fs[1]; sy2 < fs[3]; sy2++) st.push([sx2, sy2]); glows.push({ tiles: st, sel: true }); }
     var hits = SS.drawScene(wc, W, { version: G.version + ':' + (G.hold ? G.hold.from : ''), floor: G.floor, walls: G.walls, t: t, look: G.look, agents: G.agents, glows: glows, ghost: ghost, sel: G.sel });
@@ -545,12 +564,21 @@
     var hint = G.hold ? (G.hold.ok ? 'DRAG TO MOVE · TAP IT TO TURN · OK PLACES' : (G.hold.why === 'DOORWAY' ? 'KEEP DOORWAYS CLEAR' : G.hold.why === 'NEEDS A WINDOW' ? 'CURTAINS GO ON A WINDOW' : G.hold.why === 'STAIRS' ? 'KEEP THE STAIRS CLEAR' : 'IT DOESN\'T FIT HERE'))
       : G.trayState() === 'catalog' ? 'DRAG A PIECE INTO THE ROOM' : G.trayState() === 'closed' && G.mode === 'life' ? 'TAP THE FLOOR TO WALK · TAP THINGS TO DO' : G.sel ? 'TAP A SWATCH · PAINT ANY PART' : '';
     if (hint && !G.menu) SS.txt(hint, W0 / 2, H - trayH - 12, 'rgba(255,241,226,.85)', 5, 'center');
+    // the charger hunt's hint: a bouncing marker over the spot, the first time (spec 006, part D)
+    var hint = SS.huntGlow(G);
+    if (hint && hint.f === G.floor) {
+      var hp = hint.agent ? I.p(hint.agent.x, hint.agent.y, hint.f * FH + 26) : selTop(hint.piece), hs = toScreen(hp[0], hp[1]), bob = Math.round(Math.sin(now / 200) * 2);
+      var mx = Math.round(hs[0]), my = Math.round(hs[1] - 6 + bob);
+      SS.R(mx - 5, my - 11, 11, 10, '#3b2430'); SS.R(mx - 4, my - 10, 9, 8, SS.P.rose); SS.txt('?', mx + 1, my - 9, '#fff', 6, 'center');
+      SS.R(mx - 1, my - 2, 3, 2, SS.P.rose); SS.R(mx, my, 1, 2, SS.P.rose);
+    }
     if (G.sleeping) sleepScene(H - trayH, now);
     SS.drawTopBar(G, W0);
     SS.drawViewControls(G, W0, G.mode === 'life' && (G.act || G.queue.length) ? 40 : 24, H - trayH - 16);
     SS.drawTray(G, W0, H);
     if (G.slideBack) slideBackAnim(now, H);
     if (G.bubble) SS.drawBubble2(G, W0, G.bubble);
+    if (G.meters && G.mode === 'life') SS.drawMeters(G, G.bubble ? W0 - 92 : 4, G.bubble ? G.bubbleTop + 2 : 40, G.meters);   // beside the bubble, as in cooking-v1
   }
   function markFit(x, y, ok) { if (ok) SS.check(x - 4, y + 2, '#8fd08c'); else SS.cross(x - 3, y + 2, '#e46f8b'); }
   function selTop(p) { var W = G.W, d = W.def(p), f = W.floorOf(p), Z = f * FH; if (p.wall) { var wp = W.wallPlace(p); return I.p(wp.x + (p.wall[2] === 'x' ? d.w / 2 : 0), wp.y + (p.wall[2] === 'y' ? d.w / 2 : 0), Z + wp.z + d.h); } if (p.host) { var pos = W.spotPos(W.hostOf(p), p.spot); return I.p(pos.x, pos.y, Z + pos.z + d.h + 6); } var ft = W.foot(p); return I.p((ft[0] + ft[2]) / 2, (ft[1] + ft[3]) / 2, Z + Math.min(60, d.h + 8)); }
