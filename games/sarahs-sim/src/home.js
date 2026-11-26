@@ -85,6 +85,7 @@
         { id: 'curtains', f: 0, wall: [2, 0, 'x'] },
         { id: 'curtains', f: 0, wall: [3, 0, 'x'] },
         { id: 'wall-clock', f: 0, wall: [0, 2, 'y'] },
+        { id: 'cat-bowls', f: 0, x: 5, y: 3, r: 0 },
         // bathroom
         { id: 'bath-tub', f: 1, x: 6, y: 0, r: 0 },
         { id: 'bathroom-sink', f: 1, x: 3, y: 0, r: 0 },
@@ -92,6 +93,7 @@
         { id: 'bath-mat', f: 1, x: 6, y: 1, r: 0 },
         { id: 'mirror', f: 1, wall: [3, 0, 'x'] },
         { id: 'small-succulent', f: 1, x: 7, y: 3, r: 0 },
+        { id: 'litter-box', f: 1, x: 2, y: 3, r: 0 },
         // study
         { id: 'round-rug', f: 1, x: 4, y: 5, r: 0, sw: 1 },
         { id: 'desk', f: 1, x: 5, y: 4, r: 0 },

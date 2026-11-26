@@ -26,8 +26,25 @@
     nudgeIn -= dt;
     var low = SS.lowNeed(G, 'sarah'), sa = G.people.sarah;
     if (low && nudgeIn <= 0 && !G.act && !sa.path.length) { sa.bubble = { icon: low === 'energy' ? 'yawn' : low === 'hunger' ? 'rumble' : 'dots', until: performance.now() + 2200 }; nudgeIn = 25 + Math.random() * 15; }
+    SS.tickCats(G, dt);
     saveIn -= dt; if (saveIn <= 0) { saveIn = 15; G.changed(true); }
   };
+  // ---------- the cats' needs (spec 006, part D): hunger, play and the litter box, in Life only ----------
+  // They drain at the same rate as people's, only while she's playing. Never bad (bible, The cats): a cat only nudges.
+  SS.catNeedsOf = function (G, who) {
+    var S = G.save; if (!S.catNeeds) S.catNeeds = { louie: { hunger: .8, play: .7, litter: .9 }, ralph: { hunger: .75, play: .7, litter: .9 } };
+    return S.catNeeds[who];
+  };
+  SS.catLow = function (G, who) { if (G.mode !== 'life') return null; var n = SS.catNeedsOf(G, who); return ['hunger', 'litter', 'play'].filter(function (k) { return n[k] < LOW; })[0] || null; };
+  SS.tickCats = function (G, dt) {
+    if (G.mode !== 'life') { G.catFull = true; G.litterLow = false; return; }
+    ['louie', 'ralph'].forEach(function (w) { var n = SS.catNeedsOf(G, w); ['hunger', 'play', 'litter'].forEach(function (k) { n[k] = Math.max(0, n[k] - RATE * dt); }); });
+    var L = SS.catNeedsOf(G, 'louie'), Rr = SS.catNeedsOf(G, 'ralph');
+    var full = Math.min(L.hunger, Rr.hunger) > .5, low = Math.min(L.litter, Rr.litter) < LOW;
+    if (full !== G.catFull || low !== G.litterLow) { G.catFull = full; G.litterLow = low; G.version = (G.version || 0) + 1; }
+  };
+  SS.fillCats = function (G, key, amount, who) { if (G.mode !== 'life') return; (who ? [who] : ['louie', 'ralph']).forEach(function (w) { var n = SS.catNeedsOf(G, w); n[key] = Math.min(1, n[key] + amount); }); };
+
   // the meters card (cooking-v1): name, then each need with its icon, its word and a bar
   SS.drawMeters = function (G, x, y, who) {
     var c = G.c, P = SS.P, R = SS.R, n = SS.needsOf(G, who);

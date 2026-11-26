@@ -2,6 +2,24 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 26, 2026: the cats' needs (Dev)
+
+Spec 006 part D, the cats. Rules and content, with no new screens.
+
+- **Hunger, play and the litter box** for Louie and Ralph, in Life only. They drain at the same rate as people's needs, only while she's playing, and are saved.
+- **When one is low, the cat only nudges her** (bible, The cats: never bad):
+  - Hungry: Louie sits by the bowl, chatting. Ralph flops by the fridge.
+  - Bored: a cat knocks a small thing off a table onto the floor. It's still there to pick back up.
+  - A dirty box: a grumpy face by it.
+- **The fixes:**
+  - Fill the bowl: tap the cat bowls, then Fill. Both cats come running.
+  - Scoop the box: tap the litter box, then Scoop.
+  - Play with a cat (the feather wand). It counts double for Ralph.
+  - A treat helps hunger a little.
+- **Two new pieces in Decor**, because spec 006 names them: cat bowls (kibble shows when they're fed) and a litter box (it shows clumps when it needs a scoop). A new home starts with the bowls in the kitchen and the litter box in the bathroom.
+- **Saves already on the phone** keep their home as it was. Place the bowls and the box from Decor to start caring for the cats.
+- `npm run check` now tests each nudge and each fix, and that a knocked-over thing is never lost.
+
 ## Nov 26, 2026: the title and cover in every season (Dev)
 
 Spec 001 part A said winter came first and the other seasons would follow before Dec 25 if time allowed. They're done.

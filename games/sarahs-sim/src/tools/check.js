@@ -144,9 +144,9 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     home.unreach.forEach(t => bad.push('tile ' + t + ' cannot be walked to'));
     home.bad.forEach(t => bad.push('a starting piece breaks the placing rules: ' + t));
     home.nouse.forEach(t => bad.push('nobody can get to ' + t));
-    // the starting catalog: every tab holds spec 001's draft list (plus the easel)
+    // the starting catalog: every tab holds spec 001's draft list (plus the easel, the cat bowls and the litter box)
     const tabs = await page.evaluate(() => { const n = {}; SS.CATALOG.filter(d => !d.craft).forEach(d => { n[d.tab] = (n[d.tab] || 0) + 1; }); return n; });
-    const want = { seating: 10, tables: 9, beds: 6, storage: 12, lights: 7, plants: 7, rugs: 6, wall: 10, decor: 14, holiday: 1 };
+    const want = { seating: 10, tables: 9, beds: 6, storage: 12, lights: 7, plants: 7, rugs: 6, wall: 10, decor: 16, holiday: 1 };   // decor: 13 + the easel + the cat bowls and litter box (spec 006, part D)
     const few = await page.evaluate(() => SS.CATALOG.filter(d => !d.craft && (d.swatches.length < 4 || d.swatches.length > 6)).map(d => d.id + ' (' + d.swatches.length + ')'));
     few.forEach(id => bad.push('swatches should be 4 to 6 (spec 001, part D): ' + id));
     Object.keys(want).forEach(t => { if (tabs[t] !== want[t]) bad.push(`the ${t} tab has ${tabs[t] || 0} pieces, the starting list has ${want[t]}`); });
@@ -368,10 +368,34 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       return out;
     });
     needs.forEach(a => bad.push(a));
+    // spec 006, part D: the cats' needs only nudge, and each one's fix clears it
+    const cats = await page.evaluate(() => {
+      const G = SSG, out = [], W = G.W, run = n => { for (let i = 0; i < n; i++) SS.updateAgents(G, .05); };
+      SS.stopActions(G);
+      const L = SS.catNeedsOf(G, 'louie'), Rr = SS.catNeedsOf(G, 'ralph');
+      const bowl = W.pieces.find(p => p.id === 'cat-bowls'), box = W.pieces.find(p => p.id === 'litter-box');
+      if (!bowl || !box) { out.push('the home has no cat bowls or litter box'); return out; }
+      L.hunger = .1; Rr.hunger = .9; L.play = .9; Rr.play = .9; L.litter = .9; Rr.litter = .9;
+      let near = false; for (let i = 0; i < 6000 && !near; i++) { SS.updateAgents(G, .05); const lc = G.cats.louie; near = !lc.path.length && W.useTiles(bowl).some(q => q[0] === Math.floor(lc.x) && q[1] === Math.floor(lc.y) && lc.f === W.floorOf(bowl)) && !!lc.bubble; }
+      if (!near) out.push('a hungry Louie does not go and sit by the bowl');
+      SS.chooseAction(G, { piece: bowl }, SS.ACTIONS.bowl[0]); for (let i = 0; i < 3000 && (G.act || G.people.sarah.path.length); i++) SS.updateAgents(G, .05);
+      if (L.hunger < .9) out.push('Fill does not feed the cats');
+      L.litter = .1; SS.chooseAction(G, { piece: box }, SS.ACTIONS.litter[0]); for (let i = 0; i < 3000 && (G.act || G.people.sarah.path.length); i++) SS.updateAgents(G, .05);
+      if (L.litter < .9) out.push('Scoop does not clean the litter box');
+      Rr.play = .1; SS.chooseAction(G, { agent: G.cats.ralph }, SS.ACTIONS.cat[2]); for (let i = 0; i < 3000 && (G.act || G.people.sarah.path.length); i++) SS.updateAgents(G, .05);
+      if (Rr.play < .99) out.push('the feather wand does not count double for Ralph');
+      // bored: knocks a small thing off a table, and it can be picked back up (it's still a piece in the home)
+      const n0 = W.pieces.length, stacked0 = W.pieces.filter(p => p.host).length; L.play = .05; Rr.play = .05; L.hunger = 1; Rr.hunger = 1; L.litter = 1; Rr.litter = 1;
+      let knocked = false; for (let i = 0; i < 12000 && !knocked; i++) { SS.updateAgents(G, .05); knocked = W.pieces.filter(p => p.host).length < stacked0; }
+      if (!knocked) out.push('a bored cat never knocks a small thing off a table');
+      if (W.pieces.length !== n0) out.push('a knocked-over thing was lost');
+      return out;
+    });
+    cats.forEach(a => bad.push(a));
     if (await page.evaluate(() => { SSG.openMode('sandbox'); return !!SS.lowNeed(SSG, 'sarah') || SSG.mode !== 'sandbox'; })) bad.push('Sandbox has needs');
     const soon = await page.evaluate(() => { const need = ['COOK', 'FIND A GIG', 'CHANGE', 'GO TO', 'VIDEO-CALL', 'WIND DOWN']; const all = [].concat.apply([], Object.keys(SS.ACTIONS).map(k => SS.ACTIONS[k])); return need.filter(n => !all.some(a => a.name === n && a.soon)); });
     soon.forEach(n => bad.push(n + ' does not show Coming soon'));
-    report('spec 006: four light looks, lamps at 5 PM, walking up the stairs, every starter action, crafts, the queue; needs; together actions', bad.concat(errors));
+    report('spec 006: four light looks, lamps at 5 PM, walking up the stairs, every starter action, crafts, the queue; needs; together actions; the cats\' needs', bad.concat(errors));
     await ctx.close();
   }
 

@@ -411,5 +411,21 @@
     parts: [['bowl', 'plain']], swatches: [{ bowl: '#fff1e2' }, { bowl: '#7fa7a0' }, { bowl: '#cf9d68' }, { bowl: '#e46f8b' }],
     draw: function (M) { small(M, function (c, x, y) { var B = M.ramp('bowl'); [[-3, '#e46f6a'], [0, '#f3d38a'], [3, '#8fc47b'], [-1, '#f2a65a']].forEach(function (f, i) { c.fillStyle = f[1]; c.beginPath(); c.arc(x + f[0], y - 5 - (i === 3 ? 2 : 0), 2.2, 0, 7); c.fill(); }); c.fillStyle = B[1]; c.beginPath(); c.ellipse(x, y - 3, 6, 3, 0, 0, Math.PI); c.fill(); R(c, x - 6, y - 4, 12, 1, B[0]); }, [.15, 8]); } });
 
+  // cat care (spec 006, part D: tap the bowl, then Fill; tap the box, then Scoop). Not in spec 001's list of 80, but part D
+  // names them, so they sit in Decor beside the cat toy basket.
+  add({ id: 'cat-bowls', name: 'Cat bowls', tab: 'decor', w: 1, d: 1, kind: 'small', h: 6, price: 30, use: 'bowl',
+    parts: [['bowls', 'plain']], swatches: [{ bowls: '#7fa7a0' }, { bowls: '#e46f8b' }, { bowls: '#fff1e2' }, { bowls: '#f3d38a' }],
+    draw: function (M) { small(M, function (c, x, y) {
+      var B = M.ramp('bowls'), full = SS.G && SS.G.catFull;
+      [[-4, '#a9c9e8'], [4, null]].forEach(function (b) { c.fillStyle = B[2]; c.beginPath(); c.ellipse(x + b[0], y - 1, 4, 2, 0, 0, 7); c.fill(); c.fillStyle = B[1]; c.beginPath(); c.ellipse(x + b[0], y - 2, 4, 1.8, 0, 0, 7); c.fill();
+        c.fillStyle = b[1] || (full ? '#b9804f' : B[3]); c.beginPath(); c.ellipse(x + b[0], y - 2.3, 2.6, 1, 0, 0, 7); c.fill(); if (!b[1] && full) { R(c, x + b[0] - 1, y - 3, 1, 1, '#8e5a37'); R(c, x + b[0] + 1, y - 3, 1, 1, '#dca474'); } });
+    }, [.2, 5]); } });
+  add({ id: 'litter-box', name: 'Litter box', tab: 'decor', w: 1, d: 1, kind: 'floor', h: 10, price: 60, use: 'litter',
+    parts: [['box', 'plain']], swatches: [{ box: '#9cc1b6' }, { box: '#e6d3b0' }, { box: '#f39bb0' }, { box: '#d9d0c4' }],
+    draw: function (M) {
+      M.shadow(.15, .2, .7, .6);
+      var b = M.box(.15, .2, .7, .6, 7, 0, 'box');
+      M.on(b, function (c) { var clean = !(SS.G && SS.G.litterLow); SS.poly(c, [M.p(.22, .27, 6), M.p(.78, .27, 6), M.p(.78, .73, 6), M.p(.22, .73, 6)], '#e8d9b8'); if (!clean) [[.35, .4], [.6, .55], [.45, .62]].forEach(function (q) { var p = M.p(q[0], q[1], 6); R(c, p[0], p[1], 2, 1, '#b9a17a'); }); });
+    } });
   SS.DEF = {}; C.forEach(function (d) { SS.DEF[d.id] = d; });
 })();

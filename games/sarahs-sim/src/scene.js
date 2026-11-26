@@ -182,6 +182,8 @@
     var anim = d.anim ? t % d.anim : 0;
     if (d.moves === 'tick') anim = new Date().getMinutes();
     if (d.use === 'tv' && p.lit) anim = Math.floor(t / 2) % 4 + 10;
+    if (d.use === 'bowl') anim = SS.G && SS.G.catFull ? 1 : 0;
+    if (d.use === 'litter') anim = SS.G && SS.G.litterLow ? 1 : 0;
     var free = W ? d.spots.map(function (_, i) { return W.spotFree(p, i) ? 1 : 0; }).join('') : '';
     return [p.id, p.r || 0, p.wall ? p.wall[2] : '', p.sw || 0, JSON.stringify(p.colors || 0), JSON.stringify(p.pats || 0), p.props === false ? 0 : 1, p.lit ? 1 : 0, p.work ? 1 : 0, free, anim].join('|');
   };

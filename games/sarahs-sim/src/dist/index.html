@@ -2077,6 +2077,22 @@ var SS = window.SS = window.SS || {};
     parts: [['bowl', 'plain']], swatches: [{ bowl: '#fff1e2' }, { bowl: '#7fa7a0' }, { bowl: '#cf9d68' }, { bowl: '#e46f8b' }],
     draw: function (M) { small(M, function (c, x, y) { var B = M.ramp('bowl'); [[-3, '#e46f6a'], [0, '#f3d38a'], [3, '#8fc47b'], [-1, '#f2a65a']].forEach(function (f, i) { c.fillStyle = f[1]; c.beginPath(); c.arc(x + f[0], y - 5 - (i === 3 ? 2 : 0), 2.2, 0, 7); c.fill(); }); c.fillStyle = B[1]; c.beginPath(); c.ellipse(x, y - 3, 6, 3, 0, 0, Math.PI); c.fill(); R(c, x - 6, y - 4, 12, 1, B[0]); }, [.15, 8]); } });
 
+  // cat care (spec 006, part D: tap the bowl, then Fill; tap the box, then Scoop). Not in spec 001's list of 80, but part D
+  // names them, so they sit in Decor beside the cat toy basket.
+  add({ id: 'cat-bowls', name: 'Cat bowls', tab: 'decor', w: 1, d: 1, kind: 'small', h: 6, price: 30, use: 'bowl',
+    parts: [['bowls', 'plain']], swatches: [{ bowls: '#7fa7a0' }, { bowls: '#e46f8b' }, { bowls: '#fff1e2' }, { bowls: '#f3d38a' }],
+    draw: function (M) { small(M, function (c, x, y) {
+      var B = M.ramp('bowls'), full = SS.G && SS.G.catFull;
+      [[-4, '#a9c9e8'], [4, null]].forEach(function (b) { c.fillStyle = B[2]; c.beginPath(); c.ellipse(x + b[0], y - 1, 4, 2, 0, 0, 7); c.fill(); c.fillStyle = B[1]; c.beginPath(); c.ellipse(x + b[0], y - 2, 4, 1.8, 0, 0, 7); c.fill();
+        c.fillStyle = b[1] || (full ? '#b9804f' : B[3]); c.beginPath(); c.ellipse(x + b[0], y - 2.3, 2.6, 1, 0, 0, 7); c.fill(); if (!b[1] && full) { R(c, x + b[0] - 1, y - 3, 1, 1, '#8e5a37'); R(c, x + b[0] + 1, y - 3, 1, 1, '#dca474'); } });
+    }, [.2, 5]); } });
+  add({ id: 'litter-box', name: 'Litter box', tab: 'decor', w: 1, d: 1, kind: 'floor', h: 10, price: 60, use: 'litter',
+    parts: [['box', 'plain']], swatches: [{ box: '#9cc1b6' }, { box: '#e6d3b0' }, { box: '#f39bb0' }, { box: '#d9d0c4' }],
+    draw: function (M) {
+      M.shadow(.15, .2, .7, .6);
+      var b = M.box(.15, .2, .7, .6, 7, 0, 'box');
+      M.on(b, function (c) { var clean = !(SS.G && SS.G.litterLow); SS.poly(c, [M.p(.22, .27, 6), M.p(.78, .27, 6), M.p(.78, .73, 6), M.p(.22, .73, 6)], '#e8d9b8'); if (!clean) [[.35, .4], [.6, .55], [.45, .62]].forEach(function (q) { var p = M.p(q[0], q[1], 6); R(c, p[0], p[1], 2, 1, '#b9a17a'); }); });
+    } });
   SS.DEF = {}; C.forEach(function (d) { SS.DEF[d.id] = d; });
 })();
 
@@ -2639,6 +2655,7 @@ var SS = window.SS = window.SS || {};
         { id: 'curtains', f: 0, wall: [2, 0, 'x'] },
         { id: 'curtains', f: 0, wall: [3, 0, 'x'] },
         { id: 'wall-clock', f: 0, wall: [0, 2, 'y'] },
+        { id: 'cat-bowls', f: 0, x: 5, y: 3, r: 0 },
         // bathroom
         { id: 'bath-tub', f: 1, x: 6, y: 0, r: 0 },
         { id: 'bathroom-sink', f: 1, x: 3, y: 0, r: 0 },
@@ -2646,6 +2663,7 @@ var SS = window.SS = window.SS || {};
         { id: 'bath-mat', f: 1, x: 6, y: 1, r: 0 },
         { id: 'mirror', f: 1, wall: [3, 0, 'x'] },
         { id: 'small-succulent', f: 1, x: 7, y: 3, r: 0 },
+        { id: 'litter-box', f: 1, x: 2, y: 3, r: 0 },
         // study
         { id: 'round-rug', f: 1, x: 4, y: 5, r: 0, sw: 1 },
         { id: 'desk', f: 1, x: 5, y: 4, r: 0 },
@@ -3082,6 +3100,8 @@ var SS = window.SS = window.SS || {};
     var anim = d.anim ? t % d.anim : 0;
     if (d.moves === 'tick') anim = new Date().getMinutes();
     if (d.use === 'tv' && p.lit) anim = Math.floor(t / 2) % 4 + 10;
+    if (d.use === 'bowl') anim = SS.G && SS.G.catFull ? 1 : 0;
+    if (d.use === 'litter') anim = SS.G && SS.G.litterLow ? 1 : 0;
     var free = W ? d.spots.map(function (_, i) { return W.spotFree(p, i) ? 1 : 0; }).join('') : '';
     return [p.id, p.r || 0, p.wall ? p.wall[2] : '', p.sw || 0, JSON.stringify(p.colors || 0), JSON.stringify(p.pats || 0), p.props === false ? 0 : 1, p.lit ? 1 : 0, p.work ? 1 : 0, free, anim].join('|');
   };
@@ -3412,8 +3432,25 @@ var SS = window.SS = window.SS || {};
     nudgeIn -= dt;
     var low = SS.lowNeed(G, 'sarah'), sa = G.people.sarah;
     if (low && nudgeIn <= 0 && !G.act && !sa.path.length) { sa.bubble = { icon: low === 'energy' ? 'yawn' : low === 'hunger' ? 'rumble' : 'dots', until: performance.now() + 2200 }; nudgeIn = 25 + Math.random() * 15; }
+    SS.tickCats(G, dt);
     saveIn -= dt; if (saveIn <= 0) { saveIn = 15; G.changed(true); }
   };
+  // ---------- the cats' needs (spec 006, part D): hunger, play and the litter box, in Life only ----------
+  // They drain at the same rate as people's, only while she's playing. Never bad (bible, The cats): a cat only nudges.
+  SS.catNeedsOf = function (G, who) {
+    var S = G.save; if (!S.catNeeds) S.catNeeds = { louie: { hunger: .8, play: .7, litter: .9 }, ralph: { hunger: .75, play: .7, litter: .9 } };
+    return S.catNeeds[who];
+  };
+  SS.catLow = function (G, who) { if (G.mode !== 'life') return null; var n = SS.catNeedsOf(G, who); return ['hunger', 'litter', 'play'].filter(function (k) { return n[k] < LOW; })[0] || null; };
+  SS.tickCats = function (G, dt) {
+    if (G.mode !== 'life') { G.catFull = true; G.litterLow = false; return; }
+    ['louie', 'ralph'].forEach(function (w) { var n = SS.catNeedsOf(G, w); ['hunger', 'play', 'litter'].forEach(function (k) { n[k] = Math.max(0, n[k] - RATE * dt); }); });
+    var L = SS.catNeedsOf(G, 'louie'), Rr = SS.catNeedsOf(G, 'ralph');
+    var full = Math.min(L.hunger, Rr.hunger) > .5, low = Math.min(L.litter, Rr.litter) < LOW;
+    if (full !== G.catFull || low !== G.litterLow) { G.catFull = full; G.litterLow = low; G.version = (G.version || 0) + 1; }
+  };
+  SS.fillCats = function (G, key, amount, who) { if (G.mode !== 'life') return; (who ? [who] : ['louie', 'ralph']).forEach(function (w) { var n = SS.catNeedsOf(G, w); n[key] = Math.min(1, n[key] + amount); }); };
+
   // the meters card (cooking-v1): name, then each need with its icon, its word and a bar
   SS.drawMeters = function (G, x, y, who) {
     var c = G.c, P = SS.P, R = SS.R, n = SS.needsOf(G, who);
@@ -3485,6 +3522,7 @@ var SS = window.SS = window.SS || {};
     else if (b.icon === 'treat') { c.fillStyle = '#c96f45'; c.fillRect(x - 2, y - 1, 4, 3); c.fillStyle = '#f3d38a'; c.fillRect(x - 1, y - 1, 1, 1); }
     else if (b.icon === 'yawn') { c.fillStyle = '#6b4250'; c.beginPath(); c.ellipse(x, y, 2.5, 3, 0, 0, 7); c.fill(); c.fillStyle = '#e46f8b'; c.fillRect(x - 1, y + 1, 2, 1); }
     else if (b.icon === 'rumble') { c.fillStyle = '#e46f6a'; c.fillRect(x - 3, y, 7, 2); c.fillStyle = '#6b4250'; c.fillRect(x - 4, y - 1, 9, 1); c.fillStyle = '#b38a8f'; c.fillRect(x - 1, y - 4, 1, 2); c.fillRect(x + 1, y - 3, 1, 2); }
+    else if (b.icon === 'grumpy') { c.fillStyle = '#6b4250'; c.fillRect(x - 3, y - 2, 2, 1); c.fillRect(x + 2, y - 2, 2, 1); c.fillRect(x - 2, y + 2, 5, 1); c.fillRect(x - 3, y + 1, 1, 1); c.fillRect(x + 3, y + 1, 1, 1); }
     else if (b.icon === 'star') { c.fillStyle = '#e7b75f'; c.fillRect(x - 1, y - 3, 2, 6); c.fillRect(x - 3, y - 1, 6, 2); }
   }
   SS.drawBubble = drawBubble;
@@ -3563,6 +3601,7 @@ var SS = window.SS = window.SS || {};
     }
     if (a.path.length) return;
     a.wait -= dt;
+    if (a.wait <= 0 && catNudge(G, a)) return;
     if (a.wait > 0) return;
     if (a.next) { var np = W.byUid[a.next]; a.next = null; a.react = null; if (np && (W.def(np).nap || W.def(np).kind === 'rug')) { seatOn(W, a, np, a.who === 'louie' ? 'curl' : 'loaf'); a.bubble = { icon: 'z', until: performance.now() + 9000 }; a.wait = rand(14, 30); return; } }
     getUp(W, a); a.bubble = null;
@@ -3583,6 +3622,38 @@ var SS = window.SS = window.SS || {};
     if (tries < 30 && walkTo(W, a, function (ff, x, y) { return ff === f && x === gx && y === gy; })) a.arrive = function () { a.pose = 'sit'; a.wait = rand(3, 9); };
     else a.wait = rand(2, 5);
   }
+  // a cat with a low need nudges her (spec 006, part D): hungry, Louie sits by the bowl and chats and Ralph flops by the
+  // fridge; bored, a cat knocks a small thing off a table (it can always be picked back up); a dirty box, a grumpy face by it
+  function catNudge(G, a) {
+    var W = G.W, low = SS.catLow(G, a.who);
+    if (!low || Math.random() < .35) return false;
+    var spot = low === 'hunger' ? W.pieces.find(function (p) { return p.id === (a.who === 'ralph' ? 'fridge' : 'cat-bowls'); }) || W.pieces.find(function (p) { return p.id === 'cat-bowls'; })
+      : low === 'litter' ? W.pieces.find(function (p) { return p.id === 'litter-box'; }) : null;
+    if (low === 'play') {
+      var smalls = W.pieces.filter(function (p) { return p.host && W.floorOf(p) === a.f && W.def(p).kind === 'small' && !W.def(p).lamp; });
+      var thing = smalls[Math.floor(Math.random() * smalls.length)];
+      if (!thing) return false;
+      var hostP = W.hostOf(thing);
+      if (!walkTo(W, a, function (f, x, y) { return f === W.floorOf(hostP) && W.useTiles(hostP).some(function (q) { return q[0] === x && q[1] === y; }); })) return false;
+      a.arrive = function () {
+        if (!W.byUid[thing.uid] || !thing.host) return;
+        var t0 = a.tile(), q = StudioMove.nearestOpen(t0.x, t0.y, W.lot, W.lot, function (x, y) { return W.check({ id: thing.id, f: t0.f, x: x, y: y, r: 0 }, thing).ok; });
+        if (!q) return;
+        delete thing.host; delete thing.spot; thing.f = t0.f; thing.x = q[0]; thing.y = q[1]; thing.r = 0; SS.forgetSprite(thing.uid);
+        a.bubble = { icon: '!', until: performance.now() + 1800 }; a.wait = 4; G.changed(true);
+      };
+      return true;
+    }
+    if (!spot) return false;
+    if (!walkTo(W, a, function (f, x, y) { return f === W.floorOf(spot) && W.useTiles(spot).some(function (q) { return q[0] === x && q[1] === y; }); })) return false;
+    a.arrive = function () {
+      a.pose = low === 'hunger' && a.who === 'ralph' ? 'loaf' : 'sit';
+      a.bubble = { icon: low === 'litter' ? 'grumpy' : a.who === 'louie' ? 'dots' : 'treat', until: performance.now() + 6000 };
+      a.wait = 8 + Math.random() * 6;
+    };
+    return true;
+  }
+
   // a new piece: the nearest cat on the same floor walks over to see it, and naps on it if it's cozy (bible, The cats)
   SS.catsNotice = function (G, p) {
     var f = G.W.floorOf(p), cats = [G.cats.louie, G.cats.ralph].filter(function (a) { return a.f === f && !a.held; });
@@ -3643,6 +3714,8 @@ var SS = window.SS = window.SS || {};
       { name: 'KISS', icon: 'heart', dur: 5, how: 'stand', fx: 'kiss', fill: { fun: .3 }, both: true, pool: 'kisses' }, { name: 'CUDDLE UP', icon: 'seat', dur: 18, how: 'sit', together: true, with: 'sofa', fill: { fun: .3, energy: .1 } },
       { name: 'PLAY', sub: 'A GAME', icon: 'tv', dur: 20, how: 'sit', together: true, with: 'sofa', tv: true, fill: { fun: .4 } }, { name: 'GO TO BED', icon: 'z', dur: 30, how: 'lie', together: true, with: 'bed', sleep: true, fill: { energy: 1 } },
       { name: 'COOK', sub: 'TOGETHER', icon: 'pan', soon: 'Cooking together comes with the Cooking screen.' }, { name: 'WIND DOWN', sub: 'TOGETHER', icon: 'star', soon: 'Winding down comes with its own pieces.' }],
+    bowl: [{ name: 'FILL', sub: 'THE BOWL', icon: 'treat', dur: 4, how: 'stand', fx: 'fill' }],
+    litter: [{ name: 'SCOOP', icon: 'star', dur: 6, how: 'stand', fx: 'scoop' }],
     backdoor: [{ name: 'GO TO', sub: 'THE YARD', icon: 'star', soon: 'The yard comes in its own part.' }]
   };
   SS.ACTIONS = ACTIONS;
@@ -3758,6 +3831,10 @@ var SS = window.SS = window.SS || {};
     if (a.fx === 'paint') makeCraft(G, 'painting', tg.piece);
     if (a.fx === 'craft') makeCraft(G, SS.season(SS.now()), tg.piece);
     if (a.fx === 'pet') tg.agent.bubble = { icon: 'heart', until: performance.now() + 2000 };
+    if (a.fx === 'play') SS.fillCats(G, 'play', tg.agent.who === 'ralph' ? 1 : .5, tg.agent.who);   // the feather wand: Ralph's favorite, double
+    if (a.fx === 'treat') SS.fillCats(G, 'hunger', .2, tg.agent.who);
+    if (a.fx === 'fill') { SS.fillCats(G, 'hunger', 1); [G.cats.louie, G.cats.ralph].forEach(function (cat) { cat.bubble = { icon: 'heart', until: performance.now() + 2500 }; cat.wait = Math.min(cat.wait, .5); }); G.catFull = true; G.version++; }
+    if (a.fx === 'scoop') { SS.fillCats(G, 'litter', 1); G.litterLow = false; G.version++; }
   }
   // a finished painting or craft: from a pool that doesn't repeat until each has been made (studio-bible/play.md); it goes in
   // her Ours tab, and the first copy appears near where she made it
