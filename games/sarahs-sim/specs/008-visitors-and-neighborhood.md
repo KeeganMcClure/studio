@@ -30,7 +30,7 @@ The bible wins over this spec (`studio-bible/studio.md`, Specs).
 | Screen | Mockup |
 | --- | --- |
 | Visitor chat | **To draw** before part A |
-| Neighborhood | **To draw** before part C |
+| Neighborhood | `neighborhood-v1` (approved Nov 26, 2026) |
 
 ## Part A: Visits
 
@@ -90,7 +90,10 @@ The four stories, their gigs, their homes and their sets are the bible's The blo
 **The street:**
 
 - Outside the front door, in the same isometric view, is one short Philly-style street with brick fronts, stoops, trees and string lights in winter.
-- It has Sarah's home, the four neighbors' homes and three empty lots (*Claude default*): Dot's across the street, Marco and Jules next door, Theo on the corner and Priya a few doors down. The empty lots come in the bible's three sizes (spec 004).
+- It has Sarah's home, the four neighbors' homes and three empty lots (Keegan approved the layout with the mockup, Nov 26):
+  - Every home sits on the same side of the street, so every front door is in view. A little pocket park with benches is across the street.
+  - From left to right: a large lot, Priya, a small lot, Dot, Sarah's home, Marco and Jules next door, a medium lot, and Theo on the corner, where the side street crosses.
+  - The empty lots come in the bible's three sizes (spec 004).
 - The street follows the real season and time of day, like the yard (spec 005).
 - No real street or address appears anywhere (bible, Starter home).
 
@@ -178,7 +181,6 @@ This spec needs the Gig screen (spec 006, part F) and the Build tools (spec 004)
 - Neighbors are met on days 1, 2, 4 and 6, with one story visit a day per neighbor.
 - A gift at 3 hearts and a favorite piece at 5.
 - Story progress is kept separately per mode.
-- The street has three empty lots, and its layout is as described in part C.
 - Real people get simpler visits until Keegan writes them a story, and Sarah's mom can also visit in person.
 - Creator people have no story.
 - Invite over makes "a full house" possible outside holidays.
