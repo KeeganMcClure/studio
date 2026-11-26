@@ -221,7 +221,7 @@
   };
   SS.actIcon = function (c, name, x, y, on) { (AICON[name] || AICON.star)(c, x, y, on ? '#fff' : P.ink); };
   SS.drawBubble2 = function (G, W, b) {
-    var c = G.c, items = b.actions, w = 148, rows = Math.ceil(items.length / 2), h = 18 + rows * 22 + 2;
+    var c = G.c, items = b.actions, w = 148, rows = Math.ceil(items.length / 2), sub = b.sub ? 8 : 0, h = 18 + sub + rows * 22 + 2 - (rows ? 0 : 4);
     var tx = Math.round(b.tip[0]), ty = Math.round(b.tip[1]);
     var x = Math.max(4, Math.min(W - w - 28, tx - w / 2)), y = ty - h - 10;
     if (y < 24) y = Math.min(ty + 14, G.viewBottom - h - 4);
@@ -230,10 +230,13 @@
     G.bubbleTop = y;
     SS.card(x, y, w, h);
     if (ty > y + h) { c.fillStyle = P.tray; c.beginPath(); c.moveTo(Math.max(x + 8, Math.min(x + w - 8, tx)) - 6, y + h - 1); c.lineTo(Math.max(x + 8, Math.min(x + w - 8, tx)) + 6, y + h - 1); c.lineTo(tx, ty); c.closePath(); c.fill(); c.strokeStyle = P.rose; c.beginPath(); c.moveTo(Math.max(x + 8, Math.min(x + w - 8, tx)) - 6, y + h - .5); c.lineTo(tx, ty); c.lineTo(Math.max(x + 8, Math.min(x + w - 8, tx)) + 6, y + h - .5); c.stroke(); }
-    txt(b.title, x + 6, y + 6, P.soft, 5);
+    var title = b.title, words = title.split(' ');   // a long title drops words from the end rather than spill out of the card
+    while (SS.tw(title, 5) > w - 12 && words.length > 2) { words.pop(); title = words.join(' ') + '…'; }
+    txt(title, x + 6, y + 6, P.soft, 5);
+    if (b.sub) txt(b.sub, x + 6, y + 14, P.ink, 5);   // Sarah's phone battery, under her name and what she's doing
     hit(G, x, y, w, h, function () {}, { block: true });
     items.forEach(function (it, i) {
-      var bw = (w - 14) / 2, bx = x + 5 + (i % 2) * (bw + 4), by = y + 16 + Math.floor(i / 2) * 22, sel = i === b.cur;
+      var bw = (w - 14) / 2, bx = x + 5 + (i % 2) * (bw + 4), by = y + 16 + sub + Math.floor(i / 2) * 22, sel = i === b.cur;
       R(bx, by, bw, 19, sel ? P.rose : P.cell); R(bx, by + 18, bw, 1, sel ? P.roseSh : P.trayEdge); if (sel) R(bx, by, bw, 1, P.roseHi);
       SS.actIcon(c, it.icon, bx + 4, by + 5, sel);
       txt(it.name, bx + 17, by + (it.sub ? 3 : 7), sel ? '#fff' : P.ink, 5); if (it.sub) txt(it.sub, bx + 17, by + 11, sel ? '#fff' : P.ink, 5);

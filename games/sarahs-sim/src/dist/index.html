@@ -3959,8 +3959,8 @@ var SS = window.SS = window.SS || {};
     lamp: [{ name: 'LIGHT', sub: 'ON / OFF', icon: 'lamp', dur: 1, how: 'stand', fx: 'lamp' }],
     tv: [{ name: 'WATCH', sub: 'A SHOW', icon: 'tv', dur: 20, how: 'stand', tv: true, fill: { fun: .3 } }],
     cat: [{ name: 'PET', icon: 'heart', dur: 4, how: 'stand', fx: 'pet', fill: { fun: .1 } }, { name: 'TREAT', icon: 'treat', dur: 5, how: 'stand', fx: 'treat', fill: { fun: .08 } }, { name: 'PLAY', icon: 'star', dur: 10, how: 'stand', fx: 'play', fill: { fun: .25 } }],
-    keegan: [{ name: 'CHAT', icon: 'chat', dur: 10, how: 'stand', fx: 'chat', fill: { fun: .2 }, both: true }, { name: 'HUG', icon: 'heart', dur: 5, how: 'stand', fx: 'hug', fill: { fun: .12, energy: .1 }, both: true, pool: 'hugs' },
-      { name: 'KISS', icon: 'heart', dur: 5, how: 'stand', fx: 'kiss', fill: { fun: .3 }, both: true, pool: 'kisses' }, { name: 'CUDDLE UP', icon: 'seat', dur: 18, how: 'sit', together: true, with: 'sofa', fill: { fun: .3, energy: .1 } },
+    keegan: [{ name: 'CHAT', icon: 'chat', dur: 10, how: 'stand', fx: 'chat', fill: { fun: .2 }, both: true }, { name: 'HUG', icon: 'heart', dur: 3, how: 'stand', fx: 'hug', fill: { fun: .12, energy: .1 }, both: true, pool: 'hugs' },
+      { name: 'KISS', icon: 'heart', dur: 2.5, how: 'stand', fx: 'kiss', fill: { fun: .3 }, both: true, pool: 'kisses' }, { name: 'CUDDLE UP', icon: 'seat', dur: 18, how: 'sit', together: true, with: 'sofa', fill: { fun: .3, energy: .1 } },
       { name: 'PLAY', sub: 'A GAME', icon: 'tv', dur: 20, how: 'sit', together: true, with: 'sofa', tv: true, fill: { fun: .4 } }, { name: 'GO TO BED', icon: 'z', dur: 30, how: 'lie', together: true, with: 'bed', sleep: true, fill: { energy: 1 } },
       { name: 'COOK', sub: 'TOGETHER', icon: 'pan', soon: 'Cooking together comes with the Cooking screen.' }, { name: 'WIND DOWN', sub: 'TOGETHER', icon: 'star', soon: 'Winding down comes with its own pieces.' }],
     bowl: [{ name: 'FILL', sub: 'THE BOWL', icon: 'treat', dur: 4, how: 'stand', fx: 'fill' }],
@@ -3971,6 +3971,25 @@ var SS = window.SS = window.SS || {};
     backdoor: [{ name: 'GO TO', sub: 'THE YARD', icon: 'star', soon: 'The yard comes in its own part.' }]
   };
   SS.ACTIONS = ACTIONS;
+  // what each action reads as at the top of Sarah's bubble while she does it (spec 006, part C, What she's doing)
+  var DOING = { SLEEP: 'Sleeping', NAP: 'Napping', 'LIE IN': 'Lying in', SIT: 'Sitting down', WATCH: 'Watching a show',
+    'CUDDLE UP': 'Cuddling up', SNACK: 'Having a snack', PAINT: 'Painting', SEASONAL: 'Making a craft', BATH: 'Taking a bath',
+    READ: 'Reading', LIGHT: 'Switching a light', CHAT: 'Chatting', HUG: 'Hugging Keegan', KISS: 'Kissing Keegan',
+    'GO TO BED': 'Going to bed', FILL: 'Filling the bowl', SCOOP: 'Scooping the litter', OPEN: 'Opening a gift', EAT: 'Eating dinner' };
+  SS.sarahDoing = function (G) {
+    if (G.hunt) return 'Finding the charger';
+    if (G.act) {
+      var a = G.act.job.act, tg = G.act.job.target, cat = tg.agent && tg.agent.kind === 'cat' ? tg.agent.who.charAt(0).toUpperCase() + tg.agent.who.slice(1) : '';
+      if (a.fx === 'pet') return 'Petting ' + cat;
+      if (a.fx === 'treat') return 'Treating ' + cat;
+      if (a.fx === 'play') return 'Playing with ' + cat;
+      if (a.name === 'PLAY') return 'Gaming with Keegan';
+      return DOING[a.name] || null;
+    }
+    if (G.idle) return G.idle.text;
+    if (G.charging) return 'Charging her phone';
+    return null;
+  };
   SS.actionsFor = function (G, target) {
     if (target.agent) { if (target.agent.kind === 'cat') return ACTIONS.cat; if (target.agent.who === 'keegan') return ACTIONS.keegan; return SS.phoneOf(G) < .99 && !G.charging && !G.hunt ? ACTIONS.sarah : null; }
     if (target.door) return ACTIONS.backdoor;
@@ -4011,9 +4030,37 @@ var SS = window.SS = window.SS || {};
     var here = s.tile();
     var at = goals.some(function (g) { return g[0] === here.f && g[1] === here.x && g[2] === here.y; }) && !s.on;
     G.act = { job: job, t: 0, started: false };
+    if (job.act.together && job.target.piece) keeganComes(G, G.act);
     if (at) { begin(G); return; }
+    if (job.act.both && job.target.agent && job.target.agent.who === 'keegan' && meetHalfway(G, G.act)) return;
     if (!goals.length || !walkTo(W, s, function (f, x, y) { return goals.some(function (g) { return g[0] === f && g[1] === x && g[2] === y; }); })) { G.toast('SARAH CAN\'T GET THERE', 1400); finishJob(G, true); return; }
     s.arrive = function () { begin(G); };
+  }
+  // together actions: Keegan sets off for the piece the moment she does, not when she gets there (Keegan, Nov 26)
+  function keeganComes(G, A) {
+    var W = G.W, a = A.job.act, K0 = G.people.keegan, piece = A.job.target.piece; A.kComing = true;
+    A.keegan = A.keegan || { seat: K0.on, tile: K0.onTile }; getUp(W, K0); A.waitK = true;
+    if (walkTo(W, K0, function (f, x, y) { return f === W.floorOf(piece) && W.useTiles(piece).some(function (q) { return q[0] === x && q[1] === y; }); })) K0.arrive = function () { if (G.act === A) { seatOn(W, K0, piece, a.how === 'lie' ? 'lie' : 'sit'); K0.bubble = { icon: 'heart', until: performance.now() + 2000 }; } A.waitK = false; };
+    else A.waitK = false;
+  }
+  // chat, hug and kiss: Keegan gets up and meets her halfway, so a hug doesn't wait on her crossing the house (Keegan, Nov 26)
+  function meetHalfway(G, A) {
+    var W = G.W, s = G.people.sarah, K = G.people.keegan;
+    getUp(W, s); var st = s.tile();
+    if (!W.walkable(st.f, st.x, st.y)) { var q0 = StudioMove.nearestOpen(st.x, st.y, W.lot, W.lot, function (x, y) { return W.walkable(st.f, x, y); }); if (!q0) return false; s.x = q0[0] + .5; s.y = q0[1] + .5; s.z = 0; st = s.tile(); }
+    var goals = targetTiles(G, A.job.target);
+    var nodes = W.path({ f: st.f, x: st.x, y: st.y }, function (f, x, y) { return goals.some(function (g) { return g[0] === f && g[1] === x && g[2] === y; }); });
+    if (!nodes || nodes.length < 4) return false;   // close by: she just walks over
+    var mid = Math.floor((nodes.length - 1) / 2), m = -1;
+    for (var k = 0; k < nodes.length && m < 0; k++) [mid - k, mid + k].forEach(function (i) { if (m < 0 && i >= 1 && i + 1 < nodes.length && !nodes[i].stair && !nodes[i + 1].stair && nodes[i].f === nodes[i + 1].f) m = i; });
+    if (m < 0) return false;
+    var meS = nodes[m], meK = nodes[m + 1];
+    A.keegan = { seat: K.on, tile: K.onTile }; getUp(W, K);
+    if (!walkTo(W, K, function (f, x, y) { return f === meK.f && x === meK.x && y === meK.y; })) { A.keegan = null; return false; }
+    SS.walkNodes(s, nodes.slice(0, m + 1));
+    var here = 0, both = function () { if (++here === 2 && G.act === A) begin(G); };
+    s.arrive = both; K.arrive = both;
+    return true;
   }
   function begin(G) {
     var s = G.people.sarah, A = G.act; if (!A) return;
@@ -4024,11 +4071,7 @@ var SS = window.SS = window.SS || {};
       var pool = (window.SS_PRIVATE && window.SS_PRIVATE[a.pool]) || [], S = G.save; S.shown = S.shown || {}; var sh = S.shown[a.pool] || (S.shown[a.pool] = []);
       if (pool.length) { var left = pool.filter(function (x, i) { return sh.indexOf(i) < 0; }); if (!left.length) { sh.length = 0; left = pool.slice(); } var pick = left[Math.floor(Math.random() * left.length)]; sh.push(pool.indexOf(pick)); G.toast(a.name, Math.min(2600, a.dur * 1000), pick); }
     }
-    if (a.together) { // Keegan comes too, to the spot beside her
-      var K0 = G.people.keegan, piece = tg.piece; A.keegan = { seat: K0.on, tile: K0.onTile }; getUp(W, K0); A.waitK = true;
-      if (walkTo(W, K0, function (f, x, y) { return f === W.floorOf(piece) && W.useTiles(piece).some(function (q) { return q[0] === x && q[1] === y; }); })) K0.arrive = function () { if (G.act === A) { seatOn(W, K0, piece, a.how === 'lie' ? 'lie' : 'sit'); K0.bubble = { icon: 'heart', until: performance.now() + 2000 }; } A.waitK = false; };
-      else A.waitK = false;
-    }
+    if (a.together && !A.kComing) keeganComes(G, A);
     // face the target
     var tp = tg.agent ? { x: tg.agent.x, y: tg.agent.y } : tg.piece ? (function () { var ft = W.foot(tg.piece.host ? W.hostOf(tg.piece) : tg.piece.wall ? null : tg.piece) || [0, 0, 0, 0]; return tg.piece.wall ? { x: tg.piece.wall[0] + .5, y: tg.piece.wall[1] } : { x: (ft[0] + ft[2]) / 2, y: (ft[1] + ft[3]) / 2 }; })() : { x: s.x, y: s.y - 1 };
     var dx = tp.x - s.x, dy = tp.y - s.y; s.flip = (dx - dy) < 0; s.back = (dx + dy) < 0;
@@ -4039,7 +4082,7 @@ var SS = window.SS = window.SS || {};
     if (a.fx === 'bath') { // Louie may hop up on the tub edge (bible, Louie)
       var L = G.cats.louie; if (L.f === s.f && Math.random() < .7) { getUp(W, L); L.held = true; var ut = W.useTiles(tg.piece); if (ut[1]) walkTo(W, L, function (f, x, y) { return f === s.f && x === ut[1][0] && y === ut[1][1]; }); L.arrive = function () { L.pose = 'sit'; L.z = 14; L.bubble = { icon: 'heart', until: performance.now() + 2500 }; }; A.louie = L; }
     }
-    if (a.fx === 'chat' || a.fx === 'hug' || a.fx === 'kiss') { var K = G.people.keegan; A.keegan = { seat: K.on, tile: K.onTile }; getUp(W, K); K.flip = !s.flip; K.back = !s.back; }
+    if (a.fx === 'chat' || a.fx === 'hug' || a.fx === 'kiss') { var K = G.people.keegan; A.keegan = A.keegan || { seat: K.on, tile: K.onTile }; getUp(W, K); var kx = s.x - K.x, ky = s.y - K.y; if (Math.abs(kx) + Math.abs(ky) > .01) { K.flip = (kx - ky) < 0; K.back = (kx + ky) < 0; } else { K.flip = !s.flip; K.back = !s.back; } }
     if (a.fx === 'pet' || a.fx === 'treat' || a.fx === 'play') { var cat = tg.agent; getUp(W, cat); cat.flip = !s.flip; }
     s.bar = { k: 0 };
   }
@@ -4118,8 +4161,8 @@ var SS = window.SS = window.SS || {};
 //   - Her phone is always about to die (Keegan, Nov 25): its battery runs down while she scrolls, only while the game is open.
 //     When it's low, a red low-battery icon pops over her head and she holds the phone up in despair. Tapping her shows Charge,
 //     and she goes looking for the charger, which is never where she left it: under a couch cushion, in the bed sheets, or
-//     under Ralph, from a pool that doesn't repeat until it's used up (saved). Finding it is a tap on the right spot; the first
-//     time, the spot glows as a hint. A dead phone only means no calls or photos until it's charged; nothing else is lost.
+//     under Ralph, from a pool that doesn't repeat until it's used up (saved). Finding it is a tap on the right spot; a bouncing
+//     question mark floats over every spot it could be, and a wrong guess loses its mark. A dead phone only means no calls or photos until it's charged; nothing else is lost.
 (function () {
   var DRAIN = 1 / (15 * 60), CHARGE = 1 / (3 * 60);   // a full battery lasts about 15 minutes of scrolling; charging takes about 3
   SS.phoneOf = function (G) { var S = G.save; if (S.phone === undefined) S.phone = .6; return S.phone; };
@@ -4167,40 +4210,49 @@ var SS = window.SS = window.SS || {};
     } : (G.charging ? function (c, p) { var x = Math.round(p[0] - 4), y = Math.round(p[1] - 50); c.fillStyle = '#3b2430'; c.fillRect(x, y, 9, 5); c.fillStyle = '#8cc06a'; c.fillRect(x + 1, y + 1, Math.round(7 * S.phone), 3); c.fillRect(x + 9, y + 1, 1, 3); } : (G.act ? s.extra : null));
   };
   // Charge: the hunt for the charger
+  // every place the charger could be in this home: each sofa (its cushions), each bed (its sheets), and Ralph
+  function spotsOf(G) {
+    var W = G.W, out = [];
+    W.pieces.forEach(function (p) { var u = W.def(p).use; HIDES.forEach(function (h) { if (h.use && h.use === u) out.push({ key: 'p' + p.uid, hide: h, piece: p }); }); });
+    HIDES.forEach(function (h) { if (h.cat && G.cats[h.cat]) out.push({ key: 'cat:' + h.cat, hide: h, agent: G.cats[h.cat] }); });
+    return out;
+  }
+  function spotOfPick(G, pick) {
+    if (!pick) return null;
+    var key = pick.agent ? 'cat:' + pick.agent.who : pick.piece ? 'p' + pick.piece.uid : null;
+    return spotsOf(G).filter(function (sp) { return sp.key === key; })[0] || null;
+  }
   SS.startHunt = function (G) {
     SS.stopSarahIdle(G);
-    var h = pickHide(G), S = G.save, first = !S.huntedOnce;
-    G.hunt = { hide: h, hint: first };
+    var h = pickHide(G), S = G.save;
+    var spots = spotsOf(G).filter(function (sp) { return sp.hide === h; });   // which cushion, which sheets: one real spot
+    var at = spots[Math.floor(Math.random() * spots.length)];
+    G.hunt = { hide: h, spot: at ? at.key : null, gone: [] };
     S.huntedOnce = true;
-    G.toast('WHERE\'S THE CHARGER?', 2400, first ? 'Tap where it might be. The glowing, marked spot is a good guess. Tap the floor to stop.' : 'It\'s never where she left it. Tap where it might be, or the floor to stop.');
+    G.toast('WHERE\'S THE CHARGER?', 2400, 'Tap a question mark to look there. Tap the floor to stop.');
   };
-  // could the charger hide here? Only these taps count as guesses during the hunt
-  SS.huntSpot = function (G, pick) {
-    if (!pick) return false;
-    if (pick.agent) return pick.agent.kind === 'cat';
-    var u = pick.piece && G.W.def(pick.piece).use;
-    return HIDES.some(function (h) { return h.use && h.use === u; });
-  };
-  // is this tap the charger's hiding spot? Returns true when the hunt is over
+  // during a hunt, does this tap land on a place the charger could be? Only those taps count as guesses
+  SS.huntSpot = function (G, pick) { return !!spotOfPick(G, pick); };
+  // a guess: the right spot finds it; a wrong one gets a sigh and loses its question mark. Returns true when the hunt is over
   SS.huntTap = function (G, pick) {
-    var h = G.hunt.hide, W = G.W, found = false;
-    if (h.cat && pick && pick.agent && pick.agent.who === h.cat) found = true;
-    if (h.use && pick && pick.piece && W.def(pick.piece).use === h.use) found = true;
-    if (!found) { G.toast('NOT THERE', 900, 'She looks, and sighs.'); G.people.sarah.bubble = { icon: 'dots', until: performance.now() + 1200 }; return false; }
+    var sp = spotOfPick(G, pick), h = G.hunt.hide;
+    if (!sp || sp.key !== G.hunt.spot) {
+      if (sp && G.hunt.gone.indexOf(sp.key) < 0) G.hunt.gone.push(sp.key);
+      G.toast('NOT THERE', 900, 'She looks, and sighs.'); G.people.sarah.bubble = { icon: 'dots', until: performance.now() + 1200 }; return false;
+    }
     G.hunt = null; G.charging = true;
     G.people.sarah.bubble = { icon: '!', until: performance.now() + 1500 };
     G.toast('FOUND IT!', 1800, 'It was ' + h.where + '. Her phone is charging.');
     G.changed(true);
     return true;
   };
-  // where the hint glows: the tiles under the spot, the first time
-  SS.huntGlow = function (G) {
-    if (!G.hunt || !G.hunt.hint) return null;
-    var h = G.hunt.hide, W = G.W;
-    if (h.cat) { var c = G.cats[h.cat]; return { f: c.f, tiles: [[Math.floor(c.x), Math.floor(c.y)]], agent: c }; }
-    var p = W.pieces.filter(function (q) { return W.def(q).use === h.use; }).sort(function (a, b) { return (W.floorOf(a) === G.floor ? 0 : 1) - (W.floorOf(b) === G.floor ? 0 : 1); })[0];
-    if (!p) return null; var ft = W.foot(p), t = []; for (var x = ft[0]; x < ft[2]; x++) for (var y = ft[1]; y < ft[3]; y++) t.push([x, y]);
-    return { f: W.floorOf(p), tiles: t, piece: p };
+  // the bouncing question marks: one over every spot still in the running, only while she's looking (spec 006, Hiding spots show)
+  SS.huntMarks = function (G) {
+    if (!G.hunt) return [];
+    var W = G.W;
+    return spotsOf(G).filter(function (sp) { return G.hunt.gone.indexOf(sp.key) < 0; }).map(function (sp) {
+      return { key: sp.key, f: sp.agent ? sp.agent.f : W.floorOf(sp.piece), agent: sp.agent, piece: sp.piece };
+    });
   };
 })();
 
@@ -4429,7 +4481,7 @@ var SS = window.SS = window.SS || {};
   };
   SS.actIcon = function (c, name, x, y, on) { (AICON[name] || AICON.star)(c, x, y, on ? '#fff' : P.ink); };
   SS.drawBubble2 = function (G, W, b) {
-    var c = G.c, items = b.actions, w = 148, rows = Math.ceil(items.length / 2), h = 18 + rows * 22 + 2;
+    var c = G.c, items = b.actions, w = 148, rows = Math.ceil(items.length / 2), sub = b.sub ? 8 : 0, h = 18 + sub + rows * 22 + 2 - (rows ? 0 : 4);
     var tx = Math.round(b.tip[0]), ty = Math.round(b.tip[1]);
     var x = Math.max(4, Math.min(W - w - 28, tx - w / 2)), y = ty - h - 10;
     if (y < 24) y = Math.min(ty + 14, G.viewBottom - h - 4);
@@ -4438,10 +4490,13 @@ var SS = window.SS = window.SS || {};
     G.bubbleTop = y;
     SS.card(x, y, w, h);
     if (ty > y + h) { c.fillStyle = P.tray; c.beginPath(); c.moveTo(Math.max(x + 8, Math.min(x + w - 8, tx)) - 6, y + h - 1); c.lineTo(Math.max(x + 8, Math.min(x + w - 8, tx)) + 6, y + h - 1); c.lineTo(tx, ty); c.closePath(); c.fill(); c.strokeStyle = P.rose; c.beginPath(); c.moveTo(Math.max(x + 8, Math.min(x + w - 8, tx)) - 6, y + h - .5); c.lineTo(tx, ty); c.lineTo(Math.max(x + 8, Math.min(x + w - 8, tx)) + 6, y + h - .5); c.stroke(); }
-    txt(b.title, x + 6, y + 6, P.soft, 5);
+    var title = b.title, words = title.split(' ');   // a long title drops words from the end rather than spill out of the card
+    while (SS.tw(title, 5) > w - 12 && words.length > 2) { words.pop(); title = words.join(' ') + '…'; }
+    txt(title, x + 6, y + 6, P.soft, 5);
+    if (b.sub) txt(b.sub, x + 6, y + 14, P.ink, 5);   // Sarah's phone battery, under her name and what she's doing
     hit(G, x, y, w, h, function () {}, { block: true });
     items.forEach(function (it, i) {
-      var bw = (w - 14) / 2, bx = x + 5 + (i % 2) * (bw + 4), by = y + 16 + Math.floor(i / 2) * 22, sel = i === b.cur;
+      var bw = (w - 14) / 2, bx = x + 5 + (i % 2) * (bw + 4), by = y + 16 + sub + Math.floor(i / 2) * 22, sel = i === b.cur;
       R(bx, by, bw, 19, sel ? P.rose : P.cell); R(bx, by + 18, bw, 1, sel ? P.roseSh : P.trayEdge); if (sel) R(bx, by, bw, 1, P.roseHi);
       SS.actIcon(c, it.icon, bx + 4, by + 5, sel);
       txt(it.name, bx + 17, by + (it.sub ? 3 : 7), sel ? '#fff' : P.ink, 5); if (it.sub) txt(it.sub, bx + 17, by + 11, sel ? '#fff' : P.ink, 5);
@@ -4611,6 +4666,7 @@ var SS = window.SS = window.SS || {};
   // screen point -> world point (lot px, without the world canvas offset)
   function toWorld(p) { var q = G.cam.toWorld(p.x, p.y); return [q[0] - SS.OFF[0], q[1] - SS.OFF[1]]; }
   function toScreen(wx, wy) { return G.cam.toView(wx + SS.OFF[0], wy + SS.OFF[1]); }
+  G.toScreen = function (x, y) { return toScreen(x, y); };   // for the checks: where a world point shows on the screen
   function tileAt(p, f) { var w = toWorld(p), q = I.tile(w[0], w[1], (f === undefined ? G.floor : f) * FH); return [Math.floor(q[0]), Math.floor(q[1]), q[0], q[1]]; }
   // keep a piece clear of the tray and the top bar (spec 001, part B: the tray never sits over a selected piece)
   function showPiece(p) {
@@ -4811,14 +4867,16 @@ var SS = window.SS = window.SS || {};
 
   // ---------- Life: the action bubble ----------
   function openBubble(target, tip) {
-    var acts = SS.actionsFor(G, target);
-    if (!acts) { G.toast('NOTHING TO DO WITH THIS YET', 1000); return; }
-    var title = target.agent && target.agent.who === 'sarah' ? 'SARAH · ' + Math.round(SS.phoneOf(G) * 100) + '% BATTERY' : target.agent ? (target.agent.who.toUpperCase() + (target.agent.who === 'keegan' ? ' · AT HIS DESK' : '')) : target.door ? 'BACK DOOR' : SS.DEF[target.piece.id].name.toUpperCase();
+    var acts = SS.actionsFor(G, target), isSarah = target.agent && target.agent.who === 'sarah';
+    if (!acts && !isSarah) { G.toast('NOTHING TO DO WITH THIS YET', 1000); return; }
+    // Sarah's bubble: her name and what she's doing, with her phone battery under it (spec 006, part C, What she's doing)
+    var doing = isSarah && SS.sarahDoing(G);
+    var title = isSarah ? 'SARAH' + (doing ? ' · ' + doing.toUpperCase() : '') : target.agent ? (target.agent.who.toUpperCase() + (target.agent.who === 'keegan' ? ' · AT HIS DESK' : '')) : target.door ? 'BACK DOOR' : SS.DEF[target.piece.id].name.toUpperCase();
     if (target.agent && target.agent.who === 'keegan') title = 'KEEGAN' + (G.kday ? ' · ' + G.kday.text.toUpperCase() : '');
-    G.bubble = { target: target, actions: acts, cur: 0, tip: tip, title: title };
+    G.bubble = { target: target, actions: acts || [], cur: 0, tip: tip, title: title, sub: isSarah ? 'PHONE ' + Math.round(SS.phoneOf(G) * 100) + '% BATTERY' : null };
   }
   G.doBubble = function (i) {
-    var b = G.bubble; if (!b) return; var a = b.actions[i]; G.bubble = null;
+    var b = G.bubble; if (!b) return; var a = b.actions[i]; if (!a) { G.bubble = null; return; } G.bubble = null;
     if (a.soon) { G.toast(a.name + (a.sub ? ' ' + a.sub : '') + ': COMING SOON', 1800, a.soon); return; }
     if (a.fx === 'charge') { G.meters = null; SS.startHunt(G); return; }
     if (a.fx === 'keep') { b.target.piece.dress = null; G.changed(true); G.toast('IT\'S YOURS TO KEEP', 1500); return; }
@@ -4854,7 +4912,7 @@ var SS = window.SS = window.SS || {};
       if (G.hunt) { if (SS.huntSpot(G, pick)) { SS.huntTap(G, pick); return; } G.hunt = null; }
       if (pick && pick.agent) {
         if (pick.agent.who === 'sarah') { // her three meters (spec 006, part C), and Charge when her phone needs it (part D)
-          if (SS.actionsFor(G, { agent: pick.agent })) { openBubble({ agent: pick.agent }, [p.x, p.y - 8]); G.meters = 'sarah'; } else G.meters = G.meters === 'sarah' ? null : 'sarah';
+          openBubble({ agent: pick.agent }, [p.x, p.y - 8]); G.meters = 'sarah';
           return;
         }
         openBubble({ agent: pick.agent }, [p.x, p.y - 8]); G.meters = pick.agent.who === 'keegan' ? 'keegan' : null; return;
@@ -4937,7 +4995,7 @@ var SS = window.SS = window.SS || {};
     if (k === 'start') { G.openMenu(); return; }
     if (G.meters && k === 'b' && !G.bubble) { G.meters = null; return; }
     if (G.hunt && k === 'b') { G.hunt = null; G.toast('MAYBE LATER', 800); return; }
-    if (G.bubble) { var b = G.bubble; if (k === 'b') G.meters = null; if (k === 'left' || k === 'up') b.cur = (b.cur + b.actions.length - 1) % b.actions.length; if (k === 'right' || k === 'down') b.cur = (b.cur + 1) % b.actions.length; if (k === 'a') G.doBubble(b.cur); if (k === 'b') G.bubble = null; return; }
+    if (G.bubble) { var b = G.bubble, nb = Math.max(1, b.actions.length); if (k === 'b') G.meters = null; if (k === 'left' || k === 'up') b.cur = (b.cur + nb - 1) % nb; if (k === 'right' || k === 'down') b.cur = (b.cur + 1) % nb; if (k === 'a') G.doBubble(b.cur); if (k === 'b') G.bubble = null; return; }
     if (G.hold) { if (k === 'a') placeHold(); else if (k === 'b') cancelHold(false); else if (k === 'select') turnHold(); else if (DIRS[k]) moveHold(k); return; }
     if (G.focus === 'cards') {
       var T = G.tray, list = G.catalogList(T.tab).items;
@@ -5058,7 +5116,6 @@ var SS = window.SS = window.SS || {};
       ghost = ghostItem(Hd, t);
     }
     G.cam.fit(W0, H);
-    var hg = SS.huntGlow(G); if (hg && hg.f === G.floor) glows.push({ tiles: hg.tiles, ok: true });
     var selP = G.sel && W.byUid[G.sel];
     if (selP && !selP.wall && W.floorOf(selP) === G.floor) { var fs = W.foot(selP.host ? W.hostOf(selP) : selP), st = []; for (var sx2 = fs[0]; sx2 < fs[2]; sx2++) for (var sy2 = fs[1]; sy2 < fs[3]; sy2++) st.push([sx2, sy2]); glows.push({ tiles: st, sel: true }); }
     var hits = SS.drawScene(wc, W, { version: G.version + ':' + (G.hold ? G.hold.from : ''), floor: G.floor, walls: G.walls, t: t, look: G.look, agents: G.agents, glows: glows, ghost: ghost, sel: G.sel });
@@ -5087,13 +5144,13 @@ var SS = window.SS = window.SS || {};
       : G.trayState() === 'catalog' ? 'DRAG A PIECE INTO THE ROOM' : G.trayState() === 'closed' && G.mode === 'life' ? 'TAP THE FLOOR TO WALK · TAP THINGS TO DO' : G.sel ? 'TAP A SWATCH · PAINT ANY PART' : '';
     if (hint && !G.menu) SS.txt(hint, W0 / 2, H - trayH - 12, 'rgba(255,241,226,.85)', 5, 'center');
     // the charger hunt's hint: a bouncing marker over the spot, the first time (spec 006, part D)
-    var hint = SS.huntGlow(G);
-    if (hint && hint.f === G.floor) {
-      var hp = hint.agent ? I.p(hint.agent.x, hint.agent.y, hint.f * FH + 26) : selTop(hint.piece), hs = toScreen(hp[0], hp[1]), bob = Math.round(Math.sin(now / 200) * 2);
+    SS.huntMarks(G).forEach(function (hm, i) {
+      if (hm.f !== G.floor) return;
+      var hp = hm.agent ? I.p(hm.agent.x, hm.agent.y, hm.f * FH + (hm.agent.z || 0) + 26) : selTop(hm.piece), hs = toScreen(hp[0], hp[1]), bob = Math.round(Math.sin(now / 200 + i * 1.7) * 2);
       var mx = Math.round(hs[0]), my = Math.round(hs[1] - 6 + bob);
       SS.R(mx - 5, my - 11, 11, 10, '#3b2430'); SS.R(mx - 4, my - 10, 9, 8, SS.P.rose); SS.txt('?', mx + 1, my - 9, '#fff', 6, 'center');
       SS.R(mx - 1, my - 2, 3, 2, SS.P.rose); SS.R(mx, my, 1, 2, SS.P.rose);
-    }
+    });
     if (G.sleeping) sleepScene(H - trayH, now);
     SS.drawTopBar(G, W0);
     SS.drawViewControls(G, W0, G.mode === 'life' && (G.act || G.queue.length) ? 40 : 24, H - trayH - 16);

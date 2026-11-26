@@ -91,6 +91,7 @@
   // screen point -> world point (lot px, without the world canvas offset)
   function toWorld(p) { var q = G.cam.toWorld(p.x, p.y); return [q[0] - SS.OFF[0], q[1] - SS.OFF[1]]; }
   function toScreen(wx, wy) { return G.cam.toView(wx + SS.OFF[0], wy + SS.OFF[1]); }
+  G.toScreen = function (x, y) { return toScreen(x, y); };   // for the checks: where a world point shows on the screen
   function tileAt(p, f) { var w = toWorld(p), q = I.tile(w[0], w[1], (f === undefined ? G.floor : f) * FH); return [Math.floor(q[0]), Math.floor(q[1]), q[0], q[1]]; }
   // keep a piece clear of the tray and the top bar (spec 001, part B: the tray never sits over a selected piece)
   function showPiece(p) {
@@ -291,14 +292,16 @@
 
   // ---------- Life: the action bubble ----------
   function openBubble(target, tip) {
-    var acts = SS.actionsFor(G, target);
-    if (!acts) { G.toast('NOTHING TO DO WITH THIS YET', 1000); return; }
-    var title = target.agent && target.agent.who === 'sarah' ? 'SARAH · ' + Math.round(SS.phoneOf(G) * 100) + '% BATTERY' : target.agent ? (target.agent.who.toUpperCase() + (target.agent.who === 'keegan' ? ' · AT HIS DESK' : '')) : target.door ? 'BACK DOOR' : SS.DEF[target.piece.id].name.toUpperCase();
+    var acts = SS.actionsFor(G, target), isSarah = target.agent && target.agent.who === 'sarah';
+    if (!acts && !isSarah) { G.toast('NOTHING TO DO WITH THIS YET', 1000); return; }
+    // Sarah's bubble: her name and what she's doing, with her phone battery under it (spec 006, part C, What she's doing)
+    var doing = isSarah && SS.sarahDoing(G);
+    var title = isSarah ? 'SARAH' + (doing ? ' · ' + doing.toUpperCase() : '') : target.agent ? (target.agent.who.toUpperCase() + (target.agent.who === 'keegan' ? ' · AT HIS DESK' : '')) : target.door ? 'BACK DOOR' : SS.DEF[target.piece.id].name.toUpperCase();
     if (target.agent && target.agent.who === 'keegan') title = 'KEEGAN' + (G.kday ? ' · ' + G.kday.text.toUpperCase() : '');
-    G.bubble = { target: target, actions: acts, cur: 0, tip: tip, title: title };
+    G.bubble = { target: target, actions: acts || [], cur: 0, tip: tip, title: title, sub: isSarah ? 'PHONE ' + Math.round(SS.phoneOf(G) * 100) + '% BATTERY' : null };
   }
   G.doBubble = function (i) {
-    var b = G.bubble; if (!b) return; var a = b.actions[i]; G.bubble = null;
+    var b = G.bubble; if (!b) return; var a = b.actions[i]; if (!a) { G.bubble = null; return; } G.bubble = null;
     if (a.soon) { G.toast(a.name + (a.sub ? ' ' + a.sub : '') + ': COMING SOON', 1800, a.soon); return; }
     if (a.fx === 'charge') { G.meters = null; SS.startHunt(G); return; }
     if (a.fx === 'keep') { b.target.piece.dress = null; G.changed(true); G.toast('IT\'S YOURS TO KEEP', 1500); return; }
@@ -334,7 +337,7 @@
       if (G.hunt) { if (SS.huntSpot(G, pick)) { SS.huntTap(G, pick); return; } G.hunt = null; }
       if (pick && pick.agent) {
         if (pick.agent.who === 'sarah') { // her three meters (spec 006, part C), and Charge when her phone needs it (part D)
-          if (SS.actionsFor(G, { agent: pick.agent })) { openBubble({ agent: pick.agent }, [p.x, p.y - 8]); G.meters = 'sarah'; } else G.meters = G.meters === 'sarah' ? null : 'sarah';
+          openBubble({ agent: pick.agent }, [p.x, p.y - 8]); G.meters = 'sarah';
           return;
         }
         openBubble({ agent: pick.agent }, [p.x, p.y - 8]); G.meters = pick.agent.who === 'keegan' ? 'keegan' : null; return;
@@ -417,7 +420,7 @@
     if (k === 'start') { G.openMenu(); return; }
     if (G.meters && k === 'b' && !G.bubble) { G.meters = null; return; }
     if (G.hunt && k === 'b') { G.hunt = null; G.toast('MAYBE LATER', 800); return; }
-    if (G.bubble) { var b = G.bubble; if (k === 'b') G.meters = null; if (k === 'left' || k === 'up') b.cur = (b.cur + b.actions.length - 1) % b.actions.length; if (k === 'right' || k === 'down') b.cur = (b.cur + 1) % b.actions.length; if (k === 'a') G.doBubble(b.cur); if (k === 'b') G.bubble = null; return; }
+    if (G.bubble) { var b = G.bubble, nb = Math.max(1, b.actions.length); if (k === 'b') G.meters = null; if (k === 'left' || k === 'up') b.cur = (b.cur + nb - 1) % nb; if (k === 'right' || k === 'down') b.cur = (b.cur + 1) % nb; if (k === 'a') G.doBubble(b.cur); if (k === 'b') G.bubble = null; return; }
     if (G.hold) { if (k === 'a') placeHold(); else if (k === 'b') cancelHold(false); else if (k === 'select') turnHold(); else if (DIRS[k]) moveHold(k); return; }
     if (G.focus === 'cards') {
       var T = G.tray, list = G.catalogList(T.tab).items;
@@ -538,7 +541,6 @@
       ghost = ghostItem(Hd, t);
     }
     G.cam.fit(W0, H);
-    var hg = SS.huntGlow(G); if (hg && hg.f === G.floor) glows.push({ tiles: hg.tiles, ok: true });
     var selP = G.sel && W.byUid[G.sel];
     if (selP && !selP.wall && W.floorOf(selP) === G.floor) { var fs = W.foot(selP.host ? W.hostOf(selP) : selP), st = []; for (var sx2 = fs[0]; sx2 < fs[2]; sx2++) for (var sy2 = fs[1]; sy2 < fs[3]; sy2++) st.push([sx2, sy2]); glows.push({ tiles: st, sel: true }); }
     var hits = SS.drawScene(wc, W, { version: G.version + ':' + (G.hold ? G.hold.from : ''), floor: G.floor, walls: G.walls, t: t, look: G.look, agents: G.agents, glows: glows, ghost: ghost, sel: G.sel });
@@ -567,13 +569,13 @@
       : G.trayState() === 'catalog' ? 'DRAG A PIECE INTO THE ROOM' : G.trayState() === 'closed' && G.mode === 'life' ? 'TAP THE FLOOR TO WALK · TAP THINGS TO DO' : G.sel ? 'TAP A SWATCH · PAINT ANY PART' : '';
     if (hint && !G.menu) SS.txt(hint, W0 / 2, H - trayH - 12, 'rgba(255,241,226,.85)', 5, 'center');
     // the charger hunt's hint: a bouncing marker over the spot, the first time (spec 006, part D)
-    var hint = SS.huntGlow(G);
-    if (hint && hint.f === G.floor) {
-      var hp = hint.agent ? I.p(hint.agent.x, hint.agent.y, hint.f * FH + 26) : selTop(hint.piece), hs = toScreen(hp[0], hp[1]), bob = Math.round(Math.sin(now / 200) * 2);
+    SS.huntMarks(G).forEach(function (hm, i) {
+      if (hm.f !== G.floor) return;
+      var hp = hm.agent ? I.p(hm.agent.x, hm.agent.y, hm.f * FH + (hm.agent.z || 0) + 26) : selTop(hm.piece), hs = toScreen(hp[0], hp[1]), bob = Math.round(Math.sin(now / 200 + i * 1.7) * 2);
       var mx = Math.round(hs[0]), my = Math.round(hs[1] - 6 + bob);
       SS.R(mx - 5, my - 11, 11, 10, '#3b2430'); SS.R(mx - 4, my - 10, 9, 8, SS.P.rose); SS.txt('?', mx + 1, my - 9, '#fff', 6, 'center');
       SS.R(mx - 1, my - 2, 3, 2, SS.P.rose); SS.R(mx, my, 1, 2, SS.P.rose);
-    }
+    });
     if (G.sleeping) sleepScene(H - trayH, now);
     SS.drawTopBar(G, W0);
     SS.drawViewControls(G, W0, G.mode === 'life' && (G.act || G.queue.length) ? 40 : 24, H - trayH - 16);

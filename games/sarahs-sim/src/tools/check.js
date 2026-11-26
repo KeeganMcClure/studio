@@ -403,10 +403,18 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       G.save.phone = .1;
       if (!SS.actionsFor(G, { agent: G.people.sarah })) out.push('tapping Sarah with a low phone does not show Charge');
       SS.startHunt(G); const h = G.hunt.hide;
+      // a question mark over every spot in the pool: each sofa, each bed, Ralph (spec 006, Hiding spots show)
+      const pickOf = key => key.startsWith('cat:') ? { agent: G.cats[key.slice(4)] } : { piece: W.byUid[+key.slice(1)] };
+      const marks = SS.huntMarks(G).map(m => m.key), want = W.pieces.filter(p => ['sofa', 'bed'].includes(W.def(p).use)).map(p => 'p' + p.uid).concat(['cat:ralph']);
+      if (want.some(k => !marks.includes(k)) || marks.length !== want.length) out.push('the hunt\'s question marks are not over every hiding spot: ' + marks.length + ' of ' + want.length);
       const wrong = W.pieces.find(p => W.def(p).use === 'desk');
       SS.huntTap(G, { piece: wrong }); if (!G.hunt) out.push('a wrong guess finds the charger');
-      const right = h.cat ? { agent: G.cats[h.cat] } : { piece: W.pieces.find(p => W.def(p).use === h.use) };
-      SS.huntTap(G, right); if (G.hunt || !G.charging) out.push('the right spot does not find the charger (' + h.key + ')');
+      const wrongSpot = marks.find(k => k !== G.hunt.spot);
+      SS.huntTap(G, pickOf(wrongSpot)); if (!G.hunt) out.push('a wrong hiding spot finds the charger');
+      else if (SS.huntMarks(G).some(m => m.key === wrongSpot)) out.push('a wrong hiding spot keeps its question mark');
+      else if (SS.huntMarks(G).length !== marks.length - 1) out.push('a wrong guess took away more than its own question mark');
+      SS.huntTap(G, pickOf(G.hunt.spot)); if (G.hunt || !G.charging) out.push('the right spot does not find the charger (' + h.key + ')');
+      if (SS.huntMarks(G).length) out.push('the question marks stay after the charger is found');
       run(4000); if (G.save.phone < .99) out.push('the phone does not charge in a few minutes of play');
       // the hiding spots don't repeat until they're used up
       G.save.shown.charger = []; const keys = []; for (let i = 0; i < 3; i++) { SS.startHunt(G); keys.push(G.hunt.hide.key); G.hunt = null; }
@@ -497,6 +505,44 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       await tapAt(page, 120, 150);
       const r = await page.evaluate(() => ({ hunt: !!SSG.hunt, walking: SSG.people.sarah.path.length > 0 }));
       if (r.hunt) bad.push('a tap on the floor during the charger hunt does not stop looking');
+      if (await page.evaluate(() => SS.huntMarks(SSG).length)) bad.push('the question marks stay after the hunt stops');
+      await page.evaluate(() => { SSG.bubble = null; SS.startHunt(SSG); SSG.toastT = null; });
+      if (!(await page.evaluate(() => SS.huntMarks(SSG).length))) bad.push('no question marks show during a hunt');
+      await page.locator('#bB').tap(); await page.waitForTimeout(100);
+      if (await page.evaluate(() => !!SSG.hunt || SS.huntMarks(SSG).length > 0)) bad.push('B does not stop the hunt and clear its question marks');
+      // tapping Sarah: her bubble says her name and what she's doing, with the battery under it (spec 006, part C)
+      const tapSarah = async () => { const q = await page.evaluate(() => { const h = SSG.lastHits.find(h => h.agent && h.agent.who === 'sarah'); if (!h) return null; return SSG.toScreen((h.box[0] + h.box[2]) / 2, h.box[1] + 5); }); if (q) await tapAt(page, q[0], q[1]); return !!q; };
+      await page.evaluate(() => { SSG.bubble = null; SSG.toastT = null; SS.stopActions(SSG); SS.setClock(14, 0); SS.startSarahIdle(SSG); SSG.setFloor(SSG.people.sarah.f); });
+      await page.waitForTimeout(200);
+      if (!(await tapSarah())) bad.push('Sarah is not on screen to tap');
+      const lab = await page.evaluate(() => ({ b: SSG.bubble && { title: SSG.bubble.title, sub: SSG.bubble.sub }, idle: SSG.idle && SSG.idle.text }));
+      if (!lab.idle) bad.push('Sarah is not doing anything when Life opens');
+      else if (!lab.b || lab.b.title !== 'SARAH · ' + lab.idle.toUpperCase()) bad.push('Sarah\'s bubble does not say what she\'s doing: ' + (lab.b && lab.b.title) + ' (' + lab.idle + ')');
+      if (!lab.b || !/BATTERY/.test(lab.b.sub || '')) bad.push('Sarah\'s bubble has no battery line');
+      await page.evaluate(() => { SSG.bubble = null; SS.stopSarahIdle(SSG); SS.stopActions(SSG); SSG.charging = false; });
+      await page.waitForTimeout(150); await tapSarah();
+      const lab2 = await page.evaluate(() => SSG.bubble && SSG.bubble.title);
+      if (lab2 !== 'SARAH') bad.push('with nothing to do, Sarah\'s bubble says ' + lab2 + ', not just SARAH');
+      // every activity name fits in the bubble
+      const long = await page.evaluate(() => { const G = SSG, out = []; G.idle = null; G.hunt = null; Object.keys(SS.ACTIONS).forEach(k => SS.ACTIONS[k].forEach(a => { if (a.soon || a.instant) return; G.act = { job: { act: a, target: { agent: G.cats.louie } } }; const d = SS.sarahDoing(G); if (!d) out.push(a.name + ' has no words for Sarah\'s bubble'); else if (SS.tw('SARAH · ' + d.toUpperCase(), 5) > 136) out.push(d + ' is too long for the bubble'); })); G.act = null; return out; });
+      long.forEach(o => bad.push(o));
+      // hugs and kisses are quick, and Keegan meets her halfway; for a together action he sets off when she does (Keegan, Nov 26)
+      const quick = await page.evaluate(() => {
+        const G = SSG, out = [], K = G.people.keegan, s = G.people.sarah; SS.stopActions(G); G.kday = null;
+        const W = G.W, far = []; for (let x = 0; x < W.lot; x++) for (let y = 0; y < W.lot; y++) if (W.inside(0, x, y) && W.walkable(0, x, y)) far.push([x, y]);
+        const kt = K.tile(), st0 = far.sort((a, b) => Math.hypot(b[0] - kt.x, b[1] - kt.y) - Math.hypot(a[0] - kt.x, a[1] - kt.y))[0];
+        s.f = 0; s.x = st0[0] + .5; s.y = st0[1] + .5; s.z = 0; s.path = []; const k0 = { x: K.x, y: K.y, f: K.f };
+        SS.chooseAction(G, { agent: K }, SS.ACTIONS.keegan.find(a => a.name === 'HUG')); SS.updateAgents(G, .05); SS.updateAgents(G, .05);
+        if (!K.path.length) out.push('Keegan does not walk to meet her for a hug');
+        let t = 0; while (G.act && t < 60) { SS.updateAgents(G, .05); t += .05; }
+        if (t > 12) out.push('a hug from across the house takes ' + t.toFixed(1) + ' s');
+        SS.stopActions(G); s.f = 0; s.x = st0[0] + .5; s.y = st0[1] + .5; s.path = []; K.f = k0.f; K.x = k0.x; K.y = k0.y; K.path = [];
+        const bed = G.W.pieces.find(p => G.W.def(p).use === 'bed' && G.W.def(p).w >= 2);
+        SS.chooseAction(G, { piece: bed }, SS.ACTIONS.bed.find(a => a.name === 'LIE IN')); SS.updateAgents(G, .05); SS.updateAgents(G, .05);
+        if (!K.path.length) out.push('for Lie in, Keegan waits for her to reach the bed before he sets off');
+        SS.stopActions(G); return out;
+      });
+      quick.forEach(o => bad.push(o));
       if (!r.walking) bad.push('a tap on the floor during the charger hunt does not walk Sarah there');
       const spots = await page.evaluate(() => { const G = SSG, W = G.W, by = u => ({ piece: W.pieces.find(p => W.def(p).use === u) });
         return { keegan: SS.huntSpot(G, { agent: G.people.keegan }), fridge: SS.huntSpot(G, by('fridge')), sofa: SS.huntSpot(G, by('sofa')), bed: SS.huntSpot(G, by('bed')), cat: SS.huntSpot(G, { agent: G.cats.ralph }), floor: SS.huntSpot(G, null) }; });
@@ -559,7 +605,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       if (w === 375 && h === 812) await page.screenshot({ path: path.join(DIST, 'screen-notched-375x812.png') });
       bad.push(...errors); await ctx.close();
     }
-    report('Sarah\'s playtest (Nov 26): taps during the charger hunt, wall pieces behind what stands in front, pieces never through walls, the safe area', bad);
+    report('Sarah\'s playtest (Nov 26): taps and question marks in the charger hunt, Sarah\'s bubble, quick hugs, wall pieces and walls, the safe area', bad);
   }
 
   // ---------- 7. test saves ----------

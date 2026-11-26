@@ -4,8 +4,8 @@
 //   - Her phone is always about to die (Keegan, Nov 25): its battery runs down while she scrolls, only while the game is open.
 //     When it's low, a red low-battery icon pops over her head and she holds the phone up in despair. Tapping her shows Charge,
 //     and she goes looking for the charger, which is never where she left it: under a couch cushion, in the bed sheets, or
-//     under Ralph, from a pool that doesn't repeat until it's used up (saved). Finding it is a tap on the right spot; the first
-//     time, the spot glows as a hint. A dead phone only means no calls or photos until it's charged; nothing else is lost.
+//     under Ralph, from a pool that doesn't repeat until it's used up (saved). Finding it is a tap on the right spot; a bouncing
+//     question mark floats over every spot it could be, and a wrong guess loses its mark. A dead phone only means no calls or photos until it's charged; nothing else is lost.
 (function () {
   var DRAIN = 1 / (15 * 60), CHARGE = 1 / (3 * 60);   // a full battery lasts about 15 minutes of scrolling; charging takes about 3
   SS.phoneOf = function (G) { var S = G.save; if (S.phone === undefined) S.phone = .6; return S.phone; };
@@ -53,39 +53,48 @@
     } : (G.charging ? function (c, p) { var x = Math.round(p[0] - 4), y = Math.round(p[1] - 50); c.fillStyle = '#3b2430'; c.fillRect(x, y, 9, 5); c.fillStyle = '#8cc06a'; c.fillRect(x + 1, y + 1, Math.round(7 * S.phone), 3); c.fillRect(x + 9, y + 1, 1, 3); } : (G.act ? s.extra : null));
   };
   // Charge: the hunt for the charger
+  // every place the charger could be in this home: each sofa (its cushions), each bed (its sheets), and Ralph
+  function spotsOf(G) {
+    var W = G.W, out = [];
+    W.pieces.forEach(function (p) { var u = W.def(p).use; HIDES.forEach(function (h) { if (h.use && h.use === u) out.push({ key: 'p' + p.uid, hide: h, piece: p }); }); });
+    HIDES.forEach(function (h) { if (h.cat && G.cats[h.cat]) out.push({ key: 'cat:' + h.cat, hide: h, agent: G.cats[h.cat] }); });
+    return out;
+  }
+  function spotOfPick(G, pick) {
+    if (!pick) return null;
+    var key = pick.agent ? 'cat:' + pick.agent.who : pick.piece ? 'p' + pick.piece.uid : null;
+    return spotsOf(G).filter(function (sp) { return sp.key === key; })[0] || null;
+  }
   SS.startHunt = function (G) {
     SS.stopSarahIdle(G);
-    var h = pickHide(G), S = G.save, first = !S.huntedOnce;
-    G.hunt = { hide: h, hint: first };
+    var h = pickHide(G), S = G.save;
+    var spots = spotsOf(G).filter(function (sp) { return sp.hide === h; });   // which cushion, which sheets: one real spot
+    var at = spots[Math.floor(Math.random() * spots.length)];
+    G.hunt = { hide: h, spot: at ? at.key : null, gone: [] };
     S.huntedOnce = true;
-    G.toast('WHERE\'S THE CHARGER?', 2400, first ? 'Tap where it might be. The glowing, marked spot is a good guess. Tap the floor to stop.' : 'It\'s never where she left it. Tap where it might be, or the floor to stop.');
+    G.toast('WHERE\'S THE CHARGER?', 2400, 'Tap a question mark to look there. Tap the floor to stop.');
   };
-  // could the charger hide here? Only these taps count as guesses during the hunt
-  SS.huntSpot = function (G, pick) {
-    if (!pick) return false;
-    if (pick.agent) return pick.agent.kind === 'cat';
-    var u = pick.piece && G.W.def(pick.piece).use;
-    return HIDES.some(function (h) { return h.use && h.use === u; });
-  };
-  // is this tap the charger's hiding spot? Returns true when the hunt is over
+  // during a hunt, does this tap land on a place the charger could be? Only those taps count as guesses
+  SS.huntSpot = function (G, pick) { return !!spotOfPick(G, pick); };
+  // a guess: the right spot finds it; a wrong one gets a sigh and loses its question mark. Returns true when the hunt is over
   SS.huntTap = function (G, pick) {
-    var h = G.hunt.hide, W = G.W, found = false;
-    if (h.cat && pick && pick.agent && pick.agent.who === h.cat) found = true;
-    if (h.use && pick && pick.piece && W.def(pick.piece).use === h.use) found = true;
-    if (!found) { G.toast('NOT THERE', 900, 'She looks, and sighs.'); G.people.sarah.bubble = { icon: 'dots', until: performance.now() + 1200 }; return false; }
+    var sp = spotOfPick(G, pick), h = G.hunt.hide;
+    if (!sp || sp.key !== G.hunt.spot) {
+      if (sp && G.hunt.gone.indexOf(sp.key) < 0) G.hunt.gone.push(sp.key);
+      G.toast('NOT THERE', 900, 'She looks, and sighs.'); G.people.sarah.bubble = { icon: 'dots', until: performance.now() + 1200 }; return false;
+    }
     G.hunt = null; G.charging = true;
     G.people.sarah.bubble = { icon: '!', until: performance.now() + 1500 };
     G.toast('FOUND IT!', 1800, 'It was ' + h.where + '. Her phone is charging.');
     G.changed(true);
     return true;
   };
-  // where the hint glows: the tiles under the spot, the first time
-  SS.huntGlow = function (G) {
-    if (!G.hunt || !G.hunt.hint) return null;
-    var h = G.hunt.hide, W = G.W;
-    if (h.cat) { var c = G.cats[h.cat]; return { f: c.f, tiles: [[Math.floor(c.x), Math.floor(c.y)]], agent: c }; }
-    var p = W.pieces.filter(function (q) { return W.def(q).use === h.use; }).sort(function (a, b) { return (W.floorOf(a) === G.floor ? 0 : 1) - (W.floorOf(b) === G.floor ? 0 : 1); })[0];
-    if (!p) return null; var ft = W.foot(p), t = []; for (var x = ft[0]; x < ft[2]; x++) for (var y = ft[1]; y < ft[3]; y++) t.push([x, y]);
-    return { f: W.floorOf(p), tiles: t, piece: p };
+  // the bouncing question marks: one over every spot still in the running, only while she's looking (spec 006, Hiding spots show)
+  SS.huntMarks = function (G) {
+    if (!G.hunt) return [];
+    var W = G.W;
+    return spotsOf(G).filter(function (sp) { return G.hunt.gone.indexOf(sp.key) < 0; }).map(function (sp) {
+      return { key: sp.key, f: sp.agent ? sp.agent.f : W.floorOf(sp.piece), agent: sp.agent, piece: sp.piece };
+    });
   };
 })();
