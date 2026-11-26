@@ -78,9 +78,18 @@
     var rows = window.RALPH_SIT, pal = window.RALPH_PAL;
     for (var j = 0; j < rows.length; j++) for (var i = 0; i < rows[j].length; i++) { var ch = rows[j][i]; if (ch === '.' || !pal[ch]) continue; c.fillStyle = pal[ch]; c.fillRect(Math.round(px - 10 + (flip ? rows[j].length - 1 - i : i)), Math.round(py - rows.length + j), 1, 1); }
     // "slowly leaving": three tiny dots and footprints trailing
-    var dots = Math.floor(t / 2) % 4; for (var d = 0; d < dots; d++) R(px + 14 + d * 4, py - 24, 2, 2, '#6b4250');
   }
 
+  function alley() { // brick paving in front of the lawn, so the yard sits on solid ground
+    var pts = [iso(0, 0), iso(30, 0), iso(30, 30), iso(0, 30)];
+    poly(pts, '#b27a63');
+    c.save(); c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < 4; i++) c.lineTo(pts[i][0], pts[i][1]); c.closePath(); c.clip();
+    c.strokeStyle = 'rgba(120,70,50,.55)';
+    for (var g = 0; g < 30; g += .25) { var a = iso(g, 0), b = iso(g, 30); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); }
+    c.strokeStyle = 'rgba(210,150,120,.45)';
+    for (var h = 0; h < 30; h += .5) for (var k = 0; k < 30; k += .5) { if ((h * 2 + k * 2) % 2) continue; var p = iso(k + .12, h + .25), q = iso(k + .12, h + .5); c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); }
+    c.restore();
+  }
   function skyline(W, t) { // the backs of the next street's rowhouses and a few clouds
     [[30, 50, 16], [170, 58, 20]].forEach(function (cl, i) { var x = (cl[0] + t * .4 * (i + 1)) % (W + 40) - 20; c.fillStyle = 'rgba(255,255,255,.85)'; c.beginPath(); c.ellipse(x, cl[1], cl[2], cl[2] * .35, 0, 0, 7); c.ellipse(x + cl[2] * .5, cl[1] - 3, cl[2] * .55, cl[2] * .3, 0, 0, 7); c.fill(); });
     [[-4, 52, 62, '#9e5a4e'], [58, 40, 70, '#b46a5a'], [128, 58, 58, '#8f5d6b'], [186, 46, 62, '#a8644f']].forEach(function (b) {
@@ -147,6 +156,7 @@
       return;
     }
     N = 8; OY = 92; skyline(W, t);
+    alley();
     lawn(t, st === 'done');
     if (st === 'mow') {
       var r = iso(1.4, 6.6); ralphLeaving(r[0], r[1], t, true);
