@@ -67,6 +67,16 @@
     if (!WIN) { for (var e = 0; e < N; e += .5) { var p3 = iso(e, N); R(p3[0], p3[1] - 1, 2, 2, P.grass[3]); var p4 = iso(N, e); R(p4[0], p4[1] - 1, 2, 2, P.grass[2]); } }
     else { poly([D, C, [C[0], C[1] + 2], [D[0], D[1] + 2]], '#ffffff'); poly([B, C, [C[0], C[1] + 2], [B[0], B[1] + 2]], '#e8f0fa'); }
   }
+  function surround() { // the brick alley and sidewalk around the yard, so the yard sits on solid ground
+    var pts = [iso(0, 0), iso(30, 0), iso(30, 30), iso(-30, 30), iso(-30, N), iso(0, N)];
+    poly(pts, WIN ? '#e4ebf4' : '#b27a63');
+    c.save(); c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]); c.closePath(); c.clip();
+    var mortar = WIN ? 'rgba(170,185,210,.5)' : 'rgba(120,70,50,.55)';
+    for (var g = -30; g < 30; g += .5) { line(iso(g, -30), iso(g, 30), mortar); }
+    for (var h = -30; h < 30; h += 1) for (var k = -30; k < 30; k += 1) { if ((h + k) % 2) continue; var a = iso(k + .25, h + .5), b = iso(k + .25, h + 1); line(a, b, WIN ? 'rgba(255,255,255,.6)' : 'rgba(210,150,120,.45)'); }
+    c.restore();
+    if (WIN) for (var s = 0; s < 40; s++) { var p = iso(N + hash(s, 7) * 6, hash(7, s) * 14); R(p[0], p[1], 2, 1, '#ffffff'); }
+  }
   function patio(x0, y0, w, d) { // brick pavers in a basket weave
     for (var j = y0; j < y0 + d; j++) for (var i = x0; i < x0 + w; i++) {
       var a = iso(i, j), b = iso(i + 1, j), cc = iso(i + 1, j + 1), dd = iso(i, j + 1);
@@ -496,6 +506,7 @@
   window.drawYard = function (ctx, W, H, t, st) {
     st = st || 'seeds'; c = ctx; t = t || 0; WIN = st === 'winter';
     backdrop(W, H, t);
+    surround();
     house(t);
     fence(t);
     ground();
@@ -516,7 +527,7 @@
     }
     if (st === 'winter') { louieLoaf(iso(.55, 3.3)[0], iso(.55, 3.3)[1] - 6, t); }
     else { louieSit(iso(.4, 2.0)[0] + 2, iso(.4, 2.0)[1] - 5, false); }
-    if (!WIN) { var rp = iso(2.2, 4.0); ralphSit(rp[0], rp[1], true); }
+    if (!WIN) { var rp = iso(1.9, 5.6); ralphSit(rp[0], rp[1], true); }
     if (st !== 'winter') birdbath(8.3, 8.2, t); else greenhouse(6.6, 6.4, 3.0, 2.8, t);
     bed.apply(null, B3);
     if (!WIN) { plantAt(.9, 6.6, 'basil', 3, t); plantAt(.9, 7.5, 'strawberry', 3, t); plantAt(.9, 8.4, 'strawberry', 0, t, { col: '#e0384f' }); }
