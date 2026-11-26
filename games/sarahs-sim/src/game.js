@@ -14,10 +14,12 @@
     toastT: null, bubble: null, undo: [], focus: null, titleCur: 0, look: SS.look(new Date(), 'sandbox'), viewBottom: 200, agents: [] };
   window.SSG = G;   // for the checks
 
-  // ---------- sizing: 240 px wide, as tall as the screen allows up to 320, crisp pixels ----------
-  var screenEl = document.getElementById('screen');
+  // ---------- sizing: 240 px wide and as tall as the screen allows, crisp pixels ----------
+  // Sarah's Sim lifts the studio's 320 px cap (Keegan, Nov 26: the shell-space question): on a tall phone the room view grows to
+  // fill the screen between the title bar and the controls, with the tray kept at the bottom, instead of dark bands
+  var screenEl = document.getElementById('screen'), MAX_H = 560;
   function fit() {
-    var f = StudioMove.fit(screenEl, cv); if (!f) return;
+    var f = StudioMove.fit(screenEl, cv, MAX_H); if (!f) return;
     G.H = f.h; var k = f.boxW / W0;
     cv.style.width = f.boxW + 'px'; cv.style.height = Math.round(f.h * k) + 'px';
     cv.style.top = Math.max(0, Math.round((f.boxH - f.h * k) / 2)) + 'px';
@@ -56,7 +58,12 @@
   }
   G.changed = function (save, keepSel) {
     G.version = (G.version || 0) + 1;
-    if (save) { G.save.pieces = G.W.pieces.map(function (p) { var q = {}; for (var k in p) if (k !== 'work') q[k] = p[k]; return q; }); SS.writeMode(G.mode, G.save); }
+    if (save) {
+      // a piece lifted to move is out of the home until it's set down; a save meanwhile (the app closing mid-move) keeps it, and
+      // what was stacked on it, where they were, so nothing is ever lost
+      var all = G.W.pieces, H = G.hold; if (H && H.from === 'move' && H.orig && !G.W.byUid[H.orig.uid]) all = all.concat([H.orig]).concat(H.stack || []);
+      G.save.pieces = all.map(function (p) { var q = {}; for (var k in p) if (k !== 'work') q[k] = p[k]; return q; }); SS.writeMode(G.mode, G.save);
+    }
   };
   G.snapshot = function () { G.undo.push(JSON.stringify({ pieces: G.W.pieces, stored: G.save.stored })); if (G.undo.length > 10) G.undo.shift(); };
   G.doUndo = function () {

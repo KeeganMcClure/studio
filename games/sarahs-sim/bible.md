@@ -15,7 +15,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
 - [x] Setup: create this bible (Nov 25).
 - [x] Base look: warm and cozy isometric room approved (Nov 25). See Art.
 - [ ] Sarah's phone: Keegan finds out the model. It sets the target screen size.
-- [ ] Shell space: with the phone known, Keegan decides whether the game screen grows taller than the studio's 320 px cap to fill the space L and R leave (a plain question, no mockup needed).
+- [x] Shell space: with the phone known, Keegan decides whether the game screen grows taller than the studio's 320 px cap to fill the space L and R leave (a plain question, no mockup needed).
+  Done Nov 26: Keegan chose to grow it, for Sarah's Sim only. The room view now fills a tall phone from the title bar to the controls, with the tray at the bottom.
   Nov 25: L and R are dropped (Keegan). See Controls and screen. The taller screen still waits on the phone model.
 - [ ] Photos: Keegan sends photos of their things and their cats. Photos stay in the Game Designer project files, never in this repo; only the drawn versions come here.
 - [ ] Reference sheet: Keegan, Sarah and the cats (drawn and approved Nov 25: `mockups/louie-v1`, `mockups/ralph-v1`, `mockups/people-v1`; real furniture to come) as map sprites and portraits, plus a first set of their real furniture, drawn from the photos (`studio-bible/art-style.md`, Before a game's first build).

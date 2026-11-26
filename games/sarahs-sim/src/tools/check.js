@@ -269,8 +269,8 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       return out;
     });
     const chairUid = await page.evaluate(() => window.__chair);
-    await page.waitForTimeout(250);   // the browser commits saves on its own schedule; nobody reloads within milliseconds
-    await page.reload(); await page.waitForTimeout(300);
+    // reopened from what's stored, as a fresh start reads it (see the turning check for why not a page reload)
+    await page.evaluate(() => { SSG.screen = 'title'; SSG.W = null; });
     const after = await page.evaluate(uid => { SSG.openMode('sandbox'); const a = SSG.W.byUid[uid]; return { props: a.props, sw: a.sw, pat: a.pats && a.pats.fabric, col: a.colors && a.colors.cushion }; }, chairUid);
     if (after.props !== false) looks.push('the props switch does not stay off after a reload');
     if (after.sw !== 2 || after.pat !== 'leopard' || after.col !== '#f3d38a') looks.push('swatch, paint or pattern did not survive a reload');
@@ -609,7 +609,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       bad.push(...errors); await ctx.close();
     }
     // 4. the shell's title bar sits below a notched phone's status bar, and nothing falls off the bottom
-    for (const [w, h, top, bot] of [[375, 667, 20, 0], [375, 812, 47, 34], [390, 844, 47, 34]]) {
+    for (const [w, h, top, bot] of [[375, 667, 20, 0], [375, 812, 47, 34], [390, 844, 47, 34], [430, 932, 59, 34]]) {
       const { ctx, page, errors } = await fresh({ w, h, init: () => localStorage.setItem('ss.gift', '1') });
       await page.evaluate(t => { document.documentElement.style.setProperty('--safe-top', t[0] + 'px'); document.documentElement.style.setProperty('--safe-bottom', t[1] + 'px'); }, [top, bot]);
       await page.waitForTimeout(200);
@@ -617,6 +617,11 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       if (!r.shown) bad.push(w + ' x ' + h + ': the title bar is hidden');
       if (r.brand < top) bad.push(w + ' x ' + h + ': the title bar sits under the status bar (' + Math.round(r.brand) + ' px from the top)');
       if (r.shellBottom > h - bot + .5) bad.push(w + ' x ' + h + ': the shell runs under the home bar');
+      // the game fills its screen: no empty bands above the top bar or below the tray (Keegan, Nov 26: the 320 px cap lifted)
+      await page.evaluate(() => { window.dispatchEvent(new Event('resize')); SSG.confirm = null; SS.setClock(14, 0); SSG.openMode('life'); }); await page.waitForTimeout(200);
+      const fill = await page.evaluate(() => { const cv = document.getElementById('cv').getBoundingClientRect(), sc = document.getElementById('screen').getBoundingClientRect(); return { top: cv.top - sc.top, bot: sc.bottom - cv.bottom, tray: SSG.H - SS.TRAY_H[SSG.trayState()] }; });
+      if (fill.top > 1.5 || fill.bot > 1.5) bad.push(w + ' x ' + h + ': the game leaves empty bands (' + Math.round(fill.top) + ' px above, ' + Math.round(fill.bot) + ' px below)');
+      await page.screenshot({ path: path.join(DIST, 'screen-life-' + w + 'x' + h + '.png') });
       if (w === 375 && h === 812) await page.screenshot({ path: path.join(DIST, 'screen-notched-375x812.png') });
       bad.push(...errors); await ctx.close();
     }
@@ -770,8 +775,9 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     if (Array.isArray(sides)) sides.forEach(o => bad.push(o));
     else {
       sides.out.forEach(o => bad.push(o));
-      await page.reload(); await page.waitForTimeout(300);
-      const back = await page.evaluate(o => { SSG.openMode('sandbox'); const p = SSG.W.byUid[o.p], q = SSG.W.byUid[o.q]; return { k: SS.view.k, side: p && p.side, side2: q && (q.side || 1) }; }, sides);
+      // reopened from what's stored, as a fresh start reads it (a page reload here is unreliable: the test browser rate-limits
+      // writing storage to disk after the hundreds of saves this check makes, which no player does)
+      const back = await page.evaluate(o => { SSG.screen = 'title'; SSG.W = null; SS.view.k = 0; SSG.openMode('sandbox'); const p = SSG.W.byUid[o.p], q = SSG.W.byUid[o.q]; return { k: SS.view.k, side: p && p.side, side2: q && (q.side || 1) }; }, sides);
       if (back.k !== 2) bad.push('the home does not keep the view she left it in');
       if (back.side !== -1 || back.side2 !== 1) bad.push('wall pieces do not keep their side after a reload');
     }

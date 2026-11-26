@@ -2,6 +2,35 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 26, 2026: the game fills the screen; the floors below keep their walls (Dev)
+
+### What was built
+
+- **No more empty bands (Keegan chose to grow the screen, for Sarah's Sim only).** The game was capped at 320 px tall, so on a tall phone it sat in dark bands above the top bar and below the tray.
+  - The cap is lifted for this game (up to 560 px), so the screen fills the whole space between the title bar and the controls.
+  - The title and the room view grow taller, and the tray stays at the bottom.
+  - The shared `engine/move.js` fit takes an optional height cap, so other games keep 320.
+  - Together with the safe-area fix from this morning, the title bar sits below the clock and the controls above the home bar.
+  - Pixels stay crisp, scaled to the screen's width as before.
+- **The floors below keep their walls (Keegan).** On an upper floor, the floor below always showed with its walls down, and on floor 3 floor 1 wasn't drawn at all, so the upper floor looked like it floated.
+  - Now every floor below is drawn, with its walls as the walls button says.
+  - With walls up you see the whole brick building; cut away shows each floor below with its near walls low.
+  - The flight up from the floor below only shows over the walls when they aren't up.
+- **Nothing is lost mid-move.** While a piece is lifted to move, it's out of the home. A save at that moment (the app closing mid-move) now keeps it, and what's stacked on it, where it was.
+
+### Checks
+
+- `npm run check`: at 375 × 667, 375 × 812, 390 × 844 and 430 × 932 (the last three with a notch's safe areas), the game fills its screen with no bands, and the title bar shows below the status bar.
+  - New screens: `src/dist/screen-life-<size>.png`.
+- The two "kept after a reload" checks now reopen the mode from storage in the same page instead of reloading it.
+  - This was the check that failed now and then. In this test browser, after the hundreds of saves the check makes, a reload can come before the last save reaches storage.
+  - The save itself was always right, and no player saves that often.
+  - With this change the check passed 3 runs in a row.
+
+### Changes from the spec
+
+- The bible's Controls and screen section still says the shell-space question is partly open, and `studio-bible/controls.md` still has the 320 px cap. Those are the Designer's to update: Sarah's Sim is now an exception to the cap. I ticked the To do only.
+
 ## Nov 26, 2026: sitting reads as sitting (Dev)
 
 Keegan's bug: the sit pose was the standing drawing pushed down a little, so on the window seat she looked like she was standing on the cushion.

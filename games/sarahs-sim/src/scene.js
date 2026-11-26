@@ -243,17 +243,19 @@
     var hits = [];
     // the ground, the floor below (dimmed) and this floor's tiles only change when something is placed or the view
     // changes, so they're drawn once into a layer and reused (o.version counts changes to the home)
-    var key = [F, o.version, look.snow ? 1 : 0, W.pieces.length, SS.view.k].join('|');
+    var key = [F, o.version, look.snow ? 1 : 0, W.pieces.length, SS.view.k, o.walls].join('|');
     if (BASE.key !== key) {
       var b = BASE.cv || (BASE.cv = document.createElement('canvas')); b.width = WORLD[0]; b.height = WORLD[1];
       var bc = b.getContext('2d'); bc.setTransform(1, 0, 0, 1, OFF[0], OFF[1]);
       drawGround(bc, W, 0, look);
       if (F > 0) {
-        drawFloorLayer(bc, W, F - 1, o, null, true);
+        // every floor below, with its walls as the walls button says, so the home reads as one building (Keegan, Nov 26: with
+        // only the floor just below, and its walls always down, an upper floor looked like it floated over the one under it)
+        for (var fb = 0; fb < F; fb++) drawFloorLayer(bc, W, fb, o, null, true);
         // dim everything drawn so far (the floor below and the ground), then draw the flight up undimmed
         bc.save(); bc.setTransform(1, 0, 0, 1, 0, 0); bc.globalCompositeOperation = 'source-atop'; bc.fillStyle = 'rgba(34,23,31,.55)'; bc.fillRect(0, 0, WORLD[0], WORLD[1]); bc.restore();
-        var fl = []; W.stairs.forEach(function (s) { if (s.floor === F - 1) stairItems(W, SS.vstair(s), (F - 1) * FH, fl); });
-        fl.forEach(function (it) { it.draw(bc); });
+        var fl = []; if (o.walls !== 'up') W.stairs.forEach(function (s) { if (s.floor === F - 1) stairItems(W, SS.vstair(s), (F - 1) * FH, fl); });
+        fl.forEach(function (it) { it.draw(bc); });   // the flight up, undimmed (with the walls up, the walls below hide it)
       }
       drawFloorTiles(bc, W, F, F * FH);
       BASE.key = key;
@@ -267,7 +269,7 @@
   };
 
   function drawFloorLayer(c, W, f, o, hits, dimmed, tilesDone) {
-    var Z = f * FH, t = o.t, look = o.look, mode = dimmed ? 'down' : o.walls;
+    var Z = f * FH, t = o.t, look = o.look, mode = o.walls;
     if (!tilesDone) drawFloorTiles(c, W, f, Z);
     // tile glows under a piece being placed (green fits, rose doesn't; a check or a cross too, so color isn't the only sign)
     if (!dimmed && o.glows) o.glows.forEach(function (g) {

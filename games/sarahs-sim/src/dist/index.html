@@ -263,8 +263,9 @@ button:focus-visible{outline:2px solid var(--scr-hi);outline-offset:2px}
 //   StudioMove.camera(s, mapW, mapH, vw, vh) [x, y]: follows the lead, stops at the map's edges, centers small maps
 //   StudioMove.nearestOpen(x, y, w, h, open)  [x, y] of the nearest tile (steps on the grid, through walls) where
 //                                            open(x, y) is true, or null: a saved spot that's now a wall moves here
-//   StudioMove.fit(box, canvas)              sizes the canvas 240 px wide and as tall as the box's shape allows
-//                                            (130 to 320), crisp pixels; returns {w, h, boxW, boxH}, or null while hidden
+//   StudioMove.fit(box, canvas, maxH)        sizes the canvas 240 px wide and as tall as the box's shape allows
+//                                            (130 to 320, or to maxH for a game whose bible lifts the cap), crisp
+//                                            pixels; returns {w, h, boxW, boxH}, or null while hidden
 (function () {
   var TILE = 16, STEPF = 10, WALKF = 5;   // a step takes 10 frames (about 6 tiles a second at 60 Hz); frames change every 5
   var VIEW_W = 240, VIEW_MIN_H = 130, VIEW_MAX_H = 320;
@@ -317,10 +318,10 @@ button:focus-visible{outline:2px solid var(--scr-hi);outline-offset:2px}
     return [Math.round(x), Math.round(y)];
   }
 
-  function fit(box, canvas) {
+  function fit(box, canvas, maxH) {
     var r = box.getBoundingClientRect();
     if (!r.width || !r.height) return null;
-    var w = VIEW_W, h = clamp(Math.round(VIEW_W * r.height / r.width), VIEW_MIN_H, VIEW_MAX_H);
+    var w = VIEW_W, h = clamp(Math.round(VIEW_W * r.height / r.width), VIEW_MIN_H, maxH || VIEW_MAX_H);
     canvas.width = w; canvas.height = h;
     canvas.getContext('2d').imageSmoothingEnabled = false;
     return { w: w, h: h, boxW: r.width, boxH: r.height };
@@ -3498,17 +3499,19 @@ var SS = window.SS = window.SS || {};
     var hits = [];
     // the ground, the floor below (dimmed) and this floor's tiles only change when something is placed or the view
     // changes, so they're drawn once into a layer and reused (o.version counts changes to the home)
-    var key = [F, o.version, look.snow ? 1 : 0, W.pieces.length, SS.view.k].join('|');
+    var key = [F, o.version, look.snow ? 1 : 0, W.pieces.length, SS.view.k, o.walls].join('|');
     if (BASE.key !== key) {
       var b = BASE.cv || (BASE.cv = document.createElement('canvas')); b.width = WORLD[0]; b.height = WORLD[1];
       var bc = b.getContext('2d'); bc.setTransform(1, 0, 0, 1, OFF[0], OFF[1]);
       drawGround(bc, W, 0, look);
       if (F > 0) {
-        drawFloorLayer(bc, W, F - 1, o, null, true);
+        // every floor below, with its walls as the walls button says, so the home reads as one building (Keegan, Nov 26: with
+        // only the floor just below, and its walls always down, an upper floor looked like it floated over the one under it)
+        for (var fb = 0; fb < F; fb++) drawFloorLayer(bc, W, fb, o, null, true);
         // dim everything drawn so far (the floor below and the ground), then draw the flight up undimmed
         bc.save(); bc.setTransform(1, 0, 0, 1, 0, 0); bc.globalCompositeOperation = 'source-atop'; bc.fillStyle = 'rgba(34,23,31,.55)'; bc.fillRect(0, 0, WORLD[0], WORLD[1]); bc.restore();
-        var fl = []; W.stairs.forEach(function (s) { if (s.floor === F - 1) stairItems(W, SS.vstair(s), (F - 1) * FH, fl); });
-        fl.forEach(function (it) { it.draw(bc); });
+        var fl = []; if (o.walls !== 'up') W.stairs.forEach(function (s) { if (s.floor === F - 1) stairItems(W, SS.vstair(s), (F - 1) * FH, fl); });
+        fl.forEach(function (it) { it.draw(bc); });   // the flight up, undimmed (with the walls up, the walls below hide it)
       }
       drawFloorTiles(bc, W, F, F * FH);
       BASE.key = key;
@@ -3522,7 +3525,7 @@ var SS = window.SS = window.SS || {};
   };
 
   function drawFloorLayer(c, W, f, o, hits, dimmed, tilesDone) {
-    var Z = f * FH, t = o.t, look = o.look, mode = dimmed ? 'down' : o.walls;
+    var Z = f * FH, t = o.t, look = o.look, mode = o.walls;
     if (!tilesDone) drawFloorTiles(c, W, f, Z);
     // tile glows under a piece being placed (green fits, rose doesn't; a check or a cross too, so color isn't the only sign)
     if (!dimmed && o.glows) o.glows.forEach(function (g) {
@@ -4833,10 +4836,12 @@ var SS = window.SS = window.SS || {};
     toastT: null, bubble: null, undo: [], focus: null, titleCur: 0, look: SS.look(new Date(), 'sandbox'), viewBottom: 200, agents: [] };
   window.SSG = G;   // for the checks
 
-  // ---------- sizing: 240 px wide, as tall as the screen allows up to 320, crisp pixels ----------
-  var screenEl = document.getElementById('screen');
+  // ---------- sizing: 240 px wide and as tall as the screen allows, crisp pixels ----------
+  // Sarah's Sim lifts the studio's 320 px cap (Keegan, Nov 26: the shell-space question): on a tall phone the room view grows to
+  // fill the screen between the title bar and the controls, with the tray kept at the bottom, instead of dark bands
+  var screenEl = document.getElementById('screen'), MAX_H = 560;
   function fit() {
-    var f = StudioMove.fit(screenEl, cv); if (!f) return;
+    var f = StudioMove.fit(screenEl, cv, MAX_H); if (!f) return;
     G.H = f.h; var k = f.boxW / W0;
     cv.style.width = f.boxW + 'px'; cv.style.height = Math.round(f.h * k) + 'px';
     cv.style.top = Math.max(0, Math.round((f.boxH - f.h * k) / 2)) + 'px';
@@ -4875,7 +4880,12 @@ var SS = window.SS = window.SS || {};
   }
   G.changed = function (save, keepSel) {
     G.version = (G.version || 0) + 1;
-    if (save) { G.save.pieces = G.W.pieces.map(function (p) { var q = {}; for (var k in p) if (k !== 'work') q[k] = p[k]; return q; }); SS.writeMode(G.mode, G.save); }
+    if (save) {
+      // a piece lifted to move is out of the home until it's set down; a save meanwhile (the app closing mid-move) keeps it, and
+      // what was stacked on it, where they were, so nothing is ever lost
+      var all = G.W.pieces, H = G.hold; if (H && H.from === 'move' && H.orig && !G.W.byUid[H.orig.uid]) all = all.concat([H.orig]).concat(H.stack || []);
+      G.save.pieces = all.map(function (p) { var q = {}; for (var k in p) if (k !== 'work') q[k] = p[k]; return q; }); SS.writeMode(G.mode, G.save);
+    }
   };
   G.snapshot = function () { G.undo.push(JSON.stringify({ pieces: G.W.pieces, stored: G.save.stored })); if (G.undo.length > 10) G.undo.shift(); };
   G.doUndo = function () {

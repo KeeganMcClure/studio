@@ -17,8 +17,9 @@
 //   StudioMove.camera(s, mapW, mapH, vw, vh) [x, y]: follows the lead, stops at the map's edges, centers small maps
 //   StudioMove.nearestOpen(x, y, w, h, open)  [x, y] of the nearest tile (steps on the grid, through walls) where
 //                                            open(x, y) is true, or null: a saved spot that's now a wall moves here
-//   StudioMove.fit(box, canvas)              sizes the canvas 240 px wide and as tall as the box's shape allows
-//                                            (130 to 320), crisp pixels; returns {w, h, boxW, boxH}, or null while hidden
+//   StudioMove.fit(box, canvas, maxH)        sizes the canvas 240 px wide and as tall as the box's shape allows
+//                                            (130 to 320, or to maxH for a game whose bible lifts the cap), crisp
+//                                            pixels; returns {w, h, boxW, boxH}, or null while hidden
 (function () {
   var TILE = 16, STEPF = 10, WALKF = 5;   // a step takes 10 frames (about 6 tiles a second at 60 Hz); frames change every 5
   var VIEW_W = 240, VIEW_MIN_H = 130, VIEW_MAX_H = 320;
@@ -71,10 +72,10 @@
     return [Math.round(x), Math.round(y)];
   }
 
-  function fit(box, canvas) {
+  function fit(box, canvas, maxH) {
     var r = box.getBoundingClientRect();
     if (!r.width || !r.height) return null;
-    var w = VIEW_W, h = clamp(Math.round(VIEW_W * r.height / r.width), VIEW_MIN_H, VIEW_MAX_H);
+    var w = VIEW_W, h = clamp(Math.round(VIEW_W * r.height / r.width), VIEW_MIN_H, maxH || VIEW_MAX_H);
     canvas.width = w; canvas.height = h;
     canvas.getContext('2d').imageSmoothingEnabled = false;
     return { w: w, h: h, boxW: r.width, boxH: r.height };
