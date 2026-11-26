@@ -224,6 +224,8 @@
     var x = Math.max(4, Math.min(W - w - 28, tx - w / 2)), y = ty - h - 10;
     if (y < 24) y = Math.min(ty + 14, G.viewBottom - h - 4);
     y = Math.max(24, y);
+    if (G.meters) x = 4;   // the meters sit beside it (cooking-v1)
+    G.bubbleTop = y;
     SS.card(x, y, w, h);
     if (ty > y + h) { c.fillStyle = P.tray; c.beginPath(); c.moveTo(Math.max(x + 8, Math.min(x + w - 8, tx)) - 6, y + h - 1); c.lineTo(Math.max(x + 8, Math.min(x + w - 8, tx)) + 6, y + h - 1); c.lineTo(tx, ty); c.closePath(); c.fill(); c.strokeStyle = P.rose; c.beginPath(); c.moveTo(Math.max(x + 8, Math.min(x + w - 8, tx)) - 6, y + h - .5); c.lineTo(tx, ty); c.lineTo(Math.max(x + 8, Math.min(x + w - 8, tx)) + 6, y + h - .5); c.stroke(); }
     txt(b.title, x + 6, y + 6, P.soft, 5);
@@ -233,7 +235,7 @@
       R(bx, by, bw, 19, sel ? P.rose : P.cell); R(bx, by + 18, bw, 1, sel ? P.roseSh : P.trayEdge); if (sel) R(bx, by, bw, 1, P.roseHi);
       SS.actIcon(c, it.icon, bx + 4, by + 5, sel);
       txt(it.name, bx + 17, by + (it.sub ? 3 : 7), sel ? '#fff' : P.ink, 5); if (it.sub) txt(it.sub, bx + 17, by + 11, sel ? '#fff' : P.ink, 5);
-      if (it.soon) { R(bx + bw - 22, by + 12, 21, 6, sel ? '#fff' : P.honey[0]); txt('SOON', bx + bw - 11.5, by + 13, P.ink, 4, 'center'); }
+      if (it.soon) { R(bx + bw - 21, by + 1, 20, 6, sel ? '#fff' : P.honey[0]); txt('SOON', bx + bw - 11, by + 2, P.ink, 4, 'center'); }
       if (i === 0) { R(bx + bw - 10, by - 5, 12, 12, '#3b2430'); R(bx + bw - 9, by - 4, 10, 10, P.rose); txt('A', bx + bw - 7, by - 2, '#fff', 6); }
       hit(G, bx, by, bw, 19, function () { G.doBubble(i); });
     });

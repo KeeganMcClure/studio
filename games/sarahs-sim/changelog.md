@@ -2,6 +2,33 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 26, 2026: needs and more together time (Dev)
+
+Spec 006 part C, and the together actions from part D. Rules and content on the home screen, with no new screens (the meters are drawn as in the approved `cooking-v1`), so this goes ahead while the playtest notes come in.
+
+### What was built
+
+- **Needs (006 C).** Sarah and Keegan have energy, hunger and fun. They go down only while the game is open, from full to low in about 40 minutes of play, and are saved with Life (Sandbox has none). Actions fill them as spec 006 part B's table says. For example, Sleep fills energy, Snack fills hunger, and Paint, Read and Watch a show fill fun.
+- **When a need is low:** below a quarter, Sarah yawns, sighs or her tummy rumbles now and then while she's idle, and her actions take a quarter longer. That's all; nothing can go wrong.
+- **Meters:** tapping Sarah shows her three meters (an icon, a word and a bar each, with LOW in words, so color is never the only sign). Tapping Keegan shows his beside his bubble, as in `cooking-v1`. Keegan looks after his own needs.
+- **Together actions (006 D):** Keegan's bubble now has Chat, Hug, Kiss, Cuddle up, Play a game, Go to bed, Cook together ("Coming soon", it comes with the Cooking screen) and Wind down ("Coming soon", it needs its own pieces). Cuddle up and Lie in also work from a sofa's or bed's bubble. Keegan walks over from wherever he is, even another floor, and settles in beside her; both their needs fill. Afterwards he goes back to his desk.
+- **Hug and kiss pools:** each picks a line from its own pool with no repeats until the pool runs out (saved). The real variations are private data, so the placeholder file holds one line each for now.
+- `npm run check` now also tests:
+  - the drain rate, and that a low need nudges and slows Sarah;
+  - that a snack fills hunger;
+  - that every together action brings Keegan along and fills his needs;
+  - that needs are saved, and that Sandbox has none.
+
+### Changes from the spec
+
+- Keegan's needs are shown and filled by together actions, but he only tops himself up gently on his own. His real day (idle life) is still to come.
+- The first kiss's memory book moment waits for the memory book.
+
+### What's left in spec 006
+
+- Part D: Keegan's idle life (it needs the private pools), the cats' needs (the bowl and the litter box aren't in the catalog yet), Sarah's phone.
+- Parts E and F (Cooking, gigs and coins) come after Keegan's playtest notes, since they add screens.
+
 ## Nov 26, 2026: the rest of the starting catalog (Dev)
 
 Keegan's call, Nov 26: while the playtest notes come in, finish the catalog (content only, no new screens, so it can go ahead under `studio-bible/studio.md`, Playtests).

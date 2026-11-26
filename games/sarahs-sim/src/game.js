@@ -293,6 +293,7 @@
   G.doBubble = function (i) {
     var b = G.bubble; if (!b) return; var a = b.actions[i]; G.bubble = null;
     if (a.soon) { G.toast(a.name + (a.sub ? ' ' + a.sub : '') + ': COMING SOON', 1800, a.soon); return; }
+    G.meters = null;
     var r = SS.chooseAction(G, b.target, a);
     if (r === 'queued') G.toast('LINED UP', 700); if (r === 'full') G.toast('3 THINGS ARE LINED UP ALREADY', 1200);
   };
@@ -317,10 +318,10 @@
     var pick = SS.pick(G.lastHits || [], w[0], w[1]);
     var playing = G.mode === 'life' && G.trayState() === 'closed';
     if (playing) {
-      G.bubble = null;
+      G.bubble = null; G.meters = null;
       if (pick && pick.agent) {
-        if (pick.agent.who === 'sarah') { G.toast('THAT\'S SARAH', 900, 'Tap the floor to walk, or tap things to do.'); return; }
-        openBubble({ agent: pick.agent }, [p.x, p.y - 8]); return;
+        if (pick.agent.who === 'sarah') { G.meters = G.meters === 'sarah' ? null : 'sarah'; return; }   // her three meters (spec 006, part C)
+        openBubble({ agent: pick.agent }, [p.x, p.y - 8]); G.meters = pick.agent.who === 'keegan' ? 'keegan' : null; return;
       }
       if (pick && pick.piece) { var d = W.def(pick.piece); if (d.use) { openBubble({ piece: pick.piece }, [p.x, p.y - 8]); return; } }
       var door = backDoorAt(w); if (door) { openBubble({ door: door }, [p.x, p.y]); return; }
@@ -398,7 +399,8 @@
     }
     if (G.toastT && k === 'a' && !G.hold && !G.bubble) { G.toastT = null; return; }
     if (k === 'start') { G.openMenu(); return; }
-    if (G.bubble) { var b = G.bubble; if (k === 'left' || k === 'up') b.cur = (b.cur + b.actions.length - 1) % b.actions.length; if (k === 'right' || k === 'down') b.cur = (b.cur + 1) % b.actions.length; if (k === 'a') G.doBubble(b.cur); if (k === 'b') G.bubble = null; return; }
+    if (G.meters && k === 'b' && !G.bubble) { G.meters = null; return; }
+    if (G.bubble) { var b = G.bubble; if (k === 'b') G.meters = null; if (k === 'left' || k === 'up') b.cur = (b.cur + b.actions.length - 1) % b.actions.length; if (k === 'right' || k === 'down') b.cur = (b.cur + 1) % b.actions.length; if (k === 'a') G.doBubble(b.cur); if (k === 'b') G.bubble = null; return; }
     if (G.hold) { if (k === 'a') placeHold(); else if (k === 'b') cancelHold(false); else if (k === 'select') turnHold(); else if (DIRS[k]) moveHold(k); return; }
     if (G.focus === 'cards') {
       var T = G.tray, list = G.catalogList(T.tab).items;
@@ -551,6 +553,7 @@
     SS.drawTray(G, W0, H);
     if (G.slideBack) slideBackAnim(now, H);
     if (G.bubble) SS.drawBubble2(G, W0, G.bubble);
+    if (G.meters && G.mode === 'life') SS.drawMeters(G, G.bubble ? W0 - 92 : 4, G.bubble ? G.bubbleTop + 2 : 40, G.meters);   // beside the bubble, as in cooking-v1
   }
   function markFit(x, y, ok) { if (ok) SS.check(x - 4, y + 2, '#8fd08c'); else SS.cross(x - 3, y + 2, '#e46f8b'); }
   function selTop(p) { var W = G.W, d = W.def(p), f = W.floorOf(p), Z = f * FH; if (p.wall) { var wp = W.wallPlace(p); return I.p(wp.x + (p.wall[2] === 'x' ? d.w / 2 : 0), wp.y + (p.wall[2] === 'y' ? d.w / 2 : 0), Z + wp.z + d.h); } if (p.host) { var pos = W.spotPos(W.hostOf(p), p.spot); return I.p(pos.x, pos.y, Z + pos.z + d.h + 6); } var ft = W.foot(p); return I.p((ft[0] + ft[2]) / 2, (ft[1] + ft[3]) / 2, Z + Math.min(60, d.h + 8)); }
