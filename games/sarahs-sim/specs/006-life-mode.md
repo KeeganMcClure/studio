@@ -101,6 +101,7 @@ People have three soft needs (bible, Needs):
 - **Rates** (*Claude default*): from full to low takes about 40 minutes of play. Nothing drains while the game is closed.
 - **Low needs:** below a quarter, Sarah yawns, sighs or her tummy rumbles, and actions take a little longer. That's all that happens (bible, Needs; pillar 3). No need can hurt her, stop her doing anything or end anything.
 - **Meters:** tapping Sarah shows her three meters beside the action bubble, each with its icon and word (`studio-bible/ui.md`). The meters are hidden the rest of the time, to keep the room clean.
+- **What she's doing** (Keegan, Nov 26): tapping Sarah also shows what she's doing right now at the top of her bubble, the same way Keegan's bubble does (for example "Sarah · Doomscrolling", with her phone battery under it). When she isn't doing anything, it just says her name.
 - **Keegan's needs:** he has the same three, but he looks after them himself as part of idle life. They're shown only when she taps him.
 - **Sandbox:** no needs (bible, Modes).
 
