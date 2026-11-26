@@ -30,8 +30,8 @@ The bible wins over this spec (`studio-bible/studio.md`, Specs).
 
 | Screen | Mockup |
 | --- | --- |
-| Memory book | **To draw** before part B |
-| Note found | **To draw** before part C, drawn with the Memory book mockup |
+| Memory book | `memory-book-v1` (approved Nov 26, 2026) |
+| Note found | `memory-book-v1`, state `note` (approved Nov 26, 2026) |
 
 ## Part A: Moments
 
