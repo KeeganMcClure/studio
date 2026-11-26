@@ -47,7 +47,7 @@
     if (mode === 'life') lampPhase(true);
     G.tray.open = mode === 'sandbox';
     G.floor = 0; G.walls = 'cut';
-    SS.makeAgents(G); G.sarahF = undefined;
+    SS.makeAgents(G); G.sarahF = undefined; SS.startKeeganDay(G);
     G.sel = null; centerCam(true);
     G.screen = 'home';
     G.changed(true);
@@ -287,7 +287,7 @@
     var acts = SS.actionsFor(G, target);
     if (!acts) { G.toast('NOTHING TO DO WITH THIS YET', 1000); return; }
     var title = target.agent ? (target.agent.who.toUpperCase() + (target.agent.who === 'keegan' ? ' · AT HIS DESK' : '')) : target.door ? 'BACK DOOR' : SS.DEF[target.piece.id].name.toUpperCase();
-    if (target.agent && target.agent.who === 'keegan' && !target.agent.on) title = 'KEEGAN';
+    if (target.agent && target.agent.who === 'keegan') title = 'KEEGAN' + (G.kday ? ' · ' + G.kday.text.toUpperCase() : '');
     G.bubble = { target: target, actions: acts, cur: 0, tip: tip, title: title };
   }
   G.doBubble = function (i) {
@@ -295,6 +295,7 @@
     if (a.soon) { G.toast(a.name + (a.sub ? ' ' + a.sub : '') + ': COMING SOON', 1800, a.soon); return; }
     G.meters = null;
     var r = SS.chooseAction(G, b.target, a);
+    if (r === 'busy') G.toast('KEEGAN IS ' + G.kday.text.toUpperCase(), 2000, 'It\'s lined up for when he\'s done.');
     if (r === 'queued') G.toast('LINED UP', 700); if (r === 'full') G.toast('3 THINGS ARE LINED UP ALREADY', 1200);
   };
 

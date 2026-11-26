@@ -147,7 +147,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     // the starting catalog: every tab holds spec 001's draft list (plus the easel, the cat bowls and the litter box)
     const tabs = await page.evaluate(() => { const n = {}; SS.CATALOG.filter(d => !d.craft).forEach(d => { n[d.tab] = (n[d.tab] || 0) + 1; }); return n; });
     const want = { seating: 10, tables: 9, beds: 6, storage: 12, lights: 7, plants: 7, rugs: 6, wall: 10, decor: 16, holiday: 1 };   // decor: 13 + the easel + the cat bowls and litter box (spec 006, part D)
-    const few = await page.evaluate(() => SS.CATALOG.filter(d => !d.craft && (d.swatches.length < 4 || d.swatches.length > 6)).map(d => d.id + ' (' + d.swatches.length + ')'));
+    const few = await page.evaluate(() => SS.CATALOG.filter(d => !d.craft && d.tab !== 'none' && (d.swatches.length < 4 || d.swatches.length > 6)).map(d => d.id + ' (' + d.swatches.length + ')'));
     few.forEach(id => bad.push('swatches should be 4 to 6 (spec 001, part D): ' + id));
     Object.keys(want).forEach(t => { if (tabs[t] !== want[t]) bad.push(`the ${t} tab has ${tabs[t] || 0} pieces, the starting list has ${want[t]}`); });
     report('part F: the furnished Philly home on 3 floors, the cats and the two of them, everything reachable', bad.concat(errors));
@@ -326,8 +326,9 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     const acts = await page.evaluate(() => {
       const G = SSG, W = G.W, out = [], run = () => { for (let i = 0; i < 2400 && (G.act || G.queue.length || G.people.sarah.path.length); i++) SS.updateAgents(G, .05); };
       const uses = {}; W.pieces.forEach(p => { const u = W.def(p).use; if (u && !uses[u]) uses[u] = p; });
+      if (G.kday) G.kday.busy = false;   // Keegan free for the together actions (his busy time is checked below)
       Object.keys(SS.ACTIONS).forEach(k => {
-        if (k === 'cat' || k === 'keegan' || k === 'backdoor') return;
+        if (k === 'cat' || k === 'keegan' || k === 'backdoor' || k === 'meal') return;
         const p = uses[k]; if (!p) { out.push('no piece in the home for ' + k); return; }
         SS.ACTIONS[k].forEach(a => { if (a.soon) return; const r = SS.chooseAction(G, { piece: p }, a); if (r !== 'now') out.push(a.name + ' on ' + p.id + ' did not start'); let started = false; for (let i = 0; i < 2400 && G.act; i++) { SS.updateAgents(G, .05); if (G.act && G.act.started) started = true; } if (!started) out.push(a.name + ' on ' + p.id + ': Sarah never got there'); });
       });
@@ -357,7 +358,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       if (!(n.hunger > .4)) out.push('a snack does not fill hunger: ' + n.hunger.toFixed(2));
       // every together action brings Keegan along and fills both of them
       SS.ACTIONS.keegan.filter(a => a.together).concat([SS.ACTIONS.keegan[1], SS.ACTIONS.keegan[2]]).forEach(a => {
-        const k = SS.needsOf(G, 'keegan'); k.fun = .3; let joined = false;
+        const k = SS.needsOf(G, 'keegan'); k.fun = .3; let joined = false; if (G.kday) { G.kday.busy = false; G.kday.left = 1e9; }
         SS.chooseAction(G, { agent: G.people.keegan }, a);
         for (let i = 0; i < 4000 && (G.act || G.people.sarah.path.length); i++) { SS.updateAgents(G, .05); if (G.act && a.together && G.people.keegan.on === (G.act.job.target.piece || {}).uid) joined = true; }
         if (a.together && !joined) out.push(a.name + ': Keegan did not join her');
@@ -368,6 +369,30 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       return out;
     });
     needs.forEach(a => bad.push(a));
+    // spec 006, part D: Keegan's day. He starts busy with something from this time of day's pool; a busy one makes her together
+    // action wait for him; cooking ends with a meal on the table that she can eat
+    const day = await page.evaluate(() => {
+      const G = SSG, out = [], W = G.W, run = n => { for (let i = 0; i < n; i++) SS.updateAgents(G, .05); };
+      SS.stopActions(G); SS.startKeeganDay(G);
+      if (!G.kday || !G.kday.text) { out.push('Keegan is not busy with anything when Life opens'); return out; }
+      G.kday.busy = true; const r = SS.chooseAction(G, { agent: G.people.keegan }, SS.ACTIONS.keegan[0]);
+      if (r !== 'busy') out.push('a together action does not wait while Keegan is busy');
+      G.kday.left = 0; run(2); if (!G.act && !G.people.sarah.path.length) out.push('the waiting action does not start when he is done');
+      for (let i = 0; i < 4000 && (G.act || G.people.sarah.path.length); i++) SS.updateAgents(G, .05);
+      SS.setClock(18, 30); G.kday = { text: 'Cooking dinner', at: 'stove', left: 0, piece: (W.pieces.find(p => p.id === 'stove') || {}).uid }; run(2);
+      const meals0 = W.pieces.filter(p => p.id === 'plated-meal').length, meal = W.pieces.filter(p => p.id === 'plated-meal').pop();
+      if (!meal) { out.push('a finished meal does not go on the table'); return out; }
+      const n = SS.needsOf(G, 'sarah'); n.hunger = .2;
+      SS.chooseAction(G, { piece: meal }, SS.ACTIONS.meal[0]); for (let i = 0; i < 4000 && (G.act || G.people.sarah.path.length); i++) SS.updateAgents(G, .05);
+      if (W.pieces.filter(p => p.id === 'plated-meal').length !== meals0 - 1) out.push('eating does not clear the plate');
+      if (!(n.hunger > .6)) out.push('eating Keegan\'s meal does not fill hunger');
+      // picks don't repeat until the pool runs out
+      const pool = SS_PRIVATE.idleLife.evening.filter(a => a.at !== 'stove'), seen = [];
+      SS.setClock(21, 0); G.save.shown = {}; for (let i = 0; i < pool.length; i++) { G.kday.left = 0; run(1); seen.push(G.kday.text); }
+      if (new Set(seen).size !== seen.length) out.push('Keegan repeats an activity before the pool runs out: ' + seen);
+      return out;
+    });
+    day.forEach(a => bad.push(a));
     // spec 006, part D: the cats' needs only nudge, and each one's fix clears it
     const cats = await page.evaluate(() => {
       const G = SSG, out = [], W = G.W, run = n => { for (let i = 0; i < n; i++) SS.updateAgents(G, .05); };
@@ -395,7 +420,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     if (await page.evaluate(() => { SSG.openMode('sandbox'); return !!SS.lowNeed(SSG, 'sarah') || SSG.mode !== 'sandbox'; })) bad.push('Sandbox has needs');
     const soon = await page.evaluate(() => { const need = ['COOK', 'FIND A GIG', 'CHANGE', 'GO TO', 'VIDEO-CALL', 'WIND DOWN']; const all = [].concat.apply([], Object.keys(SS.ACTIONS).map(k => SS.ACTIONS[k])); return need.filter(n => !all.some(a => a.name === n && a.soon)); });
     soon.forEach(n => bad.push(n + ' does not show Coming soon'));
-    report('spec 006: four light looks, lamps at 5 PM, walking up the stairs, every starter action, crafts, the queue; needs; together actions; the cats\' needs', bad.concat(errors));
+    report('spec 006: four light looks, lamps at 5 PM, walking up the stairs, every starter action, crafts, the queue; needs; together actions; the cats\' needs; Keegan\'s day', bad.concat(errors));
     await ctx.close();
   }
 

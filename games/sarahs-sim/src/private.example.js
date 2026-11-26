@@ -8,7 +8,16 @@ window.SS_PRIVATE = {
   christmas: { lines: ['Merry Christmas,', 'Sarah.'], sign: 'Keegan' },
   // for later specs; the placeholder keeps the shape so nothing breaks when they're built
   notes: [],
-  idleLife: { morning: [], daytime: [], evening: [], lateNight: [] },
+  // Keegan's idle life (spec 006, part D): what he's busy with at each time of day. Each entry: what the People card and his
+  // bubble say, where he does it (a piece's Life use: desk, sofa, stove, bed, bookshelf, chair, tv), and busy: true for things
+  // he can't stop (her together action waits until he's done). PLACEHOLDER: generic entries from the bible's public summary
+  // (Play, Idle life: cooking, school work, gaming, reading, couch time, sleeping). The real list is in the private files.
+  idleLife: {
+    morning: [{ text: 'Making coffee', at: 'stove' }, { text: 'Doing school work', at: 'desk' }, { text: 'Reading', at: 'bookshelf' }],
+    daytime: [{ text: 'In class', at: 'desk', busy: true }, { text: 'Doing school work', at: 'desk' }, { text: 'Gaming', at: 'sofa' }],
+    evening: [{ text: 'Cooking dinner', at: 'stove' }, { text: 'Gaming', at: 'sofa' }, { text: 'Reading', at: 'bookshelf' }],
+    lateNight: [{ text: 'Gaming', at: 'sofa' }, { text: 'Sleeping', at: 'bed' }]
+  },
   hugs: ['A warm hug.'],
   kisses: ['A kiss.'],
   people: []

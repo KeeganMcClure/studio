@@ -76,7 +76,7 @@
   }
   function getUp(W, a) { if (a.on || a.pose === 'sit' || a.pose === 'lie' || a.pose === 'loaf' || a.pose === 'curl') { var u = a.onTile; a.on = null; a.z = 0; a.pose = a.kind === 'cat' ? 'sit' : 'stand'; if (u) { a.x = u[0] + .5; a.y = u[1] + .5; } a.onTile = null; } }
   function step(a, dt) {
-    if (!a.path.length) return;
+    if (!a.path.length) { if (a.arrive) { var done = a.arrive; a.arrive = null; done(); } return; }   // already there
     var wp = a.path[0];
     if (wp.lift) { a.z = wp.z; a.f = wp.f; a.path.shift(); return; }
     var dx = wp.x - a.x, dy = wp.y - a.y, d = Math.hypot(dx, dy), mv = a.speed * dt * (a.slow || 1);
@@ -203,6 +203,57 @@
     G.agents = [sarah, keegan, louie, ralph];
     G.queue = []; G.act = null;
   };
+  // ---------- Keegan's day (spec 006, part D, Idle life) ----------
+  // When she opens Life he's already busy with something from the current time of day's pool; he moves on every 5 to 15
+  // minutes of play, cooks near mealtimes, and a meal he finishes goes on the table with a sparkle. Picks don't repeat until
+  // the pool runs out (studio-bible/play.md); the shown list is saved. The pools are private data (placeholder in the repo).
+  function partOfDay(d) { var h = d.getHours(); return h >= 6 && h < 11 ? 'morning' : h >= 11 && h < 17 ? 'daytime' : h >= 17 && h < 22 ? 'evening' : 'lateNight'; }
+  function mealtime(d) { var h = d.getHours(); return (h >= 7 && h < 9) || (h >= 12 && h < 13) || (h >= 18 && h < 20); }
+  function pickActivity(G) {
+    var pool = ((window.SS_PRIVATE || {}).idleLife || {})[partOfDay(SS.now())] || [];
+    if (!pool.length) return null;
+    if (mealtime(SS.now())) { var cook = pool.filter(function (x) { return x.at === 'stove'; })[0]; if (cook && (!G.kday || G.kday.at !== 'stove')) return cook; }
+    var S = G.save; S.shown = S.shown || {}; var key = 'idle.' + partOfDay(SS.now()), sh = S.shown[key] || (S.shown[key] = []);
+    var left = pool.filter(function (x) { return sh.indexOf(x.text) < 0; }); if (!left.length) { sh.length = 0; left = pool.slice(); }
+    var a = left[Math.floor(Math.random() * left.length)]; sh.push(a.text); return a;
+  }
+  function startActivity(G, first) {
+    var K = G.people.keegan, W = G.W, act = pickActivity(G);
+    if (!act) return;
+    var spots = W.pieces.filter(function (p) { var u = W.def(p).use; return (u === act.at || (act.at === 'desk' && u === 'desk')) && W.useTiles(p).length; });
+    if (act.at === 'desk') { var chair = W.pieces.filter(function (p) { return p.id === 'desk-chair'; })[0]; if (chair) spots = [chair]; }
+    var p = spots[Math.floor(Math.random() * spots.length)];
+    G.kday = { text: act.text, at: act.at, busy: !!act.busy, left: (5 + Math.random() * 10) * 60, piece: p ? p.uid : null };
+    if (!p) return;
+    var settle = function () { var d = W.def(p); if (d.seat && act.at !== 'stove' && act.at !== 'bookshelf') seatOn(W, K, p, d.use === 'bed' ? 'lie' : 'sit'); K.bubble = act.at === 'bed' ? { icon: 'z' } : null; if (act.at === 'stove') callRalph(G, p); };
+    getUp(W, K);
+    if (first) { var ut = W.useTiles(p)[0]; if (ut) { K.f = W.floorOf(p); K.x = ut[0] + .5; K.y = ut[1] + .5; K.path = []; settle(); } }
+    else if (walkTo(W, K, function (f, x, y) { return f === W.floorOf(p) && W.useTiles(p).some(function (q) { return q[0] === x && q[1] === y; }); })) K.arrive = settle;
+  }
+  function callRalph(G, stove) { // Ralph turns up whenever Keegan cooks (bible, Ralph)
+    var Rl = G.cats.ralph, W = G.W; if (Rl.held || Rl.on) return;
+    if (walkTo(W, Rl, function (f, x, y) { return f === W.floorOf(stove) && Math.abs(x - stove.x) + Math.abs(y - stove.y) <= 3; })) Rl.arrive = function () { Rl.pose = 'sit'; Rl.bubble = { icon: 'heart', until: performance.now() + 3000 }; Rl.wait = 20; };
+  }
+  function serveMeal(G) { // a finished meal on the table, with a sparkle (bible, Cooking)
+    var W = G.W, best = null;
+    W.pieces.forEach(function (h) { var d = W.def(h); if (!d.spots.length || !/dining|bistro|island/.test(h.id)) return; d.spots.forEach(function (sp, i) { if (!best && W.check({ id: 'plated-meal', host: h.uid, spot: i }).ok) best = { host: h.uid, spot: i }; }); });
+    if (!best) return;
+    var p = W.add({ id: 'plated-meal', host: best.host, spot: best.spot, sw: 0, props: true }); p.f = W.floorOf(p);
+    G.changed(true); G.toast('KEEGAN MADE DINNER', 2200, 'It\'s on the table. Tap it to eat.');
+  }
+  function startActivityBack(G) { var K = G.people.keegan, W = G.W, p = W.byUid[G.kday.piece]; if (walkTo(W, K, function (f, x, y) { return f === W.floorOf(p) && W.useTiles(p).some(function (q) { return q[0] === x && q[1] === y; }); })) K.arrive = function () { var d = W.def(p); if (d.seat && G.kday.at !== 'stove' && G.kday.at !== 'bookshelf') seatOn(W, K, p, d.use === 'bed' ? 'lie' : 'sit'); }; }
+  SS.startKeeganDay = function (G) { if (G.mode === 'life') { G.kday = null; startActivity(G, true); } };
+  function keeganDay(G, dt) {
+    var K = G.people.keegan, kd = G.kday;
+    if (!kd) return;
+    if (G.act && (G.act.job.act.together || G.act.job.act.both)) return;   // he's with her
+    kd.left -= dt;
+    if (kd.left > 0) return;
+    if (kd.at === 'stove' && /cook|dinner|breakfast|lunch/i.test(kd.text)) serveMeal(G);
+    startActivity(G, false);
+    if (G.waitK0) { var job = G.waitK0; G.waitK0 = null; SS.chooseAction(G, job.target, job.act); }
+  }
+
   SS.updateAgents = function (G, dt) {
     var now = performance.now();
     G.agents.forEach(function (a) {
@@ -211,7 +262,7 @@
       if (a.kind === 'cat') catThink(G, a, dt);
       if (a.on && !G.W.byUid[a.on]) getUp(G.W, a);   // her seat was moved or put away
     });
-    if (G.mode === 'life') { runActions(G, dt); SS.tickNeeds(G, dt); }
+    if (G.mode === 'life') { runActions(G, dt); SS.tickNeeds(G, dt); keeganDay(G, dt); }
   };
   SS.agentGetUp = function (G, a) { getUp(G.W, a); };
 
@@ -239,6 +290,7 @@
       { name: 'COOK', sub: 'TOGETHER', icon: 'pan', soon: 'Cooking together comes with the Cooking screen.' }, { name: 'WIND DOWN', sub: 'TOGETHER', icon: 'star', soon: 'Winding down comes with its own pieces.' }],
     bowl: [{ name: 'FILL', sub: 'THE BOWL', icon: 'treat', dur: 4, how: 'stand', fx: 'fill' }],
     litter: [{ name: 'SCOOP', icon: 'star', dur: 6, how: 'stand', fx: 'scoop' }],
+    meal: [{ name: 'EAT', icon: 'snack', dur: 8, how: 'stand', fx: 'eat', fill: { hunger: .6, fun: .05 } }],
     backdoor: [{ name: 'GO TO', sub: 'THE YARD', icon: 'star', soon: 'The yard comes in its own part.' }]
   };
   SS.ACTIONS = ACTIONS;
@@ -250,6 +302,7 @@
   // she picked an action: do it now, or line it up (up to 3)
   SS.chooseAction = function (G, target, act) {
     if (act.soon || !act.dur) return 'soon';
+    if (G.kday && G.kday.busy && (act.together || act.both)) { G.waitK0 = { target: target, act: act }; return 'busy'; }
     if (act.with) {
       var W = G.W, s = G.people.sarah, f = s.f;
       var ps = W.pieces.filter(function (p) { return W.def(p).use === act.with && W.useTiles(p).length; });
@@ -317,7 +370,7 @@
     if (tg.piece && tg.piece.work) { tg.piece.work = false; }
     if (A.louie) { A.louie.held = false; A.louie.z = 0; A.louie.wait = 2; }
     if (tg.agent && tg.agent.kind === 'cat') { tg.agent.held = false; tg.agent.wait = 3; }
-    if (A.keegan) { var K = G.people.keegan; K.bubble = null; K.extra = null; K.path = []; K.arrive = null; getUp(W, K); var seat = A.keegan.seat && W.byUid[A.keegan.seat]; if (seat && !seat.host) { var ut = W.useTiles(seat)[0]; if (ut) { K.f = W.floorOf(seat); K.x = ut[0] + .5; K.y = ut[1] + .5; } seatOn(W, K, seat, 'sit'); } }
+    if (A.keegan) { var K = G.people.keegan; K.bubble = null; K.extra = null; K.path = []; K.arrive = null; getUp(W, K); var seat = A.keegan.seat && W.byUid[A.keegan.seat]; if (G.kday && G.kday.piece && W.byUid[G.kday.piece]) { G.kday.left = Math.max(G.kday.left, 60); startActivityBack(G); seat = null; } if (seat && !seat.host) { var ut = W.useTiles(seat)[0]; if (ut) { K.f = W.floorOf(seat); K.x = ut[0] + .5; K.y = ut[1] + .5; } seatOn(W, K, seat, 'sit'); } }
     if (!cancelled && A.started) effect(G, a, tg);
     if (a.how === 'sit' || a.how === 'lie' || a.how === 'tub') getUp(W, s);
     G.act = null;
@@ -357,6 +410,7 @@
     if (a.fx === 'play') SS.fillCats(G, 'play', tg.agent.who === 'ralph' ? 1 : .5, tg.agent.who);   // the feather wand: Ralph's favorite, double
     if (a.fx === 'treat') SS.fillCats(G, 'hunger', .2, tg.agent.who);
     if (a.fx === 'fill') { SS.fillCats(G, 'hunger', 1); [G.cats.louie, G.cats.ralph].forEach(function (cat) { cat.bubble = { icon: 'heart', until: performance.now() + 2500 }; cat.wait = Math.min(cat.wait, .5); }); G.catFull = true; G.version++; }
+    if (a.fx === 'eat') { W.remove(tg.piece); G.changed(true); }
     if (a.fx === 'scoop') { SS.fillCats(G, 'litter', 1); G.litterLow = false; G.version++; }
   }
   // a finished painting or craft: from a pool that doesn't repeat until each has been made (studio-bible/play.md); it goes in

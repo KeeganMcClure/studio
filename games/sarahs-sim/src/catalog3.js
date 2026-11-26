@@ -427,5 +427,13 @@
       var b = M.box(.15, .2, .7, .6, 7, 0, 'box');
       M.on(b, function (c) { var clean = !(SS.G && SS.G.litterLow); SS.poly(c, [M.p(.22, .27, 6), M.p(.78, .27, 6), M.p(.78, .73, 6), M.p(.22, .73, 6)], '#e8d9b8'); if (!clean) [[.35, .4], [.6, .55], [.45, .62]].forEach(function (q) { var p = M.p(q[0], q[1], 6); R(c, p[0], p[1], 2, 1, '#b9a17a'); }); });
     } });
+  // a meal Keegan made (spec 006, part D): it goes on the table with a sparkle, and Sarah can eat it. Not in the catalog.
+  add({ id: 'plated-meal', name: 'Dinner Keegan made', tab: 'none', w: 1, d: 1, kind: 'small', h: 8, price: 0, use: 'meal', moves: 'twinkle', anim: 8,
+    parts: [], swatches: [{}],
+    draw: function (M, t) { small(M, function (c, x, y) {
+      c.fillStyle = '#fff6ea'; c.beginPath(); c.ellipse(x, y - 2, 6, 3, 0, 0, 7); c.fill(); c.fillStyle = '#e8dccd'; c.beginPath(); c.ellipse(x, y - 1.5, 6, 2.6, 0, 0, Math.PI); c.fill();
+      R(c, x - 3, y - 4, 3, 2, '#c96f45'); R(c, x, y - 4, 3, 2, '#f3d38a'); R(c, x - 1, y - 5, 2, 1, '#6aa361'); R(c, x + 2, y - 3, 2, 1, '#e46f6a');
+      if (t % 8 < 5) { var sx = x + [-6, 5, -2, 4, 0][t % 5], sy = y - 9 - (t % 3) * 2; R(c, sx, sy, 1, 3, '#fff3a8'); R(c, sx - 1, sy + 1, 3, 1, '#fff3a8'); }
+    }, [.2, 10]); } });
   SS.DEF = {}; C.forEach(function (d) { SS.DEF[d.id] = d; });
 })();

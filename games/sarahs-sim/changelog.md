@@ -2,6 +2,26 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 26, 2026: Keegan's day (Dev)
+
+Spec 006 part D, Keegan's idle life. Rules and content, with no new screens.
+
+- **His day:** when she opens Life, Keegan is already busy with something from the time of day's pool (morning, daytime, evening, late night), in the right spot: at his desk, on the sofa, at the stove, by the bookshelf or in bed. Every 5 to 15 minutes of play he moves on to the next. Picks don't repeat until the pool runs out, and the shown list is saved. His bubble says what he's doing ("Keegan · Doing school work").
+- **Cooking:** near mealtimes (7 to 9, 12 to 1, 6 to 8) he cooks, and Ralph turns up by the stove.
+- **Meals:** when he finishes cooking, the meal goes on the dining table with a sparkle. Tap it and choose Eat: it fills hunger and clears the plate.
+- **Busy:** some activities are busy (in class). A together action she picks then waits, with a note, and starts as soon as he's done.
+- **After a together action** he goes back to what he was doing.
+- **The pools are private data** (bible, Overview, Private data). The placeholder file has a short generic list built from the bible's public summary (coffee, school work, class, gaming, reading, cooking, sleeping) with the same shape. Keegan's real list goes in `src/private.js`.
+- **Fixed:** someone already standing where they needed to be never settled in (sat down or lay down). They now do.
+- `npm run check` now tests Keegan starting busy, a busy action waiting and starting, the meal going on the table and being eaten, and no repeats before the pool runs out.
+
+### Still to come in spec 006 part D
+
+- The after-moments (private data).
+- Sarah's phone and the charger hunt.
+- Winding down (it needs its pieces).
+- Cook together (it comes with the Cooking screen).
+
 ## Nov 26, 2026: the cats' needs (Dev)
 
 Spec 006 part D, the cats. Rules and content, with no new screens.
