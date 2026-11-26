@@ -86,13 +86,14 @@
     poly(pts, '#bdb7b0');
     c.save(); c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]); c.closePath(); c.clip();
     // gray concrete: big square slabs with joints, a little shading per slab, a few cracks and weeds
-    for (var sy = -30; sy < 30; sy += 2) for (var sx = -30; sx < 30; sx += 2) {
-      var v = hash(sx + 40, sy + 40), a = iso(sx, sy), b = iso(sx + 2, sy), cc = iso(sx + 2, sy + 2), d = iso(sx, sy + 2);
+    var Z = 1.1; // slab size in tiles; this grid is bigger than the yard's, so slabs match the yard on screen
+    for (var sy = -30; sy < 30; sy += Z) for (var sx = -30; sx < 30; sx += Z) {
+      var v = hash(Math.round(sx * 10) + 40, Math.round(sy * 10) + 40), a = iso(sx, sy), b = iso(sx + Z, sy), cc = iso(sx + Z, sy + Z), d = iso(sx, sy + Z);
       cPoly([a, b, cc, d], (false) ? (v > .5 ? '#eef3f9' : '#e4ebf4') : (v > .66 ? '#c6c1ba' : v > .33 ? '#bdb7b0' : '#b3ada6'));
       cLine(a, b, (false) ? 'rgba(170,185,210,.6)' : 'rgba(110,100,95,.55)'); cLine(a, d, (false) ? 'rgba(170,185,210,.6)' : 'rgba(110,100,95,.55)');
       cLine([a[0], a[1] + 1], [b[0], b[1] + 1], 'rgba(255,255,255,.25)');
-      if (!WIN && v > .86) { var m = iso(sx + .6, sy + .7), m2 = iso(sx + 1.1, sy + 1.0), m3 = iso(sx + 1.3, sy + 1.6); cLine(m, m2, 'rgba(90,80,75,.5)'); cLine(m2, m3, 'rgba(90,80,75,.5)'); }
-      if (!WIN && v < .08) { var wd = iso(sx, sy + 1); cR(wd[0] - 1, wd[1] - 3, 1, 3, '#6aa361'); cR(wd[0] + 1, wd[1] - 2, 1, 2, '#8fc47b'); }
+      if (!WIN && v > .86) { var m = iso(sx + .3, sy + .35), m2 = iso(sx + .55, sy + .5), m3 = iso(sx + .65, sy + .8); cLine(m, m2, 'rgba(90,80,75,.5)'); cLine(m2, m3, 'rgba(90,80,75,.5)'); }
+      if (!WIN && v < .08) { var wd = iso(sx, sy + .5); cR(wd[0] - 1, wd[1] - 3, 1, 3, '#6aa361'); cR(wd[0] + 1, wd[1] - 2, 1, 2, '#8fc47b'); }
     }
     c.restore();
   }
