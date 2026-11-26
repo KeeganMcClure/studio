@@ -167,7 +167,7 @@
     if (!capOn) { E(10, 10, 7, 8, C.kHair[1]); R(6, 3, 5, 1, C.kHair[0]); }
     E(10, 12, 7, 7, C.sk[1]); E(8, 11, 4, 4, C.sk[0]); R(2, 10, 2, 3, C.sk[2]); R(16, 10, 2, 3, C.sk[2]);
     if (capOn) { R(3, 1, 14, 6, C.o); R(4, 2, 12, 4, C.cap[1]); R(4, 2, 6, 2, C.cap[0]); R(1, 6, 17, 2, C.o); R(2, 6, 15, 1, C.brim); R(8, 2, 4, 3, '#2f4a63'); }
-    else R(3, 7, 14, 1, C.kHair[2]);
+    else { R(4, 5, 12, 1, C.kHair[1]); R(4, 6, 3, 1, C.kHair[1]); R(13, 6, 3, 1, C.kHair[1]); R(3, 7, 2, 2, C.kHair[2]); R(15, 7, 2, 2, C.kHair[2]); } // buzz-cut hairline with temples, no band across the forehead
     R(6, 10, 2, 2, C.o); R(12, 10, 2, 2, C.o); R(6, 10, 1, 1, '#fff'); R(12, 10, 1, 1, '#fff');
     // beard
     R(3, 12, 14, 6, C.o); R(4, 18, 12, 1, C.o); R(4, 12, 12, 6, C.beard[1]); R(4, 12, 4, 3, C.beard[0]); R(12, 15, 3, 3, C.beard[2]);
@@ -237,4 +237,5 @@
     ['Bright orange fitted tee', 'White rounded letters', 'Front: ORANGE ROCKS', 'Back: AND SO DO I', 'In the Style catalog from', ' the start, for Sarah and', ' anyone she makes'].forEach(function (w, i) { c.fillText(w, 440, oy + 50 + i * 16); });
   };
   window.SS_PORTRAITS = { sarah: sarahPortrait, keegan: keeganPortrait };
+  window.SS_SPRITES = { sarah: sarahSprite, keegan: keeganSprite };
 })();

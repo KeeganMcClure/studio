@@ -141,4 +141,6 @@
     else if (st === 'people') peopleCard(W, H, t);
     else homesCard(W, H, t);
   };
+  // shared menu-card pieces for the other menu mockups (favorites-v1, camera-v1)
+  window.SS_MENU = { use: function (ctx) { c = ctx; }, P: P, R: R, txt: txt, heart: heart, frame: frame, header: header, chev: chev, check: check, backHint: backHint, addButton: addButton, icons: ICONS };
 })();

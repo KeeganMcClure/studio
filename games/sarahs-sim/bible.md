@@ -86,7 +86,7 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Neighborhood | Walk to a neighbor's home to help redo it | `specs/008-visitors-and-neighborhood.md` | **To draw** |
 | Memory book | Flip through moments, notes and photos | `specs/007-memory-book-and-notes.md` | **To draw** |
 | Note found | Read a note from Keegan she found in the home | `specs/007-memory-book-and-notes.md` | **To draw** |
-| Favorites | Save and reuse whole rooms and outfits | `specs/001-home-and-decorating.md` | **To draw** |
+| Favorites | Save and reuse whole rooms and outfits | `specs/001-home-and-decorating.md` | `favorites-v1` (approved Nov 25, 2026) |
 | Camera | Take a clean picture of a room or outfit | `specs/001-home-and-decorating.md` | **To draw** |
 | Challenges | Pick a challenge and see how you did | `specs/010-challenges.md` | **To draw** |
 | Start menu | Save, homes, people, quit to title | `specs/001-home-and-decorating.md` | `start-menu-v1` (approved Nov 25, 2026) |

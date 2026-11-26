@@ -46,7 +46,7 @@ These rows already exist in the bible's Screens table. This PR points them at th
 | First open (gift) | `title-v1` |
 | Title | `title-v1` |
 | Home (decorate) | `decorate-v1` on the `look-iso-v1` room, pieces from `furniture-sheet-v1` |
-| Favorites | **To draw** before part E |
+| Favorites | `favorites-v1` (approved) |
 | Camera | **To draw** before part E |
 | Start menu | `start-menu-v1` (approved) |
 
@@ -152,7 +152,10 @@ The colors follow the bible's Decorating section (Colors) and the `decorate-v1` 
 
 - **Favorite a room:** in the Start menu, Favorites, then Save this room. It keeps every piece in the room with its spot, turn, colors and props, plus the room's floor and wallpaper. She names it, with a short default like "Cozy living room".
 - **Use a favorite:** open Favorites, pick a room, then tap a room in any home in any mode. It places every piece that fits. Pieces that don't fit go to storage. In Life mode, pieces she doesn't own show their total price first, and she can buy them all or place only what she owns (spec 006).
-- Favorites are kept once for the whole game and work in every mode (bible, Saves).
+- Favorites are kept once for the whole game and work in every mode (bible, Saves). There's no limit on how many she can save; the grid scrolls (Keegan, Nov 25).
+- **The Favorites screen** (`favorites-v1`): a menu card with Rooms and Outfits tabs and a two-across grid. Each room favorite shows a small picture of the room as saved, its name and its piece count. The last tile on Rooms is **Save this room**.
+- **Placing:** after she picks a room favorite, the menu closes, a banner at the top shows the favorite with Cancel, and the room she's looking at glows. One tap on a room fills it. A note says pieces that don't fit go to storage.
+- **Outfits tab** (spec 002, part E): each outfit favorite shows on the person who wore it. Picking one from the Start menu asks who should wear it, then opens Style for them. Outfits are saved with the heart in Style, so this tab has no Save tile. *Claude default.*
 - **Camera:** a camera button frames the room she's looking at without the tray, top bar or buttons. One tap saves a clean picture to her phone's photos (through the share sheet) and adds it to the memory book's Photos tab (spec 007).
 
 **Done when:** a saved room favorite rebuilds in another home and in another mode, and a camera picture saves to the phone with no buttons in it.
