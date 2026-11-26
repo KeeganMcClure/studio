@@ -82,8 +82,8 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Minigame | One of the eight chores (mow, weed, water, rake, shovel snow, dishes, vacuum, fold laundry), all in one shared frame | `specs/005-garden-and-yard.md` | `minigame-v1` (approved Nov 25, 2026) |
 | Cooking | Chop, stir and plate one of Keegan's dishes with him | `specs/006-life-mode.md` | `cooking-v1` (approved Nov 25, 2026). Also shows the action bubble and need meters |
 | Visitor chat | A visitor talks and asks for a gig | `specs/008-visitors-and-neighborhood.md` | `visitor-v1` (approved Nov 25, 2026) |
-| Gig | See what a visitor wants, design it, hand it in, get paid | `specs/006-life-mode.md` | `gig-v1` (drawn Nov 25, 2026, waiting on Keegan's review) |
-| Neighborhood | Walk to a neighbor's home to help redo it | `specs/008-visitors-and-neighborhood.md` | **To draw** |
+| Gig | See what a visitor wants, design it, hand it in, get paid | `specs/006-life-mode.md` | `gig-v1` (approved Nov 26, 2026) |
+| Neighborhood | Walk to a neighbor's home to help redo it | `specs/008-visitors-and-neighborhood.md` | `neighborhood-v1` (drawn Nov 26, 2026, waiting on Keegan's review) |
 | Memory book | Flip through moments, notes and photos | `specs/007-memory-book-and-notes.md` | **To draw** |
 | Note found | Read a note from Keegan she found in the home | `specs/007-memory-book-and-notes.md` | **To draw** |
 | Favorites | Save and reuse whole rooms and outfits | `specs/001-home-and-decorating.md` | **To draw** |
