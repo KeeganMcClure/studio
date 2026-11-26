@@ -444,7 +444,9 @@
       hair: function (x, y) { R(x - 7, y - 3, 14, 6, '#3b2a22'); R(x - 7, y - 3, 7, 2, '#5a4034'); R(x - 7, y + 1, 2, 4, '#3b2a22'); R(x + 5, y + 1, 2, 4, '#2a1d17'); }
     }, t + 2);
     catSit(iso(2.2, 7.6)[0], iso(2.2, 7.6)[1], ['#6d6670', '#504a55', '#e8e2e6'], t, 5);
-    if (st === 'catalog') {
+    if (st === 'home') { // the home at rest: the lamp on the table, the catalog tray open (used behind the Start menu)
+      armchair(6.3, 6.4, RUST); mushroomLamp(3.5, 3.6, 11, t); topBar(W); catalogTray(W, H);
+    } else if (st === 'catalog') {
       armchair(6.3, 6.4, RUST);
       // the mushroom lamp, dragged in from the Ours tab, about to stack on the coffee table
       var lift = 10 + Math.round(Math.sin(t / 2));

@@ -48,7 +48,7 @@ These rows already exist in the bible's Screens table. This PR points them at th
 | Home (decorate) | `decorate-v1` on the `look-iso-v1` room, pieces from `furniture-sheet-v1` |
 | Favorites | **To draw** before part E |
 | Camera | **To draw** before part E |
-| Start menu | **To draw** before part A |
+| Start menu | `start-menu-v1` (approved) |
 
 ## Part A: Opening the game
 
@@ -71,9 +71,9 @@ These rows already exist in the bible's Screens table. This PR points them at th
 **Start menu** (Start on the shell, or a menu button in the corner of the home screen):
 
 - Rows: Back to home, People, Homes, Favorites, Camera, Memory book (spec 007), Make a backup, Title.
-- **People** lists the people in this home. Tapping one opens Style for them (spec 002).
-- **Homes** lists her homes in this mode: the Philly home and any she has built (spec 004). Tapping one goes there.
-- Each row is a plain menu row (`studio-bible/ui.md`). The menu dims the home behind it and nothing moves while it's open.
+- **People** lists the people in this home as cards, each with their portrait, their name and what they're doing right now (like "Reading a book"), and a Style button that opens Style for them (spec 002). **New person** at the bottom opens the Creator (spec 003). (`start-menu-v1`, Keegan, Nov 25.)
+- **Homes** lists her homes in this mode as cards: the Philly home and any she has built (spec 004), with the lot size. The one she's in says "You are here", and the others have Go. In Sandbox, **New lot** sits at the bottom (spec 004).
+- Each row is a plain menu row with an icon, on the game's menu surface (bible, Art). The menu dims the home behind it and nothing moves while it's open. A line at the bottom says when the game last saved ("Saved just now").
 
 **Saves** (bible, Saves): autosave after every change and on close; one save per mode; favorites and the gift kept once for the whole game; a save version from the first build, with upgrade steps after; backups as a file saved to Files, and Import a save reads one back. A backup holds every mode, the favorites and the gift. Importing asks first, then replaces what's on the phone.
 
