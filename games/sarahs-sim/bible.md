@@ -497,7 +497,8 @@ Set Nov 25 (Keegan). Mockup: `mockups/build-v1` (approved; Keegan asked for bett
 - **Stairs:** straight, L-turn, spiral and ladder. A flight leaves an open stairwell in the floor above, with a banister on its open sides.
 - **Walls:** a room tool (drag a box to make a whole room, with a size tag while dragging) and a wall tool (drag a line). Doors and windows snap onto any wall they're dragged to.
 - **Floors and walls:** a floor tool and a wallpaper tool, plus erase.
-- **View:** pinch to zoom, two-finger drag (or the D-pad) to pan over a home bigger than the screen. A walls button cycles walls up, cut away (back walls up, front walls low) and down. No whole-home rotation; furniture still turns 4 ways.
+- **View:** pinch to zoom, two-finger drag (or the D-pad) to pan over a home bigger than the screen. A walls button cycles walls up, cut away (back walls up, front walls low) and down.
+- **Turning the home** (Keegan, Nov 26, after the first playtest: pieces hid behind other pieces): a turn button under the walls button spins the whole home a quarter turn, so she can see it from all 4 sides. The walls nearest her always follow the view, so cut away and down lower whichever walls are in front. Wall pieces can hang on either side of a wall. Furniture still turns 4 ways on its own.
 - **Tray:** the same Home / Style / Build tabs as the other screens. The 8 tools are icons only, and the picked tool's name shows below them with a hint. Below that, cards for the picked tool (wall styles, doors, stair types).
 
 ## Title and cover
