@@ -321,6 +321,13 @@
       c.fillStyle = 'rgba(255,255,255,' + (.35 * (1 - ph2)).toFixed(2) + ')';
       for (var q = 0; q < 6; q++) c.fillRect(Math.round(sx + Math.sin(ph2 * 6 + q * .9) * 2), Math.round(sy - q * 2), 1, 2); }
   };
+  // a head and the top of the shoulders, for lying in bed (agents.js draws the body as a bump under the covers)
+  SS.headImg = function (who, back, look) {
+    var k = 'head' + who + (back ? 'B' : 'F') + (look || ''); if (CACHE[k]) return CACHE[k];
+    var b = base(who, back, look), h = who === 'sarah' ? 21 : 23, cv = canvas(b.width, h);
+    cv.getContext('2d').drawImage(b, 0, 0, b.width, h, 0, 0, b.width, h);
+    CACHE[k] = cv; return cv;
+  };
   SS.personSize = function (who) { var b = base(who, false); return [b.width, b.height]; };
 
   var CATS = {

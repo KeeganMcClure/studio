@@ -2,6 +2,30 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 26, 2026: lying in bed reads as in bed (Dev)
+
+Keegan's bug: in bed, Keegan was drawn as his standing sprite turned on its side, flat across the screen, so he hung off the bed.
+
+### What was built
+
+- Lying in bed is now drawn along the bed itself, in its own direction:
+  - the head rests on the pillow, sunk in a little;
+  - the body is a bump under the quilt, from the chin to the foot of the bed, in the quilt's own colours (or their clothes' colour on a bed without a quilt);
+  - on a double bed the two of them each get a side;
+  - in every turn of the bed and the home, the farther of head and body is drawn first;
+  - when the headboard is nearer than the pillow, it hides the back of the head.
+- Bubbles and the progress bar sit over the head on the pillow.
+- Scrolling in bed at night holds the phone up over her face, with its glow.
+
+### Checks
+
+- `npm run check`: for Lie in, both heads land on the bed in all 4 views of the home.
+- New screen: `src/dist/screen-in-bed-375x667.png`.
+
+### What's left
+
+- The contact sheet still shows the old lying pose on its own. It's only used where there's no bed under someone.
+
 ## Nov 26, 2026: turning the whole home (Dev)
 
 From studio PR #301 (bible, Building, Turning the home; spec 001, part B, What turning the home touches).

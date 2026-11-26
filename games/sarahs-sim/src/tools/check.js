@@ -735,6 +735,18 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       if (!end || end[0] !== tgt.x || end[1] !== tgt.y) bad.push('view ' + k + ': tapping tile ' + tgt.x + ',' + tgt.y + ' walks Sarah to ' + JSON.stringify(end));
     }
     await page.evaluate(() => { SS.view.k = 0; SSG.openMode('sandbox'); });
+    // lying in bed (Keegan, Nov 26): both heads rest on the bed, not off its side, in every view
+    await page.evaluate(() => { const G = SSG; SS.setClock(8, 20); G.openMode('life'); SS.stopSarahIdle(G); SS.stopActions(G); G.kday = null;
+      const bed = G.W.pieces.find(p => G.W.def(p).use === 'bed' && G.W.def(p).w >= 2); SS.chooseAction(G, { piece: bed }, SS.ACTIONS.bed.find(a => a.name === 'LIE IN'));
+      let t = 0; while (G.act && (!G.act.started || G.act.waitK) && t < 200) { SS.updateAgents(G, .05); t += .05; } G.setFloor(G.W.floorOf(bed)); G.bedUid = bed.uid; });
+    for (let k = 0; k < 4; k++) {
+      await page.evaluate(k => { SS.view.k = k; }, k); await page.waitForTimeout(150);
+      const r = await page.evaluate(() => { const G = SSG, h = G.lastHits.find(h => h.p && h.p.uid === G.bedUid); if (!h) return ['the bed is not drawn'];
+        return ['sarah', 'keegan'].map(w => { const a = G.people[w]; if (a.pose !== 'lie') return w + ' is not lying in bed'; const q = a.lieHead; if (!q) return w + '\'s head is not on the pillow';
+          return q[0] >= h.x && q[0] <= h.x + h.sp.cv.width && q[1] + 8 >= h.y && q[1] <= h.y + h.sp.cv.height ? null : w + ' lies off the bed'; }).filter(Boolean); });
+      r.forEach(o => bad.push('view ' + k + ': ' + o));
+    }
+    await page.evaluate(() => { SS.stopActions(SSG); SS.view.k = 0; SSG.openMode('sandbox'); });
     // wall pieces hang on either side of a wall and keep their side
     const sides = await page.evaluate(() => {
       const G = SSG, W = G.W, out = [], d = SS.DEF['framed-print'];
@@ -822,6 +834,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       ['life-night', () => { SS.setClock(21, 30); SSG.openMode('life'); }, null],
       ['stairs', () => { SS.setClock(14, 0); SSG.openMode('life'); SSG.cam.zoom = 2; SSG.cam.x -= 40; }, null],
       ['walls-up-floor2', () => { SS.setClock(8, 5); SSG.openMode('life'); SSG.setFloor(1); SSG.walls = 'up'; }, null],
+      ['in-bed', () => { const G = SSG; SS.setClock(8, 20); G.openMode('life'); SS.stopSarahIdle(G); SS.stopActions(G); G.kday = null; const bed = G.W.pieces.find(p => G.W.def(p).use === 'bed' && G.W.def(p).w >= 2); SS.chooseAction(G, { piece: bed }, SS.ACTIONS.bed.find(a => a.name === 'LIE IN')); let t = 0; while (G.act && (!G.act.started || G.act.waitK) && t < 200) { SS.updateAgents(G, .05); t += .05; } G.setFloor(2); G.cam.zoom = 2; const q = SS.vp(bed.x + 1, bed.y + 1.5, 2 * SS.FH + 10); G.cam.x = q[0] + SS.OFF[0]; G.cam.y = q[1] + SS.OFF[1]; G.toastT = null; }, null],
       ['life-bubble', () => { SS.setClock(10, 0); SSG.openMode('life'); SSG.setFloor(1); const k = SSG.people.keegan; SSG.bubble = { target: { agent: k }, actions: SS.ACTIONS.keegan, cur: 0, tip: [150, 150], title: 'KEEGAN · AT HIS DESK' }; }, null]
     ];
     for (const [name, fn] of shots) {

@@ -2647,6 +2647,13 @@ var SS = window.SS = window.SS || {};
       c.fillStyle = 'rgba(255,255,255,' + (.35 * (1 - ph2)).toFixed(2) + ')';
       for (var q = 0; q < 6; q++) c.fillRect(Math.round(sx + Math.sin(ph2 * 6 + q * .9) * 2), Math.round(sy - q * 2), 1, 2); }
   };
+  // a head and the top of the shoulders, for lying in bed (agents.js draws the body as a bump under the covers)
+  SS.headImg = function (who, back, look) {
+    var k = 'head' + who + (back ? 'B' : 'F') + (look || ''); if (CACHE[k]) return CACHE[k];
+    var b = base(who, back, look), h = who === 'sarah' ? 21 : 23, cv = canvas(b.width, h);
+    cv.getContext('2d').drawImage(b, 0, 0, b.width, h, 0, 0, b.width, h);
+    CACHE[k] = cv; return cv;
+  };
   SS.personSize = function (who) { var b = base(who, false); return [b.width, b.height]; };
 
   var CATS = {
@@ -3836,10 +3843,14 @@ var SS = window.SS = window.SS || {};
       // facings are kept in the home's own directions; the view turns them (view.js). Standing still, people face the front
       var fc = SS.vface(a.flip, walking && a.back);
       if (a.kind === 'person' && !walking && fc.back) fc = { flip: !fc.flip, back: false };   // standing or sitting still, people show their faces, as they always have, turned the nearer way
-      if (a.kind === 'person' && pose === 'bath') drawBath(c, a, p, fc.flip);
+      var lieAt = null;
+      if (a.kind === 'person' && pose === 'lie' && a.on && SS.G && SS.G.W.byUid[a.on] && SS.G.W.def(SS.G.W.byUid[a.on]).use === 'bed') lieAt = drawLie(c, a, SS.G.W.byUid[a.on], fc.flip);
+      else if (a.kind === 'person' && pose === 'bath') drawBath(c, a, p, fc.flip);
       else if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: fc.back, flip: fc.flip, t: performance.now(), arms: walking ? null : a.arms });
       else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: SS.vface(a.flip, a.back).flip, hat: SS.G && SS.G.xmasDay });
       var headY = p[1] - (a.kind === 'cat' ? 22 : (a.pose === 'sit' ? 36 : a.pose === 'lie' ? 16 : a.pose === 'bath' ? 34 : 42));
+      a.lieHead = lieAt;   // where her head rests on screen (the checks read it)
+      if (lieAt) { p = [lieAt[0], p[1]]; headY = lieAt[1]; }   // in bed: bubbles and the bar sit over the head on the pillow
       if (a.bar) { // the slim progress bar over her head
         var w = 18, k = Math.min(1, a.bar.k);
         c.fillStyle = '#3b2430'; c.fillRect(Math.round(p[0] - w / 2 - 1), Math.round(headY - 6), w + 2, 4);
@@ -3851,6 +3862,38 @@ var SS = window.SS = window.SS || {};
       if (a.extra) a.extra(c, p);
     };
     return a;
+  }
+  // lying in bed (Keegan, Nov 26: lying on her side across the screen hung off the bed). The head rests on the pillow and the body is
+  // a bump under the covers, both laid along the bed in its own direction, so it reads in every turn of the bed and the home.
+  // The far one of the two is drawn first; when the headboard is nearer her than the pillow, it hides the back of the head.
+  function drawLie(c, a, bed, flip) {
+    var W = SS.G.W, d = W.def(bed), M = SS.Model(null, d, bed, { x: bed.x, y: bed.y, rot: bed.r || 0 }), Z = W.floorOf(bed) * FH;
+    // which lane of the bed: the spot nearest where she is (two lanes on a double bed)
+    var lanes = d.w >= 2 ? [d.w * .3, d.w * .7] : [d.w / 2], u = lanes[0], best = 1e9;
+    lanes.forEach(function (l) { var q = M.wp(l, d.d * .5), dd = Math.hypot(q[0] - a.x, q[1] - a.y); if (dd < best) { best = dd; u = l; } });
+    var vHead = Math.min(.5, d.d * .25), top = (d.seat || 13) + 2, half = Math.min(.24, d.w / 4 - .04);
+    var hw = M.wp(u, vHead), hv = SS.vxy(hw[0], hw[1]);
+    var f0 = M.wp(u - half, vHead + .24), f1 = M.wp(u + half, d.d - .12), vr = SS.vrect(Math.min(f0[0], f1[0]), Math.min(f0[1], f1[1]), Math.max(f0[0], f1[0]), Math.max(f0[1], f1[1]));
+    var feet = M.wp(u, d.d - .2), fv = SS.vxy(feet[0], feet[1]), headNear = hv[0] + hv[1] > fv[0] + fv[1];
+    var ramp = d.parts.some(function (q) { return q[0] === 'quilt'; }) ? M.ramp('quilt') : StudioIso.ramp(a.who === 'sarah' ? '#c9636b' : '#3c6a55');
+    var mound = function () { SS.I.box(c, vr[0], vr[1], vr[2] - vr[0], vr[3] - vr[1], 4, Z + top, [ramp[0], ramp[1], ramp[2]], { hi: false }); };
+    var hp = SS.vp(hw[0], hw[1], Z + top + 1), img = SS.headImg(a.who, headNear, null), dx = Math.round(hp[0] - img.width / 2), dy = Math.round(hp[1] - img.height + 4);   // sunk into the pillow, the covers up to the chin
+    var head = function () {
+      c.save();
+      if (headNear) { // the headboard stands between her and the pillow: show only what rises over it
+        var e0 = M.wp(0, .1), e1 = M.wp(d.w, .1), q0 = SS.vp(e0[0], e0[1], Z + (d.h || 28) - 2), q1 = SS.vp(e1[0], e1[1], Z + (d.h || 28) - 2), L = q0[0] < q1[0] ? q0 : q1, R2 = q0[0] < q1[0] ? q1 : q0;
+        c.beginPath(); c.moveTo(L[0], L[1]); c.lineTo(R2[0], R2[1]); c.lineTo(R2[0], R2[1] - 200); c.lineTo(L[0], L[1] - 200); c.closePath(); c.clip();
+      }
+      if (flip) { c.translate(dx + img.width, dy); c.scale(-1, 1); c.drawImage(img, 0, 0); } else c.drawImage(img, dx, dy);
+      c.restore();
+      if (!headNear && a.arms === 'phone') { // scrolling in bed: the phone held up over her face, its glow on her
+        var px = Math.round(hp[0] + (flip ? -2 : -1)), py = Math.round(hp[1] - img.height + 3);
+        c.fillStyle = 'rgba(190,225,255,.25)'; c.fillRect(px - 4, py + 7, 10, 8);
+        c.fillStyle = '#3b2430'; c.fillRect(px, py + 3, 4, 6); c.fillStyle = '#5a4650'; c.fillRect(px + 1, py + 4, 2, 4);
+      }
+    };
+    if (headNear) { mound(); head(); } else { head(); mound(); }
+    return [hp[0], dy - 2];
   }
   // Sarah in the bath: drawn from her water line, clipped at the tub's front rim (its basin's lower edges on screen)
   function drawBath(c, a, p, flip) {
