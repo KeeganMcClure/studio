@@ -113,7 +113,7 @@
     c.restore();
   }
 
-  window.LOUIE_SIT = SIT; window.LOUIE_PAL = PAL;
+  window.LOUIE_SIT = SIT; window.LOUIE_PAL = PAL; window.LOUIE_LOAF = LOAF; window.LOUIE_CURL = CURL;
   window.drawLouieSheet = function (c, W, H, t) {
     c.imageSmoothingEnabled = false;
     c.fillStyle = '#fff6ea'; c.fillRect(0, 0, W, H);
