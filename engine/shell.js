@@ -6,6 +6,8 @@
 //        data-label-start="Start: menu">...</div>
 //   <script src="../../../engine/shell.js"></script>   (first script, before any game code)
 // Optional labels (spoken by screen readers): data-label-l, -r, -start, -select, -a, -b.
+// data-shoulders="off" leaves out the L and R row, for a game whose bible drops them (Sarah's Sim, Nov 25, 2026);
+// the screen gets that space. engine/input.js skips buttons that aren't there.
 //
 // It wraps the screen in the bezel with the brand strip and the LED (#led), then the shoulder row with
 // L top left and R top right (#bL #bR, spec 003), then the controls row: D-pad ([data-pad]),
@@ -26,10 +28,11 @@
     '\n  <div class="shell">\n    <div class="bezel">\n' +
     '      <div class="brand"><span><span class="led" id="led"></span>' + esc(d.brand || '') + '</span><span>' + esc(d.brandSub || '') + '</span></div>\n' +
     '      <i data-screen></i>\n    </div>\n' +
+    (d.shoulders === 'off' ? '' :
     '    <div class="shoulders">\n' +
     '      <button class="sh l" id="bL" aria-label="' + lab('L', 'L: previous') + '">L</button>\n' +
     '      <button class="sh r" id="bR" aria-label="' + lab('R', 'R: next') + '">R</button>\n' +
-    '    </div>\n' +
+    '    </div>\n') +
     '    <div class="ctrls">\n' +
     '      <div class="dpad">\n' +
     '        <button class="u" data-pad="up" aria-label="Up">▲</button>\n' +

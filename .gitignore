@@ -1,1 +1,4 @@
 _site/
+# Sarah's Sim private data: Keegan adds it at the final build; the repo keeps only the placeholder (bible, Overview, Private data)
+games/sarahs-sim/src/private.js
+games/sarahs-sim/src/dist-private/
