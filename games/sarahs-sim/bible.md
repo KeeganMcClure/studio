@@ -84,8 +84,8 @@ Every screen you can see, in play order (`studio-bible/studio.md`, Screen list).
 | Visitor chat | A visitor talks and asks for a gig | `specs/008-visitors-and-neighborhood.md` | `visitor-v1` (approved Nov 25, 2026) |
 | Gig | See what a visitor wants, design it, hand it in, get paid | `specs/006-life-mode.md` | `gig-v1` (approved Nov 26, 2026) |
 | Neighborhood | Walk to a neighbor's home to help redo it | `specs/008-visitors-and-neighborhood.md` | `neighborhood-v1` (approved Nov 26, 2026) |
-| Memory book | Flip through moments, notes and photos | `specs/007-memory-book-and-notes.md` | **To draw** |
-| Note found | Read a note from Keegan she found in the home | `specs/007-memory-book-and-notes.md` | **To draw** |
+| Memory book | Flip through moments, notes and photos | `specs/007-memory-book-and-notes.md` | `memory-book-v1` (drawn Nov 26, 2026, waiting on Keegan's review) |
+| Note found | Read a note from Keegan she found in the home | `specs/007-memory-book-and-notes.md` | `memory-book-v1`, state `note` (drawn Nov 26, 2026, waiting on Keegan's review) |
 | Favorites | Save and reuse whole rooms and outfits | `specs/001-home-and-decorating.md` | `favorites-v1` (approved Nov 25, 2026) |
 | Camera | Take a clean picture of a room or outfit | `specs/001-home-and-decorating.md` | `camera-v1` (approved Nov 25, 2026) |
 | Challenges | Pick a challenge and see how you did | `specs/010-challenges.md` | **To draw** |
