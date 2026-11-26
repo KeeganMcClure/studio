@@ -9,7 +9,10 @@
   var INK = 'rgba(59,36,48,.85)';
   var OFF = SS.OFF = [210, 300], WORLD = SS.WORLD = [420, 520];   // the world canvas: lot tile 0,0 at OFF
   function R(c, x, y, w, h, col) { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
-  function P(x, y, h) { return I.p(x, y, h); }
+  // P: a lot point on the screen, through the view's turn (view.js). Q: a point already turned into the view, for the walls
+  // and stairs, which are turned as a whole first so their visible faces and far sides follow the view
+  function P(x, y, h) { return SS.vp(x, y, h); }
+  function Q(x, y, h) { return I.p(x, y, h); }
 
   // ---------- floors ----------
   var FLOORS = {
@@ -40,7 +43,7 @@
     // the front path from the door to the street
     var ax = W.ax, ay = W.ay;
     for (var y = ay + W.home.d; y < n; y++) poly(c, [P(ax + 1, y), P(ax + 2, y), P(ax + 2, y + 1), P(ax + 1, y + 1)], y % 2 ? '#e3d3bf' : '#d6c3ab');
-    var e1 = P(0, n), e2 = P(n, n), e3 = P(n, 0); poly(c, [e1, e2, [e2[0], e2[1] + 5], [e1[0], e1[1] + 5]], '#8e6a4a'); poly(c, [e2, e3, [e3[0], e3[1] + 5], [e2[0], e2[1] + 5]], '#6f5038');
+    var e1 = Q(0, n), e2 = Q(n, n), e3 = Q(n, 0); poly(c, [e1, e2, [e2[0], e2[1] + 5], [e1[0], e1[1] + 5]], '#8e6a4a'); poly(c, [e2, e3, [e3[0], e3[1] + 5], [e2[0], e2[1] + 5]], '#6f5038');
   }
   function drawFloorTiles(c, W, f, Z) {
     var ax = W.ax, ay = W.ay;
@@ -49,9 +52,9 @@
       FLOORS[r.floor](c, x, y, Z);
     }
     // the slab edge along the open front sides (upper floors read as floors, mockups/build-v1)
-    var x0 = ax, x1 = ax + W.home.w, y0 = ay, y1 = ay + W.home.d;
-    poly(c, [P(x0, y1, Z), P(x1, y1, Z), P(x1, y1, Z - 5), P(x0, y1, Z - 5)], f ? '#c9a58a' : '#7d4c30');
-    poly(c, [P(x1, y0, Z), P(x1, y1, Z), P(x1, y1, Z - 5), P(x1, y0, Z - 5)], f ? '#a9866d' : '#5e3822');
+    var vr = SS.vrect(ax, ay, ax + W.home.w, ay + W.home.d), x0 = vr[0], y0 = vr[1], x1 = vr[2], y1 = vr[3];
+    poly(c, [Q(x0, y1, Z), Q(x1, y1, Z), Q(x1, y1, Z - 5), Q(x0, y1, Z - 5)], f ? '#c9a58a' : '#7d4c30');
+    poly(c, [Q(x1, y0, Z), Q(x1, y1, Z), Q(x1, y1, Z - 5), Q(x1, y0, Z - 5)], f ? '#a9866d' : '#5e3822');
   }
 
   // ---------- walls ----------
@@ -75,12 +78,12 @@
     var opening = s.op === 'door' || s.op === 'arch', DOORH = 34;
     if (opening && s.op === 'arch' || (opening && s.op === 'door' && !s.ext)) { if (H <= DOORH) return; lo = DOORH; }
     var paper = s.b ? SS.PAPERS[s.b.paper] : null;
-    var A = P(x0, y0, Z + lo), B = P(x1, y0, Z + lo), C = P(x1, y1, Z + lo), D = P(x0, y1, Z + lo), h = hi - lo;
+    var A = Q(x0, y0, Z + lo), B = Q(x1, y0, Z + lo), C = Q(x1, y1, Z + lo), D = Q(x0, y1, Z + lo), h = hi - lo;
     var up = function (q) { return [q[0], q[1] - h]; };
     // the visible face: +y for walls along x, +x for walls along y
     var face = s.axis === 'x' ? [D, C, up(C), up(D)] : [B, C, up(C), up(B)];
     var endFace = s.axis === 'x' ? [B, C, up(C), up(B)] : [D, C, up(C), up(D)];
-    var fa = function (u, hh) { return s.axis === 'x' ? P(s.x + u, s.y + th, Z + hh) : P(s.x + th, s.y + u, Z + hh); };
+    var fa = function (u, hh) { return s.axis === 'x' ? Q(s.x + u, s.y + th, Z + hh) : Q(s.x + th, s.y + u, Z + hh); };
     var faceAt = function (u0, u1, h0, h1) { return [fa(u0, h0), fa(u1, h0), fa(u1, h1), fa(u0, h1)]; };
     if (paper) {
       poly(c, face, paper.base);
@@ -137,6 +140,14 @@
     if (s.ext && !inside) { var wr = fa(.5, 25); c.strokeStyle = '#3f6e4a'; c.lineWidth = 2; c.beginPath(); c.arc(wr[0], wr[1], 3.5, 0, 7); c.stroke(); c.lineWidth = 1; R(c, wr[0] - 1, wr[1] + 3, 3, 2, '#e46f8b'); }
   }
 
+  // this floor's walls as the view sees them (view.js), made once per turn
+  function viewWalls(W, f) {
+    var C = W._vw || (W._vw = {});
+    if (C.k !== SS.view.k || C.walls !== W.walls) { C.k = SS.view.k; C.walls = W.walls; C.f = {}; }
+    if (!C.f[f]) { var segs = (W.walls[f] || []).map(SS.vseg); segs.key = {}; segs.forEach(function (q) { segs.key[q.x + ',' + q.y + q.axis] = q; }); C.f[f] = segs; }
+    return C.f[f];
+  }
+  SS.viewWalls = viewWalls;
   // ---------- stairs and banisters ----------
   function stairItems(W, s, Z, items) { // a straight flight of steps rising toward its top, two steps a tile
     // Like build-v1: each step is a box with a light nosing on its front edge, and one solid stringer runs along the open
@@ -152,36 +163,38 @@
         items.push({ kind: 'step', x0: x0, x1: x0 + w, y0: y0, y1: y0 + d, z0: Z, z1: Z + h, draw: function (c) {
           I.box(c, x0, y0, w, d, h, Z, ['#ecbd8a', '#c48a58', '#a06a40']);
           // the nosing: the step's front edge, toward the bottom of the flight
-          if (dy) { var ny = dy < 0 ? y0 + d : y0; line(c, P(x0, ny, Z + h), P(x0 + w, ny, Z + h), '#fbe0bd'); }
-          else { var nx = dx < 0 ? x0 + w : x0; line(c, P(nx, y0, Z + h), P(nx, y0 + d, Z + h), '#fbe0bd'); }
+          if (dy) { var ny = dy < 0 ? y0 + d : y0; line(c, Q(x0, ny, Z + h), Q(x0 + w, ny, Z + h), '#fbe0bd'); }
+          else { var nx = dx < 0 ? x0 + w : x0; line(c, Q(nx, y0, Z + h), Q(nx, y0 + d, Z + h), '#fbe0bd'); }
           // this step's slice of the stringer: no seams between slices, so the side is one solid board
           var tA = k * .5, tB = (k + 1) * .5, a, b;   // a: the slice's lower end, b: its upper end
           if (dy) { var xs = x0 + w; a = dy < 0 ? [xs, y0 + d] : [xs, y0]; b = dy < 0 ? [xs, y0] : [xs, y0 + d]; }
           else { var ys = y0 + d; a = dx < 0 ? [x0 + w, ys] : [x0, ys]; b = dx < 0 ? [x0, ys] : [x0 + w, ys]; }
           var zA = Z + rise(tA), zB = Z + rise(tB);
-          poly(c, [P(a[0], a[1], Z), P(a[0], a[1], zA), P(b[0], b[1], zB), P(b[0], b[1], Z)], '#8e5a37');
-          poly(c, [P(a[0], a[1], zA - 3), P(a[0], a[1], zA), P(b[0], b[1], zB), P(b[0], b[1], zB - 3)], '#b9804f');
-          line(c, P(a[0], a[1], zA), P(b[0], b[1], zB), '#55311d');
-          if (k === 0) line(c, P(a[0], a[1], Z), P(a[0], a[1], zA), '#55311d');
+          poly(c, [Q(a[0], a[1], Z), Q(a[0], a[1], zA), Q(b[0], b[1], zB), Q(b[0], b[1], Z)], '#8e5a37');
+          poly(c, [Q(a[0], a[1], zA - 3), Q(a[0], a[1], zA), Q(b[0], b[1], zB), Q(b[0], b[1], zB - 3)], '#b9804f');
+          line(c, Q(a[0], a[1], zA), Q(b[0], b[1], zB), '#55311d');
+          if (k === 0) line(c, Q(a[0], a[1], Z), Q(a[0], a[1], zA), '#55311d');
         } });
       })(x0, y0, w, d, h, k);
     }
   }
   function railItems(W, f, Z, items) { // banisters on the open sides of each stairwell on this floor
-    W.stairs.forEach(function (s) {
+    var VS = viewWalls(W, f);
+    W.stairs.map(SS.vstair).forEach(function (s) {
       if (s.floor + 1 !== f) return;
       var xs = s.tiles.map(function (q) { return q[0]; }), ys = s.tiles.map(function (q) { return q[1]; });
       var x0 = Math.min.apply(0, xs), x1 = Math.max.apply(0, xs) + 1, y0 = Math.min.apply(0, ys), y1 = Math.max.apply(0, ys) + 1;
       var sides = [];
-      if (!W.seg(f, x1, y0, 'y')) sides.push([[x1, y0], [x1, y1]]);
-      if (!W.seg(f, x0, y1, 'x')) sides.push([[x0, y1], [x1, y1]]);
-      if (!W.seg(f, x0, y0, 'x') && !(s.to[1] < y0)) sides.push([[x0, y0], [x1, y0]]);
+      if (!VS.key[x1 + ',' + y0 + 'y']) sides.push([[x1, y0], [x1, y1]]);
+      if (!VS.key[x0 + ',' + y1 + 'x']) sides.push([[x0, y1], [x1, y1]]);
+      if (!VS.key[x0 + ',' + y0 + 'x'] && !(s.to[1] < y0)) sides.push([[x0, y0], [x1, y0]]);
       sides.forEach(function (sd) {
         var a = sd[0], b = sd[1];
-        items.push({ kind: 'rail', x0: Math.min(a[0], b[0]) - .05, x1: Math.max(a[0], b[0]) + .05, y0: Math.min(a[1], b[1]) - .05, y1: Math.max(a[1], b[1]) + .05, z0: Z, z1: Z + 14, draw: function (c) {
+        var ex = a[0] === b[0] ? .05 : -.1, ey = a[1] === b[1] ? .05 : -.1;   // thin across, kept short of its ends so it never reaches into a wall's line
+        items.push({ kind: 'rail', x0: Math.min(a[0], b[0]) - ex, x1: Math.max(a[0], b[0]) + ex, y0: Math.min(a[1], b[1]) - ey, y1: Math.max(a[1], b[1]) + ey, z0: Z, z1: Z + 14, draw: function (c) {
           var n = Math.max(2, Math.round(Math.hypot(b[0] - a[0], b[1] - a[1]) * 3));
-          for (var q = 1; q < n; q++) { var pt = P(a[0] + (b[0] - a[0]) * q / n, a[1] + (b[1] - a[1]) * q / n, Z); R(c, pt[0], pt[1] - 11, 1, 11, '#8e5a37'); }
-          var t1 = P(a[0], a[1], Z + 12), t2 = P(b[0], b[1], Z + 12); line(c, t1, t2, '#55311d', 2); line(c, [t1[0], t1[1] - 1], [t2[0], t2[1] - 1], '#dca474');
+          for (var q = 1; q < n; q++) { var pt = Q(a[0] + (b[0] - a[0]) * q / n, a[1] + (b[1] - a[1]) * q / n, Z); R(c, pt[0], pt[1] - 11, 1, 11, '#8e5a37'); }
+          var t1 = Q(a[0], a[1], Z + 12), t2 = Q(b[0], b[1], Z + 12); line(c, t1, t2, '#55311d', 2); line(c, [t1[0], t1[1] - 1], [t2[0], t2[1] - 1], '#dca474');
           [a, b].forEach(function (q) { I.box(c, q[0] - .06, q[1] - .06, .12, .12, 14, Z, ['#dca474', '#b9804f', '#8e5a37']); });
         } });
       });
@@ -200,7 +213,7 @@
     return [p.id, p.r || 0, p.wall ? p.wall[2] : '', p.sw || 0, JSON.stringify(p.colors || 0), JSON.stringify(p.pats || 0), p.props === false ? 0 : 1, p.lit ? 1 : 0, p.work ? 1 : 0, free, anim].join('|');
   };
   SS.pieceSprite = function (p, W, t, place) {
-    var d = SS.DEF[p.id], key = SS.spriteKey(p, d, W, t);
+    var d = SS.DEF[p.id], key = SS.spriteKey(p, d, W, t) + '|' + (place.rot || 0);
     var cache = SPR[p.uid] || (SPR[p.uid] = {});
     if (cache.key === key) return cache;
     // draw the piece at the origin (turn and wall side from its place) and keep its bounds
@@ -230,7 +243,7 @@
     var hits = [];
     // the ground, the floor below (dimmed) and this floor's tiles only change when something is placed or the view
     // changes, so they're drawn once into a layer and reused (o.version counts changes to the home)
-    var key = [F, o.version, look.snow ? 1 : 0, W.pieces.length].join('|');
+    var key = [F, o.version, look.snow ? 1 : 0, W.pieces.length, SS.view.k].join('|');
     if (BASE.key !== key) {
       var b = BASE.cv || (BASE.cv = document.createElement('canvas')); b.width = WORLD[0]; b.height = WORLD[1];
       var bc = b.getContext('2d'); bc.setTransform(1, 0, 0, 1, OFF[0], OFF[1]);
@@ -239,7 +252,7 @@
         drawFloorLayer(bc, W, F - 1, o, null, true);
         // dim everything drawn so far (the floor below and the ground), then draw the flight up undimmed
         bc.save(); bc.setTransform(1, 0, 0, 1, 0, 0); bc.globalCompositeOperation = 'source-atop'; bc.fillStyle = 'rgba(34,23,31,.55)'; bc.fillRect(0, 0, WORLD[0], WORLD[1]); bc.restore();
-        var fl = []; W.stairs.forEach(function (s) { if (s.floor === F - 1) stairItems(W, s, (F - 1) * FH, fl); });
+        var fl = []; W.stairs.forEach(function (s) { if (s.floor === F - 1) stairItems(W, SS.vstair(s), (F - 1) * FH, fl); });
         fl.forEach(function (it) { it.draw(bc); });
       }
       drawFloorTiles(bc, W, F, F * FH);
@@ -264,17 +277,20 @@
     // rugs lie flat under everything
     W.pieces.forEach(function (p) {
       var d = W.def(p); if (p.f !== f || d.kind !== 'rug' || p.uid === o.hidden) return;
-      var sp = SS.pieceSprite(p, W, t, { rot: p.r || 0 }), q = P(p.x, p.y, Z);
+      var vq = SS.vplace(p.x, p.y, p.r || 0, d.w, d.d), sp = SS.pieceSprite(p, W, t, { rot: vq.rot }), q = Q(vq.x, vq.y, Z);
       c.drawImage(sp.cv, Math.round(q[0] - sp.ox), Math.round(q[1] - sp.oy));
       if (hits) hits.push({ p: p, sp: sp, x: Math.round(q[0] - sp.ox), y: Math.round(q[1] - sp.oy), rug: true });
     });
     // walls
-    W.walls[f].forEach(function (s) {
+    // walls go in back to front: the far outside walls, the inside walls, then the near outside walls, each by depth, since the
+    // sort never compares two walls (engine/iso.js); a near wall then always covers the end of an inside wall, in every turn
+    var rank = function (s) { return s.back ? 0 : s.ext ? 2 : 1; };
+    viewWalls(W, f).slice().sort(function (a, b) { return rank(a) - rank(b) || (a.x + a.y) - (b.x + b.y); }).forEach(function (s) {
       var th = .07, H = wallHeight(s, mode);
       items.push({ kind: 'wall', s: s, plane: { axis: s.axis, at: s.axis === 'x' ? s.y : s.x }, x0: s.axis === 'x' ? s.x : s.x - th, x1: s.axis === 'x' ? s.x + 1 : s.x + th, y0: s.axis === 'x' ? s.y - th : s.y, y1: s.axis === 'x' ? s.y + th : s.y + 1, z0: Z, z1: Z + H,
         draw: function (c) { drawWall(c, W, s, Z, mode, look, t); } });
     });
-    W.stairs.forEach(function (s) { if (s.floor === f) stairItems(W, s, Z, items); });
+    W.stairs.forEach(function (s) { if (s.floor === f) stairItems(W, SS.vstair(s), Z, items); });
     railItems(W, f, Z, items);
     // pieces
     var byUid = {};
@@ -290,14 +306,15 @@
     if (!dimmed && o.agents) o.agents.forEach(function (a) {
       if (a.f !== f && !(a.climb && a.climb.floor + 1 === f)) return;
       var at = a.at || { x: a.x, y: a.y };
-      var it = { kind: 'agent', a: a, x0: at.x - .2, x1: at.x + .2, y0: at.y - .2, y1: at.y + .2, z0: Z + (a.z || 0), z1: Z + (a.z || 0) + 30, draw: function (c) { a.draw(c, P(at.x, at.y, Z + (a.z || 0))); } };
+      var vc = SS.vxy(at.x, at.y);
+      var it = { kind: 'agent', a: a, x0: vc[0] - .2, x1: vc[0] + .2, y0: vc[1] - .2, y1: vc[1] + .2, z0: Z + (a.z || 0), z1: Z + (a.z || 0) + 30, draw: function (c) { a.draw(c, P(at.x, at.y, Z + (a.z || 0))); } };
       if (a.on && byUid[a.on]) it.after = byUid[a.on];
       items.push(it);
     });
     if (!dimmed && o.ghost && o.ghost.f === f) items.push(o.ghost.item(Z));
     // project and sort
     items.forEach(function (it) {
-      var pts = [P(it.x0, it.y0, it.z1), P(it.x1, it.y0, it.z1), P(it.x1, it.y1, it.z0), P(it.x0, it.y1, it.z0), P(it.x1, it.y1, it.z1), P(it.x0, it.y1, it.z1), P(it.x1, it.y0, it.z0)];
+      var pts = [Q(it.x0, it.y0, it.z1), Q(it.x1, it.y0, it.z1), Q(it.x1, it.y1, it.z0), Q(it.x0, it.y1, it.z0), Q(it.x1, it.y1, it.z1), Q(it.x0, it.y1, it.z1), Q(it.x1, it.y0, it.z0)];   // the boxes are already in the view
       var bb = SS.bounds(pts); it.l = bb[0]; it.t = bb[1]; it.r = bb[2]; it.b = bb[3];
       // a piece's drawing can spill past its box (a plant's leaves, a lamp's shade, an easel's legs): against walls, sort by
       // what's drawn
@@ -314,30 +331,29 @@
   }
   function isUnder(W, p, uid) { var h = W.hostOf(p); return !!h && (h.uid === uid || isUnder(W, h, uid)); }
   function pieceItem(W, p, d, Z, t, mode) {
-    var place, wx, wy, zl = 0;
+    // every piece is drawn at its own turn plus the view's, from its footprint's corner as the view sees it (view.js)
     if (p.wall) {
       var s = W.seg(p.f, p.wall[0], p.wall[1], p.wall[2]);
-      if (!s || wallHeight(s, mode) < SS.WALL_UP) return null;   // wall pieces go with their wall when it's cut down
-      var wp = W.wallPlace(p); place = { rot: wp.rot }; wx = wp.x; wy = wp.y; zl = 0;
-      var sp0 = SS.pieceSprite(p, W, t, place), q0 = P(wx, wy, Z + wp.z);
-      // for sorting, a wall piece lies flat against the room side of its wall, so anything standing in the room (a counter under a
-      // window, a fridge beside it) always draws in front of it. Curtains hang a little past the window on each side.
-      var wl = p.wall[2] === 'x' ? wp.y - .07 : wp.x - .07, pad = d.window ? .2 : 0, a0 = (p.wall[2] === 'x' ? wx : wy) - pad, a1 = (p.wall[2] === 'x' ? wx : wy) + d.w + pad;
-      var bx = p.wall[2] === 'x' ? [a0, a1, wl, wl + .06] : [wl, wl + .06, a0, a1];   // its middle is just on the room side
-      return { kind: 'piece', p: p, sp: sp0, dx: Math.round(q0[0] - sp0.ox), dy: Math.round(q0[1] - sp0.oy), x0: bx[0], x1: bx[1], y0: bx[2], y1: bx[3], z0: Z + wp.z, z1: Z + wp.z + d.h };
+      if (!s || wallHeight(SS.vseg(s), mode) < SS.WALL_UP) return null;   // wall pieces go with their wall when it's cut down
+      var wp = W.wallPlace(p), vw = SS.vplace(wp.x, wp.y, wp.rot, d.w, d.d);
+      var sp0 = SS.pieceSprite(p, W, t, { rot: vw.rot }), q0 = Q(vw.x, vw.y, Z + wp.z);
+      // for sorting, a wall piece lies flat against its own side of its wall, so anything standing in the room in front of it
+      // (a counter under a window, a fridge beside it) always draws over it. Curtains hang a little past the window each side.
+      var ax = p.wall[2] === 'x', wl = ax ? p.wall[1] : p.wall[0], along = ax ? p.wall[0] : p.wall[1], pad = d.window ? .2 : 0;
+      var nb = (p.side || 1) < 0 ? [wl - .06, wl] : [wl, wl + .06], a0 = along - pad, a1 = along + d.w + pad;
+      var vb = ax ? SS.vrect(a0, nb[0], a1, nb[1]) : SS.vrect(nb[0], a0, nb[1], a1);
+      return { kind: 'piece', p: p, sp: sp0, dx: Math.round(q0[0] - sp0.ox), dy: Math.round(q0[1] - sp0.oy), x0: vb[0], x1: vb[2], y0: vb[1], y1: vb[3], z0: Z + wp.z, z1: Z + wp.z + d.h };
     }
     if (p.host) {
-      var host = W.hostOf(p), pos = W.spotPos(host, p.spot);
-      place = { rot: p.r || 0 };
-      var sp1 = SS.pieceSprite(p, W, t, place), q1 = P(pos.x - .5, pos.y - .5, Z + pos.z);
-      return { kind: 'piece', p: p, sp: sp1, dx: Math.round(q1[0] - sp1.ox), dy: Math.round(q1[1] - sp1.oy), x0: pos.x - .15, x1: pos.x + .15, y0: pos.y - .15, y1: pos.y + .15, z0: Z + pos.z, z1: Z + pos.z + d.h };
+      var host = W.hostOf(p), pos = W.spotPos(host, p.spot), vh = SS.vplace(pos.x - .5, pos.y - .5, p.r || 0, d.w, d.d), vc = SS.vxy(pos.x, pos.y);
+      var sp1 = SS.pieceSprite(p, W, t, { rot: vh.rot }), q1 = Q(vh.x, vh.y, Z + pos.z);
+      return { kind: 'piece', p: p, sp: sp1, dx: Math.round(q1[0] - sp1.ox), dy: Math.round(q1[1] - sp1.oy), x0: vc[0] - .15, x1: vc[0] + .15, y0: vc[1] - .15, y1: vc[1] + .15, z0: Z + pos.z, z1: Z + pos.z + d.h };
     }
-    place = { rot: p.r || 0 };
-    var sp = SS.pieceSprite(p, W, t, place), q = P(p.x, p.y, Z), ft = W.foot(p);
+    var vq = SS.vplace(p.x, p.y, p.r || 0, d.w, d.d), sp = SS.pieceSprite(p, W, t, { rot: vq.rot }), q = Q(vq.x, vq.y, Z), ft = W.foot(p);
     // the sort box sits inside the walls' thickness (.07 each side), so a piece pushed against a wall never overlaps it and
     // always sorts on the right side of it (Keegan's playtest, Nov 26: pieces by the front walls drew over them with walls up)
-    var ins = d.kind === 'small' ? .3 : .1;
-    return { kind: 'piece', p: p, sp: sp, dx: Math.round(q[0] - sp.ox), dy: Math.round(q[1] - sp.oy), x0: ft[0] + ins, x1: ft[2] - ins, y0: ft[1] + ins, y1: ft[3] - ins, z0: Z, z1: Z + (d.h || 20) };
+    var ins = d.kind === 'small' ? .3 : .1, vb2 = SS.vrect(ft[0] + ins, ft[1] + ins, ft[2] - ins, ft[3] - ins);
+    return { kind: 'piece', p: p, sp: sp, dx: Math.round(q[0] - sp.ox), dy: Math.round(q[1] - sp.oy), x0: vb2[0], x1: vb2[2], y0: vb2[1], y1: vb2[3], z0: Z, z1: Z + (d.h || 20) };
   }
 
   // ---------- light ----------

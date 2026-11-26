@@ -1,8 +1,8 @@
 // Sarah's Sim world: one home in one mode's save. Rooms, walls, doors, windows and stairs come from the prebuilt home data
 // (home.js); the placed pieces come from the save. It knows the placing rules (spec 001, part C): big pieces never overlap
-// or block a door or the stairs, small things stack on free spots, wall pieces hang on walls she can see, rugs lie under
+// or block a door or the stairs, small things stack on free spots, wall pieces hang on either side of a wall, rugs lie under
 // furniture. It also finds walks around furniture and up the stairs (spec 006, part B).
-// Tiles are lot tiles (0 to 15); floors are 0, 1, 2 (shown as 1, 2, 3).
+// Tiles are lot tiles (0 to 15); floors are 0, 1, 2 (shown as 1, 2, 3). Turning the home (view.js) never changes them.
 (function () {
   var FH = SS.FH = 52;      // one storey, in px (wall 48 + floor 4)
   var WALL_UP = SS.WALL_UP = 46;
@@ -79,12 +79,15 @@
       var hz = W.hostOf(host) ? W.spotPos(W.hostOf(host), host.spot).z : 0;
       return { x: q2[0], y: q2[1], z: hz + (d.top || 0) };
     };
-    // where a wall piece hangs: the model's place (turn 0 on walls along x, turn 3 on walls along y)
+    // where a wall piece hangs: the model's place. It hangs on either side of its wall (bible, Building, Turning the home):
+    // side 1 (the default, so older saves keep theirs) is the wall's + side, facing +y on walls along x and +x on walls along
+    // y (turns 0 and 3); side -1 is the other face (turns 2 and 1), its back against the wall
     W.wallPlace = function (p) {
-      var d = W.def(p), wx = p.wall[0], wy = p.wall[1];
-      if (p.wall[2] === 'x') return { x: wx, y: wy + .07, z: d.mount || 24, rot: 0 };
-      return { x: wx + .07, y: wy, z: d.mount || 24, rot: 3 };
+      var d = W.def(p), wx = p.wall[0], wy = p.wall[1], back = (p.side || 1) < 0;
+      if (p.wall[2] === 'x') return back ? { x: wx, y: wy - .07 - d.d, z: d.mount || 24, rot: 2 } : { x: wx, y: wy + .07, z: d.mount || 24, rot: 0 };
+      return back ? { x: wx - .07 - d.d, y: wy, z: d.mount || 24, rot: 1 } : { x: wx + .07, y: wy, z: d.mount || 24, rot: 3 };
     };
+    W.roomOn = function (s, side) { return (side || 1) < 0 ? s.a : s.b; };   // the room on that side of a wall
     W.wallSegs = function (q) { var n = Math.max(1, Math.ceil(W.def(q).w)), out = []; for (var k = 0; k < n; k++) out.push((q.wall[2] === 'x' ? (q.wall[0] + k) + ',' + q.wall[1] : q.wall[0] + ',' + (q.wall[1] + k)) + q.wall[2]); return out; };
     W.occ = function (f, except) { // tiles taken by big pieces (and small things standing on the floor)
       var o = {}, r = {};
@@ -110,10 +113,10 @@
         for (var k = 0; k < Math.ceil(d.w); k++) {
           var sx = cand.wall[2] === 'x' ? cand.wall[0] + k : cand.wall[0], sy = cand.wall[2] === 'y' ? cand.wall[1] + k : cand.wall[1];
           var s = W.seg(cand.f, sx, sy, cand.wall[2]);
-          if (!s || !s.b || s.op) return { ok: false, why: 'NEEDS A WALL' };
+          if (!s || !W.roomOn(s, cand.side) || s.op) return { ok: false, why: 'NEEDS A WALL' };
           if (d.window ? !s.win : s.win) return { ok: false, why: d.window ? 'NEEDS A WINDOW' : 'WINDOW' };
           var mine = sx + ',' + sy + cand.wall[2];
-          var taken = W.pieces.some(function (q) { return q !== except && q.wall && q.f === cand.f && W.wallSegs(q).indexOf(mine) >= 0; });
+          var taken = W.pieces.some(function (q) { return q !== except && q.wall && q.f === cand.f && (q.side || 1) === (cand.side || 1) && W.wallSegs(q).indexOf(mine) >= 0; });
           if (taken) return { ok: false, why: 'TAKEN' };
         }
         return { ok: true };

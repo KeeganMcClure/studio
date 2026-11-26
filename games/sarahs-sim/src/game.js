@@ -47,6 +47,8 @@
     if (mode === 'life') lampPhase(true);
     G.tray.open = mode === 'sandbox';
     G.floor = 0; G.walls = 'cut';
+    // the view she left this home in (bible, Building, Turning the home); older saves have none and open from the front
+    SS.view.L = G.W.lot; SS.view.k = (s.view || 0) % 4; G.turnAnim = null;
     SS.makeAgents(G); G.sarahF = undefined; G.idle = null; G.hunt = null; G.charging = false; SS.startKeeganDay(G);
     G.sel = null; centerCam(true); SS.startSarahIdle(G); SS.applyHolidays(G);
     G.screen = 'home';
@@ -70,7 +72,7 @@
   }
 
   // ---------- the camera ----------
-  function houseCenter(f) { var W = G.W; return I.p(W.ax + W.home.w / 2, W.ay + W.home.d / 2, f * FH + 18); }
+  function houseCenter(f) { var W = G.W; return SS.vp(W.ax + W.home.w / 2, W.ay + W.home.d / 2, f * FH + 18); }
   function centerCam(reset) {
     var q = houseCenter(G.floor);
     if (reset) G.cam.zoom = 1;   // the whole floor at the approved look's own scale (look-iso-v1: 22 px tiles); pinch in for a corner
@@ -80,6 +82,26 @@
   }
   function clampCam() { var W = G.W, l = I.p(0, W.lot)[0] + SS.OFF[0] + 40, r = I.p(W.lot, 0)[0] + SS.OFF[0] - 40, t = I.p(0, 0, (G.floor + 1) * FH + 20)[1] + SS.OFF[1], b = I.p(W.lot, W.lot)[1] + SS.OFF[1] - 30; G.cam.clamp(l, t, r, b); }
   G.setFloor = function (f) { if (f === G.floor) return; G.cam.y -= (f - G.floor) * FH; G.floor = f; G.bubble = null; clampCam(); };
+  // turning the home a quarter turn clockwise (bible, Building, Turning the home): the same spot stays in the middle of the
+  // screen at the same zoom, the walls nearest her follow the view, and the home remembers it (spec 001, part B)
+  G.turnHome = function () {
+    if (!G.W || G.screen !== 'home') return;
+    var Z = G.floor * FH, v = I.tile(G.cam.x - SS.OFF[0], G.cam.y - SS.OFF[1], Z), w = SS.vinv(v[0], v[1]);
+    var snap = document.createElement('canvas'); snap.width = W0; snap.height = G.H; snap.getContext('2d').drawImage(cv, 0, 0, cv.width, cv.height, 0, 0, W0, G.H);
+    SS.view.k = (SS.view.k + 1) % 4; G.save.view = SS.view.k;
+    var v2 = SS.vxy(w[0], w[1]), q = I.p(v2[0], v2[1], Z);
+    G.cam.x = q[0] + SS.OFF[0]; G.cam.y = q[1] + SS.OFF[1]; clampCam();
+    G.turnAnim = { t0: performance.now(), img: snap };
+    G.changed(true, true);
+  };
+  function turnAnim(now, h) { // the old view squeezes away to the left as the new one comes in, under half a second
+    var A = G.turnAnim; if (!A) return; var k = (now - A.t0) / 300; if (k >= 1) { G.turnAnim = null; return; }
+    var e = k * k * (3 - 2 * k), sx = 1 - .75 * e;
+    c.save(); c.beginPath(); c.rect(0, 0, W0, h); c.clip();
+    c.fillStyle = 'rgba(34,23,31,' + (.5 * (1 - e)).toFixed(2) + ')'; c.fillRect(0, 0, W0, h);
+    c.globalAlpha = 1 - e; c.translate(W0 / 2 - 60 * e, 0); c.scale(sx, 1); c.drawImage(A.img, 0, 0, W0, h, -W0 / 2, 0, W0, h);
+    c.restore(); c.globalAlpha = 1;
+  }
   G.cycleWalls = function () { G.walls = { up: 'cut', cut: 'down', down: 'up' }[G.walls]; G.toast('WALLS ' + { up: 'UP', cut: 'CUT AWAY', down: 'DOWN' }[G.walls], 700); };
   function zoomAt(k, mid) {
     var before = G.cam.toWorld(mid.x, mid.y);
@@ -92,11 +114,12 @@
   function toWorld(p) { var q = G.cam.toWorld(p.x, p.y); return [q[0] - SS.OFF[0], q[1] - SS.OFF[1]]; }
   function toScreen(wx, wy) { return G.cam.toView(wx + SS.OFF[0], wy + SS.OFF[1]); }
   G.toScreen = function (x, y) { return toScreen(x, y); };   // for the checks: where a world point shows on the screen
-  function tileAt(p, f) { var w = toWorld(p), q = I.tile(w[0], w[1], (f === undefined ? G.floor : f) * FH); return [Math.floor(q[0]), Math.floor(q[1]), q[0], q[1]]; }
+  function tileAt(p, f) { var w = toWorld(p), v = I.tile(w[0], w[1], (f === undefined ? G.floor : f) * FH), q = SS.vinv(v[0], v[1]); return [Math.floor(q[0]), Math.floor(q[1]), q[0], q[1]]; }
+  G.tileAt = tileAt;
   // keep a piece clear of the tray and the top bar (spec 001, part B: the tray never sits over a selected piece)
   function showPiece(p) {
     var W = G.W, ft = p.wall ? [p.wall[0], p.wall[1], p.wall[0] + 1, p.wall[1] + 1] : W.foot(p.host ? W.hostOf(p) : p);
-    var q = I.p((ft[0] + ft[2]) / 2, (ft[1] + ft[3]) / 2, W.floorOf(p) * FH + 10), s = toScreen(q[0], q[1]);
+    var q = SS.vp((ft[0] + ft[2]) / 2, (ft[1] + ft[3]) / 2, W.floorOf(p) * FH + 10), s = toScreen(q[0], q[1]);
     var bottom = G.H - SS.TRAY_H[G.trayState()] - 16, top = 50;
     if (s[1] > bottom) G.cam.y += (s[1] - bottom) / G.cam.zoom; if (s[1] < top) G.cam.y -= (top - s[1]) / G.cam.zoom;
     if (s[0] < 20) G.cam.x -= (20 - s[0]) / G.cam.zoom; if (s[0] > W0 - 40) G.cam.x += (s[0] - (W0 - 40)) / G.cam.zoom;
@@ -142,7 +165,7 @@
     var inst = JSON.parse(JSON.stringify(orig)); delete inst.x; delete inst.y; delete inst.wall; delete inst.host; delete inst.spot;
     G.hold = { inst: inst, from: 'move', orig: orig, stack: stack, r: orig.r || 0, f: G.W.floorOf(orig) === undefined ? G.floor : (orig.host ? G.floor : orig.f) };
     G.sel = null; G.paint = null;
-    var cand = orig.wall ? { wall: orig.wall } : orig.host ? { host: orig.host, spot: orig.spot } : { x: orig.x, y: orig.y };
+    var cand = orig.wall ? { wall: orig.wall, side: orig.side || 1 } : orig.host ? { host: orig.host, spot: orig.spot } : { x: orig.x, y: orig.y };
     G.hold.cand = cand; G.hold.f = orig.f !== undefined ? orig.f : G.floor; checkHold();
   };
   // where a held piece would go for a screen point
@@ -171,21 +194,22 @@
     var best = null;
     hd.spots.forEach(function (sp, i) {
       if (!W.spotFree(host, i)) return;
-      var pos = W.spotPos(host, i), q = I.p(pos.x, pos.y, W.floorOf(host) * FH + pos.z), dd = Math.hypot(q[0] - w[0], q[1] - w[1]);
+      var pos = W.spotPos(host, i), q = SS.vp(pos.x, pos.y, W.floorOf(host) * FH + pos.z), dd = Math.hypot(q[0] - w[0], q[1] - w[1]);
       if (!best || dd < best.d) best = { d: dd, spot: i };
     });
     return best ? { p: host, spot: best.spot } : null;
   }
-  function nearestWall(p, f, d) { // wall pieces snap flat to the nearest wall she can see, at eye height
+  function nearestWall(p, f, d) { // wall pieces snap flat to the nearest wall she can see, at eye height, on the side facing her
     var w = toWorld(p), W = G.W, best = null;
     W.walls[f].forEach(function (s) {
-      if (!s.b || s.op) return;
-      var mid = s.axis === 'x' ? I.p(s.x + .5, s.y, f * FH + 30) : I.p(s.x, s.y + .5, f * FH + 30);
+      var side = SS.vfacing(s.axis);   // either side of a wall can take a piece; she hangs it on the side she's looking at
+      if (!W.roomOn(s, side) || s.op) return;
+      var mid = s.axis === 'x' ? SS.vp(s.x + .5, s.y + side * .1, f * FH + 30) : SS.vp(s.x + side * .1, s.y + .5, f * FH + 30);
       var dd = Math.hypot(mid[0] - w[0], mid[1] - w[1]);
       if (d.window && !s.win) dd += 1000; if (!d.window && s.win) dd += 60;
-      if (!best || dd < best.d) best = { d: dd, s: s };
+      if (!best || dd < best.d) best = { d: dd, s: s, side: side };
     });
-    return best ? { wall: [best.s.x, best.s.y, best.s.axis] } : { wall: null };
+    return best ? { wall: [best.s.x, best.s.y, best.s.axis], side: best.side } : { wall: null };
   }
   function candOf(H) { var c0 = H.cand || {}, o = { id: H.inst.id, f: H.f, r: H.r }; for (var k in c0) o[k] = c0[k]; return o; }
   function checkHold() { var H = G.hold; if (!H) return; var r = G.W.check(candOf(H)); H.ok = r.ok; H.why = r.why; }
@@ -197,7 +221,7 @@
     var p = H.inst, cd = candOf(H);
     delete p.x; delete p.y; delete p.wall; delete p.host; delete p.spot;
     p.f = cd.f; p.r = SS.DEF[p.id].kind === 'wall' ? 0 : H.r;
-    if (cd.wall) p.wall = cd.wall; else if (cd.host) { p.host = cd.host; p.spot = cd.spot; delete p.f; } else { p.x = cd.x; p.y = cd.y; }
+    delete p.side; if (cd.wall) { p.wall = cd.wall; if ((cd.side || 1) < 0) p.side = -1; } else if (cd.host) { p.host = cd.host; p.spot = cd.spot; delete p.f; } else { p.x = cd.x; p.y = cd.y; }
     if (H.from === 'move') { W.add(p); H.stack.forEach(function (q) { W.add(q); }); }
     else { W.add(p); if (H.stored) G.save.stored.splice(G.save.stored.indexOf(H.stored), 1); }
     if (p.host) p.f = W.floorOf(p);
@@ -214,17 +238,17 @@
   }
   function ghostScreen(H) {
     var W = G.W, cd = candOf(H), Z = H.f * FH;
-    if (cd.wall) return I.p(cd.wall[0] + .5, cd.wall[1] + .5, Z + 30);
-    if (cd.host) { var pos = W.spotPos(W.byUid[cd.host], cd.spot); return I.p(pos.x, pos.y, Z + pos.z + 10); }
-    var sz = W.size(SS.DEF[H.inst.id], H.r); return I.p(cd.x + sz[0] / 2, cd.y + sz[1] / 2, Z + 10);
+    if (cd.wall) return SS.vp(cd.wall[0] + .5, cd.wall[1] + .5, Z + 30);
+    if (cd.host) { var pos = W.spotPos(W.byUid[cd.host], cd.spot); return SS.vp(pos.x, pos.y, Z + pos.z + 10); }
+    var sz = W.size(SS.DEF[H.inst.id], H.r); return SS.vp(cd.x + sz[0] / 2, cd.y + sz[1] / 2, Z + 10);
   }
   function turnHold() { var H = G.hold, d = SS.DEF[H.inst.id]; if (d.kind === 'wall') return; H.r = (H.r + 1) % 4; SS.forgetSprite('ghost'); checkHold(); }
   function moveHold(dir) {
     var H = G.hold, d = SS.DEF[H.inst.id], W = G.W, cd = H.cand || {};
-    var D = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[dir];
+    var D0 = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[dir], D = SS.vdirInv(D0[0], D0[1]);
     if (d.kind === 'wall' && cd.wall) { // slide along the wall
       var s = cd.wall, k = s[2] === 'x' ? D[0] || D[1] : D[1] || D[0], nx = s[2] === 'x' ? s[0] + k : s[0], ny = s[2] === 'y' ? s[1] + k : s[1];
-      if (W.seg(H.f, nx, ny, s[2])) H.cand = { wall: [nx, ny, s[2]] };
+      if (W.seg(H.f, nx, ny, s[2])) H.cand = { wall: [nx, ny, s[2]], side: cd.side };
     } else if (cd.host) { var pos = W.spotPos(W.byUid[cd.host], cd.spot); H.cand = { x: Math.floor(pos.x) + D[0], y: Math.floor(pos.y) + D[1] }; }
     else H.cand = { x: (cd.x || 0) + D[0], y: (cd.y || 0) + D[1] };
     checkHold();
@@ -363,7 +387,7 @@
   }
   function backDoorAt(w) {
     var W = G.W, f = G.floor, hit = null;
-    W.walls[f].forEach(function (s) { if (s.op !== 'door' || !s.ext || !s.b) return; var q = I.p(s.x + .5, s.y, f * FH + 16); if (Math.abs(q[0] - w[0]) < 10 && Math.abs(q[1] - w[1]) < 18) hit = { f: f, x: s.x, y: s.y }; });
+    W.walls[f].forEach(function (s) { if (s.op !== 'door' || !s.ext || !s.b) return; var q = SS.vp(s.x + .5, s.y, f * FH + 16); if (Math.abs(q[0] - w[0]) < 10 && Math.abs(q[1] - w[1]) < 18) hit = { f: f, x: s.x, y: s.y }; });
     return hit;
   }
   SS.walkSarah = function (G, f, x, y) {
@@ -433,6 +457,7 @@
     }
     var sel = G.sel && G.W.byUid[G.sel];
     if (sel) { if (k === 'select') turnPiece(sel); if (k === 'b') { if (G.paint) G.paint = null; else G.deselect(); } if (k === 'a') G.deselect(); if (DIRS[k]) pan(k); return; }
+    if (k === 'select') { G.turnHome(); return; }   // nothing picked: Select turns the home (spec 001, part B)
     var playing = G.mode === 'life' && G.trayState() === 'closed';
     if (playing && DIRS[k]) { stepSarah(k); return; }
     if (playing && k === 'a') { nearbyBubble(); return; }
@@ -445,7 +470,7 @@
   function stepSarah(k) { // the D-pad walks her a tile at a time (up is toward the back, down toward the front)
     var s = G.people.sarah; if (s.path.length > 1) return;
     SS.stopActions(G);
-    var st = s.tile(), D = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[k], nx = st.x + D[0], ny = st.y + D[1];
+    var D0 = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[k], D = SS.vdirInv(D0[0], D0[1]), st = s.tile(), nx = st.x + D[0], ny = st.y + D[1];
     if (!G.W.walkable(st.f, nx, ny) || G.W.wallBetween(st.f, st.x, st.y, nx, ny)) {
       // the stairs: step onto them from their foot or head
       var up = G.W.stairs.filter(function (q) { return q.floor === st.f && q.from[0] === st.x && q.from[1] === st.y && q.tiles[0][0] === nx && q.tiles[0][1] === ny; })[0];
@@ -459,7 +484,7 @@
   function nearbyBubble() {
     var s = G.people.sarah, st = s.tile(), W = G.W;
     var p = W.pieces.filter(function (q) { return W.def(q).use && W.floorOf(q) === st.f && W.useTiles(q).some(function (u) { return u[0] === st.x && u[1] === st.y; }); })[0];
-    if (p) { var q = I.p(st.x + .5, st.y + .5, st.f * FH + 30), sc = toScreen(q[0], q[1]); openBubble({ piece: p }, sc); }
+    if (p) { var q = SS.vp(st.x + .5, st.y + .5, st.f * FH + 30), sc = toScreen(q[0], q[1]); openBubble({ piece: p }, sc); }
   }
   StudioInput.start({ press: press });
 
@@ -548,8 +573,9 @@
     var src = G.cam.src();
     c.imageSmoothingEnabled = false;
     c.drawImage(world, src[0], src[1], src[2], src[3], 0, 0, W0, H);
+    if (G.turnAnim) turnAnim(now, H - trayH);
     // a soft ring where she tapped to walk
-    if (G.tap && now - G.tap.t0 < 600 && G.tap.f === G.floor) { var tq = I.p(G.tap.x + .5, G.tap.y + .5, G.floor * FH), ts = toScreen(tq[0], tq[1]), k = (now - G.tap.t0) / 600; c.strokeStyle = 'rgba(255,255,255,' + (1 - k) + ')'; c.beginPath(); c.ellipse(ts[0], ts[1], (6 + k * 6) * G.cam.zoom, (3 + k * 3) * G.cam.zoom, 0, 0, 7); c.stroke(); }
+    if (G.tap && now - G.tap.t0 < 600 && G.tap.f === G.floor) { var tq = SS.vp(G.tap.x + .5, G.tap.y + .5, G.floor * FH), ts = toScreen(tq[0], tq[1]), k = (now - G.tap.t0) / 600; c.strokeStyle = 'rgba(255,255,255,' + (1 - k) + ')'; c.beginPath(); c.ellipse(ts[0], ts[1], (6 + k * 6) * G.cam.zoom, (3 + k * 3) * G.cam.zoom, 0, 0, 7); c.stroke(); }
     // chips over the held or selected piece
     if (G.hold && !(drag && drag.kind === 'hold')) {
       var gq = ghostScreen(G.hold), gs = toScreen(gq[0], gq[1] - 30);
@@ -571,7 +597,7 @@
     // the charger hunt's hint: a bouncing marker over the spot, the first time (spec 006, part D)
     SS.huntMarks(G).forEach(function (hm, i) {
       if (hm.f !== G.floor) return;
-      var hp = hm.agent ? I.p(hm.agent.x, hm.agent.y, hm.f * FH + (hm.agent.z || 0) + 26) : selTop(hm.piece), hs = toScreen(hp[0], hp[1]), bob = Math.round(Math.sin(now / 200 + i * 1.7) * 2);
+      var hp = hm.agent ? SS.vp(hm.agent.x, hm.agent.y, hm.f * FH + (hm.agent.z || 0) + 26) : selTop(hm.piece), hs = toScreen(hp[0], hp[1]), bob = Math.round(Math.sin(now / 200 + i * 1.7) * 2);
       var mx = Math.round(hs[0]), my = Math.round(hs[1] - 6 + bob);
       SS.R(mx - 5, my - 11, 11, 10, '#3b2430'); SS.R(mx - 4, my - 10, 9, 8, SS.P.rose); SS.txt('?', mx + 1, my - 9, '#fff', 6, 'center');
       SS.R(mx - 1, my - 2, 3, 2, SS.P.rose); SS.R(mx, my, 1, 2, SS.P.rose);
@@ -585,19 +611,20 @@
     if (G.meters && G.mode === 'life') SS.drawMeters(G, G.bubble ? W0 - 92 : 4, G.bubble ? G.bubbleTop + 2 : 40, G.meters);   // beside the bubble, as in cooking-v1
   }
   function markFit(x, y, ok) { if (ok) SS.check(x - 4, y + 2, '#8fd08c'); else SS.cross(x - 3, y + 2, '#e46f8b'); }
-  function selTop(p) { var W = G.W, d = W.def(p), f = W.floorOf(p), Z = f * FH; if (p.wall) { var wp = W.wallPlace(p); return I.p(wp.x + (p.wall[2] === 'x' ? d.w / 2 : 0), wp.y + (p.wall[2] === 'y' ? d.w / 2 : 0), Z + wp.z + d.h); } if (p.host) { var pos = W.spotPos(W.hostOf(p), p.spot); return I.p(pos.x, pos.y, Z + pos.z + d.h + 6); } var ft = W.foot(p); return I.p((ft[0] + ft[2]) / 2, (ft[1] + ft[3]) / 2, Z + Math.min(60, d.h + 8)); }
+  function selTop(p) { var W = G.W, d = W.def(p), f = W.floorOf(p), Z = f * FH; if (p.wall) { var wp = W.wallPlace(p); return SS.vp(wp.x + (p.wall[2] === 'x' ? d.w / 2 : 0), wp.y + (p.wall[2] === 'y' ? d.w / 2 : 0), Z + wp.z + d.h); } if (p.host) { var pos = W.spotPos(W.hostOf(p), p.spot); return SS.vp(pos.x, pos.y, Z + pos.z + d.h + 6); } var ft = W.foot(p); return SS.vp((ft[0] + ft[2]) / 2, (ft[1] + ft[3]) / 2, Z + Math.min(60, d.h + 8)); }
   function ghostItem(Hd, t) {
     var W = G.W, cd = candOf(Hd), d = SS.DEF[Hd.inst.id], inst = Hd.inst, lift = 6 + Math.round(Math.sin(t / 2));
     var tmp = { uid: 'ghost', id: inst.id, r: Hd.r, sw: inst.sw, colors: inst.colors, pats: inst.pats, props: inst.props, lit: inst.lit };
     var place, wx, wy, wz;
-    if (cd.wall) { var wp = W.wallPlace({ id: inst.id, wall: cd.wall }); place = { rot: wp.rot }; wx = wp.x; wy = wp.y; wz = wp.z; tmp.wall = cd.wall; }
+    if (cd.wall) { var wp = W.wallPlace({ id: inst.id, wall: cd.wall, side: cd.side }); place = { rot: wp.rot }; wx = wp.x; wy = wp.y; wz = wp.z; tmp.wall = cd.wall; tmp.side = cd.side; }
     else if (cd.host) { var pos = W.spotPos(W.byUid[cd.host], cd.spot); place = { rot: Hd.r }; wx = pos.x - .5; wy = pos.y - .5; wz = pos.z + 3; }
     else if (cd.x !== undefined) { place = { rot: Hd.r }; wx = cd.x; wy = cd.y; wz = lift; if (d.kind === 'rug') wz = 2; }
     else return null;
-    var sp = SS.pieceSprite(tmp, null, t, place);
+    var vq = SS.vplace(wx, wy, place.rot, d.w, d.d), sz = W.size(d, place.rot);   // drawn in the view's turn (view.js)
+    var sp = SS.pieceSprite(tmp, null, t, { rot: vq.rot }), vb = SS.vrect(wx, wy, wx + (cd.wall ? .2 : sz[0]), wy + (cd.wall ? .2 : sz[1]));
     return { f: Hd.f, item: function (Z) {
-      var q = I.p(wx, wy, Z + wz), sz = W.size(d, Hd.r);
-      return { kind: 'ghost', x0: wx, x1: wx + (cd.wall ? .2 : sz[0]), y0: wy, y1: wy + (cd.wall ? .2 : sz[1]), z0: Z + wz, z1: Z + wz + d.h, draw: function (cc) { cc.globalAlpha = Hd.ok ? .92 : .6; cc.drawImage(sp.cv, Math.round(q[0] - sp.ox), Math.round(q[1] - sp.oy)); cc.globalAlpha = 1; } };
+      var q = I.p(vq.x, vq.y, Z + wz);
+      return { kind: 'ghost', x0: vb[0], x1: vb[2], y0: vb[1], y1: vb[3], z0: Z + wz, z1: Z + wz + d.h, draw: function (cc) { cc.globalAlpha = Hd.ok ? .92 : .6; cc.drawImage(sp.cv, Math.round(q[0] - sp.ox), Math.round(q[1] - sp.oy)); cc.globalAlpha = 1; } };
     } };
   }
   function slideBackAnim(now, H) { // a piece that didn't fit slides back to the tray

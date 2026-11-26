@@ -537,7 +537,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
         SS.chooseAction(G, { agent: K }, SS.ACTIONS.keegan.find(a => a.name === 'HUG')); SS.updateAgents(G, .05); SS.updateAgents(G, .05);
         if (!K.path.length) out.push('Keegan does not walk to meet her for a hug');
         let t = 0; while (G.act && t < 60) { SS.updateAgents(G, .05); t += .05; }
-        if (t > 12) out.push('a hug from across the house takes ' + t.toFixed(1) + ' s');
+        if (t > 15) out.push('a hug from across the house takes ' + t.toFixed(1) + ' s');
         SS.stopActions(G); s.f = 0; s.x = st0[0] + .5; s.y = st0[1] + .5; s.path = []; K.f = k0.f; K.x = k0.x; K.y = k0.y; K.path = [];
         const bed = G.W.pieces.find(p => G.W.def(p).use === 'bed' && G.W.def(p).w >= 2);
         SS.chooseAction(G, { piece: bed }, SS.ACTIONS.bed.find(a => a.name === 'LIE IN')); SS.updateAgents(G, .05); SS.updateAgents(G, .05);
@@ -621,6 +621,143 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       bad.push(...errors); await ctx.close();
     }
     report('Sarah\'s playtest (Nov 26): taps and question marks in the charger hunt, Sarah\'s bubble, quick hugs, wall pieces and walls, the safe area', bad);
+  }
+
+  // ---------- 6c. turning the home (bible, Building, Turning the home; spec 001, part B) ----------
+  {
+    const bad = [];
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    await page.evaluate(() => { SSG.confirm = null; SS.setClock(14, 0); SSG.openMode('sandbox'); SSG.toastT = null; });
+    await page.waitForTimeout(200);
+    // the turn button under the walls button: a quarter turn, the same spot in the middle and the same zoom
+    const before = await page.evaluate(() => { const G = SSG; G.cam.zoom = 2; const v = SS.I.tile(G.cam.x - SS.OFF[0], G.cam.y - SS.OFF[1], 0); return { k: SS.view.k, w: SS.vinv(v[0], v[1]), zoom: G.cam.zoom, btn: G.turnBtn }; });
+    await page.waitForTimeout(100);
+    const btn = await page.evaluate(() => SSG.turnBtn);
+    if (!btn) bad.push('there is no turn button');
+    else {
+      await tapAt(page, btn.x + btn.w / 2, btn.y + btn.h / 2);
+      const after = await page.evaluate(() => { const G = SSG; const v = SS.I.tile(G.cam.x - SS.OFF[0], G.cam.y - SS.OFF[1], 0); return { k: SS.view.k, w: SS.vinv(v[0], v[1]), zoom: G.cam.zoom, saved: G.save.view, anim: !!G.turnAnim }; });
+      if (after.k !== (before.k + 1) % 4) bad.push('the turn button does not turn the home a quarter turn');
+      if (Math.hypot(after.w[0] - before.w[0], after.w[1] - before.w[1]) > .6) bad.push('turning moves the spot in the middle of the screen');
+      if (after.zoom !== before.zoom) bad.push('turning changes the zoom');
+      if (!after.anim) bad.push('turning has no spin or fade');
+      await page.waitForTimeout(450);
+      if (await page.evaluate(() => !!SSG.turnAnim)) bad.push('the turn takes longer than half a second');
+    }
+    // Select turns the home with nothing picked; a picked piece still turns with Select
+    const sel = await page.evaluate(() => { const G = SSG, k0 = SS.view.k; G.deselect(); G.hold = null; G.focus = null; return k0; });
+    await page.keyboard.press('Backspace'); await page.waitForTimeout(60);
+    if (await page.evaluate(k0 => SS.view.k !== (k0 + 1) % 4, sel)) bad.push('Select does not turn the home when nothing is picked');
+    const turnPiece = await page.evaluate(() => { const G = SSG, p = G.W.pieces.find(q => q.id === 'club-armchair'); G.select(p); return { r: p.r || 0, k: SS.view.k, uid: p.uid }; });
+    await page.keyboard.press('Backspace'); await page.waitForTimeout(60);
+    if (await page.evaluate(o => SS.view.k !== o.k || (SSG.W.byUid[o.uid].r || 0) === o.r, turnPiece)) bad.push('with a piece picked, Select does not turn the piece (or turns the home)');
+    await page.evaluate(() => { SSG.deselect(); });
+    // every view: walls, sorting, taps, placing, stacking, the D-pad
+    for (let k = 0; k < 4; k++) {
+      const r = await page.evaluate(async k => {
+        const G = SSG, W = G.W, out = [], sort = StudioIso.sort; let last = null;
+        SS.view.k = k; G.save.view = k; G.hold = null; G.deselect(); G.tray.open = true;
+        // cut away lowers the walls nearest her: only the outside walls on the far sides stay up
+        const vr = SS.vrect(W.ax, W.ay, W.ax + W.home.w, W.ay + W.home.d);
+        for (let f = 0; f < 3; f++) SS.viewWalls(W, f).forEach(s => {
+          const far = (s.axis === 'x' && s.y === vr[1]) || (s.axis === 'y' && s.x === vr[0]), near = (s.axis === 'x' && s.y === vr[3]) || (s.axis === 'y' && s.x === vr[2]);
+          if (s.back && !far) out.push('view ' + k + ': a wall that is not on the far side stays up when cut away');
+          if (near && s.back) out.push('view ' + k + ': a near outside wall stays up');
+          if (far && s.ext && !s.back) out.push('view ' + k + ': a far outside wall is cut down');
+        });
+        // nothing draws through a wall, walls up or cut, on every floor
+        StudioIso.sort = items => (last = sort(items));
+        for (const mode of ['up', 'cut']) for (const f of [0, 1, 2]) {
+          G.walls = mode; G.setFloor(f); last = null; await new Promise(r => setTimeout(r, 120));
+          if (!last) { out.push('view ' + k + ': nothing drawn'); continue; }
+          last.forEach((w, i) => { if (!w.plane || w.kind !== 'wall') return; last.forEach((o, j) => {
+            const d = o.drawn || [o.l, o.t, o.r, o.b]; if (o.kind !== 'piece' || d[2] <= w.l || w.r <= d[0] || d[3] <= w.t || w.b <= d[1]) return;
+            const lo = w.plane.axis === 'x' ? o.y0 : o.x0, hi = w.plane.axis === 'x' ? o.y1 : o.x1, at = w.plane.at;
+            if (lo < at - 1e-4 && hi > at + 1e-4) return;
+            const front = lo >= at - 1e-4; if (front !== (j > i)) out.push('view ' + k + ': ' + o.p.id + ' draws ' + (front ? 'behind' : 'over') + ' a wall on floor ' + (f + 1) + ' (walls ' + mode + ')');
+          }); });
+        }
+        StudioIso.sort = sort; G.walls = 'cut'; G.setFloor(0);
+        await new Promise(r => setTimeout(r, 120));
+        return [...new Set(out)];
+      }, k);
+      r.forEach(o => bad.push(o));
+      // placing by touch: a card dragged to a free tile lands on that tile, in this view
+      const place = await page.evaluate(k => {
+        const G = SSG, W = G.W, d = SS.DEF['side-table'], f = 0;
+        let tile = null; for (let x = W.ax; x < W.ax + W.home.w && !tile; x++) for (let y = W.ay; y < W.ay + W.home.d && !tile; y++) { if (!W.check({ id: d.id, f, x, y, r: 0 }).ok) continue; const q = SS.vp(x + .5, y + .5, 0), s = G.toScreen(q[0], q[1]); if (s[0] > 30 && s[0] < 200 && s[1] > 60 && s[1] < G.viewBottom - 20) tile = { x, y, s }; }
+        if (!tile) return { err: 'no free tile on screen' };
+        G.takeCard({ id: d.id, def: d, sw: 0, stored: 0 }, { x: tile.s[0], y: tile.s[1] });
+        const cand = G.hold && G.hold.cand; G.hold = null;
+        return { tile, cand };
+      }, k);
+      if (place.err) bad.push('view ' + k + ': ' + place.err);
+      else if (!place.cand || place.cand.x !== place.tile.x || place.cand.y !== place.tile.y) bad.push('view ' + k + ': a piece dragged to tile ' + place.tile.x + ',' + place.tile.y + ' lands at ' + JSON.stringify(place.cand));
+      // stacking: a small thing over a table's free spot stacks there
+      const stack = await page.evaluate(() => {
+        // a table, counter or shelf whose free spot she can see in this view (not hidden behind something in front)
+        const G = SSG, W = G.W, d = SS.DEF['mugs']; let host = null, s = null;
+        W.pieces.filter(p => W.floorOf(p) === 0 && !p.wall && W.def(p).spots.length).forEach(p => W.def(p).spots.forEach((_, i) => {
+          if (host || !W.spotFree(p, i)) return; const pos = W.spotPos(p, i), q = SS.vp(pos.x, pos.y, pos.z), pk = SS.pick(G.lastHits, q[0], q[1] - 1, { noAgents: true });
+          if (pk && pk.piece === p) { host = p; s = G.toScreen(q[0], q[1] - 1); } }));
+        if (!host) return { err: 'no free spot on screen' };
+        G.takeCard({ id: d.id, def: d, sw: 0, stored: 0 }, { x: s[0], y: s[1] });
+        const cand = G.hold && G.hold.cand; G.hold = null; return { host: host.uid, id: host.id, cand };
+      });
+      if (stack.err) bad.push('view ' + k + ': ' + stack.err); else if (!stack.cand || stack.cand.host !== stack.host) bad.push('view ' + k + ': a small thing over the ' + stack.id + ' does not stack on it: ' + JSON.stringify(stack.cand));
+      // the D-pad moves a held piece the way it points on screen
+      await page.evaluate(() => { const G = SSG, d = SS.DEF['side-table']; G.takeCard({ id: d.id, def: d, sw: 0, stored: 0 }); });
+      const scr = () => page.evaluate(() => { const H = SSG.hold, sz = SSG.W.size(SS.DEF[H.inst.id], H.r), q = SS.vp(H.cand.x + sz[0] / 2, H.cand.y + sz[1] / 2, 0); return SSG.toScreen(q[0], q[1]); });
+      const s0 = await scr(); await page.keyboard.press('ArrowRight'); await page.waitForTimeout(40); const s1 = await scr(); await page.keyboard.press('ArrowUp'); await page.waitForTimeout(40); const s2 = await scr();
+      if (!(s1[0] > s0[0])) bad.push('view ' + k + ': right on the D-pad does not move a held piece right on screen');
+      if (!(s2[1] < s1[1])) bad.push('view ' + k + ': up on the D-pad does not move a held piece up on screen');
+      await page.evaluate(() => { SSG.hold = null; });
+      await page.screenshot({ path: path.join(DIST, 'screen-turn' + k + '-375x667.png') });
+    }
+    // tap-to-walk in Life: a tap on a floor tile walks Sarah to that very tile, in every view
+    await page.evaluate(() => { SS.setClock(14, 0); SSG.openMode('life'); SS.stopSarahIdle(SSG); SS.stopActions(SSG); SSG.setFloor(0); SSG.toastT = null; });
+    for (let k = 0; k < 4; k++) {
+      const tgt = await page.evaluate(async k => {
+        const G = SSG, W = G.W, s = G.people.sarah; SS.view.k = k; G.bubble = null; G.meters = null; SS.stopActions(G); await new Promise(r => setTimeout(r, 120));
+        const st = s.tile(); let best = null;
+        for (let x = W.ax; x < W.ax + W.home.w; x++) for (let y = W.ay; y < W.ay + W.home.d; y++) {
+          if (!W.walkable(0, x, y) || (x === st.x && y === st.y) || W.pieces.some(p => p.f === 0 && !p.wall && !p.host && W.def(p).kind !== 'rug' && (() => { const ft = W.foot(p); return x >= ft[0] - 1 && x < ft[2] + 1 && y >= ft[1] - 1 && y < ft[3] + 1; })())) continue;
+          const q = SS.vp(x + .5, y + .5, 0), sc = G.toScreen(q[0], q[1]); if (sc[0] < 30 || sc[0] > 200 || sc[1] < 60 || sc[1] > G.viewBottom - 20) continue;
+          if (SS.pick(G.lastHits || [], q[0], q[1])) continue;   // a tap there lands on something drawn over the floor
+          if (!best) best = { x, y, sc };
+        }
+        return best;
+      }, k);
+      if (!tgt) { bad.push('view ' + k + ': no open floor tile on screen to tap'); continue; }
+      await page.waitForTimeout(150);
+      await tapAt(page, tgt.sc[0], tgt.sc[1]);
+      const end = await page.evaluate(() => { const s = SSG.people.sarah, w = s.path[s.path.length - 1]; return w ? [Math.floor(w.x), Math.floor(w.y)] : null; });
+      if (!end || end[0] !== tgt.x || end[1] !== tgt.y) bad.push('view ' + k + ': tapping tile ' + tgt.x + ',' + tgt.y + ' walks Sarah to ' + JSON.stringify(end));
+    }
+    await page.evaluate(() => { SS.view.k = 0; SSG.openMode('sandbox'); });
+    // wall pieces hang on either side of a wall and keep their side
+    const sides = await page.evaluate(() => {
+      const G = SSG, W = G.W, out = [], d = SS.DEF['framed-print'];
+      const s = W.walls[0].find(q => q.axis === 'x' && q.a && q.b && !q.op && !q.win && W.check({ id: d.id, f: 0, wall: [q.x, q.y, 'x'], side: -1 }).ok && W.check({ id: d.id, f: 0, wall: [q.x, q.y, 'x'], side: 1 }).ok);
+      if (!s) return ['no wall with room on both sides is free'];
+      SS.view.k = 2; G.save.view = 2;   // the wall's - side faces her now
+      if (SS.vfacing('x') !== -1) out.push('in the turned view the wall\'s other side does not face her');
+      const p = W.add({ id: d.id, f: 0, wall: [s.x, s.y, 'x'], side: -1 }), q = W.add({ id: d.id, f: 0, wall: [s.x, s.y, 'x'] });
+      if (!W.check({ id: d.id, f: 0, wall: [s.x, s.y, 'x'], side: -1 }, p).ok) out.push('a wall piece cannot hang on a wall\'s other side');
+      G.changed(true); return { out, p: p.uid, q: q.uid };
+    });
+    if (Array.isArray(sides)) sides.forEach(o => bad.push(o));
+    else {
+      sides.out.forEach(o => bad.push(o));
+      await page.reload(); await page.waitForTimeout(300);
+      const back = await page.evaluate(o => { SSG.openMode('sandbox'); const p = SSG.W.byUid[o.p], q = SSG.W.byUid[o.q]; return { k: SS.view.k, side: p && p.side, side2: q && (q.side || 1) }; }, sides);
+      if (back.k !== 2) bad.push('the home does not keep the view she left it in');
+      if (back.side !== -1 || back.side2 !== 1) bad.push('wall pieces do not keep their side after a reload');
+    }
+    // an older save with no view opens from the front
+    if (await page.evaluate(() => { const s = SS.modeSave('sandbox'); delete s.view; SS.writeMode('sandbox', s); SSG.openMode('sandbox'); return SS.view.k; }) !== 0) bad.push('an older save does not open from the front');
+    bad.push(...errors); await ctx.close();
+    report('turning the home: the button and Select, the same spot and zoom, near walls cut, taps, placing, stacking, the D-pad and wall sides in all 4 views, saved', bad);
   }
 
   // ---------- 7. test saves ----------

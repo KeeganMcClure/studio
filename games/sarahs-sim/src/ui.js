@@ -58,6 +58,16 @@
     txt(G.walls === 'up' ? 'UP' : G.walls === 'cut' ? 'CUT' : 'DOWN', x + 10, base + 2, P.ink, 4, 'center');
     hit(G, x, y, 20, wh, function () { G.cycleWalls(); });
     y += wh + 4;
+    // the turn button: the whole home a quarter turn clockwise (bible, Building, Turning the home), a curved arrow
+    R(x, y, 20, wh, 'rgba(255,246,234,.95)'); R(x, y + wh - 1, 20, 1, P.trayEdge);
+    var cx = x + 10, cy = y + (small ? 8 : 9);
+    c.strokeStyle = P.ink; c.lineWidth = 1.5; c.beginPath(); c.arc(cx, cy, 5, Math.PI * .95, Math.PI * 2.25); c.stroke(); c.lineWidth = 1;
+    var ax = cx + Math.cos(Math.PI * 2.25) * 5, ay = cy + Math.sin(Math.PI * 2.25) * 5;
+    c.fillStyle = P.ink; c.beginPath(); c.moveTo(ax + 3, ay - 3); c.lineTo(ax + 1, ay + 3); c.lineTo(ax - 4, ay); c.closePath(); c.fill();
+    if (!small) txt('TURN', x + 10, y + wh - 7, P.ink, 4, 'center');
+    hit(G, x, y, 20, wh, function () { G.turnHome(); });
+    G.turnBtn = { x: x, y: y, w: 20, h: wh };
+    y += wh + 4;
     // undo, the last 10 changes in this home (spec 001, part C, Claude default)
     var can = G.undo.length > 0;
     R(x, y, 20, 16, can ? 'rgba(255,246,234,.95)' : 'rgba(255,246,234,.55)'); R(x, y + 15, 20, 1, P.trayEdge); SS.ICONS.undo(x + 4, y + 2, can ? P.ink : P.soft);

@@ -18,7 +18,7 @@
 //                                        Item.plane = {axis: 'x'|'y', at} marks a thin wall standing on the line y = at (axis 'x')
 //                                        or x = at (axis 'y'): an item wholly on the far side of that line draws behind it, and
 //                                        one wholly on the near side in front (exact for a flat wall); the boxes decide the rest.
-//                                        Two walls are never compared (they only meet at corners). Item.drawn = [l, t, r, b] is
+//                                        Two walls are never compared: give them in back-to-front order. Item.drawn = [l, t, r, b] is
 //                                        the drawing's own screen bounds when it spills past its box; it counts against walls.
 //   StudioIso.ramp(hex)                  a four-tone ramp [light, base, shade, deep] built from one color, for shading any
 //                                        painted part (art-style.md, Quality bar: Volume)
@@ -81,8 +81,8 @@
       var a = items[i], b = items[j];
       if (b.after === a) { deps[j].push(i); continue; }
       if (a.after === b) { deps[i].push(j); continue; }
-      if (a.plane && b.plane) continue;   // two walls only ever meet at a corner: keep the order given, so no loops
       // against a wall, what's drawn counts (item.drawn = [l, t, r, b], when a drawing spills past its box); else the boxes
+      if (a.plane && b.plane) continue;   // two walls only ever meet at a corner: they keep the order given (no loops)
       var ra = (a.plane || b.plane) && a.drawn || [a.l, a.t, a.r, a.b], rb = (a.plane || b.plane) && b.drawn || [b.l, b.t, b.r, b.b];
       if (ra[2] <= rb[0] || rb[2] <= ra[0] || ra[3] <= rb[1] || rb[3] <= ra[1]) continue;
       if (behind(a, b)) deps[j].push(i); else deps[i].push(j);

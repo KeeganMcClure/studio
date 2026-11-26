@@ -464,7 +464,7 @@ button:focus-visible{outline:2px solid var(--scr-hi);outline-offset:2px}
 //                                        Item.plane = {axis: 'x'|'y', at} marks a thin wall standing on the line y = at (axis 'x')
 //                                        or x = at (axis 'y'): an item wholly on the far side of that line draws behind it, and
 //                                        one wholly on the near side in front (exact for a flat wall); the boxes decide the rest.
-//                                        Two walls are never compared (they only meet at corners). Item.drawn = [l, t, r, b] is
+//                                        Two walls are never compared: give them in back-to-front order. Item.drawn = [l, t, r, b] is
 //                                        the drawing's own screen bounds when it spills past its box; it counts against walls.
 //   StudioIso.ramp(hex)                  a four-tone ramp [light, base, shade, deep] built from one color, for shading any
 //                                        painted part (art-style.md, Quality bar: Volume)
@@ -527,8 +527,8 @@ button:focus-visible{outline:2px solid var(--scr-hi);outline-offset:2px}
       var a = items[i], b = items[j];
       if (b.after === a) { deps[j].push(i); continue; }
       if (a.after === b) { deps[i].push(j); continue; }
-      if (a.plane && b.plane) continue;   // two walls only ever meet at a corner: keep the order given, so no loops
       // against a wall, what's drawn counts (item.drawn = [l, t, r, b], when a drawing spills past its box); else the boxes
+      if (a.plane && b.plane) continue;   // two walls only ever meet at a corner: they keep the order given (no loops)
       var ra = (a.plane || b.plane) && a.drawn || [a.l, a.t, a.r, a.b], rb = (a.plane || b.plane) && b.drawn || [b.l, b.t, b.r, b.b];
       if (ra[2] <= rb[0] || rb[2] <= ra[0] || ra[3] <= rb[1] || rb[3] <= ra[1]) continue;
       if (behind(a, b)) deps[j].push(i); else deps[i].push(j);
@@ -1059,6 +1059,67 @@ var SS = window.SS = window.SS || {};
   SS.Model = Model;
   SS.poly = poly;
   SS.bounds = bounds;
+})();
+
+</script>
+<script>/* view.js */
+// Sarah's Sim: turning the whole home (bible, Building, Turning the home; spec 001, part B, What turning the home touches).
+// The home is kept in its own lot coordinates; the view turns them a quarter turn clockwise per step, around the lot's
+// middle, before they're drawn. Everything that draws the world goes through here, and everything that reads a tap or a
+// D-pad press turns it back, so the rules (walls, placing, walking) never need to know which way she's looking.
+//   SS.view.k        0 to 3: how many quarter turns clockwise the home is turned
+//   SS.vxy(x, y)     a lot point as the view sees it; SS.vinv(x, y) turns it back
+//   SS.vp(x, y, h)   a lot point on the screen (the iso projection of the turned point)
+//   SS.vrect(...)    a lot rectangle as the view sees it, [x0, y0, x1, y1]
+//   SS.vplace(...)   where a piece's model goes in the view, and the turn it's drawn at (its own turn plus the view's)
+//   SS.vdir / SS.vdirInv  a direction (a step, a facing) into the view and back
+//   SS.vface(o)      a person's or cat's facing (flip, back) as seen in the view
+//   SS.vseg / SS.vstair  a wall segment or a flight of stairs as the view sees it
+(function () {
+  var V = SS.view = { k: 0, L: 16 };
+  function rot1(x, y) { return [V.L - y, x]; }   // one quarter turn clockwise on screen
+  function inv1(x, y) { return [y, V.L - x]; }
+  SS.vxy = function (x, y, k) { var q = [x, y], n = ((k === undefined ? V.k : k) % 4 + 4) % 4; for (var i = 0; i < n; i++) q = rot1(q[0], q[1]); return q; };
+  SS.vinv = function (x, y, k) { var q = [x, y], n = ((k === undefined ? V.k : k) % 4 + 4) % 4; for (var i = 0; i < n; i++) q = inv1(q[0], q[1]); return q; };
+  SS.vp = function (x, y, h) { var q = SS.vxy(x, y); return SS.I.p(q[0], q[1], h); };
+  SS.vrect = function (x0, y0, x1, y1) {
+    var a = SS.vxy(x0, y0), b = SS.vxy(x1, y1);
+    return [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[0], b[0]), Math.max(a[1], b[1])];
+  };
+  // a model placed at (X, Y) with turn rot (its footprint's corner nearest the lot's 0, 0) and size w x d at turn 0
+  SS.vplace = function (X, Y, rot, w, d) {
+    var sw = rot % 2 ? d : w, sd = rot % 2 ? w : d, r = SS.vrect(X, Y, X + sw, Y + sd);
+    return { x: r[0], y: r[1], rot: ((rot || 0) + V.k) % 4 };
+  };
+  SS.vdir = function (dx, dy) { var q = [dx, dy]; for (var i = 0; i < V.k; i++) q = [-q[1], q[0]]; return q; };
+  SS.vdirInv = function (dx, dy) { var q = [dx, dy]; for (var i = 0; i < V.k; i++) q = [q[1], -q[0]]; return q; };
+  // facings in the order a quarter turn clockwise steps through them: right-front, left-front, left-back, right-back
+  var FACE = [[false, false], [true, false], [true, true], [false, true]];
+  SS.vface = function (flip, back) {
+    var i = 0; for (var j = 0; j < 4; j++) if (FACE[j][0] === !!flip && FACE[j][1] === !!back) i = j;
+    var f = FACE[(i + V.k) % 4]; return { flip: f[0], back: f[1] };
+  };
+  // a lot tile as the view sees it (the tile, not a point)
+  SS.vtile = function (x, y) { var q = SS.vxy(x + .5, y + .5); return [Math.floor(q[0]), Math.floor(q[1])]; };
+  // a wall segment turned into the view: still along x or y, with the rooms on its - and + sides (a, b) swapped when its
+  // sides swap, and its window's start and end swapped when it runs the other way
+  SS.vseg = function (s) {
+    var p0 = SS.vxy(s.x, s.y), p1 = s.axis === 'x' ? SS.vxy(s.x + 1, s.y) : SS.vxy(s.x, s.y + 1);
+    var axis = p0[1] === p1[1] ? 'x' : 'y', x = Math.min(p0[0], p1[0]), y = Math.min(p0[1], p1[1]);
+    var along = axis === 'x' ? p1[0] - p0[0] : p1[1] - p0[1];           // +1 when it still runs from start to end
+    var n = s.axis === 'x' ? SS.vdir(0, 1) : SS.vdir(1, 0);              // the world + side, turned
+    var plus = axis === 'x' ? n[1] > 0 : n[0] > 0;                        // does the world + side stay the view's + side?
+    var a = plus ? s.a : s.b, b = plus ? s.b : s.a;
+    var win = s.win;
+    if (win && along < 0) win = { start: win.end, end: win.start, len: win.len, k: win.len - 1 - win.k };
+    return { f: s.f, x: x, y: y, axis: axis, a: a, b: b, ext: s.ext, op: s.op, win: win, src: s, flip: !plus,
+      back: s.ext && !a };   // the far outside walls in this view stay up when the walls are cut away
+  };
+  SS.vstair = function (s) {
+    return { floor: s.floor, tiles: s.tiles.map(function (q) { return SS.vtile(q[0], q[1]); }), from: SS.vtile(s.from[0], s.from[1]), to: SS.vtile(s.to[0], s.to[1]), src: s };
+  };
+  // the side of a wall that faces her in this view: +1 is the wall's own + side (y for walls along x, x for walls along y)
+  SS.vfacing = function (axis) { var n = axis === 'x' ? SS.vdir(0, 1) : SS.vdir(1, 0); return n[0] + n[1] > 0 ? 1 : -1; };
 })();
 
 </script>
@@ -2953,9 +3014,9 @@ var SS = window.SS = window.SS || {};
 <script>/* world.js */
 // Sarah's Sim world: one home in one mode's save. Rooms, walls, doors, windows and stairs come from the prebuilt home data
 // (home.js); the placed pieces come from the save. It knows the placing rules (spec 001, part C): big pieces never overlap
-// or block a door or the stairs, small things stack on free spots, wall pieces hang on walls she can see, rugs lie under
+// or block a door or the stairs, small things stack on free spots, wall pieces hang on either side of a wall, rugs lie under
 // furniture. It also finds walks around furniture and up the stairs (spec 006, part B).
-// Tiles are lot tiles (0 to 15); floors are 0, 1, 2 (shown as 1, 2, 3).
+// Tiles are lot tiles (0 to 15); floors are 0, 1, 2 (shown as 1, 2, 3). Turning the home (view.js) never changes them.
 (function () {
   var FH = SS.FH = 52;      // one storey, in px (wall 48 + floor 4)
   var WALL_UP = SS.WALL_UP = 46;
@@ -3032,12 +3093,15 @@ var SS = window.SS = window.SS || {};
       var hz = W.hostOf(host) ? W.spotPos(W.hostOf(host), host.spot).z : 0;
       return { x: q2[0], y: q2[1], z: hz + (d.top || 0) };
     };
-    // where a wall piece hangs: the model's place (turn 0 on walls along x, turn 3 on walls along y)
+    // where a wall piece hangs: the model's place. It hangs on either side of its wall (bible, Building, Turning the home):
+    // side 1 (the default, so older saves keep theirs) is the wall's + side, facing +y on walls along x and +x on walls along
+    // y (turns 0 and 3); side -1 is the other face (turns 2 and 1), its back against the wall
     W.wallPlace = function (p) {
-      var d = W.def(p), wx = p.wall[0], wy = p.wall[1];
-      if (p.wall[2] === 'x') return { x: wx, y: wy + .07, z: d.mount || 24, rot: 0 };
-      return { x: wx + .07, y: wy, z: d.mount || 24, rot: 3 };
+      var d = W.def(p), wx = p.wall[0], wy = p.wall[1], back = (p.side || 1) < 0;
+      if (p.wall[2] === 'x') return back ? { x: wx, y: wy - .07 - d.d, z: d.mount || 24, rot: 2 } : { x: wx, y: wy + .07, z: d.mount || 24, rot: 0 };
+      return back ? { x: wx - .07 - d.d, y: wy, z: d.mount || 24, rot: 1 } : { x: wx + .07, y: wy, z: d.mount || 24, rot: 3 };
     };
+    W.roomOn = function (s, side) { return (side || 1) < 0 ? s.a : s.b; };   // the room on that side of a wall
     W.wallSegs = function (q) { var n = Math.max(1, Math.ceil(W.def(q).w)), out = []; for (var k = 0; k < n; k++) out.push((q.wall[2] === 'x' ? (q.wall[0] + k) + ',' + q.wall[1] : q.wall[0] + ',' + (q.wall[1] + k)) + q.wall[2]); return out; };
     W.occ = function (f, except) { // tiles taken by big pieces (and small things standing on the floor)
       var o = {}, r = {};
@@ -3063,10 +3127,10 @@ var SS = window.SS = window.SS || {};
         for (var k = 0; k < Math.ceil(d.w); k++) {
           var sx = cand.wall[2] === 'x' ? cand.wall[0] + k : cand.wall[0], sy = cand.wall[2] === 'y' ? cand.wall[1] + k : cand.wall[1];
           var s = W.seg(cand.f, sx, sy, cand.wall[2]);
-          if (!s || !s.b || s.op) return { ok: false, why: 'NEEDS A WALL' };
+          if (!s || !W.roomOn(s, cand.side) || s.op) return { ok: false, why: 'NEEDS A WALL' };
           if (d.window ? !s.win : s.win) return { ok: false, why: d.window ? 'NEEDS A WINDOW' : 'WINDOW' };
           var mine = sx + ',' + sy + cand.wall[2];
-          var taken = W.pieces.some(function (q) { return q !== except && q.wall && q.f === cand.f && W.wallSegs(q).indexOf(mine) >= 0; });
+          var taken = W.pieces.some(function (q) { return q !== except && q.wall && q.f === cand.f && (q.side || 1) === (cand.side || 1) && W.wallSegs(q).indexOf(mine) >= 0; });
           if (taken) return { ok: false, why: 'TAKEN' };
         }
         return { ok: true };
@@ -3164,7 +3228,10 @@ var SS = window.SS = window.SS || {};
   var INK = 'rgba(59,36,48,.85)';
   var OFF = SS.OFF = [210, 300], WORLD = SS.WORLD = [420, 520];   // the world canvas: lot tile 0,0 at OFF
   function R(c, x, y, w, h, col) { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
-  function P(x, y, h) { return I.p(x, y, h); }
+  // P: a lot point on the screen, through the view's turn (view.js). Q: a point already turned into the view, for the walls
+  // and stairs, which are turned as a whole first so their visible faces and far sides follow the view
+  function P(x, y, h) { return SS.vp(x, y, h); }
+  function Q(x, y, h) { return I.p(x, y, h); }
 
   // ---------- floors ----------
   var FLOORS = {
@@ -3195,7 +3262,7 @@ var SS = window.SS = window.SS || {};
     // the front path from the door to the street
     var ax = W.ax, ay = W.ay;
     for (var y = ay + W.home.d; y < n; y++) poly(c, [P(ax + 1, y), P(ax + 2, y), P(ax + 2, y + 1), P(ax + 1, y + 1)], y % 2 ? '#e3d3bf' : '#d6c3ab');
-    var e1 = P(0, n), e2 = P(n, n), e3 = P(n, 0); poly(c, [e1, e2, [e2[0], e2[1] + 5], [e1[0], e1[1] + 5]], '#8e6a4a'); poly(c, [e2, e3, [e3[0], e3[1] + 5], [e2[0], e2[1] + 5]], '#6f5038');
+    var e1 = Q(0, n), e2 = Q(n, n), e3 = Q(n, 0); poly(c, [e1, e2, [e2[0], e2[1] + 5], [e1[0], e1[1] + 5]], '#8e6a4a'); poly(c, [e2, e3, [e3[0], e3[1] + 5], [e2[0], e2[1] + 5]], '#6f5038');
   }
   function drawFloorTiles(c, W, f, Z) {
     var ax = W.ax, ay = W.ay;
@@ -3204,9 +3271,9 @@ var SS = window.SS = window.SS || {};
       FLOORS[r.floor](c, x, y, Z);
     }
     // the slab edge along the open front sides (upper floors read as floors, mockups/build-v1)
-    var x0 = ax, x1 = ax + W.home.w, y0 = ay, y1 = ay + W.home.d;
-    poly(c, [P(x0, y1, Z), P(x1, y1, Z), P(x1, y1, Z - 5), P(x0, y1, Z - 5)], f ? '#c9a58a' : '#7d4c30');
-    poly(c, [P(x1, y0, Z), P(x1, y1, Z), P(x1, y1, Z - 5), P(x1, y0, Z - 5)], f ? '#a9866d' : '#5e3822');
+    var vr = SS.vrect(ax, ay, ax + W.home.w, ay + W.home.d), x0 = vr[0], y0 = vr[1], x1 = vr[2], y1 = vr[3];
+    poly(c, [Q(x0, y1, Z), Q(x1, y1, Z), Q(x1, y1, Z - 5), Q(x0, y1, Z - 5)], f ? '#c9a58a' : '#7d4c30');
+    poly(c, [Q(x1, y0, Z), Q(x1, y1, Z), Q(x1, y1, Z - 5), Q(x1, y0, Z - 5)], f ? '#a9866d' : '#5e3822');
   }
 
   // ---------- walls ----------
@@ -3230,12 +3297,12 @@ var SS = window.SS = window.SS || {};
     var opening = s.op === 'door' || s.op === 'arch', DOORH = 34;
     if (opening && s.op === 'arch' || (opening && s.op === 'door' && !s.ext)) { if (H <= DOORH) return; lo = DOORH; }
     var paper = s.b ? SS.PAPERS[s.b.paper] : null;
-    var A = P(x0, y0, Z + lo), B = P(x1, y0, Z + lo), C = P(x1, y1, Z + lo), D = P(x0, y1, Z + lo), h = hi - lo;
+    var A = Q(x0, y0, Z + lo), B = Q(x1, y0, Z + lo), C = Q(x1, y1, Z + lo), D = Q(x0, y1, Z + lo), h = hi - lo;
     var up = function (q) { return [q[0], q[1] - h]; };
     // the visible face: +y for walls along x, +x for walls along y
     var face = s.axis === 'x' ? [D, C, up(C), up(D)] : [B, C, up(C), up(B)];
     var endFace = s.axis === 'x' ? [B, C, up(C), up(B)] : [D, C, up(C), up(D)];
-    var fa = function (u, hh) { return s.axis === 'x' ? P(s.x + u, s.y + th, Z + hh) : P(s.x + th, s.y + u, Z + hh); };
+    var fa = function (u, hh) { return s.axis === 'x' ? Q(s.x + u, s.y + th, Z + hh) : Q(s.x + th, s.y + u, Z + hh); };
     var faceAt = function (u0, u1, h0, h1) { return [fa(u0, h0), fa(u1, h0), fa(u1, h1), fa(u0, h1)]; };
     if (paper) {
       poly(c, face, paper.base);
@@ -3292,6 +3359,14 @@ var SS = window.SS = window.SS || {};
     if (s.ext && !inside) { var wr = fa(.5, 25); c.strokeStyle = '#3f6e4a'; c.lineWidth = 2; c.beginPath(); c.arc(wr[0], wr[1], 3.5, 0, 7); c.stroke(); c.lineWidth = 1; R(c, wr[0] - 1, wr[1] + 3, 3, 2, '#e46f8b'); }
   }
 
+  // this floor's walls as the view sees them (view.js), made once per turn
+  function viewWalls(W, f) {
+    var C = W._vw || (W._vw = {});
+    if (C.k !== SS.view.k || C.walls !== W.walls) { C.k = SS.view.k; C.walls = W.walls; C.f = {}; }
+    if (!C.f[f]) { var segs = (W.walls[f] || []).map(SS.vseg); segs.key = {}; segs.forEach(function (q) { segs.key[q.x + ',' + q.y + q.axis] = q; }); C.f[f] = segs; }
+    return C.f[f];
+  }
+  SS.viewWalls = viewWalls;
   // ---------- stairs and banisters ----------
   function stairItems(W, s, Z, items) { // a straight flight of steps rising toward its top, two steps a tile
     // Like build-v1: each step is a box with a light nosing on its front edge, and one solid stringer runs along the open
@@ -3307,36 +3382,38 @@ var SS = window.SS = window.SS || {};
         items.push({ kind: 'step', x0: x0, x1: x0 + w, y0: y0, y1: y0 + d, z0: Z, z1: Z + h, draw: function (c) {
           I.box(c, x0, y0, w, d, h, Z, ['#ecbd8a', '#c48a58', '#a06a40']);
           // the nosing: the step's front edge, toward the bottom of the flight
-          if (dy) { var ny = dy < 0 ? y0 + d : y0; line(c, P(x0, ny, Z + h), P(x0 + w, ny, Z + h), '#fbe0bd'); }
-          else { var nx = dx < 0 ? x0 + w : x0; line(c, P(nx, y0, Z + h), P(nx, y0 + d, Z + h), '#fbe0bd'); }
+          if (dy) { var ny = dy < 0 ? y0 + d : y0; line(c, Q(x0, ny, Z + h), Q(x0 + w, ny, Z + h), '#fbe0bd'); }
+          else { var nx = dx < 0 ? x0 + w : x0; line(c, Q(nx, y0, Z + h), Q(nx, y0 + d, Z + h), '#fbe0bd'); }
           // this step's slice of the stringer: no seams between slices, so the side is one solid board
           var tA = k * .5, tB = (k + 1) * .5, a, b;   // a: the slice's lower end, b: its upper end
           if (dy) { var xs = x0 + w; a = dy < 0 ? [xs, y0 + d] : [xs, y0]; b = dy < 0 ? [xs, y0] : [xs, y0 + d]; }
           else { var ys = y0 + d; a = dx < 0 ? [x0 + w, ys] : [x0, ys]; b = dx < 0 ? [x0, ys] : [x0 + w, ys]; }
           var zA = Z + rise(tA), zB = Z + rise(tB);
-          poly(c, [P(a[0], a[1], Z), P(a[0], a[1], zA), P(b[0], b[1], zB), P(b[0], b[1], Z)], '#8e5a37');
-          poly(c, [P(a[0], a[1], zA - 3), P(a[0], a[1], zA), P(b[0], b[1], zB), P(b[0], b[1], zB - 3)], '#b9804f');
-          line(c, P(a[0], a[1], zA), P(b[0], b[1], zB), '#55311d');
-          if (k === 0) line(c, P(a[0], a[1], Z), P(a[0], a[1], zA), '#55311d');
+          poly(c, [Q(a[0], a[1], Z), Q(a[0], a[1], zA), Q(b[0], b[1], zB), Q(b[0], b[1], Z)], '#8e5a37');
+          poly(c, [Q(a[0], a[1], zA - 3), Q(a[0], a[1], zA), Q(b[0], b[1], zB), Q(b[0], b[1], zB - 3)], '#b9804f');
+          line(c, Q(a[0], a[1], zA), Q(b[0], b[1], zB), '#55311d');
+          if (k === 0) line(c, Q(a[0], a[1], Z), Q(a[0], a[1], zA), '#55311d');
         } });
       })(x0, y0, w, d, h, k);
     }
   }
   function railItems(W, f, Z, items) { // banisters on the open sides of each stairwell on this floor
-    W.stairs.forEach(function (s) {
+    var VS = viewWalls(W, f);
+    W.stairs.map(SS.vstair).forEach(function (s) {
       if (s.floor + 1 !== f) return;
       var xs = s.tiles.map(function (q) { return q[0]; }), ys = s.tiles.map(function (q) { return q[1]; });
       var x0 = Math.min.apply(0, xs), x1 = Math.max.apply(0, xs) + 1, y0 = Math.min.apply(0, ys), y1 = Math.max.apply(0, ys) + 1;
       var sides = [];
-      if (!W.seg(f, x1, y0, 'y')) sides.push([[x1, y0], [x1, y1]]);
-      if (!W.seg(f, x0, y1, 'x')) sides.push([[x0, y1], [x1, y1]]);
-      if (!W.seg(f, x0, y0, 'x') && !(s.to[1] < y0)) sides.push([[x0, y0], [x1, y0]]);
+      if (!VS.key[x1 + ',' + y0 + 'y']) sides.push([[x1, y0], [x1, y1]]);
+      if (!VS.key[x0 + ',' + y1 + 'x']) sides.push([[x0, y1], [x1, y1]]);
+      if (!VS.key[x0 + ',' + y0 + 'x'] && !(s.to[1] < y0)) sides.push([[x0, y0], [x1, y0]]);
       sides.forEach(function (sd) {
         var a = sd[0], b = sd[1];
-        items.push({ kind: 'rail', x0: Math.min(a[0], b[0]) - .05, x1: Math.max(a[0], b[0]) + .05, y0: Math.min(a[1], b[1]) - .05, y1: Math.max(a[1], b[1]) + .05, z0: Z, z1: Z + 14, draw: function (c) {
+        var ex = a[0] === b[0] ? .05 : -.1, ey = a[1] === b[1] ? .05 : -.1;   // thin across, kept short of its ends so it never reaches into a wall's line
+        items.push({ kind: 'rail', x0: Math.min(a[0], b[0]) - ex, x1: Math.max(a[0], b[0]) + ex, y0: Math.min(a[1], b[1]) - ey, y1: Math.max(a[1], b[1]) + ey, z0: Z, z1: Z + 14, draw: function (c) {
           var n = Math.max(2, Math.round(Math.hypot(b[0] - a[0], b[1] - a[1]) * 3));
-          for (var q = 1; q < n; q++) { var pt = P(a[0] + (b[0] - a[0]) * q / n, a[1] + (b[1] - a[1]) * q / n, Z); R(c, pt[0], pt[1] - 11, 1, 11, '#8e5a37'); }
-          var t1 = P(a[0], a[1], Z + 12), t2 = P(b[0], b[1], Z + 12); line(c, t1, t2, '#55311d', 2); line(c, [t1[0], t1[1] - 1], [t2[0], t2[1] - 1], '#dca474');
+          for (var q = 1; q < n; q++) { var pt = Q(a[0] + (b[0] - a[0]) * q / n, a[1] + (b[1] - a[1]) * q / n, Z); R(c, pt[0], pt[1] - 11, 1, 11, '#8e5a37'); }
+          var t1 = Q(a[0], a[1], Z + 12), t2 = Q(b[0], b[1], Z + 12); line(c, t1, t2, '#55311d', 2); line(c, [t1[0], t1[1] - 1], [t2[0], t2[1] - 1], '#dca474');
           [a, b].forEach(function (q) { I.box(c, q[0] - .06, q[1] - .06, .12, .12, 14, Z, ['#dca474', '#b9804f', '#8e5a37']); });
         } });
       });
@@ -3355,7 +3432,7 @@ var SS = window.SS = window.SS || {};
     return [p.id, p.r || 0, p.wall ? p.wall[2] : '', p.sw || 0, JSON.stringify(p.colors || 0), JSON.stringify(p.pats || 0), p.props === false ? 0 : 1, p.lit ? 1 : 0, p.work ? 1 : 0, free, anim].join('|');
   };
   SS.pieceSprite = function (p, W, t, place) {
-    var d = SS.DEF[p.id], key = SS.spriteKey(p, d, W, t);
+    var d = SS.DEF[p.id], key = SS.spriteKey(p, d, W, t) + '|' + (place.rot || 0);
     var cache = SPR[p.uid] || (SPR[p.uid] = {});
     if (cache.key === key) return cache;
     // draw the piece at the origin (turn and wall side from its place) and keep its bounds
@@ -3385,7 +3462,7 @@ var SS = window.SS = window.SS || {};
     var hits = [];
     // the ground, the floor below (dimmed) and this floor's tiles only change when something is placed or the view
     // changes, so they're drawn once into a layer and reused (o.version counts changes to the home)
-    var key = [F, o.version, look.snow ? 1 : 0, W.pieces.length].join('|');
+    var key = [F, o.version, look.snow ? 1 : 0, W.pieces.length, SS.view.k].join('|');
     if (BASE.key !== key) {
       var b = BASE.cv || (BASE.cv = document.createElement('canvas')); b.width = WORLD[0]; b.height = WORLD[1];
       var bc = b.getContext('2d'); bc.setTransform(1, 0, 0, 1, OFF[0], OFF[1]);
@@ -3394,7 +3471,7 @@ var SS = window.SS = window.SS || {};
         drawFloorLayer(bc, W, F - 1, o, null, true);
         // dim everything drawn so far (the floor below and the ground), then draw the flight up undimmed
         bc.save(); bc.setTransform(1, 0, 0, 1, 0, 0); bc.globalCompositeOperation = 'source-atop'; bc.fillStyle = 'rgba(34,23,31,.55)'; bc.fillRect(0, 0, WORLD[0], WORLD[1]); bc.restore();
-        var fl = []; W.stairs.forEach(function (s) { if (s.floor === F - 1) stairItems(W, s, (F - 1) * FH, fl); });
+        var fl = []; W.stairs.forEach(function (s) { if (s.floor === F - 1) stairItems(W, SS.vstair(s), (F - 1) * FH, fl); });
         fl.forEach(function (it) { it.draw(bc); });
       }
       drawFloorTiles(bc, W, F, F * FH);
@@ -3419,17 +3496,20 @@ var SS = window.SS = window.SS || {};
     // rugs lie flat under everything
     W.pieces.forEach(function (p) {
       var d = W.def(p); if (p.f !== f || d.kind !== 'rug' || p.uid === o.hidden) return;
-      var sp = SS.pieceSprite(p, W, t, { rot: p.r || 0 }), q = P(p.x, p.y, Z);
+      var vq = SS.vplace(p.x, p.y, p.r || 0, d.w, d.d), sp = SS.pieceSprite(p, W, t, { rot: vq.rot }), q = Q(vq.x, vq.y, Z);
       c.drawImage(sp.cv, Math.round(q[0] - sp.ox), Math.round(q[1] - sp.oy));
       if (hits) hits.push({ p: p, sp: sp, x: Math.round(q[0] - sp.ox), y: Math.round(q[1] - sp.oy), rug: true });
     });
     // walls
-    W.walls[f].forEach(function (s) {
+    // walls go in back to front: the far outside walls, the inside walls, then the near outside walls, each by depth, since the
+    // sort never compares two walls (engine/iso.js); a near wall then always covers the end of an inside wall, in every turn
+    var rank = function (s) { return s.back ? 0 : s.ext ? 2 : 1; };
+    viewWalls(W, f).slice().sort(function (a, b) { return rank(a) - rank(b) || (a.x + a.y) - (b.x + b.y); }).forEach(function (s) {
       var th = .07, H = wallHeight(s, mode);
       items.push({ kind: 'wall', s: s, plane: { axis: s.axis, at: s.axis === 'x' ? s.y : s.x }, x0: s.axis === 'x' ? s.x : s.x - th, x1: s.axis === 'x' ? s.x + 1 : s.x + th, y0: s.axis === 'x' ? s.y - th : s.y, y1: s.axis === 'x' ? s.y + th : s.y + 1, z0: Z, z1: Z + H,
         draw: function (c) { drawWall(c, W, s, Z, mode, look, t); } });
     });
-    W.stairs.forEach(function (s) { if (s.floor === f) stairItems(W, s, Z, items); });
+    W.stairs.forEach(function (s) { if (s.floor === f) stairItems(W, SS.vstair(s), Z, items); });
     railItems(W, f, Z, items);
     // pieces
     var byUid = {};
@@ -3445,14 +3525,15 @@ var SS = window.SS = window.SS || {};
     if (!dimmed && o.agents) o.agents.forEach(function (a) {
       if (a.f !== f && !(a.climb && a.climb.floor + 1 === f)) return;
       var at = a.at || { x: a.x, y: a.y };
-      var it = { kind: 'agent', a: a, x0: at.x - .2, x1: at.x + .2, y0: at.y - .2, y1: at.y + .2, z0: Z + (a.z || 0), z1: Z + (a.z || 0) + 30, draw: function (c) { a.draw(c, P(at.x, at.y, Z + (a.z || 0))); } };
+      var vc = SS.vxy(at.x, at.y);
+      var it = { kind: 'agent', a: a, x0: vc[0] - .2, x1: vc[0] + .2, y0: vc[1] - .2, y1: vc[1] + .2, z0: Z + (a.z || 0), z1: Z + (a.z || 0) + 30, draw: function (c) { a.draw(c, P(at.x, at.y, Z + (a.z || 0))); } };
       if (a.on && byUid[a.on]) it.after = byUid[a.on];
       items.push(it);
     });
     if (!dimmed && o.ghost && o.ghost.f === f) items.push(o.ghost.item(Z));
     // project and sort
     items.forEach(function (it) {
-      var pts = [P(it.x0, it.y0, it.z1), P(it.x1, it.y0, it.z1), P(it.x1, it.y1, it.z0), P(it.x0, it.y1, it.z0), P(it.x1, it.y1, it.z1), P(it.x0, it.y1, it.z1), P(it.x1, it.y0, it.z0)];
+      var pts = [Q(it.x0, it.y0, it.z1), Q(it.x1, it.y0, it.z1), Q(it.x1, it.y1, it.z0), Q(it.x0, it.y1, it.z0), Q(it.x1, it.y1, it.z1), Q(it.x0, it.y1, it.z1), Q(it.x1, it.y0, it.z0)];   // the boxes are already in the view
       var bb = SS.bounds(pts); it.l = bb[0]; it.t = bb[1]; it.r = bb[2]; it.b = bb[3];
       // a piece's drawing can spill past its box (a plant's leaves, a lamp's shade, an easel's legs): against walls, sort by
       // what's drawn
@@ -3469,30 +3550,29 @@ var SS = window.SS = window.SS || {};
   }
   function isUnder(W, p, uid) { var h = W.hostOf(p); return !!h && (h.uid === uid || isUnder(W, h, uid)); }
   function pieceItem(W, p, d, Z, t, mode) {
-    var place, wx, wy, zl = 0;
+    // every piece is drawn at its own turn plus the view's, from its footprint's corner as the view sees it (view.js)
     if (p.wall) {
       var s = W.seg(p.f, p.wall[0], p.wall[1], p.wall[2]);
-      if (!s || wallHeight(s, mode) < SS.WALL_UP) return null;   // wall pieces go with their wall when it's cut down
-      var wp = W.wallPlace(p); place = { rot: wp.rot }; wx = wp.x; wy = wp.y; zl = 0;
-      var sp0 = SS.pieceSprite(p, W, t, place), q0 = P(wx, wy, Z + wp.z);
-      // for sorting, a wall piece lies flat against the room side of its wall, so anything standing in the room (a counter under a
-      // window, a fridge beside it) always draws in front of it. Curtains hang a little past the window on each side.
-      var wl = p.wall[2] === 'x' ? wp.y - .07 : wp.x - .07, pad = d.window ? .2 : 0, a0 = (p.wall[2] === 'x' ? wx : wy) - pad, a1 = (p.wall[2] === 'x' ? wx : wy) + d.w + pad;
-      var bx = p.wall[2] === 'x' ? [a0, a1, wl, wl + .06] : [wl, wl + .06, a0, a1];   // its middle is just on the room side
-      return { kind: 'piece', p: p, sp: sp0, dx: Math.round(q0[0] - sp0.ox), dy: Math.round(q0[1] - sp0.oy), x0: bx[0], x1: bx[1], y0: bx[2], y1: bx[3], z0: Z + wp.z, z1: Z + wp.z + d.h };
+      if (!s || wallHeight(SS.vseg(s), mode) < SS.WALL_UP) return null;   // wall pieces go with their wall when it's cut down
+      var wp = W.wallPlace(p), vw = SS.vplace(wp.x, wp.y, wp.rot, d.w, d.d);
+      var sp0 = SS.pieceSprite(p, W, t, { rot: vw.rot }), q0 = Q(vw.x, vw.y, Z + wp.z);
+      // for sorting, a wall piece lies flat against its own side of its wall, so anything standing in the room in front of it
+      // (a counter under a window, a fridge beside it) always draws over it. Curtains hang a little past the window each side.
+      var ax = p.wall[2] === 'x', wl = ax ? p.wall[1] : p.wall[0], along = ax ? p.wall[0] : p.wall[1], pad = d.window ? .2 : 0;
+      var nb = (p.side || 1) < 0 ? [wl - .06, wl] : [wl, wl + .06], a0 = along - pad, a1 = along + d.w + pad;
+      var vb = ax ? SS.vrect(a0, nb[0], a1, nb[1]) : SS.vrect(nb[0], a0, nb[1], a1);
+      return { kind: 'piece', p: p, sp: sp0, dx: Math.round(q0[0] - sp0.ox), dy: Math.round(q0[1] - sp0.oy), x0: vb[0], x1: vb[2], y0: vb[1], y1: vb[3], z0: Z + wp.z, z1: Z + wp.z + d.h };
     }
     if (p.host) {
-      var host = W.hostOf(p), pos = W.spotPos(host, p.spot);
-      place = { rot: p.r || 0 };
-      var sp1 = SS.pieceSprite(p, W, t, place), q1 = P(pos.x - .5, pos.y - .5, Z + pos.z);
-      return { kind: 'piece', p: p, sp: sp1, dx: Math.round(q1[0] - sp1.ox), dy: Math.round(q1[1] - sp1.oy), x0: pos.x - .15, x1: pos.x + .15, y0: pos.y - .15, y1: pos.y + .15, z0: Z + pos.z, z1: Z + pos.z + d.h };
+      var host = W.hostOf(p), pos = W.spotPos(host, p.spot), vh = SS.vplace(pos.x - .5, pos.y - .5, p.r || 0, d.w, d.d), vc = SS.vxy(pos.x, pos.y);
+      var sp1 = SS.pieceSprite(p, W, t, { rot: vh.rot }), q1 = Q(vh.x, vh.y, Z + pos.z);
+      return { kind: 'piece', p: p, sp: sp1, dx: Math.round(q1[0] - sp1.ox), dy: Math.round(q1[1] - sp1.oy), x0: vc[0] - .15, x1: vc[0] + .15, y0: vc[1] - .15, y1: vc[1] + .15, z0: Z + pos.z, z1: Z + pos.z + d.h };
     }
-    place = { rot: p.r || 0 };
-    var sp = SS.pieceSprite(p, W, t, place), q = P(p.x, p.y, Z), ft = W.foot(p);
+    var vq = SS.vplace(p.x, p.y, p.r || 0, d.w, d.d), sp = SS.pieceSprite(p, W, t, { rot: vq.rot }), q = Q(vq.x, vq.y, Z), ft = W.foot(p);
     // the sort box sits inside the walls' thickness (.07 each side), so a piece pushed against a wall never overlaps it and
     // always sorts on the right side of it (Keegan's playtest, Nov 26: pieces by the front walls drew over them with walls up)
-    var ins = d.kind === 'small' ? .3 : .1;
-    return { kind: 'piece', p: p, sp: sp, dx: Math.round(q[0] - sp.ox), dy: Math.round(q[1] - sp.oy), x0: ft[0] + ins, x1: ft[2] - ins, y0: ft[1] + ins, y1: ft[3] - ins, z0: Z, z1: Z + (d.h || 20) };
+    var ins = d.kind === 'small' ? .3 : .1, vb2 = SS.vrect(ft[0] + ins, ft[1] + ins, ft[2] - ins, ft[3] - ins);
+    return { kind: 'piece', p: p, sp: sp, dx: Math.round(q[0] - sp.ox), dy: Math.round(q[1] - sp.oy), x0: vb2[0], x1: vb2[2], y0: vb2[1], y1: vb2[3], z0: Z, z1: Z + (d.h || 20) };
   }
 
   // ---------- light ----------
@@ -3753,9 +3833,12 @@ var SS = window.SS = window.SS || {};
     a.draw = function (c, p) {
       var walking = a.path.length > 0, beat = Math.floor(a.walked * 4) % 4;
       var pose = walking ? (beat === 0 ? 'walk1' : beat === 2 ? 'walk2' : (a.kind === 'cat' ? 'walk2' : 'stand')) : a.pose;
-      if (a.kind === 'person' && pose === 'bath') drawBath(c, a, p);
-      else if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: walking && a.back, flip: a.flip, t: performance.now(), arms: walking ? null : a.arms });
-      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: a.flip, hat: SS.G && SS.G.xmasDay });
+      // facings are kept in the home's own directions; the view turns them (view.js). Standing still, people face the front
+      var fc = SS.vface(a.flip, walking && a.back);
+      if (a.kind === 'person' && !walking && fc.back) fc = { flip: !fc.flip, back: false };   // standing or sitting still, people show their faces, as they always have, turned the nearer way
+      if (a.kind === 'person' && pose === 'bath') drawBath(c, a, p, fc.flip);
+      else if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: fc.back, flip: fc.flip, t: performance.now(), arms: walking ? null : a.arms });
+      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: SS.vface(a.flip, a.back).flip, hat: SS.G && SS.G.xmasDay });
       var headY = p[1] - (a.kind === 'cat' ? 22 : (a.pose === 'sit' ? 36 : a.pose === 'lie' ? 16 : a.pose === 'bath' ? 34 : 42));
       if (a.bar) { // the slim progress bar over her head
         var w = 18, k = Math.min(1, a.bar.k);
@@ -3770,16 +3853,16 @@ var SS = window.SS = window.SS || {};
     return a;
   }
   // Sarah in the bath: drawn from her water line, clipped at the tub's front rim (its basin's lower edges on screen)
-  function drawBath(c, a, p) {
+  function drawBath(c, a, p, flip) {
     var G = SS.G, W = G && G.W, tub = W && a.on && W.byUid[a.on], clip = null, water = [p[0], p[1] - 7];
     if (tub) {
       var d = W.def(tub), M = SS.Model(null, d, tub, { x: tub.x, y: tub.y, rot: tub.r || 0 }), Z = W.floorOf(tub) * FH + 19;
-      var pts = [[.18, .22], [1.82, .22], [1.82, .78], [.18, .78]].map(function (q) { var w = M.wp(q[0], q[1]); return SS.I.p(w[0], w[1], Z); });
+      var pts = [[.18, .22], [1.82, .22], [1.82, .78], [.18, .78]].map(function (q) { var w = M.wp(q[0], q[1]); return SS.vp(w[0], w[1], Z); });
       var L = pts.reduce(function (m, q) { return q[0] < m[0] ? q : m; }), R = pts.reduce(function (m, q) { return q[0] > m[0] ? q : m; }), B = pts.reduce(function (m, q) { return q[1] > m[1] ? q : m; });
       clip = [L, B, R, [R[0], R[1] - 120], [L[0], L[1] - 120]];
-      var wq = SS.I.p(a.x, a.y, Z - 2); water = [wq[0], wq[1]];
+      var wq = SS.vp(a.x, a.y, Z - 2); water = [wq[0], wq[1]];
     }
-    SS.bathPerson(c, water[0], water[1], { flip: a.flip, t: performance.now(), clip: clip });
+    SS.bathPerson(c, water[0], water[1], { flip: flip, t: performance.now(), clip: clip });
   }
   // a small thought bubble over a head: a heart, '!', 'z', '...', a note, a treat
   function drawBubble(c, x, y, b) {
@@ -4397,6 +4480,16 @@ var SS = window.SS = window.SS || {};
     txt(G.walls === 'up' ? 'UP' : G.walls === 'cut' ? 'CUT' : 'DOWN', x + 10, base + 2, P.ink, 4, 'center');
     hit(G, x, y, 20, wh, function () { G.cycleWalls(); });
     y += wh + 4;
+    // the turn button: the whole home a quarter turn clockwise (bible, Building, Turning the home), a curved arrow
+    R(x, y, 20, wh, 'rgba(255,246,234,.95)'); R(x, y + wh - 1, 20, 1, P.trayEdge);
+    var cx = x + 10, cy = y + (small ? 8 : 9);
+    c.strokeStyle = P.ink; c.lineWidth = 1.5; c.beginPath(); c.arc(cx, cy, 5, Math.PI * .95, Math.PI * 2.25); c.stroke(); c.lineWidth = 1;
+    var ax = cx + Math.cos(Math.PI * 2.25) * 5, ay = cy + Math.sin(Math.PI * 2.25) * 5;
+    c.fillStyle = P.ink; c.beginPath(); c.moveTo(ax + 3, ay - 3); c.lineTo(ax + 1, ay + 3); c.lineTo(ax - 4, ay); c.closePath(); c.fill();
+    if (!small) txt('TURN', x + 10, y + wh - 7, P.ink, 4, 'center');
+    hit(G, x, y, 20, wh, function () { G.turnHome(); });
+    G.turnBtn = { x: x, y: y, w: 20, h: wh };
+    y += wh + 4;
     // undo, the last 10 changes in this home (spec 001, part C, Claude default)
     var can = G.undo.length > 0;
     R(x, y, 20, 16, can ? 'rgba(255,246,234,.95)' : 'rgba(255,246,234,.55)'); R(x, y + 15, 20, 1, P.trayEdge); SS.ICONS.undo(x + 4, y + 2, can ? P.ink : P.soft);
@@ -4701,6 +4794,8 @@ var SS = window.SS = window.SS || {};
     if (mode === 'life') lampPhase(true);
     G.tray.open = mode === 'sandbox';
     G.floor = 0; G.walls = 'cut';
+    // the view she left this home in (bible, Building, Turning the home); older saves have none and open from the front
+    SS.view.L = G.W.lot; SS.view.k = (s.view || 0) % 4; G.turnAnim = null;
     SS.makeAgents(G); G.sarahF = undefined; G.idle = null; G.hunt = null; G.charging = false; SS.startKeeganDay(G);
     G.sel = null; centerCam(true); SS.startSarahIdle(G); SS.applyHolidays(G);
     G.screen = 'home';
@@ -4724,7 +4819,7 @@ var SS = window.SS = window.SS || {};
   }
 
   // ---------- the camera ----------
-  function houseCenter(f) { var W = G.W; return I.p(W.ax + W.home.w / 2, W.ay + W.home.d / 2, f * FH + 18); }
+  function houseCenter(f) { var W = G.W; return SS.vp(W.ax + W.home.w / 2, W.ay + W.home.d / 2, f * FH + 18); }
   function centerCam(reset) {
     var q = houseCenter(G.floor);
     if (reset) G.cam.zoom = 1;   // the whole floor at the approved look's own scale (look-iso-v1: 22 px tiles); pinch in for a corner
@@ -4734,6 +4829,26 @@ var SS = window.SS = window.SS || {};
   }
   function clampCam() { var W = G.W, l = I.p(0, W.lot)[0] + SS.OFF[0] + 40, r = I.p(W.lot, 0)[0] + SS.OFF[0] - 40, t = I.p(0, 0, (G.floor + 1) * FH + 20)[1] + SS.OFF[1], b = I.p(W.lot, W.lot)[1] + SS.OFF[1] - 30; G.cam.clamp(l, t, r, b); }
   G.setFloor = function (f) { if (f === G.floor) return; G.cam.y -= (f - G.floor) * FH; G.floor = f; G.bubble = null; clampCam(); };
+  // turning the home a quarter turn clockwise (bible, Building, Turning the home): the same spot stays in the middle of the
+  // screen at the same zoom, the walls nearest her follow the view, and the home remembers it (spec 001, part B)
+  G.turnHome = function () {
+    if (!G.W || G.screen !== 'home') return;
+    var Z = G.floor * FH, v = I.tile(G.cam.x - SS.OFF[0], G.cam.y - SS.OFF[1], Z), w = SS.vinv(v[0], v[1]);
+    var snap = document.createElement('canvas'); snap.width = W0; snap.height = G.H; snap.getContext('2d').drawImage(cv, 0, 0, cv.width, cv.height, 0, 0, W0, G.H);
+    SS.view.k = (SS.view.k + 1) % 4; G.save.view = SS.view.k;
+    var v2 = SS.vxy(w[0], w[1]), q = I.p(v2[0], v2[1], Z);
+    G.cam.x = q[0] + SS.OFF[0]; G.cam.y = q[1] + SS.OFF[1]; clampCam();
+    G.turnAnim = { t0: performance.now(), img: snap };
+    G.changed(true, true);
+  };
+  function turnAnim(now, h) { // the old view squeezes away to the left as the new one comes in, under half a second
+    var A = G.turnAnim; if (!A) return; var k = (now - A.t0) / 300; if (k >= 1) { G.turnAnim = null; return; }
+    var e = k * k * (3 - 2 * k), sx = 1 - .75 * e;
+    c.save(); c.beginPath(); c.rect(0, 0, W0, h); c.clip();
+    c.fillStyle = 'rgba(34,23,31,' + (.5 * (1 - e)).toFixed(2) + ')'; c.fillRect(0, 0, W0, h);
+    c.globalAlpha = 1 - e; c.translate(W0 / 2 - 60 * e, 0); c.scale(sx, 1); c.drawImage(A.img, 0, 0, W0, h, -W0 / 2, 0, W0, h);
+    c.restore(); c.globalAlpha = 1;
+  }
   G.cycleWalls = function () { G.walls = { up: 'cut', cut: 'down', down: 'up' }[G.walls]; G.toast('WALLS ' + { up: 'UP', cut: 'CUT AWAY', down: 'DOWN' }[G.walls], 700); };
   function zoomAt(k, mid) {
     var before = G.cam.toWorld(mid.x, mid.y);
@@ -4746,11 +4861,12 @@ var SS = window.SS = window.SS || {};
   function toWorld(p) { var q = G.cam.toWorld(p.x, p.y); return [q[0] - SS.OFF[0], q[1] - SS.OFF[1]]; }
   function toScreen(wx, wy) { return G.cam.toView(wx + SS.OFF[0], wy + SS.OFF[1]); }
   G.toScreen = function (x, y) { return toScreen(x, y); };   // for the checks: where a world point shows on the screen
-  function tileAt(p, f) { var w = toWorld(p), q = I.tile(w[0], w[1], (f === undefined ? G.floor : f) * FH); return [Math.floor(q[0]), Math.floor(q[1]), q[0], q[1]]; }
+  function tileAt(p, f) { var w = toWorld(p), v = I.tile(w[0], w[1], (f === undefined ? G.floor : f) * FH), q = SS.vinv(v[0], v[1]); return [Math.floor(q[0]), Math.floor(q[1]), q[0], q[1]]; }
+  G.tileAt = tileAt;
   // keep a piece clear of the tray and the top bar (spec 001, part B: the tray never sits over a selected piece)
   function showPiece(p) {
     var W = G.W, ft = p.wall ? [p.wall[0], p.wall[1], p.wall[0] + 1, p.wall[1] + 1] : W.foot(p.host ? W.hostOf(p) : p);
-    var q = I.p((ft[0] + ft[2]) / 2, (ft[1] + ft[3]) / 2, W.floorOf(p) * FH + 10), s = toScreen(q[0], q[1]);
+    var q = SS.vp((ft[0] + ft[2]) / 2, (ft[1] + ft[3]) / 2, W.floorOf(p) * FH + 10), s = toScreen(q[0], q[1]);
     var bottom = G.H - SS.TRAY_H[G.trayState()] - 16, top = 50;
     if (s[1] > bottom) G.cam.y += (s[1] - bottom) / G.cam.zoom; if (s[1] < top) G.cam.y -= (top - s[1]) / G.cam.zoom;
     if (s[0] < 20) G.cam.x -= (20 - s[0]) / G.cam.zoom; if (s[0] > W0 - 40) G.cam.x += (s[0] - (W0 - 40)) / G.cam.zoom;
@@ -4796,7 +4912,7 @@ var SS = window.SS = window.SS || {};
     var inst = JSON.parse(JSON.stringify(orig)); delete inst.x; delete inst.y; delete inst.wall; delete inst.host; delete inst.spot;
     G.hold = { inst: inst, from: 'move', orig: orig, stack: stack, r: orig.r || 0, f: G.W.floorOf(orig) === undefined ? G.floor : (orig.host ? G.floor : orig.f) };
     G.sel = null; G.paint = null;
-    var cand = orig.wall ? { wall: orig.wall } : orig.host ? { host: orig.host, spot: orig.spot } : { x: orig.x, y: orig.y };
+    var cand = orig.wall ? { wall: orig.wall, side: orig.side || 1 } : orig.host ? { host: orig.host, spot: orig.spot } : { x: orig.x, y: orig.y };
     G.hold.cand = cand; G.hold.f = orig.f !== undefined ? orig.f : G.floor; checkHold();
   };
   // where a held piece would go for a screen point
@@ -4825,21 +4941,22 @@ var SS = window.SS = window.SS || {};
     var best = null;
     hd.spots.forEach(function (sp, i) {
       if (!W.spotFree(host, i)) return;
-      var pos = W.spotPos(host, i), q = I.p(pos.x, pos.y, W.floorOf(host) * FH + pos.z), dd = Math.hypot(q[0] - w[0], q[1] - w[1]);
+      var pos = W.spotPos(host, i), q = SS.vp(pos.x, pos.y, W.floorOf(host) * FH + pos.z), dd = Math.hypot(q[0] - w[0], q[1] - w[1]);
       if (!best || dd < best.d) best = { d: dd, spot: i };
     });
     return best ? { p: host, spot: best.spot } : null;
   }
-  function nearestWall(p, f, d) { // wall pieces snap flat to the nearest wall she can see, at eye height
+  function nearestWall(p, f, d) { // wall pieces snap flat to the nearest wall she can see, at eye height, on the side facing her
     var w = toWorld(p), W = G.W, best = null;
     W.walls[f].forEach(function (s) {
-      if (!s.b || s.op) return;
-      var mid = s.axis === 'x' ? I.p(s.x + .5, s.y, f * FH + 30) : I.p(s.x, s.y + .5, f * FH + 30);
+      var side = SS.vfacing(s.axis);   // either side of a wall can take a piece; she hangs it on the side she's looking at
+      if (!W.roomOn(s, side) || s.op) return;
+      var mid = s.axis === 'x' ? SS.vp(s.x + .5, s.y + side * .1, f * FH + 30) : SS.vp(s.x + side * .1, s.y + .5, f * FH + 30);
       var dd = Math.hypot(mid[0] - w[0], mid[1] - w[1]);
       if (d.window && !s.win) dd += 1000; if (!d.window && s.win) dd += 60;
-      if (!best || dd < best.d) best = { d: dd, s: s };
+      if (!best || dd < best.d) best = { d: dd, s: s, side: side };
     });
-    return best ? { wall: [best.s.x, best.s.y, best.s.axis] } : { wall: null };
+    return best ? { wall: [best.s.x, best.s.y, best.s.axis], side: best.side } : { wall: null };
   }
   function candOf(H) { var c0 = H.cand || {}, o = { id: H.inst.id, f: H.f, r: H.r }; for (var k in c0) o[k] = c0[k]; return o; }
   function checkHold() { var H = G.hold; if (!H) return; var r = G.W.check(candOf(H)); H.ok = r.ok; H.why = r.why; }
@@ -4851,7 +4968,7 @@ var SS = window.SS = window.SS || {};
     var p = H.inst, cd = candOf(H);
     delete p.x; delete p.y; delete p.wall; delete p.host; delete p.spot;
     p.f = cd.f; p.r = SS.DEF[p.id].kind === 'wall' ? 0 : H.r;
-    if (cd.wall) p.wall = cd.wall; else if (cd.host) { p.host = cd.host; p.spot = cd.spot; delete p.f; } else { p.x = cd.x; p.y = cd.y; }
+    delete p.side; if (cd.wall) { p.wall = cd.wall; if ((cd.side || 1) < 0) p.side = -1; } else if (cd.host) { p.host = cd.host; p.spot = cd.spot; delete p.f; } else { p.x = cd.x; p.y = cd.y; }
     if (H.from === 'move') { W.add(p); H.stack.forEach(function (q) { W.add(q); }); }
     else { W.add(p); if (H.stored) G.save.stored.splice(G.save.stored.indexOf(H.stored), 1); }
     if (p.host) p.f = W.floorOf(p);
@@ -4868,17 +4985,17 @@ var SS = window.SS = window.SS || {};
   }
   function ghostScreen(H) {
     var W = G.W, cd = candOf(H), Z = H.f * FH;
-    if (cd.wall) return I.p(cd.wall[0] + .5, cd.wall[1] + .5, Z + 30);
-    if (cd.host) { var pos = W.spotPos(W.byUid[cd.host], cd.spot); return I.p(pos.x, pos.y, Z + pos.z + 10); }
-    var sz = W.size(SS.DEF[H.inst.id], H.r); return I.p(cd.x + sz[0] / 2, cd.y + sz[1] / 2, Z + 10);
+    if (cd.wall) return SS.vp(cd.wall[0] + .5, cd.wall[1] + .5, Z + 30);
+    if (cd.host) { var pos = W.spotPos(W.byUid[cd.host], cd.spot); return SS.vp(pos.x, pos.y, Z + pos.z + 10); }
+    var sz = W.size(SS.DEF[H.inst.id], H.r); return SS.vp(cd.x + sz[0] / 2, cd.y + sz[1] / 2, Z + 10);
   }
   function turnHold() { var H = G.hold, d = SS.DEF[H.inst.id]; if (d.kind === 'wall') return; H.r = (H.r + 1) % 4; SS.forgetSprite('ghost'); checkHold(); }
   function moveHold(dir) {
     var H = G.hold, d = SS.DEF[H.inst.id], W = G.W, cd = H.cand || {};
-    var D = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[dir];
+    var D0 = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[dir], D = SS.vdirInv(D0[0], D0[1]);
     if (d.kind === 'wall' && cd.wall) { // slide along the wall
       var s = cd.wall, k = s[2] === 'x' ? D[0] || D[1] : D[1] || D[0], nx = s[2] === 'x' ? s[0] + k : s[0], ny = s[2] === 'y' ? s[1] + k : s[1];
-      if (W.seg(H.f, nx, ny, s[2])) H.cand = { wall: [nx, ny, s[2]] };
+      if (W.seg(H.f, nx, ny, s[2])) H.cand = { wall: [nx, ny, s[2]], side: cd.side };
     } else if (cd.host) { var pos = W.spotPos(W.byUid[cd.host], cd.spot); H.cand = { x: Math.floor(pos.x) + D[0], y: Math.floor(pos.y) + D[1] }; }
     else H.cand = { x: (cd.x || 0) + D[0], y: (cd.y || 0) + D[1] };
     checkHold();
@@ -5017,7 +5134,7 @@ var SS = window.SS = window.SS || {};
   }
   function backDoorAt(w) {
     var W = G.W, f = G.floor, hit = null;
-    W.walls[f].forEach(function (s) { if (s.op !== 'door' || !s.ext || !s.b) return; var q = I.p(s.x + .5, s.y, f * FH + 16); if (Math.abs(q[0] - w[0]) < 10 && Math.abs(q[1] - w[1]) < 18) hit = { f: f, x: s.x, y: s.y }; });
+    W.walls[f].forEach(function (s) { if (s.op !== 'door' || !s.ext || !s.b) return; var q = SS.vp(s.x + .5, s.y, f * FH + 16); if (Math.abs(q[0] - w[0]) < 10 && Math.abs(q[1] - w[1]) < 18) hit = { f: f, x: s.x, y: s.y }; });
     return hit;
   }
   SS.walkSarah = function (G, f, x, y) {
@@ -5087,6 +5204,7 @@ var SS = window.SS = window.SS || {};
     }
     var sel = G.sel && G.W.byUid[G.sel];
     if (sel) { if (k === 'select') turnPiece(sel); if (k === 'b') { if (G.paint) G.paint = null; else G.deselect(); } if (k === 'a') G.deselect(); if (DIRS[k]) pan(k); return; }
+    if (k === 'select') { G.turnHome(); return; }   // nothing picked: Select turns the home (spec 001, part B)
     var playing = G.mode === 'life' && G.trayState() === 'closed';
     if (playing && DIRS[k]) { stepSarah(k); return; }
     if (playing && k === 'a') { nearbyBubble(); return; }
@@ -5099,7 +5217,7 @@ var SS = window.SS = window.SS || {};
   function stepSarah(k) { // the D-pad walks her a tile at a time (up is toward the back, down toward the front)
     var s = G.people.sarah; if (s.path.length > 1) return;
     SS.stopActions(G);
-    var st = s.tile(), D = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[k], nx = st.x + D[0], ny = st.y + D[1];
+    var D0 = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[k], D = SS.vdirInv(D0[0], D0[1]), st = s.tile(), nx = st.x + D[0], ny = st.y + D[1];
     if (!G.W.walkable(st.f, nx, ny) || G.W.wallBetween(st.f, st.x, st.y, nx, ny)) {
       // the stairs: step onto them from their foot or head
       var up = G.W.stairs.filter(function (q) { return q.floor === st.f && q.from[0] === st.x && q.from[1] === st.y && q.tiles[0][0] === nx && q.tiles[0][1] === ny; })[0];
@@ -5113,7 +5231,7 @@ var SS = window.SS = window.SS || {};
   function nearbyBubble() {
     var s = G.people.sarah, st = s.tile(), W = G.W;
     var p = W.pieces.filter(function (q) { return W.def(q).use && W.floorOf(q) === st.f && W.useTiles(q).some(function (u) { return u[0] === st.x && u[1] === st.y; }); })[0];
-    if (p) { var q = I.p(st.x + .5, st.y + .5, st.f * FH + 30), sc = toScreen(q[0], q[1]); openBubble({ piece: p }, sc); }
+    if (p) { var q = SS.vp(st.x + .5, st.y + .5, st.f * FH + 30), sc = toScreen(q[0], q[1]); openBubble({ piece: p }, sc); }
   }
   StudioInput.start({ press: press });
 
@@ -5202,8 +5320,9 @@ var SS = window.SS = window.SS || {};
     var src = G.cam.src();
     c.imageSmoothingEnabled = false;
     c.drawImage(world, src[0], src[1], src[2], src[3], 0, 0, W0, H);
+    if (G.turnAnim) turnAnim(now, H - trayH);
     // a soft ring where she tapped to walk
-    if (G.tap && now - G.tap.t0 < 600 && G.tap.f === G.floor) { var tq = I.p(G.tap.x + .5, G.tap.y + .5, G.floor * FH), ts = toScreen(tq[0], tq[1]), k = (now - G.tap.t0) / 600; c.strokeStyle = 'rgba(255,255,255,' + (1 - k) + ')'; c.beginPath(); c.ellipse(ts[0], ts[1], (6 + k * 6) * G.cam.zoom, (3 + k * 3) * G.cam.zoom, 0, 0, 7); c.stroke(); }
+    if (G.tap && now - G.tap.t0 < 600 && G.tap.f === G.floor) { var tq = SS.vp(G.tap.x + .5, G.tap.y + .5, G.floor * FH), ts = toScreen(tq[0], tq[1]), k = (now - G.tap.t0) / 600; c.strokeStyle = 'rgba(255,255,255,' + (1 - k) + ')'; c.beginPath(); c.ellipse(ts[0], ts[1], (6 + k * 6) * G.cam.zoom, (3 + k * 3) * G.cam.zoom, 0, 0, 7); c.stroke(); }
     // chips over the held or selected piece
     if (G.hold && !(drag && drag.kind === 'hold')) {
       var gq = ghostScreen(G.hold), gs = toScreen(gq[0], gq[1] - 30);
@@ -5225,7 +5344,7 @@ var SS = window.SS = window.SS || {};
     // the charger hunt's hint: a bouncing marker over the spot, the first time (spec 006, part D)
     SS.huntMarks(G).forEach(function (hm, i) {
       if (hm.f !== G.floor) return;
-      var hp = hm.agent ? I.p(hm.agent.x, hm.agent.y, hm.f * FH + (hm.agent.z || 0) + 26) : selTop(hm.piece), hs = toScreen(hp[0], hp[1]), bob = Math.round(Math.sin(now / 200 + i * 1.7) * 2);
+      var hp = hm.agent ? SS.vp(hm.agent.x, hm.agent.y, hm.f * FH + (hm.agent.z || 0) + 26) : selTop(hm.piece), hs = toScreen(hp[0], hp[1]), bob = Math.round(Math.sin(now / 200 + i * 1.7) * 2);
       var mx = Math.round(hs[0]), my = Math.round(hs[1] - 6 + bob);
       SS.R(mx - 5, my - 11, 11, 10, '#3b2430'); SS.R(mx - 4, my - 10, 9, 8, SS.P.rose); SS.txt('?', mx + 1, my - 9, '#fff', 6, 'center');
       SS.R(mx - 1, my - 2, 3, 2, SS.P.rose); SS.R(mx, my, 1, 2, SS.P.rose);
@@ -5239,19 +5358,20 @@ var SS = window.SS = window.SS || {};
     if (G.meters && G.mode === 'life') SS.drawMeters(G, G.bubble ? W0 - 92 : 4, G.bubble ? G.bubbleTop + 2 : 40, G.meters);   // beside the bubble, as in cooking-v1
   }
   function markFit(x, y, ok) { if (ok) SS.check(x - 4, y + 2, '#8fd08c'); else SS.cross(x - 3, y + 2, '#e46f8b'); }
-  function selTop(p) { var W = G.W, d = W.def(p), f = W.floorOf(p), Z = f * FH; if (p.wall) { var wp = W.wallPlace(p); return I.p(wp.x + (p.wall[2] === 'x' ? d.w / 2 : 0), wp.y + (p.wall[2] === 'y' ? d.w / 2 : 0), Z + wp.z + d.h); } if (p.host) { var pos = W.spotPos(W.hostOf(p), p.spot); return I.p(pos.x, pos.y, Z + pos.z + d.h + 6); } var ft = W.foot(p); return I.p((ft[0] + ft[2]) / 2, (ft[1] + ft[3]) / 2, Z + Math.min(60, d.h + 8)); }
+  function selTop(p) { var W = G.W, d = W.def(p), f = W.floorOf(p), Z = f * FH; if (p.wall) { var wp = W.wallPlace(p); return SS.vp(wp.x + (p.wall[2] === 'x' ? d.w / 2 : 0), wp.y + (p.wall[2] === 'y' ? d.w / 2 : 0), Z + wp.z + d.h); } if (p.host) { var pos = W.spotPos(W.hostOf(p), p.spot); return SS.vp(pos.x, pos.y, Z + pos.z + d.h + 6); } var ft = W.foot(p); return SS.vp((ft[0] + ft[2]) / 2, (ft[1] + ft[3]) / 2, Z + Math.min(60, d.h + 8)); }
   function ghostItem(Hd, t) {
     var W = G.W, cd = candOf(Hd), d = SS.DEF[Hd.inst.id], inst = Hd.inst, lift = 6 + Math.round(Math.sin(t / 2));
     var tmp = { uid: 'ghost', id: inst.id, r: Hd.r, sw: inst.sw, colors: inst.colors, pats: inst.pats, props: inst.props, lit: inst.lit };
     var place, wx, wy, wz;
-    if (cd.wall) { var wp = W.wallPlace({ id: inst.id, wall: cd.wall }); place = { rot: wp.rot }; wx = wp.x; wy = wp.y; wz = wp.z; tmp.wall = cd.wall; }
+    if (cd.wall) { var wp = W.wallPlace({ id: inst.id, wall: cd.wall, side: cd.side }); place = { rot: wp.rot }; wx = wp.x; wy = wp.y; wz = wp.z; tmp.wall = cd.wall; tmp.side = cd.side; }
     else if (cd.host) { var pos = W.spotPos(W.byUid[cd.host], cd.spot); place = { rot: Hd.r }; wx = pos.x - .5; wy = pos.y - .5; wz = pos.z + 3; }
     else if (cd.x !== undefined) { place = { rot: Hd.r }; wx = cd.x; wy = cd.y; wz = lift; if (d.kind === 'rug') wz = 2; }
     else return null;
-    var sp = SS.pieceSprite(tmp, null, t, place);
+    var vq = SS.vplace(wx, wy, place.rot, d.w, d.d), sz = W.size(d, place.rot);   // drawn in the view's turn (view.js)
+    var sp = SS.pieceSprite(tmp, null, t, { rot: vq.rot }), vb = SS.vrect(wx, wy, wx + (cd.wall ? .2 : sz[0]), wy + (cd.wall ? .2 : sz[1]));
     return { f: Hd.f, item: function (Z) {
-      var q = I.p(wx, wy, Z + wz), sz = W.size(d, Hd.r);
-      return { kind: 'ghost', x0: wx, x1: wx + (cd.wall ? .2 : sz[0]), y0: wy, y1: wy + (cd.wall ? .2 : sz[1]), z0: Z + wz, z1: Z + wz + d.h, draw: function (cc) { cc.globalAlpha = Hd.ok ? .92 : .6; cc.drawImage(sp.cv, Math.round(q[0] - sp.ox), Math.round(q[1] - sp.oy)); cc.globalAlpha = 1; } };
+      var q = I.p(vq.x, vq.y, Z + wz);
+      return { kind: 'ghost', x0: vb[0], x1: vb[2], y0: vb[1], y1: vb[3], z0: Z + wz, z1: Z + wz + d.h, draw: function (cc) { cc.globalAlpha = Hd.ok ? .92 : .6; cc.drawImage(sp.cv, Math.round(q[0] - sp.ox), Math.round(q[1] - sp.oy)); cc.globalAlpha = 1; } };
     } };
   }
   function slideBackAnim(now, H) { // a piece that didn't fit slides back to the tray

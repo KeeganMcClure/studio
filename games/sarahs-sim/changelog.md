@@ -2,6 +2,90 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 26, 2026: turning the whole home (Dev)
+
+From studio PR #301 (bible, Building, Turning the home; spec 001, part B, What turning the home touches).
+
+### What was built
+
+- **The turn button** sits under the walls button on the right, in the same style, with a curved arrow and the word TURN. Each tap turns the whole home a quarter turn clockwise, so 4 taps bring it back to the front. It shows on every home screen, in both modes.
+- **Select** turns the home when nothing is picked. With a piece picked or held, Select still turns the piece.
+- **The walls follow the view.** Cut away and walls down lower whichever walls are nearest her in the view she's in, and keep the far outside walls up. December's string lights follow the walls that stay up.
+- **Wall pieces hang on either side of a wall.** She hangs a piece on the side of the wall she's looking at, and each piece saves its side. A piece whose side faces away is hidden behind its wall, as in a real room. This replaces the "wall pieces hang only on the side of a wall that faces you" limit in the first slice's entry. Older saves keep their pieces on the side they were on.
+- **Everything turns with it:** furniture, stacked things, rugs, doors, windows, stairs and banisters, the yard and path, the cats and the two of them. Furniture uses the 4 turns it already had, so no new art was needed.
+- **Taps and drags land right in every view:**
+  - placing, moving and stacking;
+  - tapping things;
+  - tap-to-walk;
+  - the charger question marks and the bubbles;
+  - the D-pad moves a held piece, and walks Sarah, the way it points on screen.
+- **The camera stays put.** The turn keeps the same spot in the middle of the screen and the same zoom. The old view squeezes away to the left as the new one comes in, in 0.3 s, so she can see which way it turned.
+- **Saved:** each home remembers the view she left it in. Older saves open from the front.
+- **Shared engine:** the draw order (`engine/iso.js`) never compares two walls (they only meet at corners), so the game hands them over far to near. This fixes a pale inside wall that showed through a near brick wall in some views.
+
+### Checks
+
+`npm run check` has a new section that covers all 4 views:
+- the turn button and Select, keeping the same spot and zoom, and the turn finishing in under half a second;
+- near walls cut and far walls up;
+- nothing drawing through a wall on any floor, walls up or cut;
+- tap-to-walk landing on the tapped tile;
+- a dragged piece landing on the tile under the finger;
+- stacking;
+- the D-pad matching the screen;
+- wall pieces on both sides kept after a reload;
+- the view saved, and an older save opening from the front.
+
+New screens: `src/dist/screen-turn0` to `screen-turn3-375x667.png`. The button column fits at 320 × 480.
+
+### What's left
+
+- The Build tools (spec 004) aren't built yet; they'll use the same view when they are.
+- A question for Keegan: what a wall piece does when its wall is cut away (below).
+
+### Changes from the spec
+
+- A wall piece on a wall that's cut away or down is hidden along with its wall, as before. The spec says a piece facing away "shows again when the walls are cut away or down". With its wall lowered there's nothing for it to hang on, so I kept it hidden. Asked Keegan.
+- There was no To do line for turning in the bible, so there was nothing to tick.
+
+## Nov 26, 2026: quicker hugs, the charger's hiding spots, Sarah's bubble, and new art (Dev)
+
+### What was built
+
+- **Hugs and kisses are quicker (Keegan).** A hug takes 3 s and a kiss 2.5 s (they were 5). For Chat, Hug and Kiss, Keegan now gets up and meets her halfway. A hug from across the house went from about 16 s to 8.
+- **Lie in and the other together actions (Keegan).** Keegan sets off for the bed or sofa the moment she does. Before, he waited until she got there, which added about 10 s.
+- **Hiding spots show (spec 006, Sarah's phone; studio PR #302).** During a charger hunt, a small bouncing question mark floats over every place the charger could be: each sofa, each bed, and Ralph.
+  - The charger is in one of them.
+  - A wrong guess gets a sigh and loses its question mark.
+  - The right one finds the charger and clears all the marks; B, or tapping the floor to stop, clears them too.
+  - This replaces the first-time-only hint.
+- **What she's doing (spec 006, part C; studio PR #302).** Tapping Sarah opens her bubble with her name and what she's doing, like Keegan's: "SARAH · DOOMSCROLLING", with her phone battery on the line under it. When she isn't doing anything it just says "SARAH". Her actions each have a short name for this ("Napping", "Taking a bath", "Petting Louie"). A title too long for the bubble drops words from the end.
+- **Doomscrolling art.** The pose read as a phone held to her ear. Now:
+  - she holds the phone in both hands at chest height, with its screen toward her and her eyes lowered to it;
+  - a soft screen glow lights her face, and her thumb flicks up the screen about once a second;
+  - from behind, a glow shows around her shoulders;
+  - it works sitting, standing and lying in bed, and in all 4 turns;
+  - the low-battery despair (phone held up, red icon) is unchanged.
+- **Bath art.** She now sits down in the tub:
+  - only her head, bare shoulders and arms show over the rim, with her hair up in a towel;
+  - bubbles are piled around her, with a few drifting up and wisps of steam;
+  - her drawing is cut off at the tub's front rim, so the rim stays in front of her in every turn of the tub and every view of the home;
+  - when the bath ends she steps out dressed.
+- Both new poses are on the contact sheet.
+
+### Checks
+
+`npm run check` now covers:
+- the question marks over every spot, a wrong guess losing its mark, and the marks clearing on finding the charger, on B and on stopping;
+- tapping Sarah showing her activity and battery (and just SARAH when she's doing nothing), and every activity name fitting the bubble;
+- a hug from across the house taking under 15 s with Keegan walking to meet her, and Keegan setting off at once for Lie in;
+- the scrolling pose while she scrolls, and the despair when the phone is low;
+- the bath pose in all 4 turns of the tub, and her stepping out after.
+
+### Changes from the spec
+
+- None. There were no matching To do lines in the bible to tick.
+
 ## Nov 26, 2026: Sarah's playtest bugs (Dev)
 
 Four bugs from Sarah's iPhone playtest of Nov 26, fixed on Dev.

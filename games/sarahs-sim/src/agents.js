@@ -16,9 +16,12 @@
     a.draw = function (c, p) {
       var walking = a.path.length > 0, beat = Math.floor(a.walked * 4) % 4;
       var pose = walking ? (beat === 0 ? 'walk1' : beat === 2 ? 'walk2' : (a.kind === 'cat' ? 'walk2' : 'stand')) : a.pose;
-      if (a.kind === 'person' && pose === 'bath') drawBath(c, a, p);
-      else if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: walking && a.back, flip: a.flip, t: performance.now(), arms: walking ? null : a.arms });
-      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: a.flip, hat: SS.G && SS.G.xmasDay });
+      // facings are kept in the home's own directions; the view turns them (view.js). Standing still, people face the front
+      var fc = SS.vface(a.flip, walking && a.back);
+      if (a.kind === 'person' && !walking && fc.back) fc = { flip: !fc.flip, back: false };   // standing or sitting still, people show their faces, as they always have, turned the nearer way
+      if (a.kind === 'person' && pose === 'bath') drawBath(c, a, p, fc.flip);
+      else if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: fc.back, flip: fc.flip, t: performance.now(), arms: walking ? null : a.arms });
+      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: SS.vface(a.flip, a.back).flip, hat: SS.G && SS.G.xmasDay });
       var headY = p[1] - (a.kind === 'cat' ? 22 : (a.pose === 'sit' ? 36 : a.pose === 'lie' ? 16 : a.pose === 'bath' ? 34 : 42));
       if (a.bar) { // the slim progress bar over her head
         var w = 18, k = Math.min(1, a.bar.k);
@@ -33,16 +36,16 @@
     return a;
   }
   // Sarah in the bath: drawn from her water line, clipped at the tub's front rim (its basin's lower edges on screen)
-  function drawBath(c, a, p) {
+  function drawBath(c, a, p, flip) {
     var G = SS.G, W = G && G.W, tub = W && a.on && W.byUid[a.on], clip = null, water = [p[0], p[1] - 7];
     if (tub) {
       var d = W.def(tub), M = SS.Model(null, d, tub, { x: tub.x, y: tub.y, rot: tub.r || 0 }), Z = W.floorOf(tub) * FH + 19;
-      var pts = [[.18, .22], [1.82, .22], [1.82, .78], [.18, .78]].map(function (q) { var w = M.wp(q[0], q[1]); return SS.I.p(w[0], w[1], Z); });
+      var pts = [[.18, .22], [1.82, .22], [1.82, .78], [.18, .78]].map(function (q) { var w = M.wp(q[0], q[1]); return SS.vp(w[0], w[1], Z); });
       var L = pts.reduce(function (m, q) { return q[0] < m[0] ? q : m; }), R = pts.reduce(function (m, q) { return q[0] > m[0] ? q : m; }), B = pts.reduce(function (m, q) { return q[1] > m[1] ? q : m; });
       clip = [L, B, R, [R[0], R[1] - 120], [L[0], L[1] - 120]];
-      var wq = SS.I.p(a.x, a.y, Z - 2); water = [wq[0], wq[1]];
+      var wq = SS.vp(a.x, a.y, Z - 2); water = [wq[0], wq[1]];
     }
-    SS.bathPerson(c, water[0], water[1], { flip: a.flip, t: performance.now(), clip: clip });
+    SS.bathPerson(c, water[0], water[1], { flip: flip, t: performance.now(), clip: clip });
   }
   // a small thought bubble over a head: a heart, '!', 'z', '...', a note, a treat
   function drawBubble(c, x, y, b) {
