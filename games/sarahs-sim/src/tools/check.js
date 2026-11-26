@@ -144,6 +144,12 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     home.unreach.forEach(t => bad.push('tile ' + t + ' cannot be walked to'));
     home.bad.forEach(t => bad.push('a starting piece breaks the placing rules: ' + t));
     home.nouse.forEach(t => bad.push('nobody can get to ' + t));
+    // the starting catalog: every tab holds spec 001's draft list (plus the easel)
+    const tabs = await page.evaluate(() => { const n = {}; SS.CATALOG.filter(d => !d.craft).forEach(d => { n[d.tab] = (n[d.tab] || 0) + 1; }); return n; });
+    const want = { seating: 10, tables: 9, beds: 6, storage: 12, lights: 7, plants: 7, rugs: 6, wall: 10, decor: 14, holiday: 1 };
+    const few = await page.evaluate(() => SS.CATALOG.filter(d => !d.craft && (d.swatches.length < 4 || d.swatches.length > 6)).map(d => d.id + ' (' + d.swatches.length + ')'));
+    few.forEach(id => bad.push('swatches should be 4 to 6 (spec 001, part D): ' + id));
+    Object.keys(want).forEach(t => { if (tabs[t] !== want[t]) bad.push(`the ${t} tab has ${tabs[t] || 0} pieces, the starting list has ${want[t]}`); });
     report('part F: the furnished Philly home on 3 floors, the cats and the two of them, everything reachable', bad.concat(errors));
 
     // placing rules and every kind of piece, by buttons

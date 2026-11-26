@@ -337,6 +337,7 @@
       var d = W.def(p); if (!d.light || !p.lit || W.floorOf(p) !== F) return;
       var pos, Z = F * FH;
       if (p.host) { var sp = W.spotPos(W.hostOf(p), p.spot); pos = P(sp.x, sp.y, Z + sp.z + d.light.h); }
+      else if (p.wall) { var wp = W.wallPlace(p), Mw = SS.Model(null, d, p, { x: wp.x, y: wp.y, rot: wp.rot }), qw = Mw.wp(d.light.u, d.light.v); pos = P(qw[0], qw[1], Z + wp.z + d.light.h); }
       else { var M = SS.Model(null, d, p, { x: p.x, y: p.y, rot: p.r || 0 }); var q = M.wp(d.light.u, d.light.v); pos = P(q[0], q[1], Z + d.light.h); }
       var a = (.2 + .03 * Math.sin(o.t / 3 + p.uid)) * k, r = d.light.r * (.8 + .5 * Math.min(1.2, k));
       var g = c.createRadialGradient(pos[0], pos[1], 2, pos[0], pos[1] + 10, r); g.addColorStop(0, 'rgba(255,200,120,' + a + ')'); g.addColorStop(1, 'rgba(255,200,120,0)');

@@ -2,6 +2,34 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 26, 2026: the rest of the starting catalog (Dev)
+
+Keegan's call, Nov 26: while the playtest notes come in, finish the catalog (content only, no new screens, so it can go ahead under `studio-bible/studio.md`, Playtests).
+
+### What was built
+
+- **The other 39 pieces of spec 001's starting list**, so every tab now holds the full draft of 80 (plus the easel):
+  - Seating: loveseat, reading chair with ottoman, kitchen stool, floor cushion.
+  - Tables: long dining table, console table, kitchen island (in the kitchen and bath row), bistro table.
+  - Beds: single bed, daybed, bunk bed, cat tree (the cats nap up top).
+  - Storage: low cabinet, wardrobe (Change outfit, "Coming soon"), corner counter.
+  - Lights: mushroom lamp (from `decorate-v1`), string lights (hang on a wall and twinkle), pendant light (set on a table, it hangs over it), candle cluster, salt lamp. All of them glow and turn on and off like the lamps.
+  - Plants: fiddle leaf fig, pothos on a shelf, herb pots, hanging plant.
+  - Rugs: runner, braided rug, sheepskin.
+  - Wall: gallery set, macramé hanging, cork board, mounted TV (Watch a show), window plants shelf (goes on a window).
+  - Decor: throw pillow, knit throw, laundry basket, cat toy basket, candles, globe, fruit bowl.
+- Each has 4 to 6 swatches (the check now tests that for every piece), paintable parts, props where it has any, and all four turns. Beds, the daybed, the reading chair, the floor cushion and the stool get their Life actions (Sleep, Nap, Sit).
+- The Philly home gained a few: string lights in the living room and the bedroom, the pendant over the dining table, herb pots on a counter, a cat tree in the craft corner, a wardrobe and a sheepskin in the bedroom.
+- `npm run check` now also checks each tab holds the starting list's count, and the new pieces are on the contact sheet.
+
+### Changes from the spec
+
+- The pendant light is a small piece set on a table (it hangs above it from the ceiling), since there's no ceiling to place on yet. The kitchen island sits in Tables, in its kitchen row.
+
+### What's left
+
+- Same as the slice entry below; buying (prices) still waits for spec 006 part F.
+
 ## Nov 26, 2026: first playtest slice (Dev)
 
 Built from the Designer's playtest prompt of Nov 26: spec 001 parts A, B, C, D and F, and spec 006 parts A and B, with a first batch of the catalog.
