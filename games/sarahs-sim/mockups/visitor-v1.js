@@ -66,6 +66,14 @@
     R(0, 0, W, fl, '#e6efdf');
     for (var x = 0; x < W; x += 16) { R(x, 0, 8, fl, '#dbe8d2'); }
     for (var y = 10, row = 0; y < fl - 30; y += 18, row++) for (var x2 = (row % 2) * 8 + 4; x2 < W; x2 += 16) { R(x2, y, 2, 2, '#f0b3c4'); R(x2 + 1, y + 2, 1, 2, '#9cc1a0'); }
+    // a gallery of framed things above the coat hooks: a painting of hers and a photo of the cats
+    var gy = Math.max(26, fl - 190);
+    R(18, gy, 42, 32, '#c88d5a'); R(21, gy + 3, 36, 26, '#9cc1b6'); R(21, gy + 18, 36, 11, '#6aa361'); c.fillStyle = '#ffd56b'; c.beginPath(); c.arc(48, gy + 10, 4, 0, 7); c.fill(); R(28, gy + 14, 3, 6, '#e46f8b'); R(36, gy + 15, 3, 5, '#c8a6d8');
+    R(68, gy + 6, 26, 22, '#fbf4ea'); R(70, gy + 8, 22, 18, '#e8dccd'); c.fillStyle = '#e8963f'; c.beginPath(); c.ellipse(76, gy + 21, 4, 3, 0, 0, 7); c.fill(); c.fillStyle = '#8a8590'; c.beginPath(); c.ellipse(86, gy + 21, 4, 3, 0, 0, 7); c.fill(); R(73, gy + 16, 2, 2, '#e8963f'); R(84, gy + 16, 2, 2, '#8a8590');
+    R(18, gy + 1, 42, 1, 'rgba(255,255,255,.3)');
+    // a pendant light over the hall
+    R(120, 0, 1, gy + 4, '#6b4250'); c.fillStyle = '#f6c86e'; c.beginPath(); c.moveTo(112, gy + 14); c.lineTo(129, gy + 14); c.lineTo(124, gy + 4); c.lineTo(117, gy + 4); c.closePath(); c.fill(); R(118, gy + 14, 5, 2, '#fff3c4');
+    var pg = c.createRadialGradient(120, gy + 16, 2, 120, gy + 16, 50); pg.addColorStop(0, 'rgba(255,214,140,.3)'); pg.addColorStop(1, 'rgba(255,214,140,0)'); c.fillStyle = pg; c.fillRect(70, gy - 30, 100, 100);
     // wainscot and baseboard
     R(0, fl - 36, W, 36, '#fbf4ea'); R(0, fl - 38, W, 3, '#fff8ee'); R(0, fl - 35, W, 1, '#e9dcc4');
     for (var p = 6; p < W; p += 26) { R(p, fl - 30, 20, 24, '#f3e8d8'); R(p, fl - 30, 20, 1, '#e2d4c0'); R(p, fl - 7, 20, 1, '#fffaf3'); }
@@ -152,7 +160,7 @@
     var feet = fl + 46;
     if (st === 'knock') {
       // Sarah looks up from across the hall
-      shadow(60, feet, 30); if (window.SS_SARAH) window.SS_SARAH(c, 42, feet - 76, 2, t, false, null, 'bun');
+      shadow(58, feet, 44); if (window.SS_SARAH) window.SS_SARAH(c, 31, feet - 114, 3, t, false, null, 'bun');
       topBar(W);
       // the knock bubble with the visitor's face, over the door
       var bx = 120, by = fl - 176; card(bx, by, 72, 34); c.fillStyle = P.tray; c.beginPath(); c.moveTo(bx + 30, by + 33); c.lineTo(bx + 42, by + 33); c.lineTo(bx + 36, by + 42); c.closePath(); c.fill();
@@ -169,13 +177,13 @@
       return;
     }
     // Sarah on the left, Dot just inside the door
-    shadow(60, feet, 30); if (window.SS_SARAH) window.SS_SARAH(c, 42, feet - 76, 2, t, false, null, 'bun');
-    shadow(152, feet, 32); dotSprite(132, feet - 80, 2, t);
+    shadow(58, feet, 44); if (window.SS_SARAH) window.SS_SARAH(c, 31, feet - 114, 3, t, false, null, 'bun');
+    shadow(160, feet, 46); dotSprite(130, feet - 120, 3, t);
     if (st === 'chat') {
       dialog(W, H, 'DOT', 1, ['Well hello, dear! I\'m Dot, from across', 'the street. I\'ve been watching that', 'garden of yours come up. Lovely work.'], null, t);
     } else {
       // a little thought of the job over Dot: a vase of flowers
-      var tx = 160, ty = fl - 150; card(tx, ty, 34, 30, P.soft);
+      var tx = 194, ty = feet - 150; card(tx, ty, 34, 30, P.soft);
       R(tx + 13, ty + 15, 8, 11, '#7fa7a0'); R(tx + 13, ty + 15, 8, 2, '#a8cbc0'); [[12, 8, '#e46f8b'], [17, 6, '#ffd56b'], [21, 9, '#c8a6d8'], [15, 11, '#f39bb0']].forEach(function (f) { R(tx + f[0], ty + f[1], 4, 4, f[2]); }); R(tx + 16, ty + 12, 1, 4, P.leafSh); R(tx + 19, ty + 12, 1, 4, P.leafSh);
       R(tx + 8, ty + 30, 4, 4, P.tray); R(tx + 4, ty + 36, 3, 3, P.tray);
       dialog(W, H, 'DOT', 1, ['Would you put together an arrangement', 'for my table? Something cheerful.'], ['I\'d love to!', 'Maybe another time'], t);
