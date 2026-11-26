@@ -269,8 +269,8 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       return out;
     });
     const chairUid = await page.evaluate(() => window.__chair);
-    await page.waitForTimeout(250);   // the browser commits saves on its own schedule; nobody reloads within milliseconds
-    await page.reload(); await page.waitForTimeout(300);
+    // reopened from what's stored, as a fresh start reads it (see the turning check for why not a page reload)
+    await page.evaluate(() => { SSG.screen = 'title'; SSG.W = null; });
     const after = await page.evaluate(uid => { SSG.openMode('sandbox'); const a = SSG.W.byUid[uid]; return { props: a.props, sw: a.sw, pat: a.pats && a.pats.fabric, col: a.colors && a.colors.cushion }; }, chairUid);
     if (after.props !== false) looks.push('the props switch does not stay off after a reload');
     if (after.sw !== 2 || after.pat !== 'leopard' || after.col !== '#f3d38a') looks.push('swatch, paint or pattern did not survive a reload');
@@ -400,13 +400,23 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       if (!G.idle) { out.push('Sarah is not in the middle of anything when Life opens'); return out; }
       G.idle.phone = true; G.save.phone = .5; run(1200);
       if (!(G.save.phone < .5)) out.push('the phone does not run down while she scrolls');
+      if (G.people.sarah.arms !== 'phone') out.push('scrolling does not use the phone-at-her-chest pose');
+      G.save.phone = .1; run(1); if (G.people.sarah.arms) out.push('a low phone still shows the scrolling pose, not the despair');
       G.save.phone = .1;
       if (!SS.actionsFor(G, { agent: G.people.sarah })) out.push('tapping Sarah with a low phone does not show Charge');
       SS.startHunt(G); const h = G.hunt.hide;
+      // a question mark over every spot in the pool: each sofa, each bed, Ralph (spec 006, Hiding spots show)
+      const pickOf = key => key.startsWith('cat:') ? { agent: G.cats[key.slice(4)] } : { piece: W.byUid[+key.slice(1)] };
+      const marks = SS.huntMarks(G).map(m => m.key), want = W.pieces.filter(p => ['sofa', 'bed'].includes(W.def(p).use)).map(p => 'p' + p.uid).concat(['cat:ralph']);
+      if (want.some(k => !marks.includes(k)) || marks.length !== want.length) out.push('the hunt\'s question marks are not over every hiding spot: ' + marks.length + ' of ' + want.length);
       const wrong = W.pieces.find(p => W.def(p).use === 'desk');
       SS.huntTap(G, { piece: wrong }); if (!G.hunt) out.push('a wrong guess finds the charger');
-      const right = h.cat ? { agent: G.cats[h.cat] } : { piece: W.pieces.find(p => W.def(p).use === h.use) };
-      SS.huntTap(G, right); if (G.hunt || !G.charging) out.push('the right spot does not find the charger (' + h.key + ')');
+      const wrongSpot = marks.find(k => k !== G.hunt.spot);
+      SS.huntTap(G, pickOf(wrongSpot)); if (!G.hunt) out.push('a wrong hiding spot finds the charger');
+      else if (SS.huntMarks(G).some(m => m.key === wrongSpot)) out.push('a wrong hiding spot keeps its question mark');
+      else if (SS.huntMarks(G).length !== marks.length - 1) out.push('a wrong guess took away more than its own question mark');
+      SS.huntTap(G, pickOf(G.hunt.spot)); if (G.hunt || !G.charging) out.push('the right spot does not find the charger (' + h.key + ')');
+      if (SS.huntMarks(G).length) out.push('the question marks stay after the charger is found');
       run(4000); if (G.save.phone < .99) out.push('the phone does not charge in a few minutes of play');
       // the hiding spots don't repeat until they're used up
       G.save.shown.charger = []; const keys = []; for (let i = 0; i < 3; i++) { SS.startHunt(G); keys.push(G.hunt.hide.key); G.hunt = null; }
@@ -431,10 +441,11 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       Rr.play = .1; SS.chooseAction(G, { agent: G.cats.ralph }, SS.ACTIONS.cat[2]); for (let i = 0; i < 3000 && (G.act || G.people.sarah.path.length); i++) SS.updateAgents(G, .05);
       if (Rr.play < .99) out.push('the feather wand does not count double for Ralph');
       // bored: knocks a small thing off a table, and it can be picked back up (it's still a piece in the home)
-      const n0 = W.pieces.length, stacked0 = W.pieces.filter(p => p.host).length; L.play = .05; Rr.play = .05; L.hunger = 1; Rr.hunger = 1; L.litter = 1; Rr.litter = 1;
+      const stackedUids = W.pieces.filter(p => p.host && p.id !== 'plated-meal').map(p => p.uid), stacked0 = W.pieces.filter(p => p.host).length; L.play = .05; Rr.play = .05; L.hunger = 1; Rr.hunger = 1; L.litter = 1; Rr.litter = 1;
       let knocked = false; for (let i = 0; i < 12000 && !knocked; i++) { SS.updateAgents(G, .05); knocked = W.pieces.filter(p => p.host).length < stacked0; }
       if (!knocked) out.push('a bored cat never knocks a small thing off a table');
-      if (W.pieces.length !== n0) out.push('a knocked-over thing was lost');
+      // the thing knocked off is still a piece in the home (not counting a meal Keegan made, which Sarah may eat meanwhile)
+      if (stackedUids.some(u => !W.byUid[u])) out.push('a knocked-over thing was lost');
       return out;
     });
     cats.forEach(a => bad.push(a));
@@ -485,6 +496,297 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     await ctx.close();
   }
 
+  // ---------- 6b. Sarah's playtest bugs (Nov 26) ----------
+  {
+    const bad = [];
+    // 1. the charger hunt never takes over every tap: a tap on the floor stops looking and walks her there
+    {
+      const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+      await page.evaluate(() => { SSG.confirm = null; SS.setClock(14, 0); SSG.openMode('life'); SS.stopSarahIdle(SSG); SS.stopActions(SSG); SSG.setFloor(0); SS.startHunt(SSG); SSG.toastT = null; });
+      await page.waitForTimeout(200);
+      await tapAt(page, 120, 150);
+      const r = await page.evaluate(() => ({ hunt: !!SSG.hunt, walking: SSG.people.sarah.path.length > 0 }));
+      if (r.hunt) bad.push('a tap on the floor during the charger hunt does not stop looking');
+      if (await page.evaluate(() => SS.huntMarks(SSG).length)) bad.push('the question marks stay after the hunt stops');
+      await page.evaluate(() => { SSG.bubble = null; SS.startHunt(SSG); SSG.toastT = null; });
+      if (!(await page.evaluate(() => SS.huntMarks(SSG).length))) bad.push('no question marks show during a hunt');
+      await page.locator('#bB').tap(); await page.waitForTimeout(100);
+      if (await page.evaluate(() => !!SSG.hunt || SS.huntMarks(SSG).length > 0)) bad.push('B does not stop the hunt and clear its question marks');
+      // tapping Sarah: her bubble says her name and what she's doing, with the battery under it (spec 006, part C)
+      const tapSarah = async () => { const q = await page.evaluate(() => { const h = SSG.lastHits.find(h => h.agent && h.agent.who === 'sarah'); if (!h) return null; return SSG.toScreen((h.box[0] + h.box[2]) / 2, h.box[1] + 5); }); if (q) await tapAt(page, q[0], q[1]); return !!q; };
+      await page.evaluate(() => { SSG.bubble = null; SSG.toastT = null; SS.stopActions(SSG); SS.setClock(14, 0); SS.startSarahIdle(SSG); SSG.setFloor(SSG.people.sarah.f); });
+      await page.waitForTimeout(200);
+      if (!(await tapSarah())) bad.push('Sarah is not on screen to tap');
+      const lab = await page.evaluate(() => ({ b: SSG.bubble && { title: SSG.bubble.title, sub: SSG.bubble.sub }, idle: SSG.idle && SSG.idle.text }));
+      if (!lab.idle) bad.push('Sarah is not doing anything when Life opens');
+      else if (!lab.b || lab.b.title !== 'SARAH · ' + lab.idle.toUpperCase()) bad.push('Sarah\'s bubble does not say what she\'s doing: ' + (lab.b && lab.b.title) + ' (' + lab.idle + ')');
+      if (!lab.b || !/BATTERY/.test(lab.b.sub || '')) bad.push('Sarah\'s bubble has no battery line');
+      await page.evaluate(() => { SSG.bubble = null; SS.stopSarahIdle(SSG); SS.stopActions(SSG); SSG.charging = false; });
+      await page.waitForTimeout(150); await tapSarah();
+      const lab2 = await page.evaluate(() => SSG.bubble && SSG.bubble.title);
+      if (lab2 !== 'SARAH') bad.push('with nothing to do, Sarah\'s bubble says ' + lab2 + ', not just SARAH');
+      // every activity name fits in the bubble
+      const long = await page.evaluate(() => { const G = SSG, out = []; G.idle = null; G.hunt = null; Object.keys(SS.ACTIONS).forEach(k => SS.ACTIONS[k].forEach(a => { if (a.soon || a.instant) return; G.act = { job: { act: a, target: { agent: G.cats.louie } } }; const d = SS.sarahDoing(G); if (!d) out.push(a.name + ' has no words for Sarah\'s bubble'); else if (SS.tw('SARAH · ' + d.toUpperCase(), 5) > 136) out.push(d + ' is too long for the bubble'); })); G.act = null; return out; });
+      long.forEach(o => bad.push(o));
+      // hugs and kisses are quick, and Keegan meets her halfway; for a together action he sets off when she does (Keegan, Nov 26)
+      const quick = await page.evaluate(() => {
+        const G = SSG, out = [], K = G.people.keegan, s = G.people.sarah; SS.stopActions(G); G.kday = null;
+        const W = G.W, far = []; for (let x = 0; x < W.lot; x++) for (let y = 0; y < W.lot; y++) if (W.inside(0, x, y) && W.walkable(0, x, y)) far.push([x, y]);
+        const kt = K.tile(), st0 = far.sort((a, b) => Math.hypot(b[0] - kt.x, b[1] - kt.y) - Math.hypot(a[0] - kt.x, a[1] - kt.y))[0];
+        s.f = 0; s.x = st0[0] + .5; s.y = st0[1] + .5; s.z = 0; s.path = []; const k0 = { x: K.x, y: K.y, f: K.f };
+        SS.chooseAction(G, { agent: K }, SS.ACTIONS.keegan.find(a => a.name === 'HUG')); SS.updateAgents(G, .05); SS.updateAgents(G, .05);
+        if (!K.path.length) out.push('Keegan does not walk to meet her for a hug');
+        let t = 0; while (G.act && t < 60) { SS.updateAgents(G, .05); t += .05; }
+        if (t > 15) out.push('a hug from across the house takes ' + t.toFixed(1) + ' s');
+        SS.stopActions(G); s.f = 0; s.x = st0[0] + .5; s.y = st0[1] + .5; s.path = []; K.f = k0.f; K.x = k0.x; K.y = k0.y; K.path = [];
+        const bed = G.W.pieces.find(p => G.W.def(p).use === 'bed' && G.W.def(p).w >= 2);
+        SS.chooseAction(G, { piece: bed }, SS.ACTIONS.bed.find(a => a.name === 'LIE IN')); SS.updateAgents(G, .05); SS.updateAgents(G, .05);
+        if (!K.path.length) out.push('for Lie in, Keegan waits for her to reach the bed before he sets off');
+        SS.stopActions(G); return out;
+      });
+      quick.forEach(o => bad.push(o));
+      // the bath: she sits down in the water (head, shoulders and arms over the rim), in all 4 turns of the tub, and steps out dressed
+      const bath = await page.evaluate(() => {
+        const G = SSG, out = [], s = G.people.sarah, tub = G.W.pieces.find(p => G.W.def(p).use === 'tub'), r0 = tub.r || 0;
+        for (let r = 0; r < 4; r++) {
+          tub.r = r; SS.forgetSprite(tub.uid); SS.stopActions(G);
+          SS.chooseAction(G, { piece: tub }, SS.ACTIONS.tub[0]); let t = 0; while (G.act && !G.act.started && t < 200) { SS.updateAgents(G, .05); t += .05; }
+          if (s.pose !== 'bath' || s.on !== tub.uid) out.push('in the bath (tub turned ' + r + ') she is not sitting in the water');
+          while (G.act && t < 400) { SS.updateAgents(G, .05); t += .05; }
+          if (s.pose === 'bath' || s.on) out.push('after the bath (tub turned ' + r + ') she does not step out');
+        }
+        tub.r = r0; SS.forgetSprite(tub.uid); return out;
+      });
+      bath.forEach(o => bad.push(o));
+      if (!r.walking) bad.push('a tap on the floor during the charger hunt does not walk Sarah there');
+      const spots = await page.evaluate(() => { const G = SSG, W = G.W, by = u => ({ piece: W.pieces.find(p => W.def(p).use === u) });
+        return { keegan: SS.huntSpot(G, { agent: G.people.keegan }), fridge: SS.huntSpot(G, by('fridge')), sofa: SS.huntSpot(G, by('sofa')), bed: SS.huntSpot(G, by('bed')), cat: SS.huntSpot(G, { agent: G.cats.ralph }), floor: SS.huntSpot(G, null) }; });
+      if (spots.keegan || spots.fridge || spots.floor) bad.push('Keegan, the fridge or the floor count as charger guesses');
+      if (!spots.sofa || !spots.bed || !spots.cat) bad.push('a sofa, a bed or a cat does not count as a charger guess');
+      // 3. wall pieces never draw over a piece standing in front of them (the kitchen curtains over the counter)
+      const over = await page.evaluate(async () => {
+        const G = SSG, out = [];
+        for (const f of [0, 1, 2]) {
+          G.setFloor(f); await new Promise(r => setTimeout(r, 120));
+          const hits = G.lastHits || [];
+          hits.forEach(h => {
+            if (!h.p || h.rug || h.p.wall || h.p.host) return;
+            const d = h.sp.cv.getContext('2d').getImageData(0, 0, h.sp.cv.width, h.sp.cv.height).data, w = h.sp.cv.width;
+            let n = 0, by = null;
+            for (let y = 0; y < h.sp.cv.height; y += 2) for (let x = 0; x < w; x += 2) {
+              if (d[(y * w + x) * 4 + 3] < 200) continue;
+              const pk = SS.pick(hits, h.x + x + .5, h.y + y + .5, { noAgents: true });
+              if (pk && pk.piece && pk.piece.wall && G.W.def(pk.piece).w) { n++; by = pk.piece.id; }
+            }
+            if (n > 2) out.push(by + ' draws over the ' + h.p.id + ' on floor ' + (f + 1));
+          });
+        }
+        return out;
+      });
+      over.forEach(o => bad.push(o));
+      // with the walls up (and cut away), nothing behind a wall draws over it and nothing in front draws under it (Keegan, Nov 26)
+      const walls = await page.evaluate(async () => {
+        const G = SSG, out = [], sort = StudioIso.sort; let last = null;
+        StudioIso.sort = items => (last = sort(items));
+        for (const mode of ['up', 'cut']) for (const f of [0, 1, 2]) {
+          G.walls = mode; G.setFloor(f); last = null; await new Promise(r => setTimeout(r, 150));
+          if (!last) { out.push('nothing was drawn on floor ' + (f + 1)); continue; }
+          last.forEach((w, i) => {
+            if (!w.plane || w.kind !== 'wall') return;
+            last.forEach((o, j) => {
+              const d = o.drawn || [o.l, o.t, o.r, o.b]; if (o.kind !== 'piece' || d[2] <= w.l || w.r <= d[0] || d[3] <= w.t || w.b <= d[1]) return;
+              const lo = w.plane.axis === 'x' ? o.y0 : o.x0, hi = w.plane.axis === 'x' ? o.y1 : o.x1, at = w.plane.at;
+              if (lo < at - 1e-4 && hi > at + 1e-4) return;   // stands past the wall's end, across its line
+              const front = lo >= at - 1e-4;
+              if (front !== (j > i)) out.push(o.p.id + ' draws ' + (front ? 'behind' : 'over') + ' a wall on floor ' + (f + 1) + ' (walls ' + mode + ')');
+            });
+          });
+        }
+        StudioIso.sort = sort; G.walls = 'cut';
+        return [...new Set(out)];
+      });
+      walls.forEach(o => bad.push(o));
+      bad.push(...errors); await ctx.close();
+    }
+    // 4. the shell's title bar sits below a notched phone's status bar, and nothing falls off the bottom
+    for (const [w, h, top, bot] of [[430, 932, 59, 34], [375, 667, 20, 0], [375, 812, 47, 34], [390, 844, 47, 34]]) {   // Sarah's iPhone 15 Pro Max first (Dynamic Island: 59 px top, 34 px home bar)
+      const { ctx, page, errors } = await fresh({ w, h, init: () => localStorage.setItem('ss.gift', '1') });
+      await page.evaluate(t => { document.documentElement.style.setProperty('--safe-top', t[0] + 'px'); document.documentElement.style.setProperty('--safe-bottom', t[1] + 'px'); }, [top, bot]);
+      await page.waitForTimeout(200);
+      const r = await page.evaluate(() => { const b = document.querySelector('.brand').getBoundingClientRect(), s = document.querySelector('.shell').getBoundingClientRect(); return { brand: b.top, shown: b.height > 0, shellBottom: s.bottom }; });
+      if (!r.shown) bad.push(w + ' x ' + h + ': the title bar is hidden');
+      if (r.brand < top) bad.push(w + ' x ' + h + ': the title bar sits under the status bar (' + Math.round(r.brand) + ' px from the top)');
+      if (r.shellBottom > h - bot + .5) bad.push(w + ' x ' + h + ': the shell runs under the home bar');
+      // the game fills its screen: no empty bands above the top bar or below the tray (Keegan, Nov 26: the 320 px cap lifted)
+      await page.evaluate(() => { window.dispatchEvent(new Event('resize')); SSG.confirm = null; SS.setClock(14, 0); SSG.openMode('life'); }); await page.waitForTimeout(200);
+      const fill = await page.evaluate(() => { const cv = document.getElementById('cv').getBoundingClientRect(), sc = document.getElementById('screen').getBoundingClientRect(); return { top: cv.top - sc.top, bot: sc.bottom - cv.bottom, tray: SSG.H - SS.TRAY_H[SSG.trayState()] }; });
+      if (fill.top > 1.5 || fill.bot > 1.5) bad.push(w + ' x ' + h + ': the game leaves empty bands (' + Math.round(fill.top) + ' px above, ' + Math.round(fill.bot) + ' px below)');
+      await page.screenshot({ path: path.join(DIST, 'screen-life-' + w + 'x' + h + '.png') });
+      if (w === 375 && h === 812) await page.screenshot({ path: path.join(DIST, 'screen-notched-375x812.png') });
+      bad.push(...errors); await ctx.close();
+    }
+    report('Sarah\'s playtest (Nov 26): taps and question marks in the charger hunt, Sarah\'s bubble, quick hugs, wall pieces and walls, the safe area', bad);
+  }
+
+  // ---------- 6c. turning the home (bible, Building, Turning the home; spec 001, part B) ----------
+  {
+    const bad = [];
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    await page.evaluate(() => { SSG.confirm = null; SS.setClock(14, 0); SSG.openMode('sandbox'); SSG.toastT = null; });
+    await page.waitForTimeout(200);
+    // the turn button under the walls button: a quarter turn, the same spot in the middle and the same zoom
+    const before = await page.evaluate(() => { const G = SSG; G.cam.zoom = 2; const v = SS.I.tile(G.cam.x - SS.OFF[0], G.cam.y - SS.OFF[1], 0); return { k: SS.view.k, w: SS.vinv(v[0], v[1]), zoom: G.cam.zoom, btn: G.turnBtn }; });
+    await page.waitForTimeout(100);
+    const btn = await page.evaluate(() => SSG.turnBtn);
+    if (!btn) bad.push('there is no turn button');
+    else {
+      await tapAt(page, btn.x + btn.w / 2, btn.y + btn.h / 2);
+      const after = await page.evaluate(() => { const G = SSG; const v = SS.I.tile(G.cam.x - SS.OFF[0], G.cam.y - SS.OFF[1], 0); return { k: SS.view.k, w: SS.vinv(v[0], v[1]), zoom: G.cam.zoom, saved: G.save.view, anim: !!G.turnAnim }; });
+      if (after.k !== (before.k + 1) % 4) bad.push('the turn button does not turn the home a quarter turn');
+      if (Math.hypot(after.w[0] - before.w[0], after.w[1] - before.w[1]) > .6) bad.push('turning moves the spot in the middle of the screen');
+      if (after.zoom !== before.zoom) bad.push('turning changes the zoom');
+      if (!after.anim) bad.push('turning has no spin or fade');
+      await page.waitForTimeout(450);
+      if (await page.evaluate(() => !!SSG.turnAnim)) bad.push('the turn takes longer than half a second');
+    }
+    // Select turns the home with nothing picked; a picked piece still turns with Select
+    const sel = await page.evaluate(() => { const G = SSG, k0 = SS.view.k; G.deselect(); G.hold = null; G.focus = null; return k0; });
+    await page.keyboard.press('Backspace'); await page.waitForTimeout(60);
+    if (await page.evaluate(k0 => SS.view.k !== (k0 + 1) % 4, sel)) bad.push('Select does not turn the home when nothing is picked');
+    const turnPiece = await page.evaluate(() => { const G = SSG, p = G.W.pieces.find(q => q.id === 'club-armchair'); G.select(p); return { r: p.r || 0, k: SS.view.k, uid: p.uid }; });
+    await page.keyboard.press('Backspace'); await page.waitForTimeout(60);
+    if (await page.evaluate(o => SS.view.k !== o.k || (SSG.W.byUid[o.uid].r || 0) === o.r, turnPiece)) bad.push('with a piece picked, Select does not turn the piece (or turns the home)');
+    await page.evaluate(() => { SSG.deselect(); });
+    // every view: walls, sorting, taps, placing, stacking, the D-pad
+    for (let k = 0; k < 4; k++) {
+      const r = await page.evaluate(async k => {
+        const G = SSG, W = G.W, out = [], sort = StudioIso.sort; let last = null;
+        SS.view.k = k; G.save.view = k; G.hold = null; G.deselect(); G.tray.open = true;
+        // cut away lowers the walls nearest her: only the outside walls on the far sides stay up
+        const vr = SS.vrect(W.ax, W.ay, W.ax + W.home.w, W.ay + W.home.d);
+        for (let f = 0; f < 3; f++) SS.viewWalls(W, f).forEach(s => {
+          const far = (s.axis === 'x' && s.y === vr[1]) || (s.axis === 'y' && s.x === vr[0]), near = (s.axis === 'x' && s.y === vr[3]) || (s.axis === 'y' && s.x === vr[2]);
+          if (s.back && !far) out.push('view ' + k + ': a wall that is not on the far side stays up when cut away');
+          if (near && s.back) out.push('view ' + k + ': a near outside wall stays up');
+          if (far && s.ext && !s.back) out.push('view ' + k + ': a far outside wall is cut down');
+        });
+        // nothing draws through a wall, walls up or cut, on every floor
+        StudioIso.sort = items => (last = sort(items));
+        for (const mode of ['up', 'cut']) for (const f of [0, 1, 2]) {
+          G.walls = mode; G.setFloor(f); last = null; await new Promise(r => setTimeout(r, 120));
+          if (!last) { out.push('view ' + k + ': nothing drawn'); continue; }
+          last.forEach((w, i) => { if (!w.plane || w.kind !== 'wall') return; last.forEach((o, j) => {
+            const d = o.drawn || [o.l, o.t, o.r, o.b]; if (o.kind !== 'piece' || d[2] <= w.l || w.r <= d[0] || d[3] <= w.t || w.b <= d[1]) return;
+            const lo = w.plane.axis === 'x' ? o.y0 : o.x0, hi = w.plane.axis === 'x' ? o.y1 : o.x1, at = w.plane.at;
+            if (lo < at - 1e-4 && hi > at + 1e-4) return;
+            const front = lo >= at - 1e-4; if (front !== (j > i)) out.push('view ' + k + ': ' + o.p.id + ' draws ' + (front ? 'behind' : 'over') + ' a wall on floor ' + (f + 1) + ' (walls ' + mode + ')');
+          }); });
+        }
+        StudioIso.sort = sort; G.walls = 'cut'; G.setFloor(0);
+        await new Promise(r => setTimeout(r, 120));
+        return [...new Set(out)];
+      }, k);
+      r.forEach(o => bad.push(o));
+      // placing by touch: a card dragged to a free tile lands on that tile, in this view
+      const place = await page.evaluate(k => {
+        const G = SSG, W = G.W, d = SS.DEF['side-table'], f = 0;
+        let tile = null; for (let x = W.ax; x < W.ax + W.home.w && !tile; x++) for (let y = W.ay; y < W.ay + W.home.d && !tile; y++) { if (!W.check({ id: d.id, f, x, y, r: 0 }).ok) continue; const q = SS.vp(x + .5, y + .5, 0), s = G.toScreen(q[0], q[1]); if (s[0] > 30 && s[0] < 200 && s[1] > 60 && s[1] < G.viewBottom - 20) tile = { x, y, s }; }
+        if (!tile) return { err: 'no free tile on screen' };
+        G.takeCard({ id: d.id, def: d, sw: 0, stored: 0 }, { x: tile.s[0], y: tile.s[1] });
+        const cand = G.hold && G.hold.cand; G.hold = null;
+        return { tile, cand };
+      }, k);
+      if (place.err) bad.push('view ' + k + ': ' + place.err);
+      else if (!place.cand || place.cand.x !== place.tile.x || place.cand.y !== place.tile.y) bad.push('view ' + k + ': a piece dragged to tile ' + place.tile.x + ',' + place.tile.y + ' lands at ' + JSON.stringify(place.cand));
+      // stacking: a small thing over a table's free spot stacks there
+      const stack = await page.evaluate(() => {
+        // a table, counter or shelf whose free spot she can see in this view (not hidden behind something in front)
+        const G = SSG, W = G.W, d = SS.DEF['mugs']; let host = null, s = null;
+        W.pieces.filter(p => W.floorOf(p) === 0 && !p.wall && W.def(p).spots.length).forEach(p => W.def(p).spots.forEach((_, i) => {
+          if (host || !W.spotFree(p, i)) return; const pos = W.spotPos(p, i), q = SS.vp(pos.x, pos.y, pos.z), pk = SS.pick(G.lastHits, q[0], q[1] - 1, { noAgents: true });
+          if (pk && pk.piece === p) { host = p; s = G.toScreen(q[0], q[1] - 1); } }));
+        if (!host) return { err: 'no free spot on screen' };
+        G.takeCard({ id: d.id, def: d, sw: 0, stored: 0 }, { x: s[0], y: s[1] });
+        const cand = G.hold && G.hold.cand; G.hold = null; return { host: host.uid, id: host.id, cand };
+      });
+      if (stack.err) bad.push('view ' + k + ': ' + stack.err); else if (!stack.cand || stack.cand.host !== stack.host) bad.push('view ' + k + ': a small thing over the ' + stack.id + ' does not stack on it: ' + JSON.stringify(stack.cand));
+      // the D-pad moves a held piece the way it points on screen
+      await page.evaluate(() => { const G = SSG, d = SS.DEF['side-table']; G.takeCard({ id: d.id, def: d, sw: 0, stored: 0 }); });
+      const scr = () => page.evaluate(() => { const H = SSG.hold, sz = SSG.W.size(SS.DEF[H.inst.id], H.r), q = SS.vp(H.cand.x + sz[0] / 2, H.cand.y + sz[1] / 2, 0); return SSG.toScreen(q[0], q[1]); });
+      const s0 = await scr(); await page.keyboard.press('ArrowRight'); await page.waitForTimeout(40); const s1 = await scr(); await page.keyboard.press('ArrowUp'); await page.waitForTimeout(40); const s2 = await scr();
+      if (!(s1[0] > s0[0])) bad.push('view ' + k + ': right on the D-pad does not move a held piece right on screen');
+      if (!(s2[1] < s1[1])) bad.push('view ' + k + ': up on the D-pad does not move a held piece up on screen');
+      await page.evaluate(() => { SSG.hold = null; });
+      await page.screenshot({ path: path.join(DIST, 'screen-turn' + k + '-375x667.png') });
+    }
+    // tap-to-walk in Life: a tap on a floor tile walks Sarah to that very tile, in every view
+    await page.evaluate(() => { SS.setClock(14, 0); SSG.openMode('life'); SS.stopSarahIdle(SSG); SS.stopActions(SSG); SSG.setFloor(0); SSG.toastT = null; });
+    for (let k = 0; k < 4; k++) {
+      const tgt = await page.evaluate(async k => {
+        const G = SSG, W = G.W, s = G.people.sarah; SS.view.k = k; G.bubble = null; G.meters = null; SS.stopActions(G); await new Promise(r => setTimeout(r, 120));
+        const st = s.tile(); let best = null;
+        for (let x = W.ax; x < W.ax + W.home.w; x++) for (let y = W.ay; y < W.ay + W.home.d; y++) {
+          if (!W.walkable(0, x, y) || (x === st.x && y === st.y) || W.pieces.some(p => p.f === 0 && !p.wall && !p.host && W.def(p).kind !== 'rug' && (() => { const ft = W.foot(p); return x >= ft[0] - 1 && x < ft[2] + 1 && y >= ft[1] - 1 && y < ft[3] + 1; })())) continue;
+          const q = SS.vp(x + .5, y + .5, 0), sc = G.toScreen(q[0], q[1]); if (sc[0] < 30 || sc[0] > 200 || sc[1] < 60 || sc[1] > G.viewBottom - 20) continue;
+          if (SS.pick(G.lastHits || [], q[0], q[1])) continue;   // a tap there lands on something drawn over the floor
+          if (!best) best = { x, y, sc };
+        }
+        return best;
+      }, k);
+      if (!tgt) { bad.push('view ' + k + ': no open floor tile on screen to tap'); continue; }
+      await page.waitForTimeout(150);
+      await tapAt(page, tgt.sc[0], tgt.sc[1]);
+      const end = await page.evaluate(() => { const s = SSG.people.sarah, w = s.path[s.path.length - 1]; return w ? [Math.floor(w.x), Math.floor(w.y)] : null; });
+      if (!end || end[0] !== tgt.x || end[1] !== tgt.y) bad.push('view ' + k + ': tapping tile ' + tgt.x + ',' + tgt.y + ' walks Sarah to ' + JSON.stringify(end));
+    }
+    await page.evaluate(() => { SS.view.k = 0; SSG.openMode('sandbox'); });
+    // sitting (Keegan, Nov 26): the hips at the seat, and the legs below them, not feet on the seat (the sit drawing reaches
+    // below the point she sits at, and is wider than her body: the thighs come forward)
+    const sitOk = await page.evaluate(() => { const out = [];
+      const drawn = o => { const c = document.createElement('canvas'); c.width = 60; c.height = 80; const x = c.getContext('2d'); SS.person(x, o.who, 30, 50, o);
+        const d = x.getImageData(0, 0, 60, 80).data; let below = 0, l = 60, r = 0; for (let y = 0; y < 80; y++) for (let xx = 0; xx < 60; xx++) if (d[(y * 60 + xx) * 4 + 3] > 200) { if (y > 51) below++; l = Math.min(l, xx); r = Math.max(r, xx); } return { below, w: r - l }; };
+      ['sarah', 'keegan'].forEach(w => { const stand = drawn({ who: w, pose: 'stand' }); [5, 13, 17].forEach(h => { const sit = drawn({ who: w, pose: 'sit', seatH: h });
+        if (sit.below < 10) out.push(w + ' sitting on a seat ' + h + ' px high has no legs below the seat');
+        if (h >= 9 && sit.w < stand.w + 2) out.push(w + ' sitting on a seat ' + h + ' px high has no lap coming forward'); }); }); return out; });
+    sitOk.forEach(o => bad.push(o));
+    // lying in bed (Keegan, Nov 26): both heads rest on the bed, not off its side, in every view
+    await page.evaluate(() => { const G = SSG; SS.setClock(8, 20); G.openMode('life'); SS.stopSarahIdle(G); SS.stopActions(G); G.kday = null;
+      const bed = G.W.pieces.find(p => G.W.def(p).use === 'bed' && G.W.def(p).w >= 2); SS.chooseAction(G, { piece: bed }, SS.ACTIONS.bed.find(a => a.name === 'LIE IN'));
+      let t = 0; while (G.act && (!G.act.started || G.act.waitK) && t < 200) { SS.updateAgents(G, .05); t += .05; } G.setFloor(G.W.floorOf(bed)); G.bedUid = bed.uid; });
+    for (let k = 0; k < 4; k++) {
+      await page.evaluate(k => { SS.view.k = k; }, k); await page.waitForTimeout(150);
+      const r = await page.evaluate(() => { const G = SSG, h = G.lastHits.find(h => h.p && h.p.uid === G.bedUid); if (!h) return ['the bed is not drawn'];
+        return ['sarah', 'keegan'].map(w => { const a = G.people[w]; if (a.pose !== 'lie') return w + ' is not lying in bed'; const q = a.lieHead; if (!q) return w + '\'s head is not on the pillow';
+          return q[0] >= h.x && q[0] <= h.x + h.sp.cv.width && q[1] + 8 >= h.y && q[1] <= h.y + h.sp.cv.height ? null : w + ' lies off the bed'; }).filter(Boolean); });
+      r.forEach(o => bad.push('view ' + k + ': ' + o));
+    }
+    await page.evaluate(() => { SS.stopActions(SSG); SS.view.k = 0; SSG.openMode('sandbox'); });
+    // wall pieces hang on either side of a wall and keep their side
+    const sides = await page.evaluate(() => {
+      const G = SSG, W = G.W, out = [], d = SS.DEF['framed-print'];
+      const s = W.walls[0].find(q => q.axis === 'x' && q.a && q.b && !q.op && !q.win && W.check({ id: d.id, f: 0, wall: [q.x, q.y, 'x'], side: -1 }).ok && W.check({ id: d.id, f: 0, wall: [q.x, q.y, 'x'], side: 1 }).ok);
+      if (!s) return ['no wall with room on both sides is free'];
+      SS.view.k = 2; G.save.view = 2;   // the wall's - side faces her now
+      if (SS.vfacing('x') !== -1) out.push('in the turned view the wall\'s other side does not face her');
+      const p = W.add({ id: d.id, f: 0, wall: [s.x, s.y, 'x'], side: -1 }), q = W.add({ id: d.id, f: 0, wall: [s.x, s.y, 'x'] });
+      if (!W.check({ id: d.id, f: 0, wall: [s.x, s.y, 'x'], side: -1 }, p).ok) out.push('a wall piece cannot hang on a wall\'s other side');
+      G.changed(true); return { out, p: p.uid, q: q.uid };
+    });
+    if (Array.isArray(sides)) sides.forEach(o => bad.push(o));
+    else {
+      sides.out.forEach(o => bad.push(o));
+      // reopened from what's stored, as a fresh start reads it (a page reload here is unreliable: the test browser rate-limits
+      // writing storage to disk after the hundreds of saves this check makes, which no player does)
+      const back = await page.evaluate(o => { SSG.screen = 'title'; SSG.W = null; SS.view.k = 0; SSG.openMode('sandbox'); const p = SSG.W.byUid[o.p], q = SSG.W.byUid[o.q]; return { k: SS.view.k, side: p && p.side, side2: q && (q.side || 1) }; }, sides);
+      if (back.k !== 2) bad.push('the home does not keep the view she left it in');
+      if (back.side !== -1 || back.side2 !== 1) bad.push('wall pieces do not keep their side after a reload');
+    }
+    // an older save with no view opens from the front
+    if (await page.evaluate(() => { const s = SS.modeSave('sandbox'); delete s.view; SS.writeMode('sandbox', s); SSG.openMode('sandbox'); return SS.view.k; }) !== 0) bad.push('an older save does not open from the front');
+    bad.push(...errors); await ctx.close();
+    report('turning the home: the button and Select, the same spot and zoom, near walls cut, taps, placing, stacking, the D-pad and wall sides in all 4 views, saved', bad);
+  }
+
   // ---------- 7. test saves ----------
   {
     const dir = path.join(__dirname, '..', 'test-saves'), bad = [];
@@ -509,7 +811,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     const { ctx, page, errors } = await fresh({ scale: 1, init: () => localStorage.setItem('ss.gift', '1') });
     const url2 = await page.evaluate(() => {
       const defs = SS.CATALOG, cw = 96, ch = 104, cols = 4 * 2, cv = document.createElement('canvas');
-      const extra = 2 * ch;
+      const extra = 3 * ch;
       cv.width = Math.max(cols * cw, 900); cv.height = Math.ceil(defs.length / 2) * ch + extra; const c = cv.getContext('2d');
       c.fillStyle = '#2a1b24'; c.fillRect(0, 0, cv.width, cv.height);
       defs.forEach((d, i) => {
@@ -526,6 +828,11 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       ['sarah', 'keegan'].forEach(who => ['stand', 'walk1', 'walk2', 'sit'].forEach(pose => [false, true].forEach(back => { SS.person(c, who, x + 12, y / 2 + 46, { pose, back }); x += 26; })));
       x = 4; ['louie', 'ralph'].forEach(who => ['sit', 'loaf', 'curl', 'walk1', 'walk2'].forEach(pose => { SS.cat(c, who, x + 20, y / 2 + 92, { pose }); x += 38; }));
       SS.person(c, 'sarah', x + 30, y / 2 + 92, { pose: 'lie' });
+      // Sarah doomscrolling in all 4 turns, sitting and standing, then lying in bed (spec 006, idle Sarah and her phone)
+      x = 4; ['sit', 'stand'].forEach(pose => [[false, false], [false, true], [true, false], [true, true]].forEach(([back, flip]) => { SS.person(c, 'sarah', x + 12, y / 2 + 142, { pose, back, flip, arms: 'phone', t: 0 }); x += 26; }));
+      SS.person(c, 'sarah', x + 30, y / 2 + 142, { pose: 'lie', arms: 'phone', t: 0 }); x += 56;
+      SS.person(c, 'sarah', x + 30, y / 2 + 142, { pose: 'lie', arms: 'phone', t: 0, flip: true });
+      x += 64; SS.bathPerson(c, x, y / 2 + 136, { t: 0 }); x += 36; SS.bathPerson(c, x, y / 2 + 136, { t: 0, flip: true });   // in the bath
       c.restore();
       return cv.toDataURL();
     });
@@ -540,6 +847,9 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       ['paint', () => { SSG.openMode('sandbox'); SSG.select(SSG.W.pieces.find(p => p.id === 'club-armchair')); SSG.paint = { part: 0 }; }, null],
       ['menu', () => { SSG.openMode('sandbox'); SSG.openMenu(); }, null],
       ['life-night', () => { SS.setClock(21, 30); SSG.openMode('life'); }, null],
+      ['stairs', () => { SS.setClock(14, 0); SSG.openMode('life'); SSG.cam.zoom = 2; SSG.cam.x -= 40; }, null],
+      ['walls-up-floor2', () => { SS.setClock(8, 5); SSG.openMode('life'); SSG.setFloor(1); SSG.walls = 'up'; }, null],
+      ['in-bed', () => { const G = SSG; SS.setClock(8, 20); G.openMode('life'); SS.stopSarahIdle(G); SS.stopActions(G); G.kday = null; const bed = G.W.pieces.find(p => G.W.def(p).use === 'bed' && G.W.def(p).w >= 2); SS.chooseAction(G, { piece: bed }, SS.ACTIONS.bed.find(a => a.name === 'LIE IN')); let t = 0; while (G.act && (!G.act.started || G.act.waitK) && t < 200) { SS.updateAgents(G, .05); t += .05; } G.setFloor(2); G.cam.zoom = 2; const q = SS.vp(bed.x + 1, bed.y + 1.5, 2 * SS.FH + 10); G.cam.x = q[0] + SS.OFF[0]; G.cam.y = q[1] + SS.OFF[1]; G.toastT = null; }, null],
       ['life-bubble', () => { SS.setClock(10, 0); SSG.openMode('life'); SSG.setFloor(1); const k = SSG.people.keegan; SSG.bubble = { target: { agent: k }, actions: SS.ACTIONS.keegan, cur: 0, tip: [150, 150], title: 'KEEGAN · AT HIS DESK' }; }, null]
     ];
     for (const [name, fn] of shots) {

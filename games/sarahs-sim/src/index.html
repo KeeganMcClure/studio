@@ -11,6 +11,9 @@ body{margin:0}
 </style>
 <link rel="stylesheet" href="../../../engine/shell.css">
 <style>
+/* iPhone safe area: keep the shell's top (the title bar) below the clock and battery, and its bottom above the home bar.
+   --safe-top and --safe-bottom only exist so the check can stand in for a notched phone. */
+.wrap{padding-top:max(4px,var(--safe-top,env(safe-area-inset-top,0px)));padding-bottom:max(4px,var(--safe-bottom,env(safe-area-inset-bottom,0px)))}
 #cv{position:absolute;left:0;top:0;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none;display:block}
 </style>
 </head><body>
@@ -31,6 +34,7 @@ body{margin:0}
 <script src="private.example.js"></script>
 <script src="kit.js"></script>
 <script src="model.js"></script>
+<script src="view.js"></script>
 <script src="catalog.js"></script>
 <script src="catalog2.js"></script>
 <script src="catalog3.js"></script>

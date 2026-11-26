@@ -16,9 +16,17 @@
     a.draw = function (c, p) {
       var walking = a.path.length > 0, beat = Math.floor(a.walked * 4) % 4;
       var pose = walking ? (beat === 0 ? 'walk1' : beat === 2 ? 'walk2' : (a.kind === 'cat' ? 'walk2' : 'stand')) : a.pose;
-      if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: walking && a.back, flip: a.flip, t: performance.now() });
-      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: a.flip, hat: SS.G && SS.G.xmasDay });
-      var headY = p[1] - (a.kind === 'cat' ? 22 : (a.pose === 'sit' ? 36 : a.pose === 'lie' ? 16 : 42));
+      // facings are kept in the home's own directions; the view turns them (view.js). Standing still, people face the front
+      var fc = SS.vface(a.flip, walking && a.back);
+      if (a.kind === 'person' && !walking && fc.back) fc = { flip: !fc.flip, back: false };   // standing or sitting still, people show their faces, as they always have, turned the nearer way
+      var lieAt = null;
+      if (a.kind === 'person' && pose === 'lie' && a.on && SS.G && SS.G.W.byUid[a.on] && SS.G.W.def(SS.G.W.byUid[a.on]).use === 'bed') lieAt = drawLie(c, a, SS.G.W.byUid[a.on], fc.flip);
+      else if (a.kind === 'person' && pose === 'bath') drawBath(c, a, p, fc.flip);
+      else if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: fc.back, flip: fc.flip, t: performance.now(), arms: walking ? null : a.arms, seatH: a.z || 0 });
+      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: SS.vface(a.flip, a.back).flip, hat: SS.G && SS.G.xmasDay });
+      var headY = p[1] - (a.kind === 'cat' ? 22 : (a.pose === 'sit' ? (a.who === 'sarah' ? 32 : 36) : a.pose === 'lie' ? 16 : a.pose === 'bath' ? 34 : 42));
+      a.lieHead = lieAt;   // where her head rests on screen (the checks read it)
+      if (lieAt) { p = [lieAt[0], p[1]]; headY = lieAt[1]; }   // in bed: bubbles and the bar sit over the head on the pillow
       if (a.bar) { // the slim progress bar over her head
         var w = 18, k = Math.min(1, a.bar.k);
         c.fillStyle = '#3b2430'; c.fillRect(Math.round(p[0] - w / 2 - 1), Math.round(headY - 6), w + 2, 4);
@@ -30,6 +38,50 @@
       if (a.extra) a.extra(c, p);
     };
     return a;
+  }
+  // lying in bed (Keegan, Nov 26: lying on her side across the screen hung off the bed). The head rests on the pillow and the body is
+  // a bump under the covers, both laid along the bed in its own direction, so it reads in every turn of the bed and the home.
+  // The far one of the two is drawn first; when the headboard is nearer her than the pillow, it hides the back of the head.
+  function drawLie(c, a, bed, flip) {
+    var W = SS.G.W, d = W.def(bed), M = SS.Model(null, d, bed, { x: bed.x, y: bed.y, rot: bed.r || 0 }), Z = W.floorOf(bed) * FH;
+    // which lane of the bed: the spot nearest where she is (two lanes on a double bed)
+    var lanes = d.w >= 2 ? [d.w * .3, d.w * .7] : [d.w / 2], u = lanes[0], best = 1e9;
+    lanes.forEach(function (l) { var q = M.wp(l, d.d * .5), dd = Math.hypot(q[0] - a.x, q[1] - a.y); if (dd < best) { best = dd; u = l; } });
+    var vHead = Math.min(.5, d.d * .25), top = (d.seat || 13) + 2, half = Math.min(.24, d.w / 4 - .04);
+    var hw = M.wp(u, vHead), hv = SS.vxy(hw[0], hw[1]);
+    var f0 = M.wp(u - half, vHead + .24), f1 = M.wp(u + half, d.d - .12), vr = SS.vrect(Math.min(f0[0], f1[0]), Math.min(f0[1], f1[1]), Math.max(f0[0], f1[0]), Math.max(f0[1], f1[1]));
+    var feet = M.wp(u, d.d - .2), fv = SS.vxy(feet[0], feet[1]), headNear = hv[0] + hv[1] > fv[0] + fv[1];
+    var ramp = d.parts.some(function (q) { return q[0] === 'quilt'; }) ? M.ramp('quilt') : StudioIso.ramp(a.who === 'sarah' ? '#c9636b' : '#3c6a55');
+    var mound = function () { SS.I.box(c, vr[0], vr[1], vr[2] - vr[0], vr[3] - vr[1], 4, Z + top, [ramp[0], ramp[1], ramp[2]], { hi: false }); };
+    var hp = SS.vp(hw[0], hw[1], Z + top + 1), img = SS.headImg(a.who, headNear, null), dx = Math.round(hp[0] - img.width / 2), dy = Math.round(hp[1] - img.height + 4);   // sunk into the pillow, the covers up to the chin
+    var head = function () {
+      c.save();
+      if (headNear) { // the headboard stands between her and the pillow: show only what rises over it
+        var e0 = M.wp(0, .1), e1 = M.wp(d.w, .1), q0 = SS.vp(e0[0], e0[1], Z + (d.h || 28) - 2), q1 = SS.vp(e1[0], e1[1], Z + (d.h || 28) - 2), L = q0[0] < q1[0] ? q0 : q1, R2 = q0[0] < q1[0] ? q1 : q0;
+        c.beginPath(); c.moveTo(L[0], L[1]); c.lineTo(R2[0], R2[1]); c.lineTo(R2[0], R2[1] - 200); c.lineTo(L[0], L[1] - 200); c.closePath(); c.clip();
+      }
+      if (flip) { c.translate(dx + img.width, dy); c.scale(-1, 1); c.drawImage(img, 0, 0); } else c.drawImage(img, dx, dy);
+      c.restore();
+      if (!headNear && a.arms === 'phone') { // scrolling in bed: the phone held up over her face, its glow on her
+        var px = Math.round(hp[0] + (flip ? -2 : -1)), py = Math.round(hp[1] - img.height + 3);
+        c.fillStyle = 'rgba(190,225,255,.25)'; c.fillRect(px - 4, py + 7, 10, 8);
+        c.fillStyle = '#3b2430'; c.fillRect(px, py + 3, 4, 6); c.fillStyle = '#5a4650'; c.fillRect(px + 1, py + 4, 2, 4);
+      }
+    };
+    if (headNear) { mound(); head(); } else { head(); mound(); }
+    return [hp[0], dy - 2];
+  }
+  // Sarah in the bath: drawn from her water line, clipped at the tub's front rim (its basin's lower edges on screen)
+  function drawBath(c, a, p, flip) {
+    var G = SS.G, W = G && G.W, tub = W && a.on && W.byUid[a.on], clip = null, water = [p[0], p[1] - 7];
+    if (tub) {
+      var d = W.def(tub), M = SS.Model(null, d, tub, { x: tub.x, y: tub.y, rot: tub.r || 0 }), Z = W.floorOf(tub) * FH + 19;
+      var pts = [[.18, .22], [1.82, .22], [1.82, .78], [.18, .78]].map(function (q) { var w = M.wp(q[0], q[1]); return SS.vp(w[0], w[1], Z); });
+      var L = pts.reduce(function (m, q) { return q[0] < m[0] ? q : m; }), R = pts.reduce(function (m, q) { return q[0] > m[0] ? q : m; }), B = pts.reduce(function (m, q) { return q[1] > m[1] ? q : m; });
+      clip = [L, B, R, [R[0], R[1] - 120], [L[0], L[1] - 120]];
+      var wq = SS.vp(a.x, a.y, Z - 2); water = [wq[0], wq[1]];
+    }
+    SS.bathPerson(c, water[0], water[1], { flip: flip, t: performance.now(), clip: clip });
   }
   // a small thought bubble over a head: a heart, '!', 'z', '...', a note, a treat
   function drawBubble(c, x, y, b) {
@@ -74,7 +126,7 @@
     a.path = waypoints(nodes);
     return true;
   }
-  function getUp(W, a) { if (a.on || a.pose === 'sit' || a.pose === 'lie' || a.pose === 'loaf' || a.pose === 'curl') { var u = a.onTile; a.on = null; a.z = 0; a.pose = a.kind === 'cat' ? 'sit' : 'stand'; if (u) { a.x = u[0] + .5; a.y = u[1] + .5; } a.onTile = null; } }
+  function getUp(W, a) { if (a.on || a.pose === 'bath' || a.pose === 'sit' || a.pose === 'lie' || a.pose === 'loaf' || a.pose === 'curl') { var u = a.onTile; a.on = null; a.z = 0; a.pose = a.kind === 'cat' ? 'sit' : 'stand'; if (u) { a.x = u[0] + .5; a.y = u[1] + .5; } a.onTile = null; } }
   function step(a, dt) {
     if (!a.path.length) { if (a.arrive) { var done = a.arrive; a.arrive = null; done(); } return; }   // already there
     var wp = a.path[0];
@@ -285,8 +337,8 @@
     lamp: [{ name: 'LIGHT', sub: 'ON / OFF', icon: 'lamp', dur: 1, how: 'stand', fx: 'lamp' }],
     tv: [{ name: 'WATCH', sub: 'A SHOW', icon: 'tv', dur: 20, how: 'stand', tv: true, fill: { fun: .3 } }],
     cat: [{ name: 'PET', icon: 'heart', dur: 4, how: 'stand', fx: 'pet', fill: { fun: .1 } }, { name: 'TREAT', icon: 'treat', dur: 5, how: 'stand', fx: 'treat', fill: { fun: .08 } }, { name: 'PLAY', icon: 'star', dur: 10, how: 'stand', fx: 'play', fill: { fun: .25 } }],
-    keegan: [{ name: 'CHAT', icon: 'chat', dur: 10, how: 'stand', fx: 'chat', fill: { fun: .2 }, both: true }, { name: 'HUG', icon: 'heart', dur: 5, how: 'stand', fx: 'hug', fill: { fun: .12, energy: .1 }, both: true, pool: 'hugs' },
-      { name: 'KISS', icon: 'heart', dur: 5, how: 'stand', fx: 'kiss', fill: { fun: .3 }, both: true, pool: 'kisses' }, { name: 'CUDDLE UP', icon: 'seat', dur: 18, how: 'sit', together: true, with: 'sofa', fill: { fun: .3, energy: .1 } },
+    keegan: [{ name: 'CHAT', icon: 'chat', dur: 10, how: 'stand', fx: 'chat', fill: { fun: .2 }, both: true }, { name: 'HUG', icon: 'heart', dur: 3, how: 'stand', fx: 'hug', fill: { fun: .12, energy: .1 }, both: true, pool: 'hugs' },
+      { name: 'KISS', icon: 'heart', dur: 2.5, how: 'stand', fx: 'kiss', fill: { fun: .3 }, both: true, pool: 'kisses' }, { name: 'CUDDLE UP', icon: 'seat', dur: 18, how: 'sit', together: true, with: 'sofa', fill: { fun: .3, energy: .1 } },
       { name: 'PLAY', sub: 'A GAME', icon: 'tv', dur: 20, how: 'sit', together: true, with: 'sofa', tv: true, fill: { fun: .4 } }, { name: 'GO TO BED', icon: 'z', dur: 30, how: 'lie', together: true, with: 'bed', sleep: true, fill: { energy: 1 } },
       { name: 'COOK', sub: 'TOGETHER', icon: 'pan', soon: 'Cooking together comes with the Cooking screen.' }, { name: 'WIND DOWN', sub: 'TOGETHER', icon: 'star', soon: 'Winding down comes with its own pieces.' }],
     bowl: [{ name: 'FILL', sub: 'THE BOWL', icon: 'treat', dur: 4, how: 'stand', fx: 'fill' }],
@@ -297,6 +349,25 @@
     backdoor: [{ name: 'GO TO', sub: 'THE YARD', icon: 'star', soon: 'The yard comes in its own part.' }]
   };
   SS.ACTIONS = ACTIONS;
+  // what each action reads as at the top of Sarah's bubble while she does it (spec 006, part C, What she's doing)
+  var DOING = { SLEEP: 'Sleeping', NAP: 'Napping', 'LIE IN': 'Lying in', SIT: 'Sitting down', WATCH: 'Watching a show',
+    'CUDDLE UP': 'Cuddling up', SNACK: 'Having a snack', PAINT: 'Painting', SEASONAL: 'Making a craft', BATH: 'Taking a bath',
+    READ: 'Reading', LIGHT: 'Switching a light', CHAT: 'Chatting', HUG: 'Hugging Keegan', KISS: 'Kissing Keegan',
+    'GO TO BED': 'Going to bed', FILL: 'Filling the bowl', SCOOP: 'Scooping the litter', OPEN: 'Opening a gift', EAT: 'Eating dinner' };
+  SS.sarahDoing = function (G) {
+    if (G.hunt) return 'Finding the charger';
+    if (G.act) {
+      var a = G.act.job.act, tg = G.act.job.target, cat = tg.agent && tg.agent.kind === 'cat' ? tg.agent.who.charAt(0).toUpperCase() + tg.agent.who.slice(1) : '';
+      if (a.fx === 'pet') return 'Petting ' + cat;
+      if (a.fx === 'treat') return 'Treating ' + cat;
+      if (a.fx === 'play') return 'Playing with ' + cat;
+      if (a.name === 'PLAY') return 'Gaming with Keegan';
+      return DOING[a.name] || null;
+    }
+    if (G.idle) return G.idle.text;
+    if (G.charging) return 'Charging her phone';
+    return null;
+  };
   SS.actionsFor = function (G, target) {
     if (target.agent) { if (target.agent.kind === 'cat') return ACTIONS.cat; if (target.agent.who === 'keegan') return ACTIONS.keegan; return SS.phoneOf(G) < .99 && !G.charging && !G.hunt ? ACTIONS.sarah : null; }
     if (target.door) return ACTIONS.backdoor;
@@ -337,9 +408,37 @@
     var here = s.tile();
     var at = goals.some(function (g) { return g[0] === here.f && g[1] === here.x && g[2] === here.y; }) && !s.on;
     G.act = { job: job, t: 0, started: false };
+    if (job.act.together && job.target.piece) keeganComes(G, G.act);
     if (at) { begin(G); return; }
+    if (job.act.both && job.target.agent && job.target.agent.who === 'keegan' && meetHalfway(G, G.act)) return;
     if (!goals.length || !walkTo(W, s, function (f, x, y) { return goals.some(function (g) { return g[0] === f && g[1] === x && g[2] === y; }); })) { G.toast('SARAH CAN\'T GET THERE', 1400); finishJob(G, true); return; }
     s.arrive = function () { begin(G); };
+  }
+  // together actions: Keegan sets off for the piece the moment she does, not when she gets there (Keegan, Nov 26)
+  function keeganComes(G, A) {
+    var W = G.W, a = A.job.act, K0 = G.people.keegan, piece = A.job.target.piece; A.kComing = true;
+    A.keegan = A.keegan || { seat: K0.on, tile: K0.onTile }; getUp(W, K0); A.waitK = true;
+    if (walkTo(W, K0, function (f, x, y) { return f === W.floorOf(piece) && W.useTiles(piece).some(function (q) { return q[0] === x && q[1] === y; }); })) K0.arrive = function () { if (G.act === A) { seatOn(W, K0, piece, a.how === 'lie' ? 'lie' : 'sit'); K0.bubble = { icon: 'heart', until: performance.now() + 2000 }; } A.waitK = false; };
+    else A.waitK = false;
+  }
+  // chat, hug and kiss: Keegan gets up and meets her halfway, so a hug doesn't wait on her crossing the house (Keegan, Nov 26)
+  function meetHalfway(G, A) {
+    var W = G.W, s = G.people.sarah, K = G.people.keegan;
+    getUp(W, s); var st = s.tile();
+    if (!W.walkable(st.f, st.x, st.y)) { var q0 = StudioMove.nearestOpen(st.x, st.y, W.lot, W.lot, function (x, y) { return W.walkable(st.f, x, y); }); if (!q0) return false; s.x = q0[0] + .5; s.y = q0[1] + .5; s.z = 0; st = s.tile(); }
+    var goals = targetTiles(G, A.job.target);
+    var nodes = W.path({ f: st.f, x: st.x, y: st.y }, function (f, x, y) { return goals.some(function (g) { return g[0] === f && g[1] === x && g[2] === y; }); });
+    if (!nodes || nodes.length < 4) return false;   // close by: she just walks over
+    var mid = Math.floor((nodes.length - 1) / 2), m = -1;
+    for (var k = 0; k < nodes.length && m < 0; k++) [mid - k, mid + k].forEach(function (i) { if (m < 0 && i >= 1 && i + 1 < nodes.length && !nodes[i].stair && !nodes[i + 1].stair && nodes[i].f === nodes[i + 1].f) m = i; });
+    if (m < 0) return false;
+    var meS = nodes[m], meK = nodes[m + 1];
+    A.keegan = { seat: K.on, tile: K.onTile }; getUp(W, K);
+    if (!walkTo(W, K, function (f, x, y) { return f === meK.f && x === meK.x && y === meK.y; })) { A.keegan = null; return false; }
+    SS.walkNodes(s, nodes.slice(0, m + 1));
+    var here = 0, both = function () { if (++here === 2 && G.act === A) begin(G); };
+    s.arrive = both; K.arrive = both;
+    return true;
   }
   function begin(G) {
     var s = G.people.sarah, A = G.act; if (!A) return;
@@ -350,22 +449,19 @@
       var pool = (window.SS_PRIVATE && window.SS_PRIVATE[a.pool]) || [], S = G.save; S.shown = S.shown || {}; var sh = S.shown[a.pool] || (S.shown[a.pool] = []);
       if (pool.length) { var left = pool.filter(function (x, i) { return sh.indexOf(i) < 0; }); if (!left.length) { sh.length = 0; left = pool.slice(); } var pick = left[Math.floor(Math.random() * left.length)]; sh.push(pool.indexOf(pick)); G.toast(a.name, Math.min(2600, a.dur * 1000), pick); }
     }
-    if (a.together) { // Keegan comes too, to the spot beside her
-      var K0 = G.people.keegan, piece = tg.piece; A.keegan = { seat: K0.on, tile: K0.onTile }; getUp(W, K0); A.waitK = true;
-      if (walkTo(W, K0, function (f, x, y) { return f === W.floorOf(piece) && W.useTiles(piece).some(function (q) { return q[0] === x && q[1] === y; }); })) K0.arrive = function () { if (G.act === A) { seatOn(W, K0, piece, a.how === 'lie' ? 'lie' : 'sit'); K0.bubble = { icon: 'heart', until: performance.now() + 2000 }; } A.waitK = false; };
-      else A.waitK = false;
-    }
+    if (a.together && !A.kComing) keeganComes(G, A);
     // face the target
     var tp = tg.agent ? { x: tg.agent.x, y: tg.agent.y } : tg.piece ? (function () { var ft = W.foot(tg.piece.host ? W.hostOf(tg.piece) : tg.piece.wall ? null : tg.piece) || [0, 0, 0, 0]; return tg.piece.wall ? { x: tg.piece.wall[0] + .5, y: tg.piece.wall[1] } : { x: (ft[0] + ft[2]) / 2, y: (ft[1] + ft[3]) / 2 }; })() : { x: s.x, y: s.y - 1 };
     var dx = tp.x - s.x, dy = tp.y - s.y; s.flip = (dx - dy) < 0; s.back = (dx + dy) < 0;
-    if (a.how === 'sit' || a.how === 'tub') seatOn(W, s, tg.piece, 'sit');
+    if (a.how === 'sit') seatOn(W, s, tg.piece, 'sit');
+    if (a.how === 'tub') seatOn(W, s, tg.piece, 'bath');   // she sits down in the water (art: sprites.js, the bath)
     if (a.how === 'lie') seatOn(W, s, tg.piece, 'lie');
     if (a.tv) { var tv = W.pieces.filter(function (p) { return W.def(p).use === 'tv' && W.floorOf(p) === s.f; })[0]; if (tv) { tv.lit = true; A.tv = tv; } }
     if (a.fx === 'paint' || a.fx === 'craft') { tg.piece.work = true; }
     if (a.fx === 'bath') { // Louie may hop up on the tub edge (bible, Louie)
       var L = G.cats.louie; if (L.f === s.f && Math.random() < .7) { getUp(W, L); L.held = true; var ut = W.useTiles(tg.piece); if (ut[1]) walkTo(W, L, function (f, x, y) { return f === s.f && x === ut[1][0] && y === ut[1][1]; }); L.arrive = function () { L.pose = 'sit'; L.z = 14; L.bubble = { icon: 'heart', until: performance.now() + 2500 }; }; A.louie = L; }
     }
-    if (a.fx === 'chat' || a.fx === 'hug' || a.fx === 'kiss') { var K = G.people.keegan; A.keegan = { seat: K.on, tile: K.onTile }; getUp(W, K); K.flip = !s.flip; K.back = !s.back; }
+    if (a.fx === 'chat' || a.fx === 'hug' || a.fx === 'kiss') { var K = G.people.keegan; A.keegan = A.keegan || { seat: K.on, tile: K.onTile }; getUp(W, K); var kx = s.x - K.x, ky = s.y - K.y; if (Math.abs(kx) + Math.abs(ky) > .01) { K.flip = (kx - ky) < 0; K.back = (kx + ky) < 0; } else { K.flip = !s.flip; K.back = !s.back; } }
     if (a.fx === 'pet' || a.fx === 'treat' || a.fx === 'play') { var cat = tg.agent; getUp(W, cat); cat.flip = !s.flip; }
     s.bar = { k: 0 };
   }
