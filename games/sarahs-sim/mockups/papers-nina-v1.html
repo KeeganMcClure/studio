@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Nina's wallpaper v1</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>body{margin:0;background:#2a1b24;color:#fff1e2;font-family:"VT323",monospace;font-size:22px}
+canvas{display:block;image-rendering:pixelated}</style></head><body>
+<canvas id="c" width="300" height="200"></canvas>
+<script src="papers-nina-v1.js"></script>
+<script>
+var cv=document.getElementById('c'),S=4;cv.style.width=300*S+'px';cv.style.height=200*S+'px';
+var c=cv.getContext('2d');c.fillStyle='#2a1b24';c.fillRect(0,0,300,200);
+drawNina(c,12,24,128,160);
+var alt=Object.assign({},NINA_PAL,{paper:'#e8f0ea',paperShade:'#d6e2d9',wood:'#7a5a3e',woodHi:'#93714f',woodLo:'#5c4229',rail:'#6d4f35',railHi:'#93714f'});
+drawNina(c,160,24,64,80,alt);
+drawNina(c,236,24,48,60);
+document.fonts.ready.then(function(){c.fillStyle='#fff1e2';c.font='8px "Press Start 2P"';
+c.fillText("NINA'S WALLPAPER",12,14);
+c.font='10px VT323';c.fillStyle='#e8b8b0';
+c.fillText('Wall face, 4x',12,194);c.fillText('Takes the palette',160,116);c.fillText('1x in game',236,96);
+document.title+=' ready';});
+</script></body></html>

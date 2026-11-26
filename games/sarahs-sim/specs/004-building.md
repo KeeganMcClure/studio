@@ -94,6 +94,8 @@ The bible wins over this spec (`studio-bible/studio.md`, Specs). Rules are linke
 
 **Paper tool** (wallpaper): tap a wall side to paper it, or tap with a room picked to paper every inside wall. Each side of a wall can be different. Starting papers (*Claude draft*): plain paint, stripes, floral, small dots, gingham, wainscot with paint above, brick, and wood paneling. Each takes the palette.
 
+**Nina's wallpaper** (Keegan, Nov 26, 2026; mockup `papers-nina-v1`): a starting paper named "Nina's wallpaper". Cream paper with small scattered calico flowers in red, blue and pink, plus a few pale tan sprigs, set in a loose diagonal repeat. A floral lattice border strip runs along the top of the wall. Below the field sits a chair rail, then dark brown vertical wood paneling (a wainscot) down to the baseboard. It takes the palette like the others. More named papers will be added over time.
+
 **Floors 2 and 3** (bible, Building, Floors):
 
 - The floor buttons pick the floor. On an empty upper floor, the floor below shows dimmed so she can line rooms up over it.
