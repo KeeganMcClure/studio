@@ -68,16 +68,24 @@
     if (!WIN) { for (var e = 0; e < N; e += .5) { var p3 = iso(e, N); R(p3[0], p3[1] - 1, 2, 2, P.grass[3]); var p4 = iso(N, e); R(p4[0], p4[1] - 1, 2, 2, P.grass[2]); } }
     else { poly([D, C, [C[0], C[1] + 2], [D[0], D[1] + 2]], '#ffffff'); poly([B, C, [C[0], C[1] + 2], [B[0], B[1] + 2]], '#e8f0fa'); }
   }
-  function surround() { // the brick alley and sidewalk around the yard, so the yard sits on solid ground
+  function surround() { // the concrete alley and sidewalk around the yard, so the yard sits on solid ground
     var pts = [iso(0, -3.2), iso(30, -3.2), iso(30, 30), iso(-30, 30), iso(-30, N), iso(0, N)]; // the alley behind the fence too
-    poly(pts, WIN ? '#e4ebf4' : '#b27a63');
+    function cPoly(q, col) { poly(q, col); } function cLine(a, b, col) { c.strokeStyle = col; c.lineWidth = 1; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); } function cR(x, y, w, h, col) { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), w, h); }
+    poly(pts, WIN ? '#e4ebf4' : '#bdb7b0');
     c.save(); c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]); c.closePath(); c.clip();
-    var mortar = WIN ? 'rgba(170,185,210,.5)' : 'rgba(120,70,50,.55)';
-    for (var g = -30; g < 30; g += .5) { line(iso(g, -30), iso(g, 30), mortar); }
-    for (var h = -30; h < 30; h += 1) for (var k = -30; k < 30; k += 1) { if ((h + k) % 2) continue; var a = iso(k + .25, h + .5), b = iso(k + .25, h + 1); line(a, b, WIN ? 'rgba(255,255,255,.6)' : 'rgba(210,150,120,.45)'); }
+    // gray concrete: big square slabs with joints, a little shading per slab, a few cracks and weeds
+    for (var sy = -30; sy < 30; sy += 2) for (var sx = -30; sx < 30; sx += 2) {
+      var v = hash(sx + 40, sy + 40), a = iso(sx, sy), b = iso(sx + 2, sy), cc = iso(sx + 2, sy + 2), d = iso(sx, sy + 2);
+      cPoly([a, b, cc, d], WIN ? (v > .5 ? '#eef3f9' : '#e4ebf4') : (v > .66 ? '#c6c1ba' : v > .33 ? '#bdb7b0' : '#b3ada6'));
+      cLine(a, b, WIN ? 'rgba(170,185,210,.6)' : 'rgba(110,100,95,.55)'); cLine(a, d, WIN ? 'rgba(170,185,210,.6)' : 'rgba(110,100,95,.55)');
+      cLine([a[0], a[1] + 1], [b[0], b[1] + 1], 'rgba(255,255,255,.25)');
+      if (!WIN && v > .86) { var m = iso(sx + .6, sy + .7), m2 = iso(sx + 1.1, sy + 1.0), m3 = iso(sx + 1.3, sy + 1.6); cLine(m, m2, 'rgba(90,80,75,.5)'); cLine(m2, m3, 'rgba(90,80,75,.5)'); }
+      if (!WIN && v < .08) { var wd = iso(sx, sy + 1); cR(wd[0] - 1, wd[1] - 3, 1, 3, '#6aa361'); cR(wd[0] + 1, wd[1] - 2, 1, 2, '#8fc47b'); }
+    }
     c.restore();
     if (WIN) for (var s = 0; s < 40; s++) { var p = iso(N + hash(s, 7) * 6, hash(7, s) * 14); R(p[0], p[1], 2, 1, '#ffffff'); }
   }
+
   function patio(x0, y0, w, d) { // brick pavers in a basket weave
     for (var j = y0; j < y0 + d; j++) for (var i = x0; i < x0 + w; i++) {
       var a = iso(i, j), b = iso(i + 1, j), cc = iso(i + 1, j + 1), dd = iso(i, j + 1);

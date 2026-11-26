@@ -80,16 +80,23 @@
     // "slowly leaving": three tiny dots and footprints trailing
   }
 
-  function alley() { // brick paving in front of the lawn, so the yard sits on solid ground
+  function alley() { var WIN = false; // concrete paving in front of the lawn, so the yard sits on solid ground
     var pts = [iso(0, 0), iso(30, 0), iso(30, 30), iso(0, 30)];
-    poly(pts, '#b27a63');
-    c.save(); c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < 4; i++) c.lineTo(pts[i][0], pts[i][1]); c.closePath(); c.clip();
-    c.strokeStyle = 'rgba(120,70,50,.55)';
-    for (var g = 0; g < 30; g += .25) { var a = iso(g, 0), b = iso(g, 30); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); }
-    c.strokeStyle = 'rgba(210,150,120,.45)';
-    for (var h = 0; h < 30; h += .5) for (var k = 0; k < 30; k += .5) { if ((h * 2 + k * 2) % 2) continue; var p = iso(k + .12, h + .25), q = iso(k + .12, h + .5); c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); }
+    function cPoly(q, col) { poly(q, col); } function cLine(a, b, col) { c.strokeStyle = col; c.lineWidth = 1; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); } function cR(x, y, w, h, col) { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), w, h); }
+    poly(pts, '#bdb7b0');
+    c.save(); c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]); c.closePath(); c.clip();
+    // gray concrete: big square slabs with joints, a little shading per slab, a few cracks and weeds
+    for (var sy = -30; sy < 30; sy += 2) for (var sx = -30; sx < 30; sx += 2) {
+      var v = hash(sx + 40, sy + 40), a = iso(sx, sy), b = iso(sx + 2, sy), cc = iso(sx + 2, sy + 2), d = iso(sx, sy + 2);
+      cPoly([a, b, cc, d], (false) ? (v > .5 ? '#eef3f9' : '#e4ebf4') : (v > .66 ? '#c6c1ba' : v > .33 ? '#bdb7b0' : '#b3ada6'));
+      cLine(a, b, (false) ? 'rgba(170,185,210,.6)' : 'rgba(110,100,95,.55)'); cLine(a, d, (false) ? 'rgba(170,185,210,.6)' : 'rgba(110,100,95,.55)');
+      cLine([a[0], a[1] + 1], [b[0], b[1] + 1], 'rgba(255,255,255,.25)');
+      if (!WIN && v > .86) { var m = iso(sx + .6, sy + .7), m2 = iso(sx + 1.1, sy + 1.0), m3 = iso(sx + 1.3, sy + 1.6); cLine(m, m2, 'rgba(90,80,75,.5)'); cLine(m2, m3, 'rgba(90,80,75,.5)'); }
+      if (!WIN && v < .08) { var wd = iso(sx, sy + 1); cR(wd[0] - 1, wd[1] - 3, 1, 3, '#6aa361'); cR(wd[0] + 1, wd[1] - 2, 1, 2, '#8fc47b'); }
+    }
     c.restore();
   }
+
   function skyline(W, t) { // the backs of the next street's rowhouses and a few clouds
     [[30, 50, 16], [170, 58, 20]].forEach(function (cl, i) { var x = (cl[0] + t * .4 * (i + 1)) % (W + 40) - 20; c.fillStyle = 'rgba(255,255,255,.85)'; c.beginPath(); c.ellipse(x, cl[1], cl[2], cl[2] * .35, 0, 0, 7); c.ellipse(x + cl[2] * .5, cl[1] - 3, cl[2] * .55, cl[2] * .3, 0, 0, 7); c.fill(); });
     [[-4, 52, 62, '#9e5a4e'], [58, 40, 70, '#b46a5a'], [128, 58, 58, '#8f5d6b'], [186, 46, 62, '#a8644f']].forEach(function (b) {
