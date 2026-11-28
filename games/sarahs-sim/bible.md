@@ -33,7 +33,8 @@ In build priority order. Everything is aimed at Dec 25, 2026. Challenges mode is
   Done Nov 25: set with Keegan and drawn in `mockups/creator-v1`. See Creator.
 - [x] Building: lot size, walls, doors, windows, floors, stairs or not, how the view scrolls and zooms over a home bigger than the screen, and the build screen mockup.
   Done Nov 25: set with Keegan and drawn in `mockups/build-v1`. See Building.
-- [ ] Nina's wallpaper (Keegan, Nov 26): the Developer builds it from spec 004 Part D and `mockups/papers-nina-v1`. It can go in early as a fixed paper on the home's walls, and it joins the Paper tool's list when the Build screen is built. More named papers will follow.
+- [x] Nina's wallpaper (Keegan, Nov 26): the Developer builds it from spec 004 Part D and `mockups/papers-nina-v1`. It can go in early as a fixed paper on the home's walls, and it joins the Paper tool's list when the Build screen is built. More named papers will follow.
+  Done Nov 28: Nina's wallpaper is in, as a fixed paper on the dining nook's walls. It joins the Paper tool's list when the Build screen is built.
 - [x] Gameplay: what keeps her coming back beyond designing (Nov 25). See Play.
 - [x] Life mode: prices, coin pay for gigs and chores, and the special sets (the day, needs, job and unlocks are set, see Play).
   Done Nov 25: coins and prices drafted in Play, Life mode, sets in Memory book and Visitors.

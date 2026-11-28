@@ -2,6 +2,27 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 28, 2026: Nina's wallpaper (Dev)
+
+Bible To do (Keegan, Nov 26); spec 004, part D; `mockups/papers-nina-v1`.
+
+### What was built
+
+- **Nina's wallpaper:**
+  - cream paper with small calico flowers in red, blue and pink, plus pale tan sprigs, in a loose diagonal repeat;
+  - a floral lattice border along the top, a chair rail, then dark brown wood paneling and a baseboard;
+  - it's drawn from the mockup's own code as a texture along each wall's slant, at one game pixel per pixel, continuing from one tile of wall to the next. A cut-down wall shows the paneling at its foot.
+- It's in early as a fixed paper on the **dining nook's** walls, as the To do allows. It joins the Paper tool's list when the Build screen is built.
+
+### Checks
+
+- `npm run check` passes.
+
+### Changes from the spec
+
+- "Takes the palette" (recoloring it) comes with the Paper tool.
+- The dining nook was my pick; it can move to any room.
+
 ## Nov 28, 2026: coins, the shop and gigs (Dev)
 
 Spec 006, part F, from `gig-v1`.

@@ -85,7 +85,14 @@
     var endFace = s.axis === 'x' ? [B, C, up(C), up(B)] : [D, C, up(C), up(D)];
     var fa = function (u, hh) { return s.axis === 'x' ? Q(s.x + u, s.y + th, Z + hh) : Q(s.x + th, s.y + u, Z + hh); };
     var faceAt = function (u0, u1, h0, h1) { return [fa(u0, h0), fa(u1, h0), fa(u1, h1), fa(u0, h1)]; };
-    if (paper) {
+    if (paper && paper.texture) { // a paper with its own texture (Nina's): drawn along the wall's slant at 1 px a game pixel,
+      // continuing from one tile of wall to the next, with the top cut where a wall is cut down
+      var tex = SS.paperTexture(paper.texture, 11 * 32, SS.WALL_UP), O = fa(0, hi), U1 = fa(1, hi), along = (s.axis === 'x' ? s.x : s.y) % 32;
+      c.save(); poly(c, face, paper.base); c.clip();
+      c.transform((U1[0] - O[0]) / 11, (U1[1] - O[1]) / 11, 0, 1, O[0], O[1]);
+      c.imageSmoothingEnabled = false; c.drawImage(tex, along * 11, SS.WALL_UP - hi, 11, hi - lo, 0, 0, 11, hi - lo);
+      c.restore();
+    } else if (paper) {
       poly(c, face, paper.base);
       for (var u = 0; u < 1; u += .5) poly(c, faceAt(u, u + .25, Math.max(lo, 0), hi), paper.stripe);
       if (hi > 20) for (var k = .25; k < 1; k += .5) for (var hh = 22; hh < hi - 4; hh += 14) { if (hh < lo) continue; var q = fa(k, hh + ((s.x + s.y) % 2 ? 7 : 0)); if (hh + 7 < hi - 2) R(c, q[0] - 1, q[1] - 1, 2, 2, paper.dot); }
