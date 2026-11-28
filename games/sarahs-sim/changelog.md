@@ -2,6 +2,51 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 28, 2026: cooking (Dev)
+
+Spec 006, part E, from `cooking-v1`.
+
+### What was built
+
+- **Starting it:**
+  - tap the stove or the fridge and pick Cook, or tap Keegan and pick Cook together;
+  - in Sandbox, a picked stove or fridge has a COOK button on its tray.
+- **The recipe card:**
+  - one of Keegan's nine dishes, drawn on its plate or pan;
+  - what goes in, and its steps, each with how it plays (HOLD, STIR, CHOP, STACK);
+  - swipe, the arrows or the D-pad for the other dishes; COOK or BACK.
+- **The steps**, each a short one-thumb game at the counter. Keegan cooks his half beside her, and Ralph sits on the floor and stares.
+  - **Hold:** hold the pan and let go when the gauge reads Just right (A starts the heat, A again stops it).
+  - **Stir:** circle a finger round the pan three times (or tap A).
+  - **Chop:** swipe down across the board, five cuts (or A).
+  - **Stack:** tap when the swinging layer is over the plate, three layers (or A).
+  - There's no timer and no way to fail: an off step still makes the dish, and the plate gets one to three sparkles.
+  - A whole dish takes about a minute or two.
+- **The plated card:** the dish, its sparkles and "SO GOOD", COOK AGAIN or SERVE.
+  - Serve puts it on a table, and Ralph comes over.
+  - Eating it fills hunger for both of them; eating Keegan's own meals now does too.
+- **Memory book:** each dish the first time adds its Kitchen moment, and the first dish ever adds "Cooking together, first time".
+- Cooking pays no coins, and store-bought things are always in the pantry.
+
+### Checks
+
+- `npm run check` has a cooking section, at 375 × 667 and 320 × 480:
+  - Cook from the stove's bubble opens it;
+  - all nine dishes play to the end by buttons alone;
+  - each adds its moment;
+  - Serve puts it on the table, and eating fills hunger for both;
+  - the Sandbox tray has Cook.
+- New screen: `src/dist/screen-cooking-375x667.png`.
+
+### Changes from the spec
+
+- **Garden veggies:** the pantry is part of the garden (spec 005), which isn't built yet. The recipe card and the garden sparkle are ready for it (`SS.pantryHas`), and show once there's a pantry.
+- **How each step plays** comes from its words in the bible's recipe table:
+  - warm, toast, fry, sear, char, brown, crisp, cook and melt are Hold;
+  - boil, simmer, season, mix, toss, scramble and fold are Stir;
+  - slice is Chop;
+  - fill, roll, plate, layer, stack, load and "cheese on top" are Stack.
+
 ## Nov 28, 2026: favorites and the camera (Dev)
 
 Spec 001, part E, from `favorites-v1` and `camera-v1`.

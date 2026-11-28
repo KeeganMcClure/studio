@@ -286,13 +286,17 @@
     var Rl = G.cats.ralph, W = G.W; if (Rl.held || Rl.on) return;
     if (walkTo(W, Rl, function (f, x, y) { return f === W.floorOf(stove) && Math.abs(x - stove.x) + Math.abs(y - stove.y) <= 3; })) Rl.arrive = function () { Rl.pose = 'sit'; Rl.bubble = { icon: 'heart', until: performance.now() + 3000 }; Rl.wait = 20; };
   }
-  function serveMeal(G) { // a finished meal on the table, with a sparkle (bible, Cooking)
+  function serveMeal(G, quiet) { // a finished meal on the table, with a sparkle (bible, Cooking); any table with a free spot will do
     var W = G.W, best = null;
     W.pieces.forEach(function (h) { var d = W.def(h); if (!d.spots.length || !/dining|bistro|island/.test(h.id)) return; d.spots.forEach(function (sp, i) { if (!best && W.check({ id: 'plated-meal', host: h.uid, spot: i }).ok) best = { host: h.uid, spot: i }; }); });
-    if (!best) return;
+    if (!best) W.pieces.forEach(function (h) { var d = W.def(h); if (!d.spots.length || /counter|shelf|stand|dresser|nightstand/.test(h.id) || W.floorOf(h) !== 0) return; d.spots.forEach(function (sp, i) { if (!best && W.check({ id: 'plated-meal', host: h.uid, spot: i }).ok) best = { host: h.uid, spot: i }; }); });
+    if (!best) return null;
     var p = W.add({ id: 'plated-meal', host: best.host, spot: best.spot, sw: 0, props: true }); p.f = W.floorOf(p);
-    G.changed(true); G.toast('KEEGAN MADE DINNER', 2200, 'It\'s on the table. Tap it to eat.');
+    G.changed(true); if (!quiet) G.toast('KEEGAN MADE DINNER', 2200, 'It\'s on the table. Tap it to eat.');
+    return p;
   }
+  SS.serveMeal = serveMeal;
+  SS.callRalph = function (G, near) { callRalph(G, near); };
   function startActivityBack(G) { var K = G.people.keegan, W = G.W, p = W.byUid[G.kday.piece]; if (walkTo(W, K, function (f, x, y) { return f === W.floorOf(p) && W.useTiles(p).some(function (q) { return q[0] === x && q[1] === y; }); })) K.arrive = function () { var d = W.def(p); if (d.seat && G.kday.at !== 'stove' && G.kday.at !== 'bookshelf') seatOn(W, K, p, d.use === 'bed' ? 'lie' : 'sit'); }; }
   SS.startKeeganDay = function (G) { if (G.mode === 'life') { G.kday = null; startActivity(G, true); } };
   function keeganDay(G, dt) {
@@ -327,8 +331,8 @@
     bed: [{ name: 'SLEEP', icon: 'z', dur: 30, how: 'lie', sleep: true, fill: { energy: 1 } }, { name: 'NAP', icon: 'z', dur: 15, how: 'lie', fill: { energy: .4 } }, { name: 'LIE IN', sub: 'WITH KEEGAN', icon: 'heart', dur: 20, how: 'lie', together: true, fill: { energy: .3, fun: .2 } }],
     sofa: [{ name: 'SIT', icon: 'seat', dur: 10, how: 'sit', fill: { energy: .08, fun: .05 } }, { name: 'WATCH', sub: 'A SHOW', icon: 'tv', dur: 20, how: 'sit', tv: true, fill: { fun: .3, energy: .08 } }, { name: 'CUDDLE UP', sub: 'WITH KEEGAN', icon: 'heart', dur: 18, how: 'sit', together: true, fill: { fun: .3, energy: .1 } }],
     chair: [{ name: 'SIT', icon: 'seat', dur: 10, how: 'sit', fill: { energy: .08, fun: .05 } }],
-    fridge: [{ name: 'SNACK', icon: 'snack', dur: 6, how: 'stand', fx: 'snack', fill: { hunger: .35 } }, { name: 'COOK', icon: 'pan', soon: 'Cooking comes in its own part.' }],
-    stove: [{ name: 'COOK', icon: 'pan', soon: 'Cooking comes in its own part.' }],
+    fridge: [{ name: 'SNACK', icon: 'snack', dur: 6, how: 'stand', fx: 'snack', fill: { hunger: .35 } }, { name: 'COOK', icon: 'pan', fx: 'cook', instant: true }],
+    stove: [{ name: 'COOK', icon: 'pan', fx: 'cook', instant: true }],
     easel: [{ name: 'PAINT', icon: 'brush', dur: 20, how: 'stand', fx: 'paint', fill: { fun: .35 } }, { name: 'SEASONAL', sub: 'CRAFT', icon: 'star', dur: 20, how: 'stand', fx: 'craft', fill: { fun: .35 } }],
     tub: [{ name: 'BATH', icon: 'bath', dur: 25, how: 'tub', fx: 'bath', fill: { energy: .25, fun: .2 } }],
     bookshelf: [{ name: 'READ', icon: 'book', dur: 15, how: 'stand', fx: 'read', fill: { fun: .25 } }, { name: 'MEMORY', sub: 'BOOK', icon: 'book', fx: 'book', instant: true }],
@@ -340,7 +344,7 @@
     keegan: [{ name: 'CHAT', icon: 'chat', dur: 10, how: 'stand', fx: 'chat', fill: { fun: .2 }, both: true }, { name: 'HUG', icon: 'heart', dur: 3, how: 'stand', fx: 'hug', fill: { fun: .12, energy: .1 }, both: true, pool: 'hugs' },
       { name: 'KISS', icon: 'heart', dur: 2.5, how: 'stand', fx: 'kiss', fill: { fun: .3 }, both: true, pool: 'kisses' }, { name: 'CUDDLE UP', icon: 'seat', dur: 18, how: 'sit', together: true, with: 'sofa', fill: { fun: .3, energy: .1 } },
       { name: 'PLAY', sub: 'A GAME', icon: 'tv', dur: 20, how: 'sit', together: true, with: 'sofa', tv: true, fill: { fun: .4 } }, { name: 'GO TO BED', icon: 'z', dur: 30, how: 'lie', together: true, with: 'bed', sleep: true, fill: { energy: 1 } },
-      { name: 'COOK', sub: 'TOGETHER', icon: 'pan', soon: 'Cooking together comes with the Cooking screen.' }, { name: 'WIND DOWN', sub: 'TOGETHER', icon: 'star', soon: 'Winding down comes with its own pieces.' }],
+      { name: 'COOK', sub: 'TOGETHER', icon: 'pan', fx: 'cook', instant: true, both: true }, { name: 'WIND DOWN', sub: 'TOGETHER', icon: 'star', soon: 'Winding down comes with its own pieces.' }],
     bowl: [{ name: 'FILL', sub: 'THE BOWL', icon: 'treat', dur: 4, how: 'stand', fx: 'fill' }],
     litter: [{ name: 'SCOOP', icon: 'star', dur: 6, how: 'stand', fx: 'scoop' }],
     sarah: [{ name: 'CHARGE', sub: 'HER PHONE', icon: 'lamp', fx: 'charge', instant: true }],
@@ -514,7 +518,7 @@
     if (a.fx === 'treat') SS.fillCats(G, 'hunger', .2, tg.agent.who);
     if (a.fx === 'fill') { SS.fillCats(G, 'hunger', 1); [G.cats.louie, G.cats.ralph].forEach(function (cat) { cat.bubble = { icon: 'heart', until: performance.now() + 2500 }; cat.wait = Math.min(cat.wait, .5); }); G.catFull = true; G.version++; }
     if (a.fx === 'open') SS.openGift(G, tg.piece);
-    if (a.fx === 'eat') { W.remove(tg.piece); G.changed(true); }
+    if (a.fx === 'eat') { W.remove(tg.piece); SS.fillNeeds(G, 'keegan', { hunger: .6 }, 1); G.changed(true); }   // a meal fills hunger for both of them (spec 006, part E)
     // memory book moments (spec 007, part A; the chapters The cats and The two of us)
     var h = SS.now().getHours(), cat = tg.agent && tg.agent.kind === 'cat' ? tg.agent.who : null;
     if (a.fx === 'kiss') SS.moment(G, 'kiss');

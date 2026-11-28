@@ -741,6 +741,55 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     report('favorites and the camera (spec 001 E): save a room, use it in another mode and room, storage, floor and paper, the screens, a clean picture into the book', bad);
   }
 
+  // ---------- 6f. cooking (spec 006, part E) ----------
+  {
+    const bad = [];
+    for (const [w, h] of [[375, 667], [320, 480]]) {
+      const { ctx, page, errors } = await fresh({ w, h, init: () => localStorage.setItem('ss.gift', '1') });
+      await page.evaluate(() => { SSG.confirm = null; SS.setClock(18, 0); SSG.openMode('life'); SSG.toastT = null; });
+      // from the stove's bubble
+      const opened = await page.evaluate(() => { const G = SSG, st = G.W.pieces.find(p => p.id === 'stove'); const a = SS.ACTIONS.stove.find(x => x.fx === 'cook'); G.bubble = { target: { piece: st }, actions: [a], cur: 0, tip: [100, 100], title: 'STOVE' }; G.doBubble(0); return G.menu && G.menu.kind === 'cook'; });
+      if (!opened) bad.push(w + ' x ' + h + ': Cook on the stove does not open the Cooking screen');
+      for (let dish = 0; dish < 9; dish++) {
+        await page.evaluate(d => { SSG.menu = null; SS.openCooking(SSG, d); }, dish);
+        await page.keyboard.press('z');   // COOK
+        let ok = false;
+        for (let i = 0; i < 160 && !ok; i++) {
+          const st = await page.evaluate(() => { const m = SSG.menu; return m ? m.state + ':' + (m.game || '') + ':' + (m.done ? 1 : 0) : 'closed'; });
+          if (st.startsWith('plated')) { ok = true; break; }
+          if (st.startsWith('step:hold:0')) { await page.keyboard.press('z'); await page.waitForTimeout(1700); await page.keyboard.press('z'); }
+          else await page.keyboard.press('z');
+          await page.waitForTimeout(st.endsWith(':1') ? 950 : 40);
+        }
+        if (!ok) { bad.push(w + ' x ' + h + ': ' + (await page.evaluate(d => SS.DISHES[d].name, dish)) + ' does not play to the end'); continue; }
+        await page.waitForTimeout(80);
+      }
+      const r = await page.evaluate(() => {
+        const G = SSG, out = [];
+        SS.DISHES.forEach(d => { if (!SS.hasMoment('dish-' + d.id)) out.push(d.name + ' made for the first time is not in the memory book'); });
+        if (!SS.hasMoment('cook-first')) out.push('cooking together for the first time is not in the memory book');
+        const n0 = G.W.pieces.filter(p => p.id === 'plated-meal').length; SS.cookServe(G);
+        const meals = G.W.pieces.filter(p => p.id === 'plated-meal'); if (meals.length !== n0 + 1) out.push('Serve does not put the dish on the table');
+        // eating it fills hunger for both of them
+        const meal = meals[meals.length - 1]; if (meal) {
+          SS.needsOf(G, 'sarah').hunger = .2; SS.needsOf(G, 'keegan').hunger = .2;
+          SS.chooseAction(G, { piece: meal }, SS.ACTIONS.meal[0]); for (let i = 0; i < 4000 && G.act; i++) SS.updateAgents(G, .05);
+          if (!(SS.needsOf(G, 'sarah').hunger > .5 && SS.needsOf(G, 'keegan').hunger > .5)) out.push('eating the dish does not fill hunger for both');
+        }
+        return out;
+      });
+      r.forEach(o => bad.push(w + ' x ' + h + ': ' + o));
+      if (w === 375) { await page.evaluate(() => { SS.openCooking(SSG, 4); SS.cookStart(SSG); SSG.menu.v = .6; SSG.menu.heat = true; }); await page.waitForTimeout(200); await page.screenshot({ path: path.join(DIST, 'screen-cooking-375x667.png') }); }
+      // Sandbox: the piece tray's Cook
+      const sb = await page.evaluate(() => { const G = SSG; G.menu = null; G.openMode('sandbox'); G.select(G.W.pieces.find(p => p.id === 'stove')); return true; });
+      await page.waitForTimeout(100);
+      const cookBtn = await page.evaluate(() => SSG.hits.some(h => h.w === 44 && h.h === 16));
+      if (!cookBtn) bad.push(w + ' x ' + h + ': the stove\'s piece tray in Sandbox has no Cook');
+      bad.push(...errors.map(e => w + ' x ' + h + ': ' + e)); await ctx.close();
+    }
+    report('cooking (spec 006 E): the nine dishes play to the end by buttons at 375 x 667 and 320 x 480, moments, serve, eating fills both, Sandbox', bad);
+  }
+
   // ---------- 6c. turning the home (bible, Building, Turning the home; spec 001, part B) ----------
   {
     const bad = [];

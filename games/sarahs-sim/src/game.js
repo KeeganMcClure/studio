@@ -340,6 +340,7 @@
     if (a.soon) { G.toast(a.name + (a.sub ? ' ' + a.sub : '') + ': COMING SOON', 1800, a.soon); return; }
     if (a.fx === 'charge') { G.meters = null; SS.startHunt(G); return; }
     if (a.fx === 'book') { G.meters = null; SS.openBook(G); return; }
+    if (a.fx === 'cook') { G.meters = null; SS.openCooking(G); return; }   // the Cooking screen (spec 006, part E)
     if (a.fx === 'keep') { b.target.piece.dress = null; G.changed(true); G.toast('IT\'S YOURS TO KEEP', 1500); return; }
     G.meters = null;
     var r = SS.chooseAction(G, b.target, a);
@@ -415,7 +416,7 @@
   // ---------- input: drags and pinches ----------
   var drag = null;
   function onDragStart(p0, p) {
-    if (G.screen === 'home' && G.menu && G.menu.kind === 'book') { drag = { kind: 'swipe', x0: p0.x }; return; }
+    if (G.screen === 'home' && G.menu && (G.menu.kind === 'book' || (G.menu.kind === 'cook' && G.menu.state === 'recipe'))) { drag = { kind: 'swipe', x0: p0.x }; return; }
     if (G.screen !== 'home' || G.menu || G.confirm) { drag = { kind: 'none' }; return; }
     var h = uiHit(p0);
     if (h && h.card && !h.card.soon) { G.takeCard(h.card, p); drag = { kind: 'hold', fromTray: true }; return; }
@@ -432,7 +433,12 @@
     if (drag.kind === 'pan') { G.cam.x -= (p.x - drag.last.x) / G.cam.zoom; G.cam.y -= (p.y - drag.last.y) / G.cam.zoom; drag.last = p; clampCam(); }
   }
   function onDragEnd(p) {
-    if (drag && drag.kind === 'swipe') { var dx = p.x - drag.x0; if (Math.abs(dx) > 24 && G.menu && G.menu.kind === 'book') SS.bookTurn(G, dx < 0 ? 1 : -1); drag = null; return; }
+    if (drag && drag.kind === 'swipe') {
+      var dx = p.x - drag.x0;
+      if (Math.abs(dx) > 24 && G.menu && G.menu.kind === 'book') SS.bookTurn(G, dx < 0 ? 1 : -1);
+      if (Math.abs(dx) > 24 && G.menu && G.menu.kind === 'cook') SS.cookPress(G, dx < 0 ? 'right' : 'left');   // swipe for the other dishes
+      drag = null; return;
+    }
     if (drag && drag.kind === 'hold' && G.hold) {
       // let go to place it; if it doesn't fit, it slides back to the tray (or back where it was)
       if (p.y > G.H - SS.TRAY_H[G.trayState()]) cancelHold(true);
@@ -442,6 +448,14 @@
   }
   function onCancel() { if (drag && drag.kind === 'hold') cancelHold(true); drag = null; }
   function onPinch(g) { if (G.screen !== 'home' || G.menu) return; zoomAt(g.scale, g.mid); G.cam.x -= g.dx / G.cam.zoom; G.cam.y -= g.dy / G.cam.zoom; clampCam(); }
+  // raw touches for the cooking step games (hold, stir, chop), in canvas pixels
+  ['pointerdown', 'pointermove', 'pointerup', 'pointercancel'].forEach(function (ev) {
+    cv.addEventListener(ev, function (e) {
+      if (!G.menu || G.menu.kind !== 'cook') return;
+      var r = cv.getBoundingClientRect(), p = { x: (e.clientX - r.left) * W0 / r.width, y: (e.clientY - r.top) * G.H / r.height };
+      SS.cookPointer(G, ev === 'pointerdown' ? 'down' : ev === 'pointermove' ? 'move' : 'up', p);
+    });
+  });
   StudioGesture.attach(cv, { tap: onTap, dragStart: onDragStart, drag: onDrag, dragEnd: onDragEnd, cancel: onCancel, pinch: onPinch, pinchEnd: snapZoom });
 
   // ---------- input: buttons ----------
@@ -456,6 +470,7 @@
     }
     if (G.menu && G.menu.kind === 'note') { if (k === 'a' || k === 'b') SS.closeNote(G); return; }
     if (G.menu && G.menu.kind === 'fav') { SS.favPress(G, k); return; }
+    if (G.menu && G.menu.kind === 'cook') { SS.cookPress(G, k); return; }
     if (G.camera && !G.menu && !G.confirm) { // the camera: A takes the picture, B closes, the D-pad slides the view
       if (G.camera.shot) { if (k === 'a' || k === 'b') G.camera = null; return; }
       if (k === 'a') SS.snap(G); else if (k === 'b' || k === 'start') G.camera = null; else if (k === 'select') G.cycleWalls(); else if (DIRS[k]) pan(k); return;
@@ -701,6 +716,7 @@
         }
         if (G.zoomTo) { G.cam.zoom += (G.zoomTo - G.cam.zoom) * .3; if (Math.abs(G.zoomTo - G.cam.zoom) < .01) { G.cam.zoom = G.zoomTo; G.zoomTo = null; } }
         SS.updateAgents(G, dt);
+        if (G.menu && G.menu.kind === 'cook') SS.cookTick(G, dt);
         var sf = G.people.sarah.f; if (G.mode === 'life' && G.sarahF !== undefined && sf !== G.sarahF && sf !== G.floor) G.setFloor(sf); G.sarahF = sf;   // follow her up and down the stairs
         drawHome(H, t, now);
         if (!G.menu && !(G.camera && G.camera.shot)) SS.drawPop(G, W0);   // a new memory book moment slides in at the top (spec 007, part A)

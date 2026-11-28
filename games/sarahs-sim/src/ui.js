@@ -161,6 +161,9 @@
       var on = p.props !== false; SS.btn(W - 66, y + 4, 60, on ? 'PROPS ON' : 'PROPS OFF', on, 12, 5);
       hit(G, W - 66, y + 2, 60, 16, function () { G.snapshot(); p.props = !on; G.changed(true); });
     }
+    if (d.use === 'stove' || d.use === 'fridge') { // cook for fun, in any mode (spec 006, part E: Sandbox too)
+      var cx = W - (G.hasProps(d) ? 112 : 50); SS.btn(cx, y + 4, 44, 'COOK', false, 12, 5); hit(G, cx, y + 2, 44, 16, function () { G.deselect(); SS.openCooking(G); });
+    }
     txt(d.name.toUpperCase(), 6, y + 22, P.ink, 7);
     var part0 = d.parts[0] && d.parts[0][0];
     d.swatches.slice(0, 6).forEach(function (s, k) {
@@ -264,6 +267,7 @@
     if (m.kind === 'book') return SS.drawBook(G, W, H);   // the memory book (book.js)
     if (m.kind === 'note') return SS.drawNote(G, W, H);
     if (m.kind === 'fav') return SS.drawFavorites(G, W, H);   // favorites (keep.js)
+    if (m.kind === 'cook') return SS.drawCooking(G, W, H);   // the Cooking screen (cooking.js)
     R(0, 0, W, H, 'rgba(34,18,28,.62)');   // the home dims and holds still behind the menu
     hit(G, 0, 0, W, H, function () { G.closeMenu(); });
     if (m.kind === 'start') {
