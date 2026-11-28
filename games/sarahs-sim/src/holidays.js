@@ -59,7 +59,7 @@
     G.xmasDay = m === 11 && day === 25;
     // first snow: the first time she opens the game on or after Dec 21 (a weather moment)
     var winterYear = m === 11 ? d.getFullYear() : d.getFullYear() - 1, snowKey = 'snow.' + winterYear;
-    if (((m === 11 && day >= 21) || m < 2) && !S.hol[snowKey]) { S.hol[snowKey] = Date.now(); G.toast('FIRST SNOW', 2400, 'Snow is falling past the windows.'); }
+    if (((m === 11 && day >= 21) || m < 2) && !S.hol[snowKey]) { S.hol[snowKey] = Date.now(); G.toast('FIRST SNOW', 2400, 'Snow is falling past the windows.'); SS.moment(G, 'first-snow'); }
     if (G.mode !== 'life' || !today) { G.changed(true); return; }
     var k = key(today, d);
     if (S.hol[k]) return;
@@ -97,9 +97,8 @@
   SS.openGift = function (G, gift) {
     var W = G.W, S = G.save;
     if (gift.note) {
-      var n = (window.SS_PRIVATE || {}).treeNote || { lines: ['Merry Christmas.'], sign: 'Keegan' };
-      G.toast('A NOTE FROM ' + n.sign.toUpperCase(), 6000, n.lines.join(' '));
-      W.remove(gift); G.changed(true); return;
+      // the note opens on its own paper (memory-book-v1, Note found) and goes in the memory book (spec 007)
+      W.remove(gift); G.changed(true); SS.showNote(G, 'tree', true); return;
     }
     var set = SS.CATALOG.filter(function (d) { return d.holiday === 'christmas' && d.tab === 'holiday' && d.id !== 'christmas-tree'; }).map(function (d) { return d.id; });
     S.hol.given = S.hol.given || []; var left = set.filter(function (id) { return S.hol.given.indexOf(id) < 0; }); if (!left.length) left = set;

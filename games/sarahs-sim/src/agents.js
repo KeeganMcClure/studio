@@ -178,7 +178,7 @@
     a.wait -= dt;
     if (a.wait <= 0 && catNudge(G, a)) return;
     if (a.wait > 0) return;
-    if (a.next) { var np = W.byUid[a.next]; a.next = null; a.react = null; if (np && (W.def(np).nap || W.def(np).kind === 'rug')) { seatOn(W, a, np, a.who === 'louie' ? 'curl' : 'loaf'); a.bubble = { icon: 'z', until: performance.now() + 9000 }; a.wait = rand(14, 30); return; } }
+    if (a.next) { var np = W.byUid[a.next]; a.next = null; a.react = null; if (np && (W.def(np).nap || W.def(np).kind === 'rug')) { seatOn(W, a, np, a.who === 'louie' ? 'curl' : 'loaf'); if (a.who === 'louie') SS.moment(G, 'louie-nap', { f: a.f, x: a.x, y: a.y }); a.bubble = { icon: 'z', until: performance.now() + 9000 }; a.wait = rand(14, 30); return; } }
     getUp(W, a); a.bubble = null;
     var roll = Math.random();
     // Louie naps most of the day in the coziest spot; Ralph flops in the middle of the floor and lies on rugs
@@ -331,7 +331,7 @@
     stove: [{ name: 'COOK', icon: 'pan', soon: 'Cooking comes in its own part.' }],
     easel: [{ name: 'PAINT', icon: 'brush', dur: 20, how: 'stand', fx: 'paint', fill: { fun: .35 } }, { name: 'SEASONAL', sub: 'CRAFT', icon: 'star', dur: 20, how: 'stand', fx: 'craft', fill: { fun: .35 } }],
     tub: [{ name: 'BATH', icon: 'bath', dur: 25, how: 'tub', fx: 'bath', fill: { energy: .25, fun: .2 } }],
-    bookshelf: [{ name: 'READ', icon: 'book', dur: 15, how: 'stand', fx: 'read', fill: { fun: .25 } }],
+    bookshelf: [{ name: 'READ', icon: 'book', dur: 15, how: 'stand', fx: 'read', fill: { fun: .25 } }, { name: 'MEMORY', sub: 'BOOK', icon: 'book', fx: 'book', instant: true }],
     desk: [{ name: 'FIND A GIG', icon: 'star', soon: 'Gigs come in their own part.' }, { name: 'VIDEO-CALL', sub: 'MOM', icon: 'chat', soon: 'Calls home come with idle life.' }],
     wardrobe: [{ name: 'CHANGE', sub: 'OUTFIT', icon: 'heart', soon: 'Style comes in its own part.' }],
     lamp: [{ name: 'LIGHT', sub: 'ON / OFF', icon: 'lamp', dur: 1, how: 'stand', fx: 'lamp' }],
@@ -459,7 +459,7 @@
     if (a.tv) { var tv = W.pieces.filter(function (p) { return W.def(p).use === 'tv' && W.floorOf(p) === s.f; })[0]; if (tv) { tv.lit = true; A.tv = tv; } }
     if (a.fx === 'paint' || a.fx === 'craft') { tg.piece.work = true; }
     if (a.fx === 'bath') { // Louie may hop up on the tub edge (bible, Louie)
-      var L = G.cats.louie; if (L.f === s.f && Math.random() < .7) { getUp(W, L); L.held = true; var ut = W.useTiles(tg.piece); if (ut[1]) walkTo(W, L, function (f, x, y) { return f === s.f && x === ut[1][0] && y === ut[1][1]; }); L.arrive = function () { L.pose = 'sit'; L.z = 14; L.bubble = { icon: 'heart', until: performance.now() + 2500 }; }; A.louie = L; }
+      var L = G.cats.louie; if (L.f === s.f && Math.random() < .7) { getUp(W, L); L.held = true; var ut = W.useTiles(tg.piece); if (ut[1]) walkTo(W, L, function (f, x, y) { return f === s.f && x === ut[1][0] && y === ut[1][1]; }); L.arrive = function () { L.pose = 'sit'; L.z = 14; SS.moment(G, 'louie-tub', { f: L.f, x: L.x, y: L.y }); L.bubble = { icon: 'heart', until: performance.now() + 2500 }; }; A.louie = L; }
     }
     if (a.fx === 'chat' || a.fx === 'hug' || a.fx === 'kiss') { var K = G.people.keegan; A.keegan = A.keegan || { seat: K.on, tile: K.onTile }; getUp(W, K); var kx = s.x - K.x, ky = s.y - K.y; if (Math.abs(kx) + Math.abs(ky) > .01) { K.flip = (kx - ky) < 0; K.back = (kx + ky) < 0; } else { K.flip = !s.flip; K.back = !s.back; } }
     if (a.fx === 'pet' || a.fx === 'treat' || a.fx === 'play') { var cat = tg.agent; getUp(W, cat); cat.flip = !s.flip; }
@@ -515,6 +515,15 @@
     if (a.fx === 'fill') { SS.fillCats(G, 'hunger', 1); [G.cats.louie, G.cats.ralph].forEach(function (cat) { cat.bubble = { icon: 'heart', until: performance.now() + 2500 }; cat.wait = Math.min(cat.wait, .5); }); G.catFull = true; G.version++; }
     if (a.fx === 'open') SS.openGift(G, tg.piece);
     if (a.fx === 'eat') { W.remove(tg.piece); G.changed(true); }
+    // memory book moments (spec 007, part A; the chapters The cats and The two of us)
+    var h = SS.now().getHours(), cat = tg.agent && tg.agent.kind === 'cat' ? tg.agent.who : null;
+    if (a.fx === 'kiss') SS.moment(G, 'kiss');
+    if (a.name === 'CUDDLE UP') SS.moment(G, 'cuddle');
+    if (a.together && a.name === 'PLAY') SS.moment(G, 'game-night');
+    if (a.together && (a.name === 'CUDDLE UP' || a.name === 'PLAY' || a.tv) && (h >= 18 || h < 3)) SS.moment(G, 'cozy-night');
+    if (a.name === 'LIE IN' && h >= 6 && h < 11) SS.moment(G, 'slow-morning');
+    if (a.fx === 'play' && cat === 'ralph') SS.moment(G, 'wand');
+    if (a.fx === 'treat' && cat === 'louie') SS.moment(G, 'louie-chats');
     if (a.fx === 'scoop') { SS.fillCats(G, 'litter', 1); G.litterLow = false; G.version++; }
   }
   // a finished painting or craft: from a pool that doesn't repeat until each has been made (studio-bible/play.md); it goes in

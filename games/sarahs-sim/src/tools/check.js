@@ -330,7 +330,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       Object.keys(SS.ACTIONS).forEach(k => {
         if (k === 'cat' || k === 'keegan' || k === 'backdoor' || k === 'meal' || k === 'sarah' || k === 'gift') return;
         const p = uses[k]; if (!p) { out.push('no piece in the home for ' + k); return; }
-        SS.ACTIONS[k].forEach(a => { if (a.soon) return; const r = SS.chooseAction(G, { piece: p }, a); if (r !== 'now') out.push(a.name + ' on ' + p.id + ' did not start'); let started = false; for (let i = 0; i < 2400 && G.act; i++) { SS.updateAgents(G, .05); if (G.act && G.act.started) started = true; } if (!started) out.push(a.name + ' on ' + p.id + ': Sarah never got there'); });
+        SS.ACTIONS[k].forEach(a => { if (a.soon || a.instant) return; const r = SS.chooseAction(G, { piece: p }, a); if (r !== 'now') out.push(a.name + ' on ' + p.id + ' did not start'); let started = false; for (let i = 0; i < 2400 && G.act; i++) { SS.updateAgents(G, .05); if (G.act && G.act.started) started = true; } if (!started) out.push(a.name + ' on ' + p.id + ': Sarah never got there'); });
       });
       // the cats: pet, treat, play; Keegan: chat and hug
       ['pet', 'treat', 'play'].forEach((fx, i) => { const a = SS.ACTIONS.cat[i]; SS.chooseAction(G, { agent: G.cats.louie }, a); let st = false; for (let j = 0; j < 2400 && G.act; j++) { SS.updateAgents(G, .05); if (G.act && G.act.started) st = true; } if (!st) out.push(a.name + ' on Louie did not happen'); });
@@ -486,7 +486,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       if (G.W.pieces.filter(p => p.id === 'christmas-gift').length !== 1) out.push('opening gifts does not clear them');
       if (G.W.pieces.length !== n0) out.push('each opened gift does not leave a Christmas piece in its place');
       SS.openGift(G, G.W.pieces.find(p => p.id === 'christmas-gift'));
-      if (!/NOTE/.test((G.toastT || {}).text || '')) out.push('the note gift does not show Keegan\'s note');
+      if (!G.menu || G.menu.kind !== 'note' || G.menu.id !== 'tree') out.push('the note gift does not show Keegan\'s note'); else G.menu = null;   // on its own paper (spec 007)
       // gifts never repeat in the same year
       G.openMode('life'); if (G.W.pieces.some(p => p.id === 'christmas-gift')) out.push('the gifts came back after reopening');
       // first snow: once a winter
@@ -626,6 +626,67 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       bad.push(...errors); await ctx.close();
     }
     report('Sarah\'s playtest (Nov 26): taps and question marks in the charger hunt, Sarah\'s bubble, quick hugs, wall pieces and walls, the safe area', bad);
+  }
+
+  // ---------- 6d. the memory book (spec 007, parts A and B) ----------
+  {
+    const bad = [];
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    const a = await page.evaluate(async () => {
+      const G = SSG, out = []; G.confirm = null; SS.setClock(14, 0); G.openMode('life'); SS.stopSarahIdle(G); G.toastT = null; G.kday = null;
+      if (SS.MOMENTS.length < 70) out.push('only ' + SS.MOMENTS.length + ' moments in the book');
+      SS.CHAPTERS.forEach(c => { const n = SS.momentsIn(c.k).length; if (n < 10) out.push(c.name + ' has ' + n + ' moments'); });
+      // a moment fires once, on its trigger, with the date and a snapshot; the pop card shows
+      SS.chooseAction(G, { agent: G.people.keegan }, SS.ACTIONS.keegan.find(x => x.name === 'KISS')); for (let i = 0; i < 4000 && G.act; i++) SS.updateAgents(G, .05);
+      const e = SS.book().moments.kiss;
+      if (!e) out.push('a kiss does not go in the book'); else { if (!e.date || !e.snap || !e.snap.agents.length) out.push('the kiss moment has no date or snapshot'); }
+      if (!G.pop || G.pop.id !== 'kiss') out.push('no pop card for a new moment');
+      const d0 = e && e.date; SS.moment(G, 'kiss'); if (SS.book().moments.kiss.date !== d0) out.push('a moment fires twice');
+      // the snapshot redraws the scene as it was, even after the room changes
+      const img1 = SS.snapshot('kiss', 120, 80).toDataURL(); G.W.pieces.slice().forEach(p => { if (p.f === G.people.sarah.f && !p.wall) G.W.remove(p); }); SS.forgetBook();
+      const img2 = SS.snapshot('kiss', 120, 80).toDataURL(); if (img1 !== img2) out.push('the snapshot changes when the room changes');
+      // the book is shared by both modes, saved under its own key
+      if (!localStorage.getItem(SS.PRE + 'book')) out.push('the book is not saved');
+      G.openMode('sandbox'); if (!SS.hasMoment('kiss')) out.push('the book is not shared with Sandbox');
+      // dated moments
+      SS.setDate(2026, 6, 10); SS.bookDay(G); if (!SS.hasMoment('anniversary')) out.push('Jul 10 does not add Our anniversary');
+      SS.setDate(2026, 11, 25); SS.bookDay(G); if (!SS.hasMoment('xmas-morning')) out.push('Dec 25 does not add Christmas morning');
+      SS.setDate(2026, 10, 28);
+      // the note under the tree opens on its paper and files into the book
+      SS.showNote(G, 'tree', true); if (!G.menu || G.menu.kind !== 'note') out.push('the note does not open on its paper');
+      SS.closeNote(G); if (!SS.book().notes.tree || !SS.hasMoment('note-tree') || !SS.hasMoment('note-first')) out.push('the note under the tree does not go in the book');
+      return out;
+    });
+    a.forEach(o => bad.push(o));
+    // the book screen: tabs, pages by tap, swipe and the D-pad, B closes, fits
+    for (const [w, h] of [[430, 932], [375, 667], [320, 480]]) {
+      await page.setViewportSize({ width: w, height: h }); await page.evaluate(() => window.dispatchEvent(new Event('resize'))); await page.waitForTimeout(150);
+      await page.evaluate(() => { SSG.menu = null; SSG.openMenu(); const i = SS.MENU_ROWS.findIndex(r => r[1] === 'book'); SSG.menuPick(i); });
+      if (await page.evaluate(() => !SSG.menu || SSG.menu.kind !== 'book')) { bad.push(w + ' x ' + h + ': the Start menu does not open the book'); continue; }
+      for (const tab of await page.evaluate(() => SS.BOOK_TABS)) {
+        await page.evaluate(t => { SSG.menu.tab = t; SSG.menu.page = 0; }, tab); await page.waitForTimeout(60);
+        const hits = await page.evaluate(() => SSG.hits.length); if (hits < 5) bad.push(w + ' x ' + h + ': the ' + tab + ' tab does not draw');
+      }
+      await page.evaluate(() => { SSG.menu.tab = 'us'; SSG.menu.page = 0; });
+      await page.keyboard.press('ArrowRight'); await page.waitForTimeout(40);
+      if (await page.evaluate(() => SSG.menu.page) !== 1) bad.push(w + ' x ' + h + ': the D-pad does not turn the page');
+      // a swipe to the left turns to the next page
+      await page.evaluate(() => { SSG.menu.page = 0; });
+      const box = await page.locator('#cv').boundingBox(), sy = box.y + box.height * .5;
+      await page.mouse.move(box.x + box.width * .75, sy); await page.mouse.down();
+      for (let i = 1; i <= 6; i++) { await page.mouse.move(box.x + box.width * (.75 - i * .08), sy); await page.waitForTimeout(16); }
+      await page.mouse.up(); await page.waitForTimeout(60);
+      if (await page.evaluate(() => SSG.menu && SSG.menu.page) !== 1) bad.push(w + ' x ' + h + ': a swipe does not turn the page');
+      await page.keyboard.press('ArrowDown'); await page.waitForTimeout(40);
+      if (await page.evaluate(() => SSG.menu.tab) !== 'notes') bad.push(w + ' x ' + h + ': down on the D-pad does not go to the next chapter');
+      await page.keyboard.press('x'); await page.waitForTimeout(40);
+      if (await page.evaluate(() => !!SSG.menu)) bad.push(w + ' x ' + h + ': B does not close the book');
+      if (w === 430) { await page.evaluate(() => SS.openBook(SSG, 'us', 0)); await page.waitForTimeout(300); await page.screenshot({ path: path.join(DIST, 'screen-memory-book-430x932.png') }); await page.evaluate(() => { SSG.menu = null; }); }
+    }
+    // the bookshelf's bubble has Memory book
+    if (!(await page.evaluate(() => SS.ACTIONS.bookshelf.some(x => x.fx === 'book')))) bad.push('the bookshelf has no Memory book');
+    bad.push(...errors); await ctx.close();
+    report('the memory book (spec 007 A, B): moments once with a date and snapshot, the pop card, one book, dated moments, the note, the book screen', bad);
   }
 
   // ---------- 6c. turning the home (bible, Building, Turning the home; spec 001, part B) ----------

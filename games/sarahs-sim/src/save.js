@@ -59,5 +59,5 @@
     return StudioBackup.file({ game: 'sarahs-sim', prefix: PRE, version: VERSION, name: name });
   };
   SS.readBackup = function (text) { return StudioBackup.read(text, 'sarahs-sim'); };
-  SS.restoreBackup = function (obj) { StudioBackup.restore(obj, PRE); SS.loadAll(); };
+  SS.restoreBackup = function (obj) { StudioBackup.restore(obj, PRE); SS.loadAll(); if (SS.forgetBook) SS.forgetBook(); };
 })();

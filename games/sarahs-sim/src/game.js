@@ -52,7 +52,7 @@
     // the view she left this home in (bible, Building, Turning the home); older saves have none and open from the front
     SS.view.L = G.W.lot; SS.view.k = (s.view || 0) % 4; G.turnAnim = null;
     SS.makeAgents(G); G.sarahF = undefined; G.idle = null; G.hunt = null; G.charging = false; SS.startKeeganDay(G);
-    G.sel = null; centerCam(true); SS.startSarahIdle(G); SS.applyHolidays(G);
+    G.sel = null; centerCam(true); SS.startSarahIdle(G); SS.applyHolidays(G); G.pop = null; G._bookDay = null;
     G.screen = 'home';
     G.changed(true);
   }
@@ -235,6 +235,7 @@
     SS.forgetSprite(p.uid);
     G.hold = null; G.changed(true);
     if (H.from === 'new') SS.catsNotice(G, p);
+    SS.roomEdit(G, p); SS.bookRooms(G); SS.bookTree(G);   // memory book moments (spec 007, part A)
     return true;
   }
   function cancelHold(slide) {
@@ -266,7 +267,7 @@
   G.deselect = function () { G.sel = null; G.paint = null; };
   G.putAway = function (p) { // Put away sends it back to her storage, never lost (spec 001, part C)
     G.snapshot();
-    var all = [p].concat(G.W.stacked(p));
+    var all = [p].concat(G.W.stacked(p)); SS.roomEdit(G, p);
     all.forEach(function (q) { G.save.stored.push({ id: q.id, sw: q.sw || 0, colors: q.colors, pats: q.pats, props: q.props }); });
     G.W.remove(p); G.sel = null; G.paint = null; G.changed(true);
     G.toast('PUT AWAY', 1300, 'It waits in its catalog tab, marked with how many are stored.');
@@ -304,6 +305,7 @@
     else if (r === 'homes') G.menu = { kind: 'homes', cur: 0 };
     else if (r === 'backup') backup();
     else if (r === 'title') { G.changed(true); G.menu = null; G.screen = 'title'; G.titleCur = 0; }
+    else if (r === 'book') SS.openBook(G);
     else G.toast(SS.MENU_ROWS[i][0] + ' IS COMING SOON', 1800, { people: 'People and Style come with outfits (spec 002).', fav: 'Favorites come in a later part.', camera: 'The camera comes in a later part.', book: 'The memory book comes in its own part.' }[r]);
   };
   function backup() {
@@ -335,6 +337,7 @@
     var b = G.bubble; if (!b) return; var a = b.actions[i]; if (!a) { G.bubble = null; return; } G.bubble = null;
     if (a.soon) { G.toast(a.name + (a.sub ? ' ' + a.sub : '') + ': COMING SOON', 1800, a.soon); return; }
     if (a.fx === 'charge') { G.meters = null; SS.startHunt(G); return; }
+    if (a.fx === 'book') { G.meters = null; SS.openBook(G); return; }
     if (a.fx === 'keep') { b.target.piece.dress = null; G.changed(true); G.toast('IT\'S YOURS TO KEEP', 1500); return; }
     G.meters = null;
     var r = SS.chooseAction(G, b.target, a);
@@ -408,6 +411,7 @@
   // ---------- input: drags and pinches ----------
   var drag = null;
   function onDragStart(p0, p) {
+    if (G.screen === 'home' && G.menu && G.menu.kind === 'book') { drag = { kind: 'swipe', x0: p0.x }; return; }
     if (G.screen !== 'home' || G.menu || G.confirm) { drag = { kind: 'none' }; return; }
     var h = uiHit(p0);
     if (h && h.card && !h.card.soon) { G.takeCard(h.card, p); drag = { kind: 'hold', fromTray: true }; return; }
@@ -424,6 +428,7 @@
     if (drag.kind === 'pan') { G.cam.x -= (p.x - drag.last.x) / G.cam.zoom; G.cam.y -= (p.y - drag.last.y) / G.cam.zoom; drag.last = p; clampCam(); }
   }
   function onDragEnd(p) {
+    if (drag && drag.kind === 'swipe') { var dx = p.x - drag.x0; if (Math.abs(dx) > 24 && G.menu && G.menu.kind === 'book') SS.bookTurn(G, dx < 0 ? 1 : -1); drag = null; return; }
     if (drag && drag.kind === 'hold' && G.hold) {
       // let go to place it; if it doesn't fit, it slides back to the tray (or back where it was)
       if (p.y > G.H - SS.TRAY_H[G.trayState()]) cancelHold(true);
@@ -441,6 +446,11 @@
     if (G.screen === 'open') { if (k === 'a' || k === 'b') G.screen = 'title'; return; }
     if (G.confirm) { var q = G.confirm; if (k === 'left' || k === 'right') q.cur = 1 - q.cur; if (k === 'a') G.confirmPick(q.cur); if (k === 'b') G.confirmPick(0); return; }
     if (G.screen === 'title') { titlePress(k); return; }
+    if (G.menu && G.menu.kind === 'book') { // pages with left and right, chapters with up and down, B closes (spec 007, part B)
+      if (k === 'left') SS.bookTurn(G, -1); if (k === 'right') SS.bookTurn(G, 1); if (k === 'up') SS.bookTab(G, -1); if (k === 'down') SS.bookTab(G, 1);
+      if (k === 'b' || k === 'start') G.menu = null; return;
+    }
+    if (G.menu && G.menu.kind === 'note') { if (k === 'a' || k === 'b') SS.closeNote(G); return; }
     if (G.menu) {
       var m = G.menu;
       if (m.kind === 'start') { if (k === 'up') m.cur = (m.cur + 7) % 8; if (k === 'down') m.cur = (m.cur + 1) % 8; if (k === 'a') G.menuPick(m.cur); if (k === 'b' || k === 'start') G.closeMenu(); }
@@ -668,11 +678,16 @@
         if (k >= 1) { SS.markGift(); G.screen = 'open'; G.giftAnim = null; }
       } else if (G.screen === 'open' || G.screen === 'title') drawTitle(H, t);
       else {
-        if (now - lastSecond > 1000) { lastSecond = now; G.look = SS.look(SS.now(), G.mode); if (G.mode === 'life') lampPhase(false); }
+        if (now - lastSecond > 1000) {
+          lastSecond = now; G.look = SS.look(SS.now(), G.mode); if (G.mode === 'life') lampPhase(false);
+          var today = SS.now().toDateString() + SS.now().getHours(); if (G._bookDay !== today) { G._bookDay = today; SS.bookDay(G); }   // dated moments (spec 007)
+          SS.bookTick(G);
+        }
         if (G.zoomTo) { G.cam.zoom += (G.zoomTo - G.cam.zoom) * .3; if (Math.abs(G.zoomTo - G.cam.zoom) < .01) { G.cam.zoom = G.zoomTo; G.zoomTo = null; } }
         SS.updateAgents(G, dt);
         var sf = G.people.sarah.f; if (G.mode === 'life' && G.sarahF !== undefined && sf !== G.sarahF && sf !== G.floor) G.setFloor(sf); G.sarahF = sf;   // follow her up and down the stairs
         drawHome(H, t, now);
+        if (!G.menu) SS.drawPop(G, W0);   // a new memory book moment slides in at the top (spec 007, part A)
         if (G.menu) SS.drawMenu(G, W0, H);
       }
       if (G.toastT) { if (now > G.toastT.until) G.toastT = null; else SS.drawToast(G, W0, H, G.toastT); }

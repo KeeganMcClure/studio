@@ -2,6 +2,72 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 28, 2026: the memory book (Dev)
+
+Spec 007, parts A and B: the moments and the book screen. Part B ends in Keegan's playtest (spec 007, build order), so parts C (Keegan's notes hidden around the home) and D (the reward pieces) come after his notes.
+
+### What was built
+
+- **The moments (part A).** All 72 moments from the bible's table, in seven chapters.
+  - Each fires once and keeps its real date.
+  - Each keeps a snapshot "recipe": the pieces, people and cats around it, the floor, the view's turn and the light. Its page redraws the scene from that, crisp, exactly as it looked, even after the room has changed.
+  - A small card slides in at the top for about 3 seconds ("MEMORY BOOK · THE TWO OF US / A kiss"). Tapping it opens that page, and it never stops play.
+  - One book is shared by Sandbox and Life, saved under its own key, and it comes along in backups.
+- **The moments that can happen now:**
+  - **The cats:**
+    - Louie naps on a newly placed piece;
+    - Louie on the tub's edge;
+    - a treat for Louie;
+    - Ralph on a toy basket;
+    - Ralph near Keegan while he cooks;
+    - Ralph takes Louie's warm spot;
+    - the feather wand with Ralph;
+    - both cats asleep at once.
+  - **The two of us:**
+    - a kiss;
+    - cuddled up on the couch;
+    - a cozy night in (a together action after 6 PM);
+    - Keegan's game night;
+    - a slow morning in bed (Lie in before 11 AM);
+    - the anniversary on Jul 10;
+    - the note under the tree, which also counts as the first note.
+  - **Holidays:**
+    - first snow;
+    - the Christmas tree trimmed (5 or more holiday or light pieces on or around it);
+    - Christmas morning, New Year's Eve, Valentine's Day, spring's first warm day, the Fourth of July and Thanksgiving;
+    - both birthdays.
+  - **Home:**
+    - first room finished: a rug, somewhere to sit, and a piece hung on every wall, on the room's side;
+    - ten rooms finished;
+    - every room in Philly redone (3 pieces placed, moved or put away in each).
+- **Still waiting on their systems:** the garden, cooking, coins, favorites, the camera, outfits, Building and visitors. Their moments fire when those parts are built. Ralph's red bowtie and the vacuum wait too.
+- **The book screen (part B), from `memory-book-v1`:**
+  - a rose cloth scrapbook with cream pages and nine tabs down the side (seven chapters, Notes and Photos);
+  - two moments a page, each a taped-in snapshot with a hand-lettered caption and date;
+  - moments not reached yet show as dotted frames, captioned "???" except in Home and Garden;
+  - the reward ribbon (3 · 6 · 10) on each chapter's first page, with the count and the next reward;
+  - it opens from the Start menu or a bookshelf's Memory book, and turns by swipe, the corner arrows or the D-pad (left and right for pages, up and down for chapters); B closes it.
+- **Note found:** the note under the tree now opens on its own folded paper (`memory-book-v1`, state note) with PUT IN THE BOOK, and it files into Notes. Notes found open full size again from the Notes tab.
+
+### Checks
+
+- `npm run check` has a memory-book section:
+  - 72 moments in seven chapters;
+  - a kiss fires once, with a date, a snapshot and the pop card;
+  - the snapshot stays the same after the room is emptied;
+  - one book for both modes;
+  - Jul 10 and Dec 25 add their moments;
+  - the tree note opens and files;
+  - at 430 × 932, 375 × 667 and 320 × 480: every tab draws, the D-pad and a swipe turn pages, and B closes.
+- The Christmas check now expects the note on its paper.
+- New screen: `src/dist/screen-memory-book-430x932.png`.
+
+### Changes from the spec
+
+- The reward ribbon shows a small wrapped gift for each step. The pieces themselves are drawn in part D, so until then a reached step says "coming in an update".
+- The Photos tab says photos from the camera go there; the camera comes with spec 001, part E.
+- The Notes tab counts 20 notes until Keegan's real notes go in the private file.
+
 ## Nov 26, 2026: the game fills the screen; the floors below keep their walls (Dev)
 
 ### What was built
