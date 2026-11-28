@@ -130,6 +130,10 @@
       SS.clip(c, gl, function () {
         // rooftops across the street, with lit windows at night
         for (var k = 0; k < 3; k++) { var a = fa(u0 + k * .3, b0), top = 10 + ((s.x * 3 + s.y + k) % 3) * 3; R(c, a[0], a[1] - top - 6, 8, top + 6, ['#b46a5a', '#9e5a4e', '#b9786a'][k]); R(c, a[0], a[1] - top - 8, 8, 2, look.snow ? '#f7fbff' : '#8e5a4e'); if (look.dark > .3) { R(c, a[0] + 2, a[1] - top, 2, 2, '#ffd98a'); R(c, a[0] + 5, a[1] - top + 4, 2, 2, '#ffd98a'); } }
+        if (look.fireworks && look.dark > .3) for (var fw = 0; fw < 2; fw++) { // the Fourth of July: fireworks over the street after dark (spec 009, part B)
+          var ph = (t + fw * 5 + s.x) % 12, fc = fa(u0 + .3 + fw * .35, b1 - 6 - fw * 4), col = ['#ffd56b', '#e46f8b', '#8fd0ff'][(Math.floor((t + fw * 5) / 12) + fw) % 3];
+          if (ph < 8) for (var ray = 0; ray < 8; ray++) { var an = ray * Math.PI / 4, rr = 1 + ph * .7; R(c, fc[0] + Math.cos(an) * rr, fc[1] + Math.sin(an) * rr * .8, 1, 1, ph > 5 ? 'rgba(255,240,200,.6)' : col); }
+        }
         if (look.stars) for (var i = 0; i < 4; i++) { var sp = fa(u0 + .1 + i * .2, b1 - 3 - (i % 2) * 4); R(c, sp[0], sp[1], 1, 1, '#fff'); }
         if (look.snow) for (var j = 0; j < 5; j++) { var sx = fa(u0 + ((j * .23 + t * .013 * (1 + j % 2)) % 1) * (u1 - u0), b1 - ((j * 7 + t * 1.3) % 24)); R(c, sx[0], sx[1], 1, 1, 'rgba(255,255,255,.9)'); }
       });

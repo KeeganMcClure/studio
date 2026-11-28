@@ -432,7 +432,7 @@
     if ((mo === 11 && day === 31 && d.getHours() === 23 && d.getMinutes() === 59) || (mo === 0 && day === 1)) fire('nye');
     if (mo === 1 && day === 14) fire('valentines');
     if ((mo === 2 && day >= 20) || mo === 3 || mo === 4 || (mo === 5 && day < 21)) fire('spring');
-    if (mo === 6 && day === 4) fire('july4');
+    if (mo === 6 && day === 4 && (d.getHours() >= 21 || d.getHours() < 4)) fire('july4');   // she sees the fireworks: open after dark
     if (mo === 10 && day === nthThursday(d.getFullYear(), 10, 4)) fire('thanksgiving');
     if (mo === 7 && day === 31) fire('bday-sarah');
     if (mo === 2 && day === 17) fire('bday-keegan');

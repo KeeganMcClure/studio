@@ -146,7 +146,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     home.nouse.forEach(t => bad.push('nobody can get to ' + t));
     // the starting catalog: every tab holds spec 001's draft list (plus the easel, the cat bowls and the litter box)
     const tabs = await page.evaluate(() => { const n = {}; SS.CATALOG.filter(d => !d.craft).forEach(d => { n[d.tab] = (n[d.tab] || 0) + 1; }); return n; });
-    const want = { seating: 10, tables: 9, beds: 6, storage: 12, lights: 7, plants: 7, rugs: 6, wall: 10, decor: 16, holiday: 9 };   // holiday: the tree and the Christmas set (spec 009)   // decor: 13 + the easel + the cat bowls and litter box (spec 006, part D)
+    const want = { seating: 10, tables: 9, beds: 6, storage: 12, lights: 7, plants: 7, rugs: 6, wall: 10, decor: 16, holiday: 27 };   // holiday: the tree, the Christmas set, and two pieces for each of the year's other 9 holidays (spec 009)   // decor: 13 + the easel + the cat bowls and litter box (spec 006, part D)
     const few = await page.evaluate(() => SS.CATALOG.filter(d => !d.craft && d.tab !== 'none' && (d.swatches.length < 4 || d.swatches.length > 6)).map(d => d.id + ' (' + d.swatches.length + ')'));
     few.forEach(id => bad.push('swatches should be 4 to 6 (spec 001, part D): ' + id));
     Object.keys(want).forEach(t => { if (tabs[t] !== want[t]) bad.push(`the ${t} tab has ${tabs[t] || 0} pieces, the starting list has ${want[t]}`); });
@@ -468,7 +468,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       G.takeCard(G.catalogList('holiday').items.find(it => it.away)); if (G.hold) out.push('an out-of-season Christmas piece can be taken'); G.hold = null;
       G.openMode('sandbox'); if (G.catalogList('holiday').items.some(it => it.away)) out.push('Sandbox hides holiday pieces out of season');
       SS.setDate(2026, 11, 5); G.openMode('life');
-      if (!G.catalogList('holiday').items.every(it => it.season)) out.push('in December, the Christmas set is not marked This season');
+      if (!G.catalogList('holiday').items.filter(it => it.def.holiday === 'christmas').every(it => it.season)) out.push('in December, the Christmas set is not marked This season');
       // Christmas Eve: stockings and cookies, for the day only, and she can keep one
       SS.setDate(2026, 11, 24); SS.setClock(19, 0); G.openMode('life');
       const st = G.W.pieces.find(p => p.id === 'stockings' && p.dress), ck = G.W.pieces.find(p => p.id === 'cookies-and-milk' && p.dress);
@@ -1155,6 +1155,44 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     if (await page.evaluate(() => SSG.menu.face) !== 1) bad.push('a swipe does not spin the person');
     bad.push(...errors); await ctx.close();
     report('the Creator (spec 003 A, B): New person from People, nine tabs at 375 x 667 and 320 x 480, every shape and color, Random, Undo, Done to Style, kept per mode', bad);
+  }
+
+  // ---------- 6k. the rest of the year's holidays (spec 009, build order step 3) ----------
+  {
+    const bad = [];
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    const r = await page.evaluate(() => {
+      const G = SSG, out = []; G.confirm = null;
+      const days = [['newyear', 2026, 11, 31], ['valentines', 2027, 1, 14], ['keegan-bday', 2027, 2, 17], ['spring', 2027, 2, 20], ['july4', 2027, 6, 4], ['anniversary', 2027, 6, 10], ['sarah-bday', 2027, 7, 31], ['halloween', 2027, 9, 31], ['thanksgiving', 2027, 10, 25]];
+      days.forEach(q => {
+        SS.setDate(q[1], q[2], q[3]); SS.setClock(19, 0); G.openMode('life');
+        if (SS.holidayToday(SS.now()) !== q[0]) out.push(q[0] + ' is not today on its date');
+        const dress = G.W.pieces.filter(p => p.dress);
+        if (dress.length < 2) out.push(q[0] + ' does not dress the home (' + dress.length + ')');
+        if (dress.some(p => !G.W.check(p.host ? { id: p.id, host: p.host, spot: p.spot } : p.wall ? { id: p.id, f: p.f, wall: p.wall, side: p.side } : { id: p.id, f: p.f, x: p.x, y: p.y, r: p.r }, p).ok)) out.push(q[0] + '\'s dressing does not fit where it is');
+        // its pieces are on sale in season
+        const mine = SS.CATALOG.filter(d => d.holiday === q[0]); if (mine.length < 2) out.push(q[0] + ' has no Holiday tab pieces');
+        const list = G.catalogList('holiday').items.filter(it => it.def.holiday === q[0]); if (!list.length || list.some(it => !it.season)) out.push(q[0] + '\'s pieces are not "This season" on the day');
+        if ((q[0] === 'sarah-bday' || q[0] === 'keegan-bday') !== !!G.partyHat) out.push(q[0] + ': the cats\' party hats are wrong');
+      });
+      // the next day the dressing goes away, unless she kept it
+      SS.setDate(2028, 9, 31); G.openMode('life'); const keep = G.W.pieces.find(p => p.dress); SS.keepDressing(G, keep); G.changed(true);
+      SS.setDate(2028, 10, 1); G.openMode('life');
+      if (G.W.pieces.some(p => p.dress)) out.push('day dressing stays after its day');
+      if (!G.W.pieces.some(p => p.uid === keep.uid) || G.save.made.indexOf(keep.id) < 0) out.push('a kept dressing piece is not hers');
+      // out of season: the right month, in Life; in Sandbox everything is there
+      SS.setDate(2027, 4, 2); G.openMode('life');
+      const val = G.catalogList('holiday').items.find(it => it.id === 'heart-garland'); if (!val || val.away !== 'BACK IN FEBRUARY') out.push('out of season does not say the right month: ' + (val && val.away));
+      G.openMode('sandbox'); if (G.catalogList('holiday').items.some(it => it.away)) out.push('Sandbox holds back holiday pieces');
+      // fireworks on the Fourth after dark, and the moment
+      SS.setDate(2027, 6, 4); SS.setClock(22, 0); G.openMode('life'); SS.bookDay(G);
+      if (!G.look.fireworks || !SS.hasMoment('july4')) out.push('no fireworks or moment after dark on the Fourth');
+      SS.setDate(null); SS.setClock(null);
+      return out;
+    });
+    r.forEach(o => bad.push(o));
+    bad.push(...errors); await ctx.close();
+    report('the year\'s holidays (spec 009, step 3): every day dresses the home, its pieces in season, party hats, kept pieces, the right month, fireworks', bad);
   }
 
   // ---------- 6c. turning the home (bible, Building, Turning the home; spec 001, part B) ----------

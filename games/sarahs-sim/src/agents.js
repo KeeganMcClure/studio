@@ -23,7 +23,7 @@
       if (a.kind === 'person' && pose === 'lie' && a.on && SS.G && SS.G.W.byUid[a.on] && SS.G.W.def(SS.G.W.byUid[a.on]).use === 'bed') lieAt = drawLie(c, a, SS.G.W.byUid[a.on], fc.flip);
       else if (a.kind === 'person' && pose === 'bath') drawBath(c, a, p, fc.flip);
       else if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: fc.back, flip: fc.flip, t: performance.now(), arms: walking ? null : a.arms, seatH: a.z || 0 });
-      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: SS.vface(a.flip, a.back).flip, hat: SS.G && SS.G.xmasDay, bow: a.who === 'ralph' && SS.G && SS.G.save && !!SS.G.save.ralphBow });
+      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: SS.vface(a.flip, a.back).flip, hat: SS.G && (SS.G.xmasDay || SS.G.partyHat), bow: a.who === 'ralph' && SS.G && SS.G.save && !!SS.G.save.ralphBow });
       var headY = p[1] - (a.kind === 'cat' ? 22 : (a.pose === 'sit' ? (a.who === 'sarah' ? 32 : 36) : a.pose === 'lie' ? 16 : a.pose === 'bath' ? 34 : 42));
       a.lieHead = lieAt;   // where her head rests on screen (the checks read it)
       if (lieAt) { p = [lieAt[0], p[1]]; headY = lieAt[1]; }   // in bed: bubbles and the bar sit over the head on the pillow

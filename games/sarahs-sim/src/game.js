@@ -166,7 +166,7 @@
     var items = defs.map(function (d) {
       var it = { id: d.id, def: d, sw: 0, stored: G.save.stored.filter(function (s) { return s.id === d.id; }).length };
       // holiday pieces in Life: "This season" in season, "Back in December" out of it, unless they're already hers (spec 009)
-      if (d.holiday && G.mode === 'life') { if (SS.inSeason(d.holiday, now)) it.season = 'THIS SEASON'; else if (G.save.made.indexOf(d.id) < 0 && !it.stored) it.away = 'BACK IN DECEMBER'; }
+      if (d.holiday && G.mode === 'life') { if (SS.inSeason(d.holiday, now)) it.season = 'THIS SEASON'; else if (G.save.made.indexOf(d.id) < 0 && !it.stored) it.away = SS.backIn(d.holiday); }
       return it;
     });
     if (tab === 'ours') items.unshift({ soon: true });
@@ -175,7 +175,7 @@
   // taking a card: the piece comes up held in the middle of the view (buttons) or under the finger (a drag)
   G.takeCard = function (it, p) {
     if (it.soon) return;
-    if (it.away) { G.toast(it.away, 1600, 'Christmas pieces are in the shop from December 1 to January 6.'); return; }
+    if (it.away) { G.toast(it.away, 1600, 'Holiday pieces are in the shop during their holiday\'s season.'); return; }
     var d = it.def, st = G.gig ? null : G.save.stored.filter(function (s) { return s.id === d.id; })[0];
     if (!st && !SS.canBuy(G, it)) return;   // the shop is the catalog (spec 006, part F)
     G.deselect(); G.bubble = null;
@@ -384,7 +384,7 @@
     if (a.fx === 'gig') { SS.findGigs(G); return; }   // gigs at the desk (spec 006, part F)
     if (a.fx === 'style') { G.meters = null; SS.openStyle(G, a.who || 'sarah'); return; }   // the Style screen (spec 002)
     if (a.fx === 'bow') { G.meters = null; SS.ralphBow(G); return; }
-    if (a.fx === 'keep') { b.target.piece.dress = null; G.changed(true); G.toast('IT\'S YOURS TO KEEP', 1500); return; }
+    if (a.fx === 'keep') { SS.keepDressing(G, b.target.piece); G.toast('IT\'S YOURS TO KEEP', 1500); return; }
     G.meters = null;
     var r = SS.chooseAction(G, b.target, a);
     if (r === 'busy') G.toast('KEEGAN IS ' + G.kday.text.toUpperCase(), 2000, 'It\'s lined up for when he\'s done.');

@@ -2,6 +2,62 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 28, 2026: the rest of the year's holidays (Dev)
+
+Spec 009, build order step 3: the other holidays in calendar order, as content and day dressing, with no new screens.
+
+### What was built
+
+- **The calendar** for every holiday, from the real date. Each has a season, when its pieces are on sale, and a day:
+  - New Year's Eve: Dec 26 to Jan 1;
+  - Valentine's Day: Feb 1 to 14;
+  - Keegan's birthday: Mar 10 to 17;
+  - Spring's first warm day: Mar 20 into April;
+  - the Fourth of July: Jun 27 to Jul 4;
+  - your anniversary: Jul 3 to 10;
+  - Sarah's birthday: Aug 24 to 31;
+  - Halloween: all of October;
+  - Thanksgiving: the week of the fourth Thursday.
+- **18 new Holiday tab pieces**, two for each, drawn in code with swatches:
+  - New Year's Eve: party streamers and sparkling cider;
+  - Valentine's Day: a heart garland and a rose bouquet;
+  - Keegan's birthday: green balloons and a shamrock pot;
+  - spring: a tulip pot and a sun catcher;
+  - the Fourth: little flags and star lights;
+  - the anniversary: a candle trio and a heart frame;
+  - Sarah's birthday: a balloon bunch and a birthday cake;
+  - Halloween: a jack-o'-lantern and paper bats;
+  - Thanksgiving: a harvest centerpiece and an autumn leaf garland.
+- **In Life:** they show "This season" in season. Out of season, pieces she hasn't got say the right month ("Back in February"). In Sandbox they're always there.
+- **Day dressing** on each day, in Life: that holiday's pieces go on a wall, a table or the floor, for that day only, with a card saying what's special.
+  - Candles, lanterns and lights come on lit.
+  - Tapping one and choosing Keep It makes it hers, free, in her catalog. The rest go the next day.
+- **Birthdays:** the cats wear party hats, pink on Sarah's and St. Patrick's green on Keegan's.
+- **The Fourth of July:** fireworks burst over the street in every window after dark. The memory book's Fourth moment now waits until she's seen them.
+
+### What's left
+
+- Parties and the Party card (part C) come with Visitors (spec 008).
+- These need parts not built yet:
+  - trick-or-treaters and costumes, which come with the Style Holiday tab;
+  - the grill in the yard and the seed packet, which come with the garden;
+  - the midnight countdown kiss and Keegan's notes on these days. The notes come with memory book part C, after Keegan's playtest.
+- The anniversary and Thanksgiving dinners can be cooked with Cook together; there's no special dish yet.
+
+### Checks
+
+- `npm run check` passes, with a new section that sets each of the nine dates:
+  - the home is dressed, and the dressing fits where it is;
+  - the pieces are in season, and the party hats show on the birthdays;
+  - dressing goes away the next day unless kept;
+  - out of season shows the right month, and Sandbox shows everything;
+  - the fireworks show and the Fourth moment fires.
+
+### Changes from the spec
+
+- Spring's season runs from Mar 20 through April, so its pieces are on sale for more than one day.
+- The anniversary's season is the week before it, like the birthdays.
+
 ## Nov 28, 2026: the Creator (Dev)
 
 Spec 003, parts A and B (build order step 1: half the shapes), from `creator-v1`. Playtest gate: Keegan plays this before parts C and D.

@@ -33,7 +33,7 @@
     var A = a[1], B = b[1], h = d.getHours(), mul = mixHex(A.mul, B.mul, k);
     return { tint: mul === '#ffffff' ? null : mul,
       sky: [mixHex(A.sky[0], B.sky[0], k), mixHex(A.sky[1], B.sky[1], k)], glow: A.glow + (B.glow - A.glow) * k, dark: A.dark + (B.dark - A.dark) * k,
-      stars: (A.stars + (B.stars - A.stars) * k) > .5, snow: snow, december: december,
+      stars: (A.stars + (B.stars - A.stars) * k) > .5, snow: snow, december: december, fireworks: d.getMonth() === 6 && d.getDate() === 4,
       name: h >= 6 && h < 11 ? 'morning' : h >= 11 && h < 17 ? 'daytime' : h >= 17 && h < 22 ? 'evening' : 'late night' };
   };
   var DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'], MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];

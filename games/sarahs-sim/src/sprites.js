@@ -426,8 +426,11 @@
     else { c.drawImage(img, dx, dy); if (o.arms === 'phone') phoneLight(c, dx + sx0, dy, o.back, 0, o.t, img.width - sx0 * 2); }
     if (o.hat) { // a tiny Santa hat on Christmas (spec 009): on the head, which sits at the front of the loaf and the top of the sit
       var hx = pose === 'sit' ? dx + img.width / 2 : (o.flip ? dx + 6 : dx + img.width - 7), hy = pose === 'sit' ? dy : dy - 1;
-      c.fillStyle = '#d2363c'; c.beginPath(); c.moveTo(hx - 4, hy + 2); c.lineTo(hx + 4, hy + 2); c.lineTo(hx + (o.flip ? -3 : 3), hy - 5); c.closePath(); c.fill();
-      c.fillStyle = '#fff6ea'; c.fillRect(Math.round(hx - 4), Math.round(hy + 1), 8, 2); c.fillRect(Math.round(hx + (o.flip ? -4 : 3)), Math.round(hy - 6), 2, 2);
+      var party = o.hat === 'pink' || o.hat === 'green';   // a party hat on the birthdays (bible, Birthdays)
+      c.fillStyle = party ? (o.hat === 'green' ? '#4f9a5c' : '#e46f8b') : '#d2363c'; c.beginPath(); c.moveTo(hx - 4, hy + 2); c.lineTo(hx + 4, hy + 2); c.lineTo(hx + (party ? (o.flip ? -1 : 1) : (o.flip ? -3 : 3)), hy - (party ? 7 : 5)); c.closePath(); c.fill();
+      if (party) { c.fillStyle = '#ffd56b'; c.fillRect(Math.round(hx - 2), Math.round(hy - 2), 2, 1); c.fillRect(Math.round(hx + 1), Math.round(hy - 4), 1, 1); c.fillRect(Math.round(hx + (o.flip ? -2 : 0)), Math.round(hy - 9), 2, 2); }
+      else c.fillStyle = '#fff6ea';
+      if (!party) { c.fillRect(Math.round(hx - 4), Math.round(hy + 1), 8, 2); c.fillRect(Math.round(hx + (o.flip ? -4 : 3)), Math.round(hy - 6), 2, 2); }
     }
     if (walk) { c.fillStyle = CATS[who].pal.o || '#3b2f33'; var f = pose === 'walk1' ? 0 : 2; c.fillRect(dx + 4 + f, y, 2, 1); c.fillRect(dx + img.width - 8 - f, y, 2, 1); }
   };
