@@ -7,36 +7,57 @@
   var FH = SS.FH = 52;      // one storey, in px (wall 48 + floor 4)
   var WALL_UP = SS.WALL_UP = 46;
 
-  function World(home, pieces) {
-    var W = { home: home, lot: home.lot, ax: home.at[0], ay: home.at[1], floors: home.floors.length, pieces: [], byUid: {}, nextUid: 1 };
-    var ax = W.ax, ay = W.ay;
+  // looks: this save's own floor and wallpaper for a room, {'f:roomId': {floor, paper}} (a room favorite brings its own, spec
+  // 001 part E; named papers like Nina's, spec 004 part D). The home's data is copied, so a save's looks never reach another.
+  function World(home, pieces, looks) {
+    home = JSON.parse(JSON.stringify(home));
+    if (looks) home.floors.forEach(function (fl, f) { fl.rooms.forEach(function (r) { var L = looks[f + ':' + r.id]; if (L) { if (L.floor) r.floor = L.floor; if (L.paper) r.paper = L.paper; } }); });
+    // a home is either prebuilt data in house tiles (home.js: rooms as rectangles r, placed at home.at) or a save's own built
+    // home in lot tiles ("lot form", build.js: rooms as tile lists t, plus single walls). Everything below is in lot tiles.
+    var off = home.lotForm ? [0, 0] : home.at;
+    var W = { home: home, lot: home.lot, floors: home.floors.length, pieces: [], byUid: {}, nextUid: 1 };
     // rooms per tile
     W.rooms = home.floors.map(function (fl) {
       var g = {};
-      fl.rooms.forEach(function (r) { for (var x = r.r[0]; x < r.r[2]; x++) for (var y = r.r[1]; y < r.r[3]; y++) g[(x + ax) + ',' + (y + ay)] = r; });
+      fl.rooms.forEach(function (r) {
+        if (r.t) r.t.forEach(function (k) { g[k] = r; });
+        else for (var x = r.r[0]; x < r.r[2]; x++) for (var y = r.r[1]; y < r.r[3]; y++) g[(x + off[0]) + ',' + (y + off[1])] = r;
+      });
       return g;
     });
     W.room = function (f, x, y) { return (W.rooms[f] || {})[x + ',' + y] || null; };
+    // the house's footprint (every floor): where the camera starts and the front path runs from. An empty lot has none, so
+    // the middle of the lot stands in for it
+    var bx0 = 1e9, by0 = 1e9, bx1 = -1e9, by1 = -1e9;
+    W.rooms.forEach(function (g) { for (var k in g) { var q = k.split(','), x = +q[0], y = +q[1]; bx0 = Math.min(bx0, x); by0 = Math.min(by0, y); bx1 = Math.max(bx1, x + 1); by1 = Math.max(by1, y + 1); } });
+    if (bx0 > bx1) { bx0 = bx1 = Math.floor(W.lot / 2); by0 = by1 = Math.floor(W.lot / 2); }
+    W.ax = bx0; W.ay = by0; home.w = bx1 - bx0; home.d = by1 - by0;
+    var ax = off[0], ay = off[1];
     // stairs, in lot tiles
     W.stairs = home.stairs.map(function (s) { return { floor: s.floor, tiles: s.tiles.map(function (q) { return [q[0] + ax, q[1] + ay]; }), from: [s.from[0] + ax, s.from[1] + ay], to: [s.to[0] + ax, s.to[1] + ay] }; });
     W.stairAt = function (f, x, y) { for (var i = 0; i < W.stairs.length; i++) { var s = W.stairs[i]; if (s.floor === f && s.tiles.some(function (q) { return q[0] === x && q[1] === y; })) return s; } return null; };
     W.wellAt = function (f, x, y) { return W.stairs.some(function (s) { return s.floor === f - 1 && s.tiles.some(function (q) { return q[0] === x && q[1] === y; }); }); };
-    // walls: every tile edge between two different rooms (or a room and outside), unless they're open to each other
+    // walls: every tile edge between two different rooms (or a room and outside), unless they're open to each other, plus the
+    // single walls drawn with the wall tool (spec 004, part B), which can stand inside a room or out on the lot
     W.walls = home.floors.map(function (fl, f) {
       var segs = [], key = {};
-      var open = {}, wins = {};
+      var open = {}, wins = {}, single = {};
       fl.openings.forEach(function (o) { open[(o[0] + ax) + ',' + (o[1] + ay) + o[2]] = o[3]; });
       fl.windows.forEach(function (o) { for (var k = 0; k < o[3]; k++) wins[(o[2] === 'x' ? (o[0] + k + ax) + ',' + (o[1] + ay) : (o[0] + ax) + ',' + (o[1] + k + ay)) + o[2]] = { start: k === 0, end: k === o[3] - 1, len: o[3], k: k }; });
+      (fl.walls || []).forEach(function (o) { single[(o[0] + ax) + ',' + (o[1] + ay) + o[2]] = 1; });
       for (var x = 0; x <= W.lot; x++) for (var y = 0; y <= W.lot; y++) {
         [['x', x, y - 1, x, y], ['y', x - 1, y, x, y]].forEach(function (e) {
+          var k = x + ',' + y + e[0], one = single[k];
+          if ((e[0] === 'x' && x >= W.lot) || (e[0] === 'y' && y >= W.lot)) return;
           var a = W.room(f, e[1], e[2]), b = W.room(f, e[3], e[4]);
-          if (a === b || (!a && !b)) return;
-          if (a && b && a.group && a.group === b.group) return;
-          var k = x + ',' + y + e[0], op = open[k];
-          if (op === 'open') return;
-          var s = { f: f, x: x, y: y, axis: e[0], a: a, b: b, ext: !a || !b, op: op || null, win: wins[k] || null };
+          if (!one && (a === b || (!a && !b))) return;
+          if (!one && a && b && a.group && a.group === b.group) return;
+          var op = open[k];
+          if (op === 'open' && !one) return;
+          if (op === 'open') op = null;
+          var s = { f: f, x: x, y: y, axis: e[0], a: a, b: b, ext: !a !== !b, op: op || null, win: wins[k] || null, single: !!one };
           // a back wall: an outside wall on the far sides of the house (the ones that stay up when walls are cut away)
-          s.back = s.ext && ((e[0] === 'x' && !a) || (e[0] === 'y' && !a));
+          s.back = s.ext && !a;
           segs.push(s); key[k] = s;
         });
       }

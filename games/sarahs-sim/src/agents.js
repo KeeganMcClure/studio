@@ -23,7 +23,7 @@
       if (a.kind === 'person' && pose === 'lie' && a.on && SS.G && SS.G.W.byUid[a.on] && SS.G.W.def(SS.G.W.byUid[a.on]).use === 'bed') lieAt = drawLie(c, a, SS.G.W.byUid[a.on], fc.flip);
       else if (a.kind === 'person' && pose === 'bath') drawBath(c, a, p, fc.flip);
       else if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: fc.back, flip: fc.flip, t: performance.now(), arms: walking ? null : a.arms, seatH: a.z || 0 });
-      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: SS.vface(a.flip, a.back).flip, hat: SS.G && SS.G.xmasDay });
+      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: SS.vface(a.flip, a.back).flip, hat: SS.G && (SS.G.xmasDay || SS.G.partyHat), bow: a.who === 'ralph' && SS.G && SS.G.save && !!SS.G.save.ralphBow });
       var headY = p[1] - (a.kind === 'cat' ? 22 : (a.pose === 'sit' ? (a.who === 'sarah' ? 32 : 36) : a.pose === 'lie' ? 16 : a.pose === 'bath' ? 34 : 42));
       a.lieHead = lieAt;   // where her head rests on screen (the checks read it)
       if (lieAt) { p = [lieAt[0], p[1]]; headY = lieAt[1]; }   // in bed: bubbles and the bar sit over the head on the pillow
@@ -178,7 +178,7 @@
     a.wait -= dt;
     if (a.wait <= 0 && catNudge(G, a)) return;
     if (a.wait > 0) return;
-    if (a.next) { var np = W.byUid[a.next]; a.next = null; a.react = null; if (np && (W.def(np).nap || W.def(np).kind === 'rug')) { seatOn(W, a, np, a.who === 'louie' ? 'curl' : 'loaf'); a.bubble = { icon: 'z', until: performance.now() + 9000 }; a.wait = rand(14, 30); return; } }
+    if (a.next) { var np = W.byUid[a.next]; a.next = null; a.react = null; if (np && (W.def(np).nap || W.def(np).kind === 'rug')) { seatOn(W, a, np, a.who === 'louie' ? 'curl' : 'loaf'); if (a.who === 'louie') SS.moment(G, 'louie-nap', { f: a.f, x: a.x, y: a.y }); a.bubble = { icon: 'z', until: performance.now() + 9000 }; a.wait = rand(14, 30); return; } }
     getUp(W, a); a.bubble = null;
     var roll = Math.random();
     // Louie naps most of the day in the coziest spot; Ralph flops in the middle of the floor and lies on rugs
@@ -286,13 +286,17 @@
     var Rl = G.cats.ralph, W = G.W; if (Rl.held || Rl.on) return;
     if (walkTo(W, Rl, function (f, x, y) { return f === W.floorOf(stove) && Math.abs(x - stove.x) + Math.abs(y - stove.y) <= 3; })) Rl.arrive = function () { Rl.pose = 'sit'; Rl.bubble = { icon: 'heart', until: performance.now() + 3000 }; Rl.wait = 20; };
   }
-  function serveMeal(G) { // a finished meal on the table, with a sparkle (bible, Cooking)
+  function serveMeal(G, quiet) { // a finished meal on the table, with a sparkle (bible, Cooking); any table with a free spot will do
     var W = G.W, best = null;
     W.pieces.forEach(function (h) { var d = W.def(h); if (!d.spots.length || !/dining|bistro|island/.test(h.id)) return; d.spots.forEach(function (sp, i) { if (!best && W.check({ id: 'plated-meal', host: h.uid, spot: i }).ok) best = { host: h.uid, spot: i }; }); });
-    if (!best) return;
+    if (!best) W.pieces.forEach(function (h) { var d = W.def(h); if (!d.spots.length || /counter|shelf|stand|dresser|nightstand/.test(h.id) || W.floorOf(h) !== 0) return; d.spots.forEach(function (sp, i) { if (!best && W.check({ id: 'plated-meal', host: h.uid, spot: i }).ok) best = { host: h.uid, spot: i }; }); });
+    if (!best) return null;
     var p = W.add({ id: 'plated-meal', host: best.host, spot: best.spot, sw: 0, props: true }); p.f = W.floorOf(p);
-    G.changed(true); G.toast('KEEGAN MADE DINNER', 2200, 'It\'s on the table. Tap it to eat.');
+    G.changed(true); if (!quiet) G.toast('KEEGAN MADE DINNER', 2200, 'It\'s on the table. Tap it to eat.');
+    return p;
   }
+  SS.serveMeal = serveMeal;
+  SS.callRalph = function (G, near) { callRalph(G, near); };
   function startActivityBack(G) { var K = G.people.keegan, W = G.W, p = W.byUid[G.kday.piece]; if (walkTo(W, K, function (f, x, y) { return f === W.floorOf(p) && W.useTiles(p).some(function (q) { return q[0] === x && q[1] === y; }); })) K.arrive = function () { var d = W.def(p); if (d.seat && G.kday.at !== 'stove' && G.kday.at !== 'bookshelf') seatOn(W, K, p, d.use === 'bed' ? 'lie' : 'sit'); }; }
   SS.startKeeganDay = function (G) { if (G.mode === 'life') { G.kday = null; startActivity(G, true); } };
   function keeganDay(G, dt) {
@@ -327,20 +331,20 @@
     bed: [{ name: 'SLEEP', icon: 'z', dur: 30, how: 'lie', sleep: true, fill: { energy: 1 } }, { name: 'NAP', icon: 'z', dur: 15, how: 'lie', fill: { energy: .4 } }, { name: 'LIE IN', sub: 'WITH KEEGAN', icon: 'heart', dur: 20, how: 'lie', together: true, fill: { energy: .3, fun: .2 } }],
     sofa: [{ name: 'SIT', icon: 'seat', dur: 10, how: 'sit', fill: { energy: .08, fun: .05 } }, { name: 'WATCH', sub: 'A SHOW', icon: 'tv', dur: 20, how: 'sit', tv: true, fill: { fun: .3, energy: .08 } }, { name: 'CUDDLE UP', sub: 'WITH KEEGAN', icon: 'heart', dur: 18, how: 'sit', together: true, fill: { fun: .3, energy: .1 } }],
     chair: [{ name: 'SIT', icon: 'seat', dur: 10, how: 'sit', fill: { energy: .08, fun: .05 } }],
-    fridge: [{ name: 'SNACK', icon: 'snack', dur: 6, how: 'stand', fx: 'snack', fill: { hunger: .35 } }, { name: 'COOK', icon: 'pan', soon: 'Cooking comes in its own part.' }],
-    stove: [{ name: 'COOK', icon: 'pan', soon: 'Cooking comes in its own part.' }],
+    fridge: [{ name: 'SNACK', icon: 'snack', dur: 6, how: 'stand', fx: 'snack', fill: { hunger: .35 } }, { name: 'COOK', icon: 'pan', fx: 'cook', instant: true }],
+    stove: [{ name: 'COOK', icon: 'pan', fx: 'cook', instant: true }],
     easel: [{ name: 'PAINT', icon: 'brush', dur: 20, how: 'stand', fx: 'paint', fill: { fun: .35 } }, { name: 'SEASONAL', sub: 'CRAFT', icon: 'star', dur: 20, how: 'stand', fx: 'craft', fill: { fun: .35 } }],
     tub: [{ name: 'BATH', icon: 'bath', dur: 25, how: 'tub', fx: 'bath', fill: { energy: .25, fun: .2 } }],
-    bookshelf: [{ name: 'READ', icon: 'book', dur: 15, how: 'stand', fx: 'read', fill: { fun: .25 } }],
-    desk: [{ name: 'FIND A GIG', icon: 'star', soon: 'Gigs come in their own part.' }, { name: 'VIDEO-CALL', sub: 'MOM', icon: 'chat', soon: 'Calls home come with idle life.' }],
-    wardrobe: [{ name: 'CHANGE', sub: 'OUTFIT', icon: 'heart', soon: 'Style comes in its own part.' }],
+    bookshelf: [{ name: 'READ', icon: 'book', dur: 15, how: 'stand', fx: 'read', fill: { fun: .25 } }, { name: 'MEMORY', sub: 'BOOK', icon: 'book', fx: 'book', instant: true }],
+    desk: [{ name: 'FIND A GIG', icon: 'star', fx: 'gig', instant: true }, { name: 'VIDEO-CALL', sub: 'MOM', icon: 'chat', soon: 'Calls home come with idle life.' }],
+    wardrobe: [{ name: 'CHANGE', sub: 'OUTFIT', icon: 'heart', fx: 'style', instant: true }],   // the Style screen (spec 002; style.js)
     lamp: [{ name: 'LIGHT', sub: 'ON / OFF', icon: 'lamp', dur: 1, how: 'stand', fx: 'lamp' }],
     tv: [{ name: 'WATCH', sub: 'A SHOW', icon: 'tv', dur: 20, how: 'stand', tv: true, fill: { fun: .3 } }],
     cat: [{ name: 'PET', icon: 'heart', dur: 4, how: 'stand', fx: 'pet', fill: { fun: .1 } }, { name: 'TREAT', icon: 'treat', dur: 5, how: 'stand', fx: 'treat', fill: { fun: .08 } }, { name: 'PLAY', icon: 'star', dur: 10, how: 'stand', fx: 'play', fill: { fun: .25 } }],
     keegan: [{ name: 'CHAT', icon: 'chat', dur: 10, how: 'stand', fx: 'chat', fill: { fun: .2 }, both: true }, { name: 'HUG', icon: 'heart', dur: 3, how: 'stand', fx: 'hug', fill: { fun: .12, energy: .1 }, both: true, pool: 'hugs' },
       { name: 'KISS', icon: 'heart', dur: 2.5, how: 'stand', fx: 'kiss', fill: { fun: .3 }, both: true, pool: 'kisses' }, { name: 'CUDDLE UP', icon: 'seat', dur: 18, how: 'sit', together: true, with: 'sofa', fill: { fun: .3, energy: .1 } },
       { name: 'PLAY', sub: 'A GAME', icon: 'tv', dur: 20, how: 'sit', together: true, with: 'sofa', tv: true, fill: { fun: .4 } }, { name: 'GO TO BED', icon: 'z', dur: 30, how: 'lie', together: true, with: 'bed', sleep: true, fill: { energy: 1 } },
-      { name: 'COOK', sub: 'TOGETHER', icon: 'pan', soon: 'Cooking together comes with the Cooking screen.' }, { name: 'WIND DOWN', sub: 'TOGETHER', icon: 'star', soon: 'Winding down comes with its own pieces.' }],
+      { name: 'COOK', sub: 'TOGETHER', icon: 'pan', fx: 'cook', instant: true, both: true }, { name: 'WIND DOWN', sub: 'TOGETHER', icon: 'star', soon: 'Winding down comes with its own pieces.' }],
     bowl: [{ name: 'FILL', sub: 'THE BOWL', icon: 'treat', dur: 4, how: 'stand', fx: 'fill' }],
     litter: [{ name: 'SCOOP', icon: 'star', dur: 6, how: 'stand', fx: 'scoop' }],
     sarah: [{ name: 'CHARGE', sub: 'HER PHONE', icon: 'lamp', fx: 'charge', instant: true }],
@@ -369,7 +373,12 @@
     return null;
   };
   SS.actionsFor = function (G, target) {
-    if (target.agent) { if (target.agent.kind === 'cat') return ACTIONS.cat; if (target.agent.who === 'keegan') return ACTIONS.keegan; return SS.phoneOf(G) < .99 && !G.charging && !G.hunt ? ACTIONS.sarah : null; }
+    // Style for either of them, and Ralph's bowtie (spec 002, parts A and B)
+    if (target.agent) {
+      if (target.agent.kind === 'cat') return target.agent.who === 'ralph' ? ACTIONS.cat.concat([{ name: 'BOWTIE', sub: 'ON / OFF', icon: 'heart', fx: 'bow', instant: true }]) : ACTIONS.cat;
+      if (target.agent.who === 'keegan') return ACTIONS.keegan.concat([{ name: 'STYLE', sub: 'HIS OUTFIT', icon: 'heart', fx: 'style', who: 'keegan', instant: true }]);
+      return (SS.phoneOf(G) < .99 && !G.charging && !G.hunt ? ACTIONS.sarah : []).concat([{ name: 'STYLE', sub: 'HER OUTFIT', icon: 'heart', fx: 'style', who: 'sarah', instant: true }]);
+    }
     if (target.door) return ACTIONS.backdoor;
     var d = G.W.def(target.piece), own = d.use ? ACTIONS[d.use] : null;
     if (target.piece.dress && d.use !== 'gift') return [{ name: 'KEEP IT', icon: 'heart', fx: 'keep', instant: true }].concat(own || []);   // day dressing she can keep (spec 009)
@@ -459,7 +468,7 @@
     if (a.tv) { var tv = W.pieces.filter(function (p) { return W.def(p).use === 'tv' && W.floorOf(p) === s.f; })[0]; if (tv) { tv.lit = true; A.tv = tv; } }
     if (a.fx === 'paint' || a.fx === 'craft') { tg.piece.work = true; }
     if (a.fx === 'bath') { // Louie may hop up on the tub edge (bible, Louie)
-      var L = G.cats.louie; if (L.f === s.f && Math.random() < .7) { getUp(W, L); L.held = true; var ut = W.useTiles(tg.piece); if (ut[1]) walkTo(W, L, function (f, x, y) { return f === s.f && x === ut[1][0] && y === ut[1][1]; }); L.arrive = function () { L.pose = 'sit'; L.z = 14; L.bubble = { icon: 'heart', until: performance.now() + 2500 }; }; A.louie = L; }
+      var L = G.cats.louie; if (L.f === s.f && Math.random() < .7) { getUp(W, L); L.held = true; var ut = W.useTiles(tg.piece); if (ut[1]) walkTo(W, L, function (f, x, y) { return f === s.f && x === ut[1][0] && y === ut[1][1]; }); L.arrive = function () { L.pose = 'sit'; L.z = 14; SS.moment(G, 'louie-tub', { f: L.f, x: L.x, y: L.y }); L.bubble = { icon: 'heart', until: performance.now() + 2500 }; }; A.louie = L; }
     }
     if (a.fx === 'chat' || a.fx === 'hug' || a.fx === 'kiss') { var K = G.people.keegan; A.keegan = A.keegan || { seat: K.on, tile: K.onTile }; getUp(W, K); var kx = s.x - K.x, ky = s.y - K.y; if (Math.abs(kx) + Math.abs(ky) > .01) { K.flip = (kx - ky) < 0; K.back = (kx + ky) < 0; } else { K.flip = !s.flip; K.back = !s.back; } }
     if (a.fx === 'pet' || a.fx === 'treat' || a.fx === 'play') { var cat = tg.agent; getUp(W, cat); cat.flip = !s.flip; }
@@ -514,7 +523,16 @@
     if (a.fx === 'treat') SS.fillCats(G, 'hunger', .2, tg.agent.who);
     if (a.fx === 'fill') { SS.fillCats(G, 'hunger', 1); [G.cats.louie, G.cats.ralph].forEach(function (cat) { cat.bubble = { icon: 'heart', until: performance.now() + 2500 }; cat.wait = Math.min(cat.wait, .5); }); G.catFull = true; G.version++; }
     if (a.fx === 'open') SS.openGift(G, tg.piece);
-    if (a.fx === 'eat') { W.remove(tg.piece); G.changed(true); }
+    if (a.fx === 'eat') { W.remove(tg.piece); SS.fillNeeds(G, 'keegan', { hunger: .6 }, 1); G.changed(true); }   // a meal fills hunger for both of them (spec 006, part E)
+    // memory book moments (spec 007, part A; the chapters The cats and The two of us)
+    var h = SS.now().getHours(), cat = tg.agent && tg.agent.kind === 'cat' ? tg.agent.who : null;
+    if (a.fx === 'kiss') SS.moment(G, 'kiss');
+    if (a.name === 'CUDDLE UP') SS.moment(G, 'cuddle');
+    if (a.together && a.name === 'PLAY') SS.moment(G, 'game-night');
+    if (a.together && (a.name === 'CUDDLE UP' || a.name === 'PLAY' || a.tv) && (h >= 18 || h < 3)) SS.moment(G, 'cozy-night');
+    if (a.name === 'LIE IN' && h >= 6 && h < 11) SS.moment(G, 'slow-morning');
+    if (a.fx === 'play' && cat === 'ralph') SS.moment(G, 'wand');
+    if (a.fx === 'treat' && cat === 'louie') SS.moment(G, 'louie-chats');
     if (a.fx === 'scoop') { SS.fillCats(G, 'litter', 1); G.litterLow = false; G.version++; }
   }
   // a finished painting or craft: from a pool that doesn't repeat until each has been made (studio-bible/play.md); it goes in

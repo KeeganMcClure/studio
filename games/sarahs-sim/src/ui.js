@@ -81,10 +81,14 @@
   // ---------- tray ----------
   function modeTabs(G, y, right) {
     ['HOME', 'STYLE', 'BUILD'].forEach(function (s, i) {
-      var tx = 6 + i * 52, on = i === 0;
+      var tx = 6 + i * 52, on = G.build.on ? i === 2 : i === 0;
       R(tx, y + 4, 48, 12, on ? P.rose : P.trayEdge); if (on) R(tx, y + 4, 48, 1, P.roseHi);
       txt(s, tx + 24, y + 6, on ? '#fff' : P.ink, 8, 'center');
-      hit(G, tx, y + 2, 48, 16, function () { if (i === 0) G.toggleTray(); else G.toast(s + ' IS COMING SOON', 1600, i === 1 ? 'Outfits come in their own part.' : 'Building comes in its own part.'); });
+      hit(G, tx, y + 2, 48, 16, function () {
+        if (i === 0) { if (G.build.on) SS.leaveBuild(G); else G.toggleTray(); }
+        else if (i === 2) { if (!G.build.on) SS.enterBuild(G); }   // the Build tab (spec 004; build.js)
+        else G.toast(s + ' IS COMING SOON', 1600, 'Outfits come in their own part.');
+      });
     });
     if (right) txt(right, G.W0 - 6, y + 7, P.soft, 6, 'right');
   }
@@ -94,6 +98,7 @@
     hit(G, 0, y, W, h, function () {}, { block: true });
     if (st === 'closed') { modeTabs(G, y, G.mode === 'life' ? 'TAP TO WALK' : 'HOME: CATALOG'); return y; }
     if (st === 'catalog') return catalogTray(G, W, H, y), y;
+    if (st === 'build') return SS.drawBuildTray(G, W, H, y, modeTabs), y;
     if (st === 'piece') return pieceTray(G, W, H, y), y;
     return paintTray(G, W, H, y), y;
   };
@@ -147,7 +152,9 @@
       it.def.swatches.slice(0, 4).forEach(function (s, k) { var base = s[it.def.parts[0] ? it.def.parts[0][0] : 'x'] || '#c88d5a'; R(sx + 34 + (k % 2) * 9, sy + 5 + Math.floor(k / 2) * 9, 7, 7, '#3b2430'); R(sx + 35 + (k % 2) * 9, sy + 6 + Math.floor(k / 2) * 9, 5, 5, base); });
       if (it.season) { R(sx + 1, sy + 1, 38, 7, P.rose); txt(it.season, sx + 20, sy + 2, '#fff', 4, 'center'); }
       if (it.away) { R(sx, sy, 55, 27, 'rgba(251,238,221,.7)'); R(sx + 1, sy + 9, 53, 9, P.trayEdge); txt('BACK IN', sx + 27, sy + 10, P.ink, 4, 'center'); txt('DECEMBER', sx + 27, sy + 14, P.ink, 4, 'center'); }
-      if (it.stored) { R(sx + 33, sy + 19, 20, 7, P.sage[1]); txt('×' + it.stored, sx + 43, sy + 20, '#fff', 5, 'center'); }
+      if (it.stored && !G.gig) { R(sx + 33, sy + 19, 20, 7, P.sage[1]); txt('×' + it.stored, sx + 43, sy + 20, '#fff', 5, 'center'); }
+      var tag = !it.away && SS.cardTag(G, it);   // its price in Life, FREE during a gig (spec 006, part F)
+      if (tag) { var tw2 = SS.tw(tag.text, 4) + (tag.coin ? 8 : 4); R(sx + 2, sy + 19, tw2, 7, tag.bg); if (tag.coin) { R(sx + 3, sy + 20, 5, 5, '#e7bb4f'); R(sx + 4, sy + 21, 3, 3, '#ffd56b'); } txt(tag.text, sx + (tag.coin ? 10 : 4), sy + 21, tag.col, 4); }
       if (focused) { c.strokeStyle = P.rose; c.lineWidth = 2; c.strokeRect(sx + 1, sy + 1, 53, 25); c.lineWidth = 1; }
       hit(G, sx, sy, 55, 27, function () { G.takeCard(it); }, { card: it });
     });
@@ -160,6 +167,13 @@
     if (G.hasProps(d)) { // the Props switch (spec 001, part C, Props)
       var on = p.props !== false; SS.btn(W - 66, y + 4, 60, on ? 'PROPS ON' : 'PROPS OFF', on, 12, 5);
       hit(G, W - 66, y + 2, 60, 16, function () { G.snapshot(); p.props = !on; G.changed(true); });
+    }
+    var bx2 = W - (G.hasProps(d) ? 112 : 50);
+    if ((d.use === 'stove' || d.use === 'fridge') && !G.gig && !G.away) { // cook for fun, in any mode (spec 006, part E: Sandbox too)
+      SS.btn(bx2, y + 4, 44, 'COOK', false, 12, 5); hit(G, bx2, y + 2, 44, 16, function () { G.deselect(); SS.openCooking(G); }); bx2 -= 50;
+    }
+    if (G.mode === 'life' && p.paid && !G.gig) { // sell it back for every coin she paid (spec 006, part F)
+      SS.btn(bx2, y + 4, 44, 'SELL', false, 12, 5); hit(G, bx2, y + 2, 44, 16, function () { SS.sellBack(G, p); });
     }
     txt(d.name.toUpperCase(), 6, y + 22, P.ink, 7);
     var part0 = d.parts[0] && d.parts[0][0];
@@ -261,6 +275,16 @@
   SS.MENU_ROWS = ROWS;
   SS.drawMenu = function (G, W, H) {
     var c = G.c, m = G.menu;
+    if (m.kind === 'book') return SS.drawBook(G, W, H);   // the memory book (book.js)
+    if (m.kind === 'note') return SS.drawNote(G, W, H);
+    if (m.kind === 'fav') return SS.drawFavorites(G, W, H);   // favorites (keep.js)
+    if (m.kind === 'cook') return SS.drawCooking(G, W, H);   // the Cooking screen (cooking.js)
+    if (m.kind === 'gig') return SS.drawGigOffer(G, W, H);   // gigs (gig.js)
+    if (m.kind === 'gigdone') return SS.drawGigDone(G, W, H);
+    if (m.kind === 'style') return SS.drawStyle(G, W, H);   // the Style screen (style.js)
+    if (m.kind === 'creator') return SS.drawCreator(G, W, H);   // the Creator (creator.js)
+    if (m.kind === 'people') return SS.drawPeople(G, W, H);
+    if (m.kind === 'visit') return SS.drawVisit(G, W, H);   // a visitor's chat in the front hall (visitors.js)
     R(0, 0, W, H, 'rgba(34,18,28,.62)');   // the home dims and holds still behind the menu
     hit(G, 0, 0, W, H, function () { G.closeMenu(); });
     if (m.kind === 'start') {
@@ -278,19 +302,53 @@
       var fy = y + 23 + ROWS.length * rh + 3, ago = Math.round((Date.now() - (SS.lastSaved || Date.now())) / 60000);
       SS.check(x + 10, fy + 3, P.sage[1]); txt(ago < 1 ? 'SAVED JUST NOW' : 'SAVED ' + ago + ' MIN AGO', x + 24, fy + 3, P.soft, 6);
     } else if (m.kind === 'homes') {
-      var w2 = 200, h2 = 22 + 46 + 26 + 18, x2 = (W - w2) / 2, y2 = Math.max(4, Math.round((H - h2) / 2) - 6);
+      // every home in this save (build.js): the Philly home, the street's three empty lots, and Sandbox's new lots; then New lot
+      var list = SS.homeList(G), rows2 = list.length + (G.mode === 'sandbox' ? 1 : 0), per = H < 300 ? 5 : 6, top = Math.floor(m.cur / per) * per;
+      if (m.newLot) return drawNewLot(G, W, H, m);
+      var shown = list.slice(top, top + per), w2 = 204, rh2 = 30, h2 = 24 + shown.length * rh2 + (G.mode === 'sandbox' && top + per >= list.length ? 22 : 0) + 22, x2 = (W - w2) / 2, y2 = Math.max(4, Math.round((H - h2) / 2) - 6);
       SS.frame(x2, y2, w2, h2); SS.header(x2, y2, w2, 'HOMES', G.mode === 'life' ? 'LIFE' : 'SANDBOX');
       hit(G, x2, y2, w2, h2, function () {}, { block: true });
-      var cx = x2 + 6, cy = y2 + 24;
-      R(cx, cy, w2 - 12, 42, P.cell); R(cx, cy + 41, w2 - 12, 1, P.trayEdge);
-      miniHome(c, cx + 6, cy + 5, G.t);
-      txt(G.W.home.name, cx + 46, cy + 8, P.ink, 7); txt(G.W.home.lotName, cx + 46, cy + 20, P.soft, 6);
-      R(cx + 46, cy + 28, 70, 10, P.sage[1]); R(cx + 46, cy + 37, 70, 1, P.sage[2]); txt('YOU ARE HERE', cx + 81, cy + 30, '#fff', 5, 'center');
-      if (G.mode === 'sandbox') { SS.addButton(x2 + 6, y2 + 72, w2 - 12, 'NEW LOT'); hit(G, x2 + 6, y2 + 72, w2 - 12, 18, function () { G.toast('NEW LOT IS COMING SOON', 1800, 'Building comes in its own part.'); }); }
+      shown.forEach(function (h, j) {
+        var i = top + j, cx = x2 + 6, cy = y2 + 23 + j * rh2, on = m.cur === i, here = h.id === G.save.home;
+        R(cx, cy, w2 - 12, rh2 - 3, on ? P.blush : P.cell); R(cx, cy + rh2 - 4, w2 - 12, 1, P.trayEdge);
+        if (on) { R(cx, cy, 2, rh2 - 3, P.rose); }
+        if (h.id === 'philly') miniHome(c, cx + 5, cy + 2, G.t, .7); else miniLot(c, cx + 5, cy + 3, h.lot, h.rooms);
+        txt(h.id === 'philly' ? h.name : h.rooms ? h.name : (h.street ? 'EMPTY ' : 'NEW ') + h.lotName, cx + 34, cy + 5, P.ink, 6);
+        txt(h.lot + ' × ' + h.lot + (h.street ? ' · ON THE STREET' : h.id === 'philly' ? ' · ' + h.lotName : ''), cx + 34, cy + 15, P.soft, 5);
+        if (here) { R(cx + w2 - 62, cy + 4, 46, 9, P.sage[1]); txt('HERE', cx + w2 - 39, cy + 6, '#fff', 5, 'center'); }
+        else SS.chev(cx + w2 - 22, cy + 9, on ? P.rose : P.soft);
+        hit(G, cx, cy, w2 - 12, rh2 - 3, function () { m.cur = i; G.homePick(i); });
+      });
+      var by2 = y2 + 23 + shown.length * rh2;
+      if (G.mode === 'sandbox' && top + per >= list.length) { var onN = m.cur === list.length; SS.addButton(x2 + 6, by2, w2 - 12, 'NEW LOT'); if (onN) R(x2 + 6, by2 + 17, w2 - 12, 1, P.rose); hit(G, x2 + 6, by2, w2 - 12, 18, function () { m.cur = list.length; G.homePick(list.length); }); by2 += 22; }
+      void rows2;
       SS.backHint(x2 + 8, y2 + h2 - 16); hit(G, x2 + 4, y2 + h2 - 18, 60, 16, function () { G.menu = { kind: 'start', cur: 2 }; });
     }
   };
-  function miniHome(c, x, y, t) { // the brick rowhouse from the title, 32 x 32 (start-menu-v1)
+  // New lot: pick a size (spec 004, part A)
+  function drawNewLot(G, W, H, m) {
+    var w = 204, h = 24 + 3 * 30 + 22, x = (W - w) / 2, y = Math.max(4, Math.round((H - h) / 2) - 6);
+    SS.frame(x, y, w, h); SS.header(x, y, w, 'NEW LOT', 'PICK A SIZE');
+    hit(G, x, y, w, h, function () {}, { block: true });
+    [16, 24, 32].forEach(function (n, i) {
+      var cx = x + 6, cy = y + 23 + i * 30, on = m.lotCur === i;
+      R(cx, cy, w - 12, 27, on ? P.blush : P.cell); R(cx, cy + 26, w - 12, 1, P.trayEdge); if (on) R(cx, cy, 2, 27, P.rose);
+      miniLot(G.c, cx + 5, cy + 3, n, 0);
+      txt(SS.LOTS[n], cx + 34, cy + 5, P.ink, 6); txt(n + ' × ' + n + ' TILES', cx + 34, cy + 15, P.soft, 5);
+      hit(G, cx, cy, w - 12, 27, function () { m.lotCur = i; SS.newLot(G, n); G.menu = null; });
+    });
+    SS.backHint(x + 8, y + h - 16); hit(G, x + 4, y + h - 18, 60, 16, function () { m.newLot = false; });
+  }
+  // a tiny lot: grass, scaled to its size, with a little house when something's built
+  function miniLot(c, x, y, n, rooms) {
+    var s = Math.round(8 + (n - 16) / 4);   // 8, 10 or 12 px
+    var cx = x + 12, cy = y + 11 - s / 2;
+    c.fillStyle = '#5e8f52'; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + s * 1.3, cy + s * .65); c.lineTo(cx, cy + s * 1.3); c.lineTo(cx - s * 1.3, cy + s * .65); c.closePath(); c.fill();
+    c.fillStyle = '#8bbd73'; c.beginPath(); c.moveTo(cx, cy - 1); c.lineTo(cx + s * 1.3, cy + s * .65 - 1); c.lineTo(cx, cy + s * 1.3 - 1); c.lineTo(cx - s * 1.3, cy + s * .65 - 1); c.closePath(); c.fill();
+    if (rooms) { R(cx - 4, cy + s * .65 - 7, 8, 6, '#ecc1b2'); R(cx - 5, cy + s * .65 - 9, 10, 2, '#b9584a'); }
+  }
+  function miniHome(c, x, y, t, k) { // the brick rowhouse from the title, 32 x 32 (start-menu-v1); k scales it down
+    if (k) { c.save(); c.translate(x, y); c.scale(k, k); miniHome(c, 0, 0, t); c.restore(); return; }
     R(x - 2, y - 2, 36, 36, '#3b2430'); R(x - 1, y - 1, 34, 34, '#2f3355');
     for (var i = 0; i < 6; i++) R(x + (i * 11 + t) % 32, y + (i * 7 + t * 2) % 20, 1, 1, '#fff');
     R(x + 4, y + 8, 24, 24, '#a9473f'); for (var j = 0; j < 6; j++) R(x + 4, y + 11 + j * 4, 24, 1, '#8f3b35');

@@ -2,6 +2,495 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 28, 2026: visitors, with Dot's story (Dev)
+
+Spec 008, part A, with part B for one neighbor (build order step 2), from `visitor-v1` (approved Nov 25, per the bible's screen list). Playtest gate: Keegan plays this before the other three stories and the street.
+
+### What was built
+
+- **The knock (Life):** 2 to 5 minutes after she opens the game, a visitor may knock.
+  - A bubble with their face shows over the front door, saying KNOCK KNOCK, with a card: Let in or Not now.
+  - Not now is fine; they come another day. There's at most one knock each time she opens the game.
+- **Visitor chat:** the front hall from `visitor-v1`, the door open onto the street, with Sarah and Dot drawn large.
+  - The dialog box has Dot's name tab and her friendship hearts.
+  - A tap or A turns the lines, two at a time. Then comes her ask, with "I'd love to!" picked and "Maybe another time".
+- **Dot's story,** four visits, one a day at most. The beats are the bible's:
+  1. a cheerful arrangement for her table;
+  2. a window box (her potting bench unlocks);
+  3. an outfit for her granddaughter's train trip, on the Style screen, with a banner of her likes (warm, comfy shoes, bright) and Hand in;
+  4. her dusty sunroom into a guest room, one big gig.
+- **Pay and the set:**
+  - Story gigs pay 250 and the sunroom pays 600, judged in hearts like any gig.
+  - When the sunroom's done, the rest of her **vintage florist set** unlocks: the flower cart, the wicker chair and the big fern.
+  - In Sandbox the story plays the same but pays nothing, and the whole set is always there.
+- **After the story** she keeps visiting with an ordinary chat and one of her gigs. Chat lines come from her pool and don't repeat until it's used up.
+- **Friendship** grows with every chat and gig (more with more hearts) and never goes down.
+  - At 3 hearts she brings flowers from her garden ("A visitor brings a gift").
+  - At 5 she gives her favorite plant.
+  - Ordinary gigs now grow friendship by their hearts too.
+- **Memory book:** First visitor, First gig done, A neighbor's home redone, First friend's story finished, A visitor brings a gift.
+
+### What's left
+
+- **Christmas parties** (spec 009, part C) aren't built yet. Guests mingling in the home need map sprites for them, and only Dot is drawn, at the hall's size. Marco and Jules, Theo and Priya need drawings, and made people need part F of outfits (their map sprites).
+- The other three neighbors' stories, the street (part C, from `neighborhood-v1`), real friends and family (part D) and the rest of part E.
+- Visiting Dot's own home to say hi comes with the street. For now the sunroom redo opens straight from her ask.
+
+### Checks
+
+- `npm run check` passes, with a new visitors section:
+  - the knock waits 2 to 5 minutes and comes once;
+  - Let in opens the chat by touch, and the chat ends on her ask;
+  - all four story gigs play and pay, and the set unlocks in two steps;
+  - the moments fire, the chat pool doesn't repeat, and friendship only grows;
+  - ordinary visits offer her gig, and Sandbox pays nothing for the story.
+
+### Changes from the spec
+
+- The bible lists `visitor-v1` as the approved Visitor chat mockup, so I built from it; the spec's "To draw" row is out of date.
+- The set's first piece unlocks when visit 2's gig is handed in, not when the visit starts.
+- Dot's 3-heart gift and 5-heart favorite are a vase of flowers and a snake plant from the catalog, until her own pieces are drawn.
+
+## Nov 28, 2026: the rest of the year's holidays (Dev)
+
+Spec 009, build order step 3: the other holidays in calendar order, as content and day dressing, with no new screens.
+
+### What was built
+
+- **The calendar** for every holiday, from the real date. Each has a season, when its pieces are on sale, and a day:
+  - New Year's Eve: Dec 26 to Jan 1;
+  - Valentine's Day: Feb 1 to 14;
+  - Keegan's birthday: Mar 10 to 17;
+  - Spring's first warm day: Mar 20 into April;
+  - the Fourth of July: Jun 27 to Jul 4;
+  - your anniversary: Jul 3 to 10;
+  - Sarah's birthday: Aug 24 to 31;
+  - Halloween: all of October;
+  - Thanksgiving: the week of the fourth Thursday.
+- **18 new Holiday tab pieces**, two for each, drawn in code with swatches:
+  - New Year's Eve: party streamers and sparkling cider;
+  - Valentine's Day: a heart garland and a rose bouquet;
+  - Keegan's birthday: green balloons and a shamrock pot;
+  - spring: a tulip pot and a sun catcher;
+  - the Fourth: little flags and star lights;
+  - the anniversary: a candle trio and a heart frame;
+  - Sarah's birthday: a balloon bunch and a birthday cake;
+  - Halloween: a jack-o'-lantern and paper bats;
+  - Thanksgiving: a harvest centerpiece and an autumn leaf garland.
+- **In Life:** they show "This season" in season. Out of season, pieces she hasn't got say the right month ("Back in February"). In Sandbox they're always there.
+- **Day dressing** on each day, in Life: that holiday's pieces go on a wall, a table or the floor, for that day only, with a card saying what's special.
+  - Candles, lanterns and lights come on lit.
+  - Tapping one and choosing Keep It makes it hers, free, in her catalog. The rest go the next day.
+- **Birthdays:** the cats wear party hats, pink on Sarah's and St. Patrick's green on Keegan's.
+- **The Fourth of July:** fireworks burst over the street in every window after dark. The memory book's Fourth moment now waits until she's seen them.
+
+### What's left
+
+- Parties and the Party card (part C) come with Visitors (spec 008).
+- These need parts not built yet:
+  - trick-or-treaters and costumes, which come with the Style Holiday tab;
+  - the grill in the yard and the seed packet, which come with the garden;
+  - the midnight countdown kiss and Keegan's notes on these days. The notes come with memory book part C, after Keegan's playtest.
+- The anniversary and Thanksgiving dinners can be cooked with Cook together; there's no special dish yet.
+
+### Checks
+
+- `npm run check` passes, with a new section that sets each of the nine dates:
+  - the home is dressed, and the dressing fits where it is;
+  - the pieces are in season, and the party hats show on the birthdays;
+  - dressing goes away the next day unless kept;
+  - out of season shows the right month, and Sandbox shows everything;
+  - the fireworks show and the Fourth moment fires.
+
+### Changes from the spec
+
+- Spring's season runs from Mar 20 through April, so its pieces are on sale for more than one day.
+- The anniversary's season is the week before it, like the birthdays.
+
+## Nov 28, 2026: the Creator (Dev)
+
+Spec 003, parts A and B (build order step 1: half the shapes), from `creator-v1`. Playtest gate: Keegan plays this before parts C and D.
+
+### What was built
+
+- **People** in the Start menu now lists Sarah, Keegan and everyone she's made (each opens Style), with **New person** at the bottom.
+- **The Creator screen**, as in `creator-v1`: the mirror view on top, nine tabs (age, face, eyes, nose, lips, hair, body, skin, more), then shape cards, a color row, and Random, Undo and Done.
+  - The person spins with the arrows, a swipe or Select. On the face, eyes, nose and lips tabs the view zooms in on the head.
+  - Each shape card shows the person with that choice, so she sees it before she picks it.
+- **The starting lists** (half the shapes, as the build order says):
+  - 4 face shapes;
+  - 5 eye shapes with 12 eye colors;
+  - 4 noses;
+  - 4 lip shapes with 10 lip colors;
+  - 12 hairstyles with 16 natural shades. The new styles are bald, long straight, afro, two braids, a high bun and locs, joining Sarah's four, the buzz cut and the crop;
+  - 4 builds (slim, broad, curvy, sturdy);
+  - 16 skin tones, each with its own warm shading and blush.
+- **Random** rolls a whole new person from hand-made sets that go together: a skin tone with hair, eye and lip colors that suit it. Holding it down rolls only the open tab.
+- **Undo** steps back through the last 20 changes.
+- **Done** asks for a name, then opens Style so they can get dressed. Made people can wear every piece and any hair color.
+- Each mode keeps its own people.
+- Keegan and Sarah are never opened in the Creator; People opens Style for them.
+- The new hairstyles and hair colors are in Style too, for made people and for Keegan.
+
+### What's left
+
+- Part C (sliders and switches) and part D (ages, gender and pronouns, and the extras). The Age and More tabs say they come next.
+- The other half of the shapes.
+- Part E (moving made people into a built home, editing them again, the Friends moment). Spec 004's homes are ready for it.
+
+### Checks
+
+- `npm run check` passes, with a new Creator section at 375 × 667 and 320 × 480:
+  - New person opens the Creator, all nine tabs fit, and the person spins;
+  - every shape and color changes the person;
+  - Undo keeps 20 steps, and Random rolls a new person or just one tab;
+  - Done names the person and opens Style, and made people are kept per mode.
+
+### Changes from the spec
+
+- The mockup's NEXT button is Done, as the spec says.
+- Builds are drawn by widening the body from the middle, which keeps every pixel crisp. Each age's own body (part D) is drawn separately later.
+
+## Nov 28, 2026: outfits, the Style screen (Dev)
+
+Spec 002, parts A and B (build order step 1: the first 10 pieces), from `style-v1`. Playtest gate: Keegan plays this before parts C and D.
+
+### What was built
+
+- **The Style screen**, as in `style-v1`: the person stands big in front of the standing mirror, with the wardrobe tray below. They breathe and blink.
+  - The arrows spin them a quarter turn at a time: front, side, back, other side. So do a swipe across them and Select.
+  - The name at the top switches between Sarah and Keegan.
+  - The HOME tab (or B) goes back to the home.
+- **Getting there:**
+  - tap Sarah or Keegan while decorating;
+  - in Life, their bubbles have Style;
+  - the wardrobe, dresser and mirror have Change outfit;
+  - the Start menu's People row opens Style.
+- **The wardrobe tray:** the 8 tabs (hair, tops, bottoms, dresses, shoes, extras, Ours, Holiday). Each card shows the piece, its swatch dots, and a heart if it's from their real clothes.
+  - Tap a card (or drag it onto the person) to put it on. Tap a worn card to take it off. A new piece gets a small happy hop.
+  - Buttons: up and down change the tab, left and right move along the cards, A puts on or takes off.
+- **The first 10 pieces:**
+  - tops: the ORANGE ROCKS tee (with "ORANGE ROCKS" on the front and "AND SO DO I" on the back), the green tartan flannel and the lilac hoodie;
+  - coat: the long wool coat;
+  - bottoms: straight blue jeans and the pleated skirt;
+  - dress: the pink satin slip dress;
+  - shoes: tan suede boots and canvas high-tops;
+  - extra: the black cap with the green underbrim.
+- **Layers:**
+  - a coat goes over a top or a dress;
+  - a dress takes off the top and bottom, and a top or bottom takes off the dress;
+  - the cap sits over the hair.
+- **Hair:**
+  - Sarah's four styles (pinned up, loose bob, long curls, ponytail), with no color row: her hair is always ginger.
+  - Keegan has his buzz cut and a short crop, in 6 colors.
+- **What they wear** is kept in each mode's save. They start as drawn: Sarah in the ORANGE ROCKS tee, jeans and boots; Keegan in his flannel, jeans and high-tops.
+- **Life:** pieces they don't have yet show their price (50 to 150); a tap buys it and puts it on. Sandbox is free.
+- **Ralph's bowtie:** tapping Ralph while decorating (or Bowtie in his Life bubble) asks Bowtie on or off, and he wears it on the map.
+
+### What's left
+
+- Parts C and D (swatches, paint, the six patterns and her own prints), then the rest of the 60 pieces.
+- Part E (outfit favorites and the Style camera). The heart and camera chips say they come next.
+- Part F: the map sprites don't wear the new pieces yet; they keep their drawn outfits until then.
+
+### Checks
+
+- `npm run check` passes, with a new outfits section at 375 × 667 and 320 × 480:
+  - Style opens from a tap on Sarah, the wardrobe, Keegan's bubble and People;
+  - all four turns fit;
+  - every piece goes on and comes off both of them, by tap and by drag, and a swipe spins them;
+  - the layers follow the table, and Sarah's hair can't be recolored;
+  - outfits are kept, Life prices work, and the bowtie goes on.
+
+### Changes from the spec
+
+- `style-v1` draws the front and back only. I drew the two side views to match.
+- The People row opens Style on Sarah, and her name switches to Keegan, rather than a separate list first.
+- Keegan's hairstyles and colors are a small starting set until the Creator's full list (spec 003).
+
+## Nov 28, 2026: the Build screen, lots, rooms and walls (Dev)
+
+Spec 004, parts A and B, from `build-v1`. Playtest gate: Keegan plays this before parts C and D.
+
+### What was built
+
+- **Homes she can change:** each save now keeps its own copy of a home's rooms and walls once she builds on it. The save version goes from 1 to 2; older saves are backed up first, then upgraded, and open exactly as before.
+- **Lots:** small 16 × 16, medium 24 × 24 and large 32 × 32, each grass with a path to the front.
+  - Start → Homes lists the Philly home and the street's three empty lots (one of each size), each with its size.
+  - In Sandbox, Homes also has **New lot**, where she picks a size and starts fresh.
+  - Going to another home leaves everyone at home just as they were; coming back picks up where they left off. If she closes the game on a lot, it opens there again.
+- **The Build tab** (Home / Style / Build in the tray):
+  - the 8 tools as icons, the picked one named with a hint, and cards for it;
+  - walls switch to cut away while she builds, and the lot's name and size show under the top bar, as in `build-v1`.
+- **Room tool:** drag a box on the floor. A ghost room with walls follows her finger, with a size tag ("5 × 6"), a check or a cross, and in Life its price. Letting go builds four walls and a floor in the picked wall style (7 styles, Nina's wallpaper included).
+  - The smallest room is 2 × 2, and nothing goes past the lot's edge; the ghost turns rose with a cross and says why.
+  - A room against another room shares the wall between them.
+- **Wall tool:** drag a line along the tile edges. A wall across a room cuts it into two rooms, and walls that close in a space make it a room with its own floor.
+- **Picking walls:** with the room or wall tool, tap a wall to pick its whole straight stretch. The chips (or the D-pad) move it a tile at a time, and the cross erases it.
+- **Erase tool:** tap a wall to erase it, or a floor tile to take it out.
+  - Erasing the wall between two rooms opens them into one room. Erasing an outside wall leaves the room open on that side.
+- **Nothing lost:** furniture that no longer fits after a change goes to storage, with what was stacked on it. People and cats standing in the way step aside.
+- **Undo** steps back through the last 10 changes, walls and coins included.
+- **Life prices:** walls and floors 5 coins a tile, shown on the ghost before she lets go. Erasing gives back what she paid on that home. A change she can't afford isn't built. Sandbox is free.
+- **Memory book:** "First wall on an empty lot" fires the first time she builds on one.
+- **Buttons:** A starts a room box (or wall line) in the middle of the view, the D-pad stretches it, A builds and B cancels. With a wall picked, the D-pad moves it and A erases it. B leaves the Build tab.
+
+### Also fixed
+
+- Saving while a piece was lifted to move could drop it, and what was stacked on it, if the app closed right then. A code comment had swallowed that line in the coins update; it's back.
+
+### What's left
+
+- Parts C and D (doors and windows, the floor and paper tools, upper floors and the four kinds of stairs) come after Keegan's playtest. Their tools are in the row but say they come next.
+- Part E (naming a home, moving in, "A whole new home finished").
+- The street itself (spec 008). Until then, its three lots are in Homes.
+
+### Checks
+
+- `npm run check` passes, with a new Build section at 375 × 667 and 320 × 480:
+  - every lot size opens, and the 8 tools show;
+  - the D-pad slides across a large lot;
+  - rooms are built by dragging with the size tag, and the rules hold;
+  - walls cut rooms, and walls closing in a space make a room;
+  - walls are picked, moved and erased, and floor tiles are erased;
+  - undo works, nothing is lost on the Philly home, and changes are kept after reopening;
+  - Life charges and refunds.
+
+### Changes from the spec
+
+- The street's three lots are listed in Homes until the street (spec 008) is built.
+- Upper floors keep the floors the home already has. Building new floors comes with part D, though a room on floor 2 or 3 of the Philly home already has to sit over a room below.
+- Moving a wall's chips use ‹ and › for the two directions, since a wall only moves across itself.
+
+## Nov 28, 2026: Nina's wallpaper (Dev)
+
+Bible To do (Keegan, Nov 26); spec 004, part D; `mockups/papers-nina-v1`.
+
+### What was built
+
+- **Nina's wallpaper:**
+  - cream paper with small calico flowers in red, blue and pink, plus pale tan sprigs, in a loose diagonal repeat;
+  - a floral lattice border along the top, a chair rail, then dark brown wood paneling and a baseboard;
+  - it's drawn from the mockup's own code as a texture along each wall's slant, at one game pixel per pixel, continuing from one tile of wall to the next. A cut-down wall shows the paneling at its foot.
+- It's in early as a fixed paper on the **dining nook's** walls, as the To do allows. It joins the Paper tool's list when the Build screen is built.
+
+### Checks
+
+- `npm run check` passes.
+
+### Changes from the spec
+
+- "Takes the palette" (recoloring it) comes with the Paper tool.
+- The dining nook was my pick; it can move to any room.
+
+## Nov 28, 2026: coins, the shop and gigs (Dev)
+
+Spec 006, part F, from `gig-v1`.
+
+### What was built
+
+- **The shop is the catalog.** In Life, each card shows its price with a coin.
+  - Taking a card she can afford holds the piece, and setting it down buys it: the coins come off the top bar, and the first one is a memory book moment.
+  - A card she can't afford says so, with how much she has, and that gigs pay 100 to 200.
+  - Pieces in storage are already hers and place free. Her own crafts say YOURS. Holiday pieces keep their "This season" and "Back in December" labels.
+- **Selling back:** a bought piece's tray has SELL. It asks first, with the cursor on Keep, then refunds every coin she paid; anything stacked on it goes to storage. Starting pieces were never bought, so they're put away instead.
+- **Favorites in Life:** pieces she doesn't own show their total price first, with Only mine or Buy all.
+- **Sandbox** stays free, and there are still no bills, rent or running costs.
+- **Gigs:** Find a gig at the desk offers 2 or 3 gigs from the four neighbors on the gig card from `gig-v1`:
+  - who asked, with friendship hearts;
+  - what they want in one line, and where;
+  - three likes and the pay;
+  - "Pieces are lent free"; swipe or the D-pad for the others; Not now or Accept.
+  - The pool is 8 room gigs, two per neighbor, and they don't repeat until they've all been offered.
+- **Doing it:**
+  - Accept opens their own small room, empty and windowed, to decorate with the normal catalog;
+  - every piece says FREE and is lent, so her coins and her home are never touched, and her home's save stays exactly as it was;
+  - the banner (in place of the top bar) shows who it's for, the ask, the three likes ticking green as the design matches them, "2 of 3 likes matched" and HAND IN;
+  - Start asks whether to leave the gig.
+- **Judging:**
+  - 1 to 3 hearts, one per like matched (at least one: there's no wrong answer);
+  - 100, 150 or 200 coins, and +1 friendship;
+  - the card shows the design, what they say and a hint for a like they missed;
+  - Try again goes back to the room, and Done pays and brings her home as she left it.
+  - The first gig is a memory book moment.
+- **The likes:** plants, books, a comfy seat, a little table, a rug, soft light, art, soft things (fabric pieces), warm colors and cool colors.
+
+### Checks
+
+- `npm run check` has a coins-and-gigs section:
+  - cards show prices; taking holds the price, and setting down buys it with its moment;
+  - selling back asks on Keep and refunds every coin;
+  - she can't take what she can't afford, and Sandbox is free;
+  - coins are kept;
+  - Find a gig offers 2 or 3; accepting opens their empty room with free pieces, without changing her home's save;
+  - Hand in rates by likes matched and pays 100 to 200 with friendship and the moment, and Done brings her home as she left it;
+  - an empty room still pays 100.
+- New screen: `src/dist/screen-gig-375x667.png`.
+
+### Changes from the spec
+
+- **Who asks:** gigs come from the four neighbors before she's "met" them, since visits come with spec 008.
+- **Portraits:** only Dot has an approved drawing (`visitor-v1`). Marco and Jules, Theo and Priya show a soft card with their initials until they're drawn for spec 008. The Designer may want those portraits mocked up.
+- **Not yet:** outfit gigs come with Style (spec 002). A visitor bringing a gig to the door, story gigs (250) and whole homes (600) come with spec 008.
+
+## Nov 28, 2026: cooking (Dev)
+
+Spec 006, part E, from `cooking-v1`.
+
+### What was built
+
+- **Starting it:**
+  - tap the stove or the fridge and pick Cook, or tap Keegan and pick Cook together;
+  - in Sandbox, a picked stove or fridge has a COOK button on its tray.
+- **The recipe card:**
+  - one of Keegan's nine dishes, drawn on its plate or pan;
+  - what goes in, and its steps, each with how it plays (HOLD, STIR, CHOP, STACK);
+  - swipe, the arrows or the D-pad for the other dishes; COOK or BACK.
+- **The steps**, each a short one-thumb game at the counter. Keegan cooks his half beside her, and Ralph sits on the floor and stares.
+  - **Hold:** hold the pan and let go when the gauge reads Just right (A starts the heat, A again stops it).
+  - **Stir:** circle a finger round the pan three times (or tap A).
+  - **Chop:** swipe down across the board, five cuts (or A).
+  - **Stack:** tap when the swinging layer is over the plate, three layers (or A).
+  - There's no timer and no way to fail: an off step still makes the dish, and the plate gets one to three sparkles.
+  - A whole dish takes about a minute or two.
+- **The plated card:** the dish, its sparkles and "SO GOOD", COOK AGAIN or SERVE.
+  - Serve puts it on a table, and Ralph comes over.
+  - Eating it fills hunger for both of them; eating Keegan's own meals now does too.
+- **Memory book:** each dish the first time adds its Kitchen moment, and the first dish ever adds "Cooking together, first time".
+- Cooking pays no coins, and store-bought things are always in the pantry.
+
+### Checks
+
+- `npm run check` has a cooking section, at 375 × 667 and 320 × 480:
+  - Cook from the stove's bubble opens it;
+  - all nine dishes play to the end by buttons alone;
+  - each adds its moment;
+  - Serve puts it on the table, and eating fills hunger for both;
+  - the Sandbox tray has Cook.
+- New screen: `src/dist/screen-cooking-375x667.png`.
+
+### Changes from the spec
+
+- **Garden veggies:** the pantry is part of the garden (spec 005), which isn't built yet. The recipe card and the garden sparkle are ready for it (`SS.pantryHas`), and show once there's a pantry.
+- **How each step plays** comes from its words in the bible's recipe table:
+  - warm, toast, fry, sear, char, brown, crisp, cook and melt are Hold;
+  - boil, simmer, season, mix, toss, scramble and fold are Stir;
+  - slice is Chop;
+  - fill, roll, plate, layer, stack, load and "cheese on top" are Stack.
+
+## Nov 28, 2026: favorites and the camera (Dev)
+
+Spec 001, part E, from `favorites-v1` and `camera-v1`.
+
+### What was built
+
+- **Favorites** (Start menu, Favorites):
+  - a menu card with Rooms and Outfits tabs and a two-across grid; each room favorite shows a small picture of the room as saved, its name and its piece count;
+  - the last tile is **Save this room**: a banner asks her to tap a room, and it keeps every piece in that room (spot, turn, colors, props, what's stacked on it and what hangs on its walls, on the room's side), plus the room's floor and wallpaper;
+  - it gets a short name like "Cozy living room", and she can type her own when the phone asks;
+  - favorites are kept once for the whole game, in every mode, with no limit; the grid pages with the D-pad.
+- **Using a favorite:**
+  - pick it, and the menu closes;
+  - a banner shows it with Cancel, the room in the middle of the view glows, and a note says pieces that don't fit go to storage;
+  - tap any room in any mode: every piece that fits is placed, the rest go to storage, and the room takes the favorite's floor and wallpaper.
+  - Undo steps it back. A works the middle room and B cancels.
+- **The Outfits tab** says outfit favorites come with Style (spec 002).
+- **The camera** (Start menu, Camera):
+  - only the room shows: everything outside the frame is dark, with corner marks and a faint grid;
+  - she can still pinch, slide and flip the walls;
+  - the heart (or A) takes the picture.
+- **The picture:**
+  - it's clean, cut from the world itself with no tray, bar or buttons, and scaled up crisp;
+  - it goes to her phone through the share sheet (Photos or Files);
+  - a small copy goes into the memory book's Photos.
+  - It drops in as a tilted print with the home's name and the date, and a note says it's saved and added, with Share and Done.
+- **The memory book's Photos tab** now shows her photos. Tapping one lets her add it to a chapter as an extra page (not counted toward the chapter) or take it off again. The book keeps up to 60 and asks before the oldest goes.
+- **Memory book moments:** First favorite saved, First photo taken.
+- **Shared engine:** `engine/backup.js` has `saveFile(blob, name)`, the share sheet (or a download) for any file, which backups now use too.
+- **Each save can now give a room its own floor and wallpaper** (`roomLook`). The home's data is copied per save, so this never reaches the other mode. Nina's wallpaper will use the same thing.
+
+### Checks
+
+- `npm run check` has a favorites-and-camera section:
+  - Save this room keeps every piece with colors, props, turn, floor and paper, and gets a "Cozy living room" style name;
+  - it's shared by both modes;
+  - using it in another mode's bedroom places what fits and stores the rest, with matching counts;
+  - the room takes the floor and paper, kept for that save and not the other;
+  - Favorites, A and a tap on a room work by touch and buttons;
+  - the camera opens, and the picture goes in the book with the moment and no bars or buttons in it.
+- New screens: `src/dist/screen-favorites`, `screen-camera` and `screen-camera-saved-375x667.png`.
+
+### Changes from the spec
+
+- In Life, placing a favorite is free for now, like every piece in Life, until coins and the shop (spec 006, part F). Then pieces she doesn't own will show their price first.
+- The camera takes rooms. Outfits join it with Style (spec 002, part E).
+
+## Nov 28, 2026: the memory book (Dev)
+
+Spec 007, parts A and B: the moments and the book screen. Part B ends in Keegan's playtest (spec 007, build order), so parts C (Keegan's notes hidden around the home) and D (the reward pieces) come after his notes.
+
+### What was built
+
+- **The moments (part A).** All 72 moments from the bible's table, in seven chapters.
+  - Each fires once and keeps its real date.
+  - Each keeps a snapshot "recipe": the pieces, people and cats around it, the floor, the view's turn and the light. Its page redraws the scene from that, crisp, exactly as it looked, even after the room has changed.
+  - A small card slides in at the top for about 3 seconds ("MEMORY BOOK · THE TWO OF US / A kiss"). Tapping it opens that page, and it never stops play.
+  - One book is shared by Sandbox and Life, saved under its own key, and it comes along in backups.
+- **The moments that can happen now:**
+  - **The cats:**
+    - Louie naps on a newly placed piece;
+    - Louie on the tub's edge;
+    - a treat for Louie;
+    - Ralph on a toy basket;
+    - Ralph near Keegan while he cooks;
+    - Ralph takes Louie's warm spot;
+    - the feather wand with Ralph;
+    - both cats asleep at once.
+  - **The two of us:**
+    - a kiss;
+    - cuddled up on the couch;
+    - a cozy night in (a together action after 6 PM);
+    - Keegan's game night;
+    - a slow morning in bed (Lie in before 11 AM);
+    - the anniversary on Jul 10;
+    - the note under the tree, which also counts as the first note.
+  - **Holidays:**
+    - first snow;
+    - the Christmas tree trimmed (5 or more holiday or light pieces on or around it);
+    - Christmas morning, New Year's Eve, Valentine's Day, spring's first warm day, the Fourth of July and Thanksgiving;
+    - both birthdays.
+  - **Home:**
+    - first room finished: a rug, somewhere to sit, and a piece hung on every wall, on the room's side;
+    - ten rooms finished;
+    - every room in Philly redone (3 pieces placed, moved or put away in each).
+- **Still waiting on their systems:** the garden, cooking, coins, favorites, the camera, outfits, Building and visitors. Their moments fire when those parts are built. Ralph's red bowtie and the vacuum wait too.
+- **The book screen (part B), from `memory-book-v1`:**
+  - a rose cloth scrapbook with cream pages and nine tabs down the side (seven chapters, Notes and Photos);
+  - two moments a page, each a taped-in snapshot with a hand-lettered caption and date;
+  - moments not reached yet show as dotted frames, captioned "???" except in Home and Garden;
+  - the reward ribbon (3 · 6 · 10) on each chapter's first page, with the count and the next reward;
+  - it opens from the Start menu or a bookshelf's Memory book, and turns by swipe, the corner arrows or the D-pad (left and right for pages, up and down for chapters); B closes it.
+- **Note found:** the note under the tree now opens on its own folded paper (`memory-book-v1`, state note) with PUT IN THE BOOK, and it files into Notes. Notes found open full size again from the Notes tab.
+
+### Checks
+
+- `npm run check` has a memory-book section:
+  - 72 moments in seven chapters;
+  - a kiss fires once, with a date, a snapshot and the pop card;
+  - the snapshot stays the same after the room is emptied;
+  - one book for both modes;
+  - Jul 10 and Dec 25 add their moments;
+  - the tree note opens and files;
+  - at 430 × 932, 375 × 667 and 320 × 480: every tab draws, the D-pad and a swipe turn pages, and B closes.
+- The Christmas check now expects the note on its paper.
+- New screen: `src/dist/screen-memory-book-430x932.png`.
+
+### Changes from the spec
+
+- The reward ribbon shows a small wrapped gift for each step. The pieces themselves are drawn in part D, so until then a reached step says "coming in an update".
+- The Photos tab says photos from the camera go there; the camera comes with spec 001, part E.
+- The Notes tab counts 20 notes until Keegan's real notes go in the private file.
+
 ## Nov 26, 2026: the game fills the screen; the floors below keep their walls (Dev)
 
 ### What was built

@@ -146,7 +146,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     home.nouse.forEach(t => bad.push('nobody can get to ' + t));
     // the starting catalog: every tab holds spec 001's draft list (plus the easel, the cat bowls and the litter box)
     const tabs = await page.evaluate(() => { const n = {}; SS.CATALOG.filter(d => !d.craft).forEach(d => { n[d.tab] = (n[d.tab] || 0) + 1; }); return n; });
-    const want = { seating: 10, tables: 9, beds: 6, storage: 12, lights: 7, plants: 7, rugs: 6, wall: 10, decor: 16, holiday: 9 };   // holiday: the tree and the Christmas set (spec 009)   // decor: 13 + the easel + the cat bowls and litter box (spec 006, part D)
+    const want = { seating: 11, tables: 10, beds: 6, storage: 12, lights: 7, plants: 8, rugs: 6, wall: 10, decor: 17, holiday: 27 };   // plus Dot's florist set in seating, tables, plants and decor (spec 008)   // holiday: the tree, the Christmas set, and two pieces for each of the year's other 9 holidays (spec 009)   // decor: 13 + the easel + the cat bowls and litter box (spec 006, part D)
     const few = await page.evaluate(() => SS.CATALOG.filter(d => !d.craft && d.tab !== 'none' && (d.swatches.length < 4 || d.swatches.length > 6)).map(d => d.id + ' (' + d.swatches.length + ')'));
     few.forEach(id => bad.push('swatches should be 4 to 6 (spec 001, part D): ' + id));
     Object.keys(want).forEach(t => { if (tabs[t] !== want[t]) bad.push(`the ${t} tab has ${tabs[t] || 0} pieces, the starting list has ${want[t]}`); });
@@ -330,11 +330,11 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       Object.keys(SS.ACTIONS).forEach(k => {
         if (k === 'cat' || k === 'keegan' || k === 'backdoor' || k === 'meal' || k === 'sarah' || k === 'gift') return;
         const p = uses[k]; if (!p) { out.push('no piece in the home for ' + k); return; }
-        SS.ACTIONS[k].forEach(a => { if (a.soon) return; const r = SS.chooseAction(G, { piece: p }, a); if (r !== 'now') out.push(a.name + ' on ' + p.id + ' did not start'); let started = false; for (let i = 0; i < 2400 && G.act; i++) { SS.updateAgents(G, .05); if (G.act && G.act.started) started = true; } if (!started) out.push(a.name + ' on ' + p.id + ': Sarah never got there'); });
+        SS.ACTIONS[k].forEach(a => { if (a.soon || a.instant) return; const r = SS.chooseAction(G, { piece: p }, a); if (r !== 'now') out.push(a.name + ' on ' + p.id + ' did not start'); let started = false; for (let i = 0; i < 2400 && G.act; i++) { SS.updateAgents(G, .05); if (G.act && G.act.started) started = true; } if (!started) out.push(a.name + ' on ' + p.id + ': Sarah never got there'); });
       });
       // the cats: pet, treat, play; Keegan: chat and hug
       ['pet', 'treat', 'play'].forEach((fx, i) => { const a = SS.ACTIONS.cat[i]; SS.chooseAction(G, { agent: G.cats.louie }, a); let st = false; for (let j = 0; j < 2400 && G.act; j++) { SS.updateAgents(G, .05); if (G.act && G.act.started) st = true; } if (!st) out.push(a.name + ' on Louie did not happen'); });
-      SS.ACTIONS.keegan.filter(a => !a.soon).forEach(a => { SS.chooseAction(G, { agent: G.people.keegan }, a); let st = false; for (let j = 0; j < 2400 && G.act; j++) { SS.updateAgents(G, .05); if (G.act && G.act.started) st = true; } if (!st) out.push(a.name + ' with Keegan did not happen'); });
+      SS.ACTIONS.keegan.filter(a => !a.soon && !a.instant).forEach(a => { SS.chooseAction(G, { agent: G.people.keegan }, a); let st = false; for (let j = 0; j < 2400 && G.act; j++) { SS.updateAgents(G, .05); if (G.act && G.act.started) st = true; } if (!st) out.push(a.name + ' with Keegan did not happen'); });
       if (!G.save.made.some(id => SS.PAINTING_POOL.indexOf(id) >= 0)) out.push('Paint did not make a painting');
       if (!G.save.made.some(id => SS.DEF[id].craft && SS.DEF[id].craft !== 'painting')) out.push('the seasonal craft did not make anything');
       // up to 3 lined up, a fourth is refused; tapping elsewhere stops everything and nothing is lost
@@ -450,7 +450,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     });
     cats.forEach(a => bad.push(a));
     if (await page.evaluate(() => { SSG.openMode('sandbox'); return !!SS.lowNeed(SSG, 'sarah') || SSG.mode !== 'sandbox'; })) bad.push('Sandbox has needs');
-    const soon = await page.evaluate(() => { const need = ['COOK', 'FIND A GIG', 'CHANGE', 'GO TO', 'VIDEO-CALL', 'WIND DOWN']; const all = [].concat.apply([], Object.keys(SS.ACTIONS).map(k => SS.ACTIONS[k])); return need.filter(n => !all.some(a => a.name === n && a.soon)); });
+    const soon = await page.evaluate(() => { const need = ['GO TO', 'VIDEO-CALL', 'WIND DOWN']; const all = [].concat.apply([], Object.keys(SS.ACTIONS).map(k => SS.ACTIONS[k])); return need.filter(n => !all.some(a => a.name === n && a.soon)); });
     soon.forEach(n => bad.push(n + ' does not show Coming soon'));
     report('spec 006: four light looks, lamps at 5 PM, walking up the stairs, every starter action, crafts, the queue; needs; together actions; the cats\' needs; Keegan\'s day; her phone', bad.concat(errors));
     await ctx.close();
@@ -468,7 +468,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       G.takeCard(G.catalogList('holiday').items.find(it => it.away)); if (G.hold) out.push('an out-of-season Christmas piece can be taken'); G.hold = null;
       G.openMode('sandbox'); if (G.catalogList('holiday').items.some(it => it.away)) out.push('Sandbox hides holiday pieces out of season');
       SS.setDate(2026, 11, 5); G.openMode('life');
-      if (!G.catalogList('holiday').items.every(it => it.season)) out.push('in December, the Christmas set is not marked This season');
+      if (!G.catalogList('holiday').items.filter(it => it.def.holiday === 'christmas').every(it => it.season)) out.push('in December, the Christmas set is not marked This season');
       // Christmas Eve: stockings and cookies, for the day only, and she can keep one
       SS.setDate(2026, 11, 24); SS.setClock(19, 0); G.openMode('life');
       const st = G.W.pieces.find(p => p.id === 'stockings' && p.dress), ck = G.W.pieces.find(p => p.id === 'cookies-and-milk' && p.dress);
@@ -486,7 +486,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       if (G.W.pieces.filter(p => p.id === 'christmas-gift').length !== 1) out.push('opening gifts does not clear them');
       if (G.W.pieces.length !== n0) out.push('each opened gift does not leave a Christmas piece in its place');
       SS.openGift(G, G.W.pieces.find(p => p.id === 'christmas-gift'));
-      if (!/NOTE/.test((G.toastT || {}).text || '')) out.push('the note gift does not show Keegan\'s note');
+      if (!G.menu || G.menu.kind !== 'note' || G.menu.id !== 'tree') out.push('the note gift does not show Keegan\'s note'); else G.menu = null;   // on its own paper (spec 007)
       // gifts never repeat in the same year
       G.openMode('life'); if (G.W.pieces.some(p => p.id === 'christmas-gift')) out.push('the gifts came back after reopening');
       // first snow: once a winter
@@ -626,6 +626,629 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       bad.push(...errors); await ctx.close();
     }
     report('Sarah\'s playtest (Nov 26): taps and question marks in the charger hunt, Sarah\'s bubble, quick hugs, wall pieces and walls, the safe area', bad);
+  }
+
+  // ---------- 6d. the memory book (spec 007, parts A and B) ----------
+  {
+    const bad = [];
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    const a = await page.evaluate(async () => {
+      const G = SSG, out = []; G.confirm = null; SS.setClock(14, 0); G.openMode('life'); SS.stopSarahIdle(G); G.toastT = null; G.kday = null;
+      if (SS.MOMENTS.length < 70) out.push('only ' + SS.MOMENTS.length + ' moments in the book');
+      SS.CHAPTERS.forEach(c => { const n = SS.momentsIn(c.k).length; if (n < 10) out.push(c.name + ' has ' + n + ' moments'); });
+      // a moment fires once, on its trigger, with the date and a snapshot; the pop card shows
+      SS.chooseAction(G, { agent: G.people.keegan }, SS.ACTIONS.keegan.find(x => x.name === 'KISS')); for (let i = 0; i < 4000 && G.act; i++) SS.updateAgents(G, .05);
+      const e = SS.book().moments.kiss;
+      if (!e) out.push('a kiss does not go in the book'); else { if (!e.date || !e.snap || !e.snap.agents.length) out.push('the kiss moment has no date or snapshot'); }
+      if (!G.pop || G.pop.id !== 'kiss') out.push('no pop card for a new moment');
+      const d0 = e && e.date; SS.moment(G, 'kiss'); if (SS.book().moments.kiss.date !== d0) out.push('a moment fires twice');
+      // the snapshot redraws the scene as it was, even after the room changes
+      const img1 = SS.snapshot('kiss', 120, 80).toDataURL(); G.W.pieces.slice().forEach(p => { if (p.f === G.people.sarah.f && !p.wall) G.W.remove(p); }); SS.forgetBook();
+      const img2 = SS.snapshot('kiss', 120, 80).toDataURL(); if (img1 !== img2) out.push('the snapshot changes when the room changes');
+      // the book is shared by both modes, saved under its own key
+      if (!localStorage.getItem(SS.PRE + 'book')) out.push('the book is not saved');
+      G.openMode('sandbox'); if (!SS.hasMoment('kiss')) out.push('the book is not shared with Sandbox');
+      // dated moments
+      SS.setDate(2026, 6, 10); SS.bookDay(G); if (!SS.hasMoment('anniversary')) out.push('Jul 10 does not add Our anniversary');
+      SS.setDate(2026, 11, 25); SS.bookDay(G); if (!SS.hasMoment('xmas-morning')) out.push('Dec 25 does not add Christmas morning');
+      SS.setDate(2026, 10, 28);
+      // the note under the tree opens on its paper and files into the book
+      SS.showNote(G, 'tree', true); if (!G.menu || G.menu.kind !== 'note') out.push('the note does not open on its paper');
+      SS.closeNote(G); if (!SS.book().notes.tree || !SS.hasMoment('note-tree') || !SS.hasMoment('note-first')) out.push('the note under the tree does not go in the book');
+      return out;
+    });
+    a.forEach(o => bad.push(o));
+    // the book screen: tabs, pages by tap, swipe and the D-pad, B closes, fits
+    for (const [w, h] of [[430, 932], [375, 667], [320, 480]]) {
+      await page.setViewportSize({ width: w, height: h }); await page.evaluate(() => window.dispatchEvent(new Event('resize'))); await page.waitForTimeout(150);
+      await page.evaluate(() => { SSG.menu = null; SSG.openMenu(); const i = SS.MENU_ROWS.findIndex(r => r[1] === 'book'); SSG.menuPick(i); });
+      if (await page.evaluate(() => !SSG.menu || SSG.menu.kind !== 'book')) { bad.push(w + ' x ' + h + ': the Start menu does not open the book'); continue; }
+      for (const tab of await page.evaluate(() => SS.BOOK_TABS)) {
+        await page.evaluate(t => { SSG.menu.tab = t; SSG.menu.page = 0; }, tab); await page.waitForTimeout(60);
+        const hits = await page.evaluate(() => SSG.hits.length); if (hits < 5) bad.push(w + ' x ' + h + ': the ' + tab + ' tab does not draw');
+      }
+      await page.evaluate(() => { SSG.menu.tab = 'us'; SSG.menu.page = 0; });
+      await page.keyboard.press('ArrowRight'); await page.waitForTimeout(40);
+      if (await page.evaluate(() => SSG.menu.page) !== 1) bad.push(w + ' x ' + h + ': the D-pad does not turn the page');
+      // a swipe to the left turns to the next page
+      await page.evaluate(() => { SSG.menu.page = 0; });
+      const box = await page.locator('#cv').boundingBox(), sy = box.y + box.height * .5;
+      await page.mouse.move(box.x + box.width * .75, sy); await page.mouse.down();
+      for (let i = 1; i <= 6; i++) { await page.mouse.move(box.x + box.width * (.75 - i * .08), sy); await page.waitForTimeout(16); }
+      await page.mouse.up(); await page.waitForTimeout(60);
+      if (await page.evaluate(() => SSG.menu && SSG.menu.page) !== 1) bad.push(w + ' x ' + h + ': a swipe does not turn the page');
+      await page.keyboard.press('ArrowDown'); await page.waitForTimeout(40);
+      if (await page.evaluate(() => SSG.menu.tab) !== 'notes') bad.push(w + ' x ' + h + ': down on the D-pad does not go to the next chapter');
+      await page.keyboard.press('x'); await page.waitForTimeout(40);
+      if (await page.evaluate(() => !!SSG.menu)) bad.push(w + ' x ' + h + ': B does not close the book');
+      if (w === 430) { await page.evaluate(() => SS.openBook(SSG, 'us', 0)); await page.waitForTimeout(300); await page.screenshot({ path: path.join(DIST, 'screen-memory-book-430x932.png') }); await page.evaluate(() => { SSG.menu = null; }); }
+    }
+    // the bookshelf's bubble has Memory book
+    if (!(await page.evaluate(() => SS.ACTIONS.bookshelf.some(x => x.fx === 'book')))) bad.push('the bookshelf has no Memory book');
+    bad.push(...errors); await ctx.close();
+    report('the memory book (spec 007 A, B): moments once with a date and snapshot, the pop card, one book, dated moments, the note, the book screen', bad);
+  }
+
+  // ---------- 6e. favorites and the camera (spec 001, part E) ----------
+  {
+    const bad = [];
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    const r = await page.evaluate(() => {
+      const G = SSG, out = []; G.confirm = null; SS.setClock(14, 0); G.openMode('sandbox'); G.toastT = null;
+      // Save this room keeps every piece in it, with spot, turn, colors and props, plus its floor and paper
+      const sofa = G.W.pieces.find(p => p.id === 'three-seat-sofa'); sofa.colors = { fabric: '#9a7bb4' }; sofa.props = false;
+      const R0 = SS.roomAt(G, 0, sofa.x, sofa.y), inRoom = G.W.pieces.filter(p => p.f === 0 && !p.host && !p.wall && R0.tiles.includes(p.x + ',' + p.y)).length;
+      const fav = SS.saveRoom(G, 0, sofa.x, sofa.y);
+      if (!fav || fav.pieces.filter(p => !p.host && !p.wall).length !== inRoom) out.push('Save this room does not keep every piece in the room');
+      const fs = fav && fav.pieces.find(p => p.id === 'three-seat-sofa'); if (!fs || !fs.colors || fs.colors.fabric !== '#9a7bb4' || fs.props !== false || fs.r !== sofa.r) out.push('a favorite loses a piece\'s colors, props or turn');
+      if (!fav || !fav.floor || !fav.paper) out.push('a favorite does not keep the floor and wallpaper');
+      if (!/living room/i.test(fav.name)) out.push('the default name is not like "Cozy living room": ' + fav.name);
+      if (!SS.hasMoment('favorite')) out.push('the first favorite is not in the memory book');
+      // kept once for the whole game: it rebuilds in another mode, in another room; what doesn't fit goes to storage
+      G.openMode('life'); if (!SS.favorites().length) out.push('favorites are not shared by every mode');
+      const bed = G.W.pieces.find(p => p.id === 'double-bed'), n0 = G.W.pieces.length, s0 = G.save.stored.length;
+      G.save.coins = 99999; const res = SS.applyFavorite(G, SS.favorites()[0], 2, bed.x, bed.y, 'buy');   // in Life she buys what she doesn't own
+      if (!res || res.placed + res.stored !== fav.pieces.length) out.push('using a favorite loses pieces: ' + JSON.stringify(res));
+      if (G.W.pieces.length - n0 !== res.placed || G.save.stored.length - s0 !== res.stored) out.push('placed and stored counts do not match the home');
+      const R2 = SS.roomAt(G, 2, bed.x, bed.y); if (R2.r.floor !== fav.floor || R2.r.paper !== fav.paper) out.push('the room does not take the favorite\'s floor and wallpaper');
+      G.changed(true); G.openMode('life'); const R3 = SS.roomAt(G, 2, bed.x, bed.y); if (R3.r.paper !== fav.paper) out.push('the room\'s new wallpaper is not kept');
+      G.openMode('sandbox'); const R4 = SS.roomAt(G, 2, bed.x, bed.y); if (R4.r.paper === fav.paper && SS.HOMES.philly.floors[2].rooms.find(x => x.id === R4.r.id).paper !== fav.paper) out.push('a room\'s new wallpaper reaches the other mode');
+      return out;
+    });
+    r.forEach(o => bad.push(o));
+    // the screens by touch: Favorites from the Start menu, pick, tap a room
+    await page.evaluate(() => { SSG.openMode('sandbox'); SSG.openMenu(); SSG.menuPick(SS.MENU_ROWS.findIndex(x => x[1] === 'fav')); });
+    if (await page.evaluate(() => !SSG.menu || SSG.menu.kind !== 'fav')) bad.push('the Start menu does not open Favorites');
+    await page.waitForTimeout(150); await page.screenshot({ path: path.join(DIST, 'screen-favorites-375x667.png') });
+    await page.keyboard.press('z'); await page.waitForTimeout(60);
+    if (await page.evaluate(() => !SSG.favUse || SSG.favUse.i !== 0)) bad.push('A on a favorite does not pick it');
+    const tile = await page.evaluate(() => { const G = SSG, p = G.W.pieces.find(q => q.id === 'double-bed'); G.setFloor(2); const q = SS.vp(p.x + .5, p.y + 2.5, 2 * SS.FH); return G.toScreen(q[0], q[1]); });
+    await page.waitForTimeout(150); await tapAt(page, tile[0], tile[1]);
+    if (await page.evaluate(() => !!SSG.favUse)) bad.push('tapping a room does not fill it with the favorite');
+    // the camera: everything else dark, the heart takes a clean picture into the memory book's Photos
+    await page.evaluate(() => { SSG.toastT = null; SSG.openMenu(); SSG.menuPick(SS.MENU_ROWS.findIndex(x => x[1] === 'camera')); });
+    if (await page.evaluate(() => !SSG.camera)) bad.push('the Start menu does not open the camera');
+    await page.waitForTimeout(150); await page.screenshot({ path: path.join(DIST, 'screen-camera-375x667.png') });
+    const clean = await page.evaluate(() => { const n0 = SS.book().photos.length; SS.snap(SSG); const S = SSG.camera.shot; return { added: SS.book().photos.length - n0, w: S.img.width, h: S.img.height, moment: SS.hasMoment('photo') }; });
+    if (clean.added !== 1) bad.push('the picture does not go in the memory book\'s Photos');
+    if (!clean.moment) bad.push('the first photo is not a memory book moment');
+    // the saved picture has no buttons: it comes from the world alone, so the top bar's and the tray's colors never show in it
+    const noUi = await page.evaluate(() => { const S = SSG.camera.shot, d = S.img.getContext('2d').getImageData(0, 0, S.img.width, Math.min(40, S.img.height)).data; let tray = 0; for (let i = 0; i < d.length; i += 4) if (d[i] === 0xff && d[i + 1] === 0xf6 && d[i + 2] === 0xea) tray++; return tray; });
+    if (noUi > 50) bad.push('the saved picture has buttons or bars in it');
+    await page.waitForTimeout(400); await page.screenshot({ path: path.join(DIST, 'screen-camera-saved-375x667.png') });
+    await page.keyboard.press('z'); if (await page.evaluate(() => !!SSG.camera)) bad.push('Done does not close the camera');
+    bad.push(...errors); await ctx.close();
+    report('favorites and the camera (spec 001 E): save a room, use it in another mode and room, storage, floor and paper, the screens, a clean picture into the book', bad);
+  }
+
+  // ---------- 6f. cooking (spec 006, part E) ----------
+  {
+    const bad = [];
+    for (const [w, h] of [[375, 667], [320, 480]]) {
+      const { ctx, page, errors } = await fresh({ w, h, init: () => localStorage.setItem('ss.gift', '1') });
+      await page.evaluate(() => { SSG.confirm = null; SS.setClock(18, 0); SSG.openMode('life'); SSG.toastT = null; });
+      // from the stove's bubble
+      const opened = await page.evaluate(() => { const G = SSG, st = G.W.pieces.find(p => p.id === 'stove'); const a = SS.ACTIONS.stove.find(x => x.fx === 'cook'); G.bubble = { target: { piece: st }, actions: [a], cur: 0, tip: [100, 100], title: 'STOVE' }; G.doBubble(0); return G.menu && G.menu.kind === 'cook'; });
+      if (!opened) bad.push(w + ' x ' + h + ': Cook on the stove does not open the Cooking screen');
+      for (let dish = 0; dish < 9; dish++) {
+        await page.evaluate(d => { SSG.menu = null; SS.openCooking(SSG, d); }, dish);
+        await page.keyboard.press('z');   // COOK
+        let ok = false;
+        for (let i = 0; i < 160 && !ok; i++) {
+          const st = await page.evaluate(() => { const m = SSG.menu; return m ? m.state + ':' + (m.game || '') + ':' + (m.done ? 1 : 0) : 'closed'; });
+          if (st.startsWith('plated')) { ok = true; break; }
+          if (st.startsWith('step:hold:0')) { await page.keyboard.press('z'); await page.evaluate(() => { SSG.menu.v = .6; }); await page.keyboard.press('z'); }   // heat to Just right, then let go
+          else await page.keyboard.press('z');
+          await page.waitForTimeout(st.endsWith(':1') ? 950 : 40);
+        }
+        if (!ok) { bad.push(w + ' x ' + h + ': ' + (await page.evaluate(d => SS.DISHES[d].name, dish)) + ' does not play to the end'); continue; }
+        await page.waitForTimeout(80);
+      }
+      const r = await page.evaluate(() => {
+        const G = SSG, out = [];
+        SS.DISHES.forEach(d => { if (!SS.hasMoment('dish-' + d.id)) out.push(d.name + ' made for the first time is not in the memory book'); });
+        if (!SS.hasMoment('cook-first')) out.push('cooking together for the first time is not in the memory book');
+        const n0 = G.W.pieces.filter(p => p.id === 'plated-meal').length; SS.cookServe(G);
+        const meals = G.W.pieces.filter(p => p.id === 'plated-meal'); if (meals.length !== n0 + 1) out.push('Serve does not put the dish on the table');
+        // eating it fills hunger for both of them
+        const meal = meals[meals.length - 1]; if (meal) {
+          SS.needsOf(G, 'sarah').hunger = .2; SS.needsOf(G, 'keegan').hunger = .2;
+          SS.chooseAction(G, { piece: meal }, SS.ACTIONS.meal[0]); for (let i = 0; i < 4000 && G.act; i++) SS.updateAgents(G, .05);
+          if (!(SS.needsOf(G, 'sarah').hunger > .5 && SS.needsOf(G, 'keegan').hunger > .5)) out.push('eating the dish does not fill hunger for both');
+        }
+        return out;
+      });
+      r.forEach(o => bad.push(w + ' x ' + h + ': ' + o));
+      if (w === 375) { await page.evaluate(() => { SS.openCooking(SSG, 4); SS.cookStart(SSG); SSG.menu.v = .6; SSG.menu.heat = true; }); await page.waitForTimeout(200); await page.screenshot({ path: path.join(DIST, 'screen-cooking-375x667.png') }); }
+      // Sandbox: the piece tray's Cook
+      const sb = await page.evaluate(() => { const G = SSG; G.menu = null; G.openMode('sandbox'); G.select(G.W.pieces.find(p => p.id === 'stove')); return true; });
+      await page.waitForTimeout(100);
+      const cookBtn = await page.evaluate(() => SSG.hits.some(h => h.w === 44 && h.h === 16));
+      if (!cookBtn) bad.push(w + ' x ' + h + ': the stove\'s piece tray in Sandbox has no Cook');
+      bad.push(...errors.map(e => w + ' x ' + h + ': ' + e)); await ctx.close();
+    }
+    report('cooking (spec 006 E): the nine dishes play to the end by buttons at 375 x 667 and 320 x 480, moments, serve, eating fills both, Sandbox', bad);
+  }
+
+  // ---------- 6g. coins, the shop and gigs (spec 006, part F) ----------
+  {
+    const bad = [];
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    const r = await page.evaluate(() => {
+      const G = SSG, out = []; G.confirm = null; SS.setClock(14, 0); G.openMode('life'); G.toastT = null;
+      // prices on the cards; buying; not enough coins; selling back every coin, after a confirm on Keep
+      const it = G.catalogList('seating').items.find(x => x.id === 'club-armchair');
+      if (SS.cardTag(G, it).text !== String(it.def.price)) out.push('a card does not show its price in Life');
+      G.save.coins = 500; G.takeCard(it); const H = G.hold; if (!H || H.price !== it.def.price) out.push('taking a card does not hold its price');
+      let spot = null; for (let x = 0; x < 16 && !spot; x++) for (let y = 0; y < 16 && !spot; y++) if (G.W.check({ id: 'club-armchair', f: 0, x, y, r: 0 }).ok) spot = { x, y };
+      G.hold.cand = spot; G.hold.f = 0; G.hold.r = 0;
+      const before = G.save.coins; G.press ? 0 : 0;
+      return { out, before, price: it.def.price };
+    });
+    r.out.forEach(o => bad.push(o));
+    await page.keyboard.press('z'); await page.waitForTimeout(60);   // A sets it down
+    const buy = await page.evaluate(b => { const G = SSG, p = G.W.pieces.filter(q => q.id === 'club-armchair').find(q => q.paid); return { coins: G.save.coins, paid: p && p.paid, uid: p && p.uid, moment: SS.hasMoment('bought'), b }; }, r.before);
+    if (buy.coins !== r.before - r.price || buy.paid !== r.price) bad.push('setting a piece down does not buy it: ' + JSON.stringify(buy));
+    if (!buy.moment) bad.push('the first piece bought is not in the memory book');
+    const sell = await page.evaluate(uid => { const G = SSG, p = G.W.byUid[uid]; SS.sellBack(G, p); const q = G.confirm; const startsKeep = q && q.cur === 0 && /KEEP/.test(q.options[0]); G.confirmPick(1); return { startsKeep, coins: G.save.coins, gone: !G.W.byUid[uid] }; }, buy.uid);
+    if (!sell.startsKeep) bad.push('selling back does not ask first with the cursor on Keep');
+    if (sell.coins !== r.before || !sell.gone) bad.push('selling back does not refund every coin');
+    const poor = await page.evaluate(() => { const G = SSG; G.save.coins = 10; G.hold = null; G.takeCard(G.catalogList('seating').items.find(x => x.id === 'club-armchair')); return !!G.hold; });
+    if (poor) bad.push('a piece she can\'t afford can still be taken');
+    const sb = await page.evaluate(() => { const G = SSG; G.hold = null; G.openMode('sandbox'); const it = G.catalogList('seating').items[0]; return SS.priceOf(G, it); });
+    if (sb !== 0) bad.push('Sandbox pieces cost coins');
+    // coins survive a reload and a backup round trip
+    const kept = await page.evaluate(() => { const G = SSG; G.openMode('life'); G.save.coins = 1234; G.changed(true); G.openMode('sandbox'); G.openMode('life'); return G.save.coins; });
+    if (kept !== 1234) bad.push('coins are not kept');
+    // a gig: offered at the desk, accepted, designed in their room with lent pieces, handed in, rated and paid
+    const g = await page.evaluate(() => {
+      const G = SSG, out = []; G.save.coins = 500;
+      const desk = G.W.pieces.find(p => p.id === 'desk'); const a = SS.ACTIONS.desk.find(x => x.fx === 'gig');
+      G.bubble = { target: { piece: desk }, actions: [a], cur: 0, tip: [100, 100], title: 'DESK' }; G.doBubble(0);
+      if (!G.menu || G.menu.kind !== 'gig' || G.menu.offers.length < 2) { out.push('Find a gig does not offer 2 or 3 gigs'); return out; }
+      const homeN = G.W.pieces.length, homeSaved = JSON.parse(localStorage.getItem(SS.PRE + 'life')).pieces.length;
+      SS.acceptGig(G, G.menu.offers[0]); if (!G.gig || G.W.pieces.length !== 0) out.push('accepting does not open their empty room');
+      const it = G.catalogList('plants').items[0]; if (SS.priceOf(G, it) !== 0 || SS.cardTag(G, it).text !== 'FREE') out.push('gig pieces are not lent free');
+      const o = G.gig.offer; const W = G.W;
+      // match every like: a plant, books, a seat, a table, a rug, a lamp, art, soft things, in warm colors
+      [['monstera', 0, 0], ['bookshelf', 2, 0], ['club-armchair', 1, 2], ['side-table', 3, 2], ['wool-rug', 1, 3], ['floor-lamp', 0, 2], ['two-seat-sofa', 2, 3]].forEach(q => { const p = { id: q[0], f: 0, x: W.ax + q[1], y: W.ay + q[2], r: 0, sw: 0 }; if (W.check(p).ok) W.add(p); });
+      const segs = W.walls[0].filter(s => s.b && !s.op && !s.win); if (segs[0]) W.add({ id: 'framed-print', f: 0, wall: [segs[0].x, segs[0].y, segs[0].axis] });
+      W.pieces.forEach(p => { const d = SS.DEF[p.id]; const part = d.parts[0] && d.parts[0][0]; if (part) p.colors = { [part]: '#e46f6a' }; });
+      if (JSON.parse(localStorage.getItem(SS.PRE + 'life')).pieces.length !== homeSaved) out.push('a gig changes her own home\'s save');
+      const m = SS.gigMatches(G); SS.handIn(G);
+      if (!G.menu || G.menu.kind !== 'gigdone') { out.push('Hand in does not rate it'); return out; }
+      if (G.menu.hearts !== Math.max(1, m.filter(Boolean).length)) out.push('the hearts do not follow the likes matched');
+      const pay = G.menu.pay, c0 = G.save.coins; SS.gigDone(G);
+      if (G.save.coins !== c0 + pay || pay < 100 || pay > 200) out.push('the gig does not pay 100 to 200');
+      if (G.gig || G.W.pieces.length !== homeN) out.push('Done does not bring her home as she left it');
+      if (!(G.save.friends && G.save.friends[o.who] >= 1)) out.push('the gig does not grow friendship');
+      if (!SS.hasMoment('gig')) out.push('the first gig is not in the memory book');
+      // even an empty room pays the lowest
+      G.menu = { kind: 'gig', offers: [0, 1], cur: 0 }; SS.acceptGig(G, 0); SS.handIn(G); if (G.menu.hearts !== 1 || G.menu.pay !== 100) out.push('an empty design does not pay the lowest');
+      SS.gigDone(G);
+      return out;
+    });
+    g.forEach(o => bad.push(o));
+    await page.evaluate(() => { SS.findGigs(SSG); }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(DIST, 'screen-gig-375x667.png') });
+    bad.push(...errors); await ctx.close();
+    report('coins, the shop and gigs (spec 006 F): prices, buying, selling back on Keep, Sandbox free, coins kept, a gig offered, designed, rated and paid', bad);
+  }
+
+  // ---------- 6h. the Build screen: lots, rooms and walls (spec 004, parts A and B) ----------
+  {
+    const bad = [];
+    for (const [w, h] of [[375, 667], [320, 480]]) {
+      const { ctx, page, errors } = await fresh({ w, h, init: () => localStorage.setItem('ss.gift', '1') });
+      // part A: each street lot and a Sandbox new lot in all three sizes, the 8 tools with the picked one named, the view moves
+      const a = await page.evaluate(() => {
+        const G = SSG, out = []; G.confirm = null; G.openMode('sandbox'); G.toastT = null;
+        G.menuPick(SS.MENU_ROWS.findIndex(r => r[1] === 'homes'));
+        const list = SS.homeList(G); if (list.length !== 4) out.push('Homes does not list the Philly home and the street\'s three lots: ' + list.length);
+        ['lot-small', 'lot-medium', 'lot-large'].forEach((id, i) => {
+          G.menu = { kind: 'homes', cur: 0 }; G.homePick(SS.homeList(G).findIndex(q => q.id === id));
+          if (G.save.home !== id || G.W.lot !== [16, 24, 32][i]) out.push(id + ' does not open as a ' + [16, 24, 32][i] + ' lot');
+          if (G.trayState() !== 'build') out.push(id + ' does not open on the Build tab');
+        });
+        [16, 24, 32].forEach(n => { SS.newLot(G, n); if (G.W.lot !== n || !/^new-/.test(G.save.home)) out.push('New lot ' + n + ' does not open'); });
+        return out;
+      });
+      a.forEach(o => bad.push(w + 'x' + h + ': ' + o));
+      // the tools row: 8 tools, tapping one names it
+      await page.waitForTimeout(100);
+      const tools = await page.evaluate(() => SSG.hits.filter(q => q.y > SSG.H - SS.TRAY_H.build + 15 && q.y < SSG.H - SS.TRAY_H.build + 40).length);
+      if (tools < 8) bad.push(w + 'x' + h + ': the Build tab does not show 8 tools (' + tools + ')');
+      const tb = await page.evaluate(() => { const q = SSG.hits.filter(q => q.y > SSG.H - SS.TRAY_H.build + 15 && q.y < SSG.H - SS.TRAY_H.build + 40)[7]; return [q.x + q.w / 2, q.y + q.h / 2]; });
+      await tapAt(page, tb[0], tb[1]); await page.waitForTimeout(60);
+      if (await page.evaluate(() => SSG.build.tool) !== 'erase') bad.push(w + 'x' + h + ': tapping the erase tool does not pick it');
+      await page.evaluate(() => { SSG.build.tool = 'room'; });
+      // the D-pad moves the view around a large lot, as far as its corners
+      const pan = await page.evaluate(() => { const G = SSG, x0 = G.cam.x, y0 = G.cam.y; return { x0, y0 }; });
+      for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowRight');
+      for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowDown');
+      const pan2 = await page.evaluate(() => ({ x: SSG.cam.x, y: SSG.cam.y }));
+      if (pan2.x - pan.x0 < 150 || pan2.y - pan.y0 < 100) bad.push(w + 'x' + h + ': the D-pad does not slide far across a large lot: ' + JSON.stringify([pan, pan2]));
+      if (w === 375) await page.screenshot({ path: path.join(DIST, 'screen-build-375x667.png') });
+      bad.push(...errors.map(e => w + 'x' + h + ': ' + e)); await ctx.close();
+    }
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    await page.evaluate(() => { const G = SSG; G.confirm = null; G.openMode('sandbox'); G.toastT = null; SS.goHome(G, 'lot-medium'); SS.enterBuild(G); G.cam.zoom = 1; G.centerCam(); });
+    await page.waitForTimeout(80);
+    // part B by touch: drag a box from one tile to another; the size tag shows while dragging; letting go builds the room
+    const scr = (x, y) => page.evaluate(([x, y]) => { const q = SS.vp(x + .5, y + .5, 0); return SSG.toScreen(q[0], q[1]); }, [x, y]);
+    const b = await page.locator('#cv').boundingBox(), k = b.width / 240;
+    async function dragTiles(t0, t1, corner) {
+      const p0 = corner ? await page.evaluate(([x, y]) => { const q = SS.vp(x, y, 0); return SSG.toScreen(q[0], q[1]); }, t0) : await scr(t0[0], t0[1]);
+      const p1 = corner ? await page.evaluate(([x, y]) => { const q = SS.vp(x, y, 0); return SSG.toScreen(q[0], q[1]); }, t1) : await scr(t1[0], t1[1]);
+      await page.mouse.move(b.x + p0[0] * k, b.y + p0[1] * k); await page.mouse.down();
+      for (let s = 1; s <= 10; s++) { await page.mouse.move(b.x + (p0[0] + (p1[0] - p0[0]) * s / 10) * k, b.y + (p0[1] + (p1[1] - p0[1]) * s / 10) * k); await page.waitForTimeout(16); }
+      const tag = await page.evaluate(() => SSG.build.drag && SSG.build.drag.tag);
+      await page.mouse.up(); await page.waitForTimeout(60);
+      return tag;
+    }
+    const tag = await dragTiles([10, 10], [14, 15]);
+    if (tag !== '5 × 6') bad.push('the size tag does not show 5 × 6 while dragging (' + tag + ')');
+    const R1 = await page.evaluate(() => SSG.W.home.floors[0].rooms.map(r => r.t.length));
+    if (R1.length !== 1 || R1[0] !== 30) bad.push('dragging a box does not build a 5 × 6 room: ' + JSON.stringify(R1));
+    // the rules: 2 × 2 at least, inside the lot; against another room it shares the wall
+    const rules = await page.evaluate(() => {
+      const G = SSG, out = [], B = SS._build, D = () => SS.toLotForm(SS.homeData(G.save, G.save.home));
+      if (B.roomEdit(D(), 0, 2, 2, 3, 3).D) out.push('a 1 × 1 room can be built');
+      if (!B.roomEdit(D(), 0, 2, 2, 4, 4).D) out.push('a 2 × 2 room can\'t be built');
+      if (B.roomEdit(D(), 0, 22, 2, 25, 5).D) out.push('a room can go past the lot\'s edge');
+      const r = B.roomEdit(D(), 0, 15, 10, 18, 13); if (!r.D) { out.push('a room against another can\'t be built'); return out; }
+      SS.buildCommit(G, r.D);
+      const W = G.W; if (W.home.floors[0].rooms.length !== 2) out.push('two rooms side by side are not two rooms');
+      const shared = W.walls[0].filter(s => s.axis === 'y' && s.x === 15 && s.y >= 10 && s.y < 13); if (shared.length !== 3 || shared.some(s => !s.a || !s.b)) out.push('rooms side by side do not share one wall');
+      return out;
+    });
+    rules.forEach(o => bad.push(o));
+    // the wall tool: a line across a room cuts it in two; walls closing in a space make it a room
+    await page.evaluate(() => { SSG.build.tool = 'wall'; });
+    await dragTiles([12, 10], [12, 16], true);
+    const cut = await page.evaluate(() => SSG.W.home.floors[0].rooms.map(r => r.t.length).sort((a, b) => a - b));
+    if (JSON.stringify(cut) !== '[9,12,18]') bad.push('a wall across a room does not cut it in two: ' + JSON.stringify(cut));
+    const shut = await page.evaluate(() => {
+      const G = SSG, B = SS._build; let D = SS.toLotForm(SS.homeData(G.save, G.save.home));
+      [['x', 2, 2, 5], ['x', 5, 2, 5], ['y', 2, 2, 5], ['y', 5, 2, 5]].forEach(q => { const r = B.wallEdit(D, 0, q[0], q[1], q[2], q[3]); if (r.D) D = r.D; });
+      SS.buildCommit(G, D); return G.W.home.floors[0].rooms.map(r => r.t.length).sort((a, b) => a - b);
+    });
+    if (shut.indexOf(9) < 0 || shut.length !== 4) bad.push('four walls around a space do not make it a room: ' + JSON.stringify(shut));
+    // tap a wall to pick it; the D-pad moves it a tile; the chip erases it
+    await page.evaluate(() => { SSG.build.tool = 'room'; SSG.walls = 'up'; });
+    const wp = await page.evaluate(() => { const G = SSG, s = G.W.seg(0, 12, 12, 'y'), q = SS.vp(12, 12.5, 23); return G.toScreen(q[0], q[1]); });
+    await tapAt(page, wp[0], wp[1]);
+    const picked = await page.evaluate(() => SSG.build.wall && SSG.build.wall.run.length);
+    if (picked !== 6) bad.push('tapping a wall does not pick its whole run (' + picked + ')');
+    else {
+      const before = await page.evaluate(() => SSG.W.room(0, 10, 11).t.length);
+      await page.evaluate(() => SS.moveWall(SSG, 1));
+      const after = await page.evaluate(() => ({ rooms: SSG.W.room(0, 10, 11).t.length, at: SSG.build.wall && SSG.build.wall.run[0][0] }));
+      if (before !== 12 || after.rooms !== 18 || after.at !== 13) bad.push('moving a wall a tile does not move it: ' + JSON.stringify([before, after]));
+      await page.evaluate(() => SS.eraseWall(SSG));
+      const er = await page.evaluate(() => SSG.W.home.floors[0].rooms.map(r => r.t.length).sort((a, b) => a - b));
+      if (JSON.stringify(er) !== '[9,9,30]') bad.push('erasing the wall between two rooms does not open them into one: ' + JSON.stringify(er));
+    }
+    // erase a floor tile; undo steps back through the changes
+    const un = await page.evaluate(() => {
+      const G = SSG, out = [], n0 = G.undo.length; G.build.tool = 'erase';
+      const tiles = () => G.W.home.floors[0].rooms.reduce((n, r) => n + r.t.length, 0), t0 = tiles();
+      G.walls = 'down'; const q = SS.vp(10.5, 10.5, 0); SS.buildTap(G, q, [10, 10, 10.5, 10.5]);
+      if (tiles() !== t0 - 1) out.push('erase does not take out a floor tile: ' + (G.toastT && G.toastT.text));
+      SS.buildTap(G, SS.vp(11.5, 12.5, 0), [11, 12, 11.5, 12.5]); if (tiles() !== t0 - 1) out.push('a hole can be erased in the middle of a room');
+      if (G.undo.length < 5) out.push('build changes are not undo steps (' + G.undo.length + ')');
+      while (G.undo.length) G.doUndo();
+      if (G.W.home.floors[0].rooms.length) out.push('undoing every change does not bring back the empty lot');
+      void n0; return out;
+    });
+    un.forEach(o => bad.push(o));
+    // the Philly home: a wall moved over furniture sends it to storage, so nothing is lost; walls kept after reopening
+    const ph = await page.evaluate(() => {
+      const G = SSG, out = []; SS.goHome(G, 'philly'); SS.enterBuild(G); G.setFloor(0); G.floor = 0;
+      const n0 = G.W.pieces.length + G.save.stored.length;
+      const s = G.W.seg(0, 9, 11, 'x'); G.build.wall = { f: 0, run: SS.wallRun(G.W, 0, s).map(q => [q.x, q.y, q.axis]) };
+      SS.moveWall(G, 1);   // the dining nook's wall a tile into the living room, over the lamps and the plant
+      if (!G.W.seg(0, 9, 12, 'x')) out.push('the wall did not move: ' + (G.toastT && G.toastT.text));
+      // the front wall can't move in: the floors above would hang over nothing
+      const f2 = G.W.seg(0, 6, 16, 'x'); G.build.wall = { f: 0, run: SS.wallRun(G.W, 0, f2).map(q => [q.x, q.y, q.axis]) }; SS.moveWall(G, -1);
+      if (!G.W.seg(0, 6, 16, 'x')) out.push('the front wall moved in under the floors above');
+      if (G.W.pieces.length + G.save.stored.length !== n0) out.push('pieces were lost when a wall moved');
+      if (!G.save.stored.length) out.push('a piece in the way of a moved wall did not go to storage');
+      const bad2 = G.W.pieces.filter(p => !p.host && !G.W.check(p.wall ? { id: p.id, f: p.f, wall: p.wall, side: p.side } : { id: p.id, f: p.f, x: p.x, y: p.y, r: p.r || 0 }, p).ok && /OUTSIDE|WALL/.test(G.W.check(p.wall ? { id: p.id, f: p.f, wall: p.wall, side: p.side } : { id: p.id, f: p.f, x: p.x, y: p.y, r: p.r || 0 }, p).why));
+      if (bad2.length) out.push('pieces are left in walls or outside: ' + bad2.map(p => p.id).join());
+      const living = (G.W.room(0, 5, 14).t || []).length; G.changed(true); G.openMode('life'); G.openMode('sandbox');
+      if (!G.W.room(0, 5, 14) || G.W.room(0, 5, 14).t.length !== living) out.push('the Philly home\'s new walls are not kept');
+      // she left off on another lot: Continue opens it there, with her home waiting
+      SS.goHome(G, 'lot-medium'); G.changed(true); G.openMode('life'); G.openMode('sandbox');
+      if (G.save.home !== 'lot-medium' || G.W.lot !== 24 || !G.away) out.push('reopening does not go back to the lot she was on');
+      SS.goHome(G, 'philly'); if (G.W.lot !== 16 || !G.agents.length) out.push('going home does not bring back the home and everyone in it');
+      return out;
+    });
+    ph.forEach(o => bad.push(o));
+    // Life: walls and floors cost 5 coins a tile, shown before she lets go; erasing gives back what she paid; not enough is refused
+    const life = await page.evaluate(() => {
+      const G = SSG, out = []; G.openMode('life'); G.toastT = null; SS.goHome(G, 'lot-small'); SS.enterBuild(G); G.build.tool = 'room'; G.save.coins = 500;
+      SS.buildDragStart(G, [2, 2, 2.5, 2.5]); SS.buildDrag(G, [4, 4, 4.5, 4.5]);
+      const shown = G.build.drag.cost; SS.buildDragEnd(G);
+      if (shown !== (9 + 12) * 5) out.push('a 3 × 3 room does not show 105 coins: ' + shown);
+      if (G.save.coins !== 500 - 105) out.push('building does not charge: ' + G.save.coins);
+      const s = G.W.seg(0, 2, 2, 'x'); G.build.wall = { f: 0, run: SS.wallRun(G.W, 0, s).map(q => [q.x, q.y, q.axis]) }; SS.eraseWall(G);
+      if (G.save.coins !== 500 - 105 + 15) out.push('erasing a wall does not give its coins back: ' + G.save.coins);
+      G.save.coins = 10; const n = G.W.home.floors[0].rooms.length; SS.buildDragStart(G, [8, 8, 8.5, 8.5]); SS.buildDrag(G, [10, 10, 10.5, 10.5]); SS.buildDragEnd(G);
+      if (G.W.home.floors[0].rooms.length !== n || G.save.coins !== 10) out.push('a room she can\'t afford still gets built');
+      if (!SS.hasMoment('first-wall')) out.push('the first wall on an empty lot is not in the memory book');
+      SS.goHome(G, 'philly');
+      return out;
+    });
+    life.forEach(o => bad.push(o));
+    bad.push(...errors); await ctx.close();
+    report('the Build screen (spec 004 A, B): lots in 3 sizes, the 8 tools, rooms with a size tag, single walls, pick, move and erase, nothing lost, undo, prices, saved', bad);
+  }
+
+  // ---------- 6i. outfits: the Style screen and wearing pieces (spec 002, parts A and B) ----------
+  {
+    const bad = [];
+    for (const [w, h] of [[375, 667], [320, 480]]) {
+      const { ctx, page, errors } = await fresh({ w, h, init: () => localStorage.setItem('ss.gift', '1') });
+      // Style opens from a person, from a wardrobe, from the Start menu's People row; the person spins all four ways
+      const r = await page.evaluate(() => {
+        const G = SSG, out = []; G.confirm = null; G.openMode('sandbox'); G.toastT = null;
+        G.menuPick(SS.MENU_ROWS.findIndex(q => q[1] === 'people')); if (!G.menu || G.menu.kind !== 'people') out.push('People does not list the people'); else { SS.peoplePress(G, 'a'); if (!G.menu || G.menu.kind !== 'style') out.push('People does not open Style'); }
+        G.menu = null; G.openMode('life'); G.toastT = null;
+        const ward = G.W.pieces.find(p => p.id === 'wardrobe'); const acts = SS.actionsFor(G, { piece: ward }); const ch = acts.findIndex(a => a.fx === 'style');
+        G.bubble = { target: { piece: ward }, actions: acts, cur: 0, tip: [100, 100], title: 'W' }; G.doBubble(ch);
+        if (!G.menu || G.menu.kind !== 'style' || G.menu.who !== 'sarah') out.push('Change outfit at the wardrobe does not open Style');
+        G.menu = null; const ka = SS.actionsFor(G, { agent: G.people.keegan }); const ks = ka.findIndex(a => a.fx === 'style');
+        G.bubble = { target: { agent: G.people.keegan }, actions: ka, cur: 0, tip: [100, 100], title: 'K' }; G.doBubble(ks);
+        if (!G.menu || G.menu.kind !== 'style' || G.menu.who !== 'keegan') out.push('Style from Keegan does not open on him');
+        G.menu = null; G.openMode('sandbox'); G.toastT = null;
+        return out;
+      });
+      r.forEach(o => bad.push(w + 'x' + h + ': ' + o));
+      // a tap on Sarah while decorating opens Style on her
+      await page.evaluate(() => { const G = SSG; G.tray.open = false; G.menu = null; G.version++; });
+      await page.waitForTimeout(150);
+      const sp = await page.evaluate(() => { const G = SSG, s = G.people.sarah; if (s.f !== G.floor) G.setFloor(s.f); s.path = []; const q = SS.vp(s.x, s.y, s.f * SS.FH + 16); G.cam.x = q[0] + SS.OFF[0]; G.cam.y = q[1] + SS.OFF[1] + 20; return null; });
+      await page.waitForTimeout(150);
+      const sp2 = await page.evaluate(() => { const G = SSG, s = G.people.sarah; let best = null; [16, 20, 12, 24, 8, 28].forEach(dz => [0, -2, 2].forEach(dx => { if (best) return; const q = SS.vp(s.x, s.y, s.f * SS.FH + dz); const pk = SS.pick(G.lastHits || [], q[0] + dx, q[1]); if (pk && pk.agent === s) best = G.toScreen(q[0] + dx, q[1]); })); if (!best) { const q = SS.vp(s.x, s.y, s.f * SS.FH + 16); best = G.toScreen(q[0], q[1]); } return best; }); void sp;
+      await page.waitForTimeout(150);
+      await tapAt(page, sp2[0], sp2[1]);
+      const tapped = await page.evaluate(() => SSG.menu && SSG.menu.kind === 'style' && SSG.menu.who);
+      if (tapped !== 'sarah') bad.push(w + 'x' + h + ': tapping Sarah does not open Style on her (' + tapped + ')');
+      await page.evaluate(() => SS.openStyle(SSG, 'sarah'));
+      for (let f = 0; f < 4; f++) {
+        await page.waitForTimeout(80);
+        const fit = await page.evaluate(() => { const F = SSG.menu.fig; return F && F.y >= 20 && F.y + F.h <= SSG.H - SS.STYLE_TRAY + 4 && F.x >= 0 && F.x + F.w <= 240; });
+        if (!fit) bad.push(w + 'x' + h + ': the person is cut off in turn ' + f);
+        if (w === 375) await page.screenshot({ path: path.join(DIST, 'screen-style-' + ['front', 'side', 'back', 'side2'][f] + '-375x667.png') });
+        await page.keyboard.press('Backspace');   // Select spins a quarter turn
+      }
+      if (await page.evaluate(() => SSG.menu.face) !== 0) bad.push(w + 'x' + h + ': four spins do not come back to the front');
+      bad.push(...errors.map(e => w + 'x' + h + ': ' + e)); await ctx.close();
+    }
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    const r2 = await page.evaluate(() => {
+      const G = SSG, out = []; G.confirm = null; G.openMode('sandbox'); G.toastT = null; SS.openStyle(G, 'sarah');
+      const o = () => SS.outfitOf(G, 'sarah');
+      // every piece on and off by tap, for both of them
+      ['sarah', 'keegan'].forEach(who => { G.menu.who = who; SS.CLOTHES.forEach(d => {
+        const was = !!(SS.outfitOf(G, who)[d.slot] && SS.outfitOf(G, who)[d.slot].id === d.id);
+        if (was) SS.wear(G, who, d.id);
+        SS.wear(G, who, d.id); if (!(SS.outfitOf(G, who)[d.slot] && SS.outfitOf(G, who)[d.slot].id === d.id)) out.push(d.id + ' does not go on ' + who);
+        SS.wear(G, who, d.id); if (SS.outfitOf(G, who)[d.slot] && SS.outfitOf(G, who)[d.slot].id === d.id) out.push(d.id + ' does not come off ' + who);
+        SS.figure(G, who, 0, 0); SS.figure(G, who, 1, 0); SS.figure(G, who, 2, 0);
+      }); });
+      G.menu.who = 'sarah';
+      // layering: a dress takes off the top and bottom; a coat stays over it; a top takes the dress off
+      SS.wear(G, 'sarah', 'orange-rocks-tee'); SS.wear(G, 'sarah', 'straight-jeans'); SS.wear(G, 'sarah', 'long-wool-coat'); SS.wear(G, 'sarah', 'pink-slip-dress');
+      if (o().top || o().bottom || !o().dress || !o().coat) out.push('a dress does not replace the top and bottom under a coat: ' + JSON.stringify(o()));
+      SS.wear(G, 'sarah', 'lilac-hoodie'); if (o().dress || !o().top) out.push('a top does not take the dress off');
+      // Sarah's hair: styles only, always ginger
+      const hair = SS.styleCards(G, 'sarah', 'hair'); if (hair.some(c => c.shade !== undefined) || hair.length !== 4) out.push('Sarah\'s hair tab is not just her 4 styles');
+      SS.setHair(G, 'sarah', 'bob', 3); if (o().shade !== undefined || o().hair !== 'bob') out.push('Sarah\'s hair can be recolored');
+      if (!SS.styleCards(G, 'keegan', 'hair').some(c => c.shade !== undefined)) out.push('Keegan\'s hair has no colors');
+      if (SS.styleCards(G, 'sarah', 'ours').length < 5 || SS.styleCards(G, 'sarah', 'ours').some(c => !c.piece.ours)) out.push('Ours does not list their real clothes');
+      // kept: reopening the mode keeps what they wear
+      G.changed(true); G.menu = null; G.openMode('life'); G.openMode('sandbox'); if (SS.outfitOf(G, 'sarah').hair !== 'bob' || SS.outfitOf(G, 'sarah').top.id !== 'lilac-hoodie') out.push('outfits are not kept');
+      // Life: a piece she doesn't have costs its price; not enough coins is refused
+      G.openMode('life'); G.toastT = null; SS.openStyle(G, 'sarah'); G.save.coins = 500;
+      SS.wear(G, 'sarah', 'pleated-skirt'); if (G.save.coins !== 430) out.push('a new piece in Life does not cost its price: ' + G.save.coins);
+      SS.wear(G, 'sarah', 'pleated-skirt'); SS.wear(G, 'sarah', 'pleated-skirt'); if (G.save.coins !== 430) out.push('a piece she owns costs again');
+      G.save.coins = 10; SS.wear(G, 'sarah', 'long-wool-coat'); if (SS.outfitOf(G, 'sarah').coat) out.push('a piece she can\'t afford still goes on');
+      // Ralph's bowtie
+      G.menu = null; SS.ralphBow(G); G.confirmPick(1); if (!G.save.ralphBow) out.push('Ralph\'s bowtie does not go on');
+      return out;
+    });
+    r2.forEach(o => bad.push(o));
+    // by touch: drag a card onto the person; swipe across them to spin
+    await page.evaluate(() => { const G = SSG; G.menu = null; G.openMode('sandbox'); SS.openStyle(G, 'sarah'); G.menu.tab = 'bottoms'; });
+    await page.waitForTimeout(150);
+    const pts = await page.evaluate(() => { const G = SSG, cards = G.hits.filter(h => h.styleCard), card = cards.find(h => h.styleCard.piece.id === 'pleated-skirt'), F = G.menu.fig; return { card: [card.x + 20, card.y + 14], fig: [F.x + F.w / 2, F.y + 60] }; });
+    const bb = await page.locator('#cv').boundingBox(), k = bb.width / 240;
+    await page.mouse.move(bb.x + pts.card[0] * k, bb.y + pts.card[1] * k); await page.mouse.down();
+    for (let s = 1; s <= 10; s++) { await page.mouse.move(bb.x + (pts.card[0] + (pts.fig[0] - pts.card[0]) * s / 10) * k, bb.y + (pts.card[1] + (pts.fig[1] - pts.card[1]) * s / 10) * k); await page.waitForTimeout(16); }
+    await page.mouse.up(); await page.waitForTimeout(60);
+    if (await page.evaluate(() => (SS.outfitOf(SSG, 'sarah').bottom || {}).id) !== 'pleated-skirt') bad.push('dragging a card onto the person does not put it on');
+    await page.mouse.move(bb.x + (pts.fig[0] + 30) * k, bb.y + (pts.fig[1] - 20) * k); await page.mouse.down(); await page.mouse.move(bb.x + (pts.fig[0] - 30) * k, bb.y + (pts.fig[1] - 20) * k, { steps: 6 }); await page.mouse.up();
+    if (await page.evaluate(() => SSG.menu.face) !== 1) bad.push('a swipe across the person does not spin them');
+    bad.push(...errors); await ctx.close();
+    report('outfits (spec 002 A, B): Style from a person, a wardrobe and People, four turns at 375 x 667 and 320 x 480, 10 pieces on and off by tap and drag, layers, ginger hair, prices, kept, the bowtie', bad);
+  }
+
+  // ---------- 6j. the Creator (spec 003, parts A and B) ----------
+  {
+    const bad = [];
+    for (const [w, h] of [[375, 667], [320, 480]]) {
+      const { ctx, page, errors } = await fresh({ w, h, init: () => localStorage.setItem('ss.gift', '1') });
+      const r = await page.evaluate(() => {
+        const G = SSG, out = []; G.confirm = null; G.openMode('sandbox'); G.toastT = null;
+        // People has New person at the bottom, and it opens the Creator
+        G.menuPick(SS.MENU_ROWS.findIndex(q => q[1] === 'people')); const n = SS.styleWho(G).length;
+        G.menu.cur = n; SS.peoplePress(G, 'a'); if (!G.menu || G.menu.kind !== 'creator') { out.push('New person does not open the Creator'); return out; }
+        return out;
+      });
+      r.forEach(o => bad.push(w + 'x' + h + ': ' + o));
+      // all nine tabs, nothing cut off, the person spins
+      for (const tab of ['age', 'face', 'eyes', 'nose', 'lips', 'hair', 'body', 'skin', 'more']) {
+        await page.evaluate(t => { SSG.menu.tab = t; }, tab); await page.waitForTimeout(60);
+        const ok = await page.evaluate(() => { const hs = SSG.hits.filter(q => q.y > SSG.H - SS.CREATOR_TRAY); return hs.length > 3 && hs.every(q => q.x >= -1 && q.x + q.w <= 241 && q.y + q.h <= SSG.H + 1); });
+        if (!ok) bad.push(w + 'x' + h + ': the ' + tab + ' tab is cut off');
+        if (w === 375 && (tab === 'eyes' || tab === 'hair')) await page.screenshot({ path: path.join(DIST, 'screen-creator-' + tab + '-375x667.png') });
+      }
+      for (let f = 0; f < 4; f++) { await page.keyboard.press('Backspace'); await page.waitForTimeout(40); }
+      if (await page.evaluate(() => SSG.menu.face) !== 0) bad.push(w + 'x' + h + ': Select does not spin the person all the way round');
+      bad.push(...errors.map(e => w + 'x' + h + ': ' + e)); await ctx.close();
+    }
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    const r2 = await page.evaluate(() => {
+      const G = SSG, out = []; G.confirm = null; G.openMode('sandbox'); G.toastT = null; SS.openCreator(G);
+      const m = () => G.menu, img = () => SS.figure(G, 'draft', 0, 0).toDataURL();
+      // every shape and color on the lists, the person changes straight away
+      const lists = { face: ['round', 'oval', 'heart', 'square'], eyes: ['almond', 'round', 'sleepy', 'lashes', 'small'], nose: ['button', 'long', 'wide', 'pointed'], lips: ['smile', 'full', 'small', 'soft'], build: ['slim', 'broad', 'curvy', 'sturdy'], hair: Object.keys(SS.HAIRSTYLES) };
+      Object.keys(lists).forEach(k => { let last = null; lists[k].forEach(v => { SS.creatorSet(G, k, v); [0, 1, 2].forEach(f => SS.figure(G, 'draft', f, 0)); const now = img(); if (now === last) out.push(k + ' ' + v + ' does not change the person'); last = now; }); });
+      [['skin', SS.SKINS.length], ['eye', SS.EYE_COLORS.length], ['lip', SS.LIP_COLORS.length], ['shade', SS.HAIR_SHADES.length]].forEach(q => { let last = null; for (let i = 0; i < q[1]; i++) { SS.creatorSet(G, q[0], i); const now = img(); if (now === last) out.push(q[0] + ' ' + i + ' does not change the person'); last = now; } });
+      if (SS.SKINS.length !== 16 || SS.HAIR_SHADES.length !== 16 || SS.EYE_COLORS.length !== 12 || SS.LIP_COLORS.length !== 10) out.push('the color lists are not 16 skins, 16 hair shades, 12 eye and 10 lip colors');
+      // Undo steps back; Random rolls a new person (or just the open tab)
+      const before = JSON.stringify(m().p); SS.creatorSet(G, 'face', 'heart'); SS.creatorUndo(G); if (JSON.stringify(m().p) !== before) out.push('Undo does not step back');
+      for (let i = 0; i < 25; i++) SS.creatorSet(G, 'face', ['round', 'oval'][i % 2]); if (m().undo.length !== 20) out.push('Undo does not keep 20 steps');
+      const p0 = JSON.stringify(m().p); let changed = false; for (let i = 0; i < 5 && !changed; i++) { SS.creatorRandom(G); changed = JSON.stringify(m().p) !== p0; } if (!changed) out.push('Random does not roll a new person');
+      const L0 = JSON.parse(JSON.stringify(m().p.look)); SS.creatorRandom(G, 'hair'); const L1 = m().p.look; if (JSON.stringify(L0) !== JSON.stringify(L1)) out.push('holding Random on Hair changes more than the hair');
+      // Done: a name, then Style for the new person; kept in this mode's save
+      const id = SS.creatorDone(G, 'Robin');
+      if (!G.menu || G.menu.kind !== 'style' || G.menu.who !== id) out.push('Done does not open Style for the new person');
+      if (SS.personName(G, id) !== 'ROBIN') out.push('the new person is not named');
+      SS.wear(G, id, 'pink-slip-dress'); if (!SS.styleCards(G, id, 'hair').some(c => c.shade !== undefined)) out.push('a made person has no hair colors in Style');
+      G.menu = null; G.changed(true); G.openMode('life'); if (SS.madePeople(G).length) out.push('a person made in Sandbox shows up in Life');
+      G.openMode('sandbox'); if (!SS.madePeople(G).some(q => q.id === id) || SS.outfitOf(G, id).dress.id !== 'pink-slip-dress') out.push('the made person is not kept');
+      // Keegan and Sarah are never opened in the Creator: People opens Style for them
+      SS.openPeople(G); G.menu.cur = 0; SS.peoplePress(G, 'a'); if (G.menu.kind !== 'style' || G.menu.who !== 'sarah') out.push('Sarah does not open in Style');
+      return out;
+    });
+    r2.forEach(o => bad.push(o));
+    // by touch: a swipe across the person spins them; a tap on a shape card picks it
+    await page.evaluate(() => { const G = SSG; G.menu = null; SS.openCreator(G); G.menu.tab = 'nose'; });
+    await page.waitForTimeout(120);
+    const card = await page.evaluate(() => { const hs = SSG.hits.filter(q => q.y > SSG.H - SS.CREATOR_TRAY + 25 && q.w === 55 && q.h === 26); const q = hs[2]; return [q.x + 20, q.y + 10]; });
+    await tapAt(page, card[0], card[1]);
+    if (await page.evaluate(() => SSG.menu.p.look.nose) !== 'wide') bad.push('tapping a shape card does not pick it');
+    const bb = await page.locator('#cv').boundingBox(), k = bb.width / 240;
+    await page.mouse.move(bb.x + 160 * k, bb.y + 150 * k); await page.mouse.down(); await page.mouse.move(bb.x + 90 * k, bb.y + 150 * k, { steps: 6 }); await page.mouse.up();
+    if (await page.evaluate(() => SSG.menu.face) !== 1) bad.push('a swipe does not spin the person');
+    bad.push(...errors); await ctx.close();
+    report('the Creator (spec 003 A, B): New person from People, nine tabs at 375 x 667 and 320 x 480, every shape and color, Random, Undo, Done to Style, kept per mode', bad);
+  }
+
+  // ---------- 6k. the rest of the year's holidays (spec 009, build order step 3) ----------
+  {
+    const bad = [];
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    const r = await page.evaluate(() => {
+      const G = SSG, out = []; G.confirm = null;
+      const days = [['newyear', 2026, 11, 31], ['valentines', 2027, 1, 14], ['keegan-bday', 2027, 2, 17], ['spring', 2027, 2, 20], ['july4', 2027, 6, 4], ['anniversary', 2027, 6, 10], ['sarah-bday', 2027, 7, 31], ['halloween', 2027, 9, 31], ['thanksgiving', 2027, 10, 25]];
+      days.forEach(q => {
+        SS.setDate(q[1], q[2], q[3]); SS.setClock(19, 0); G.openMode('life');
+        if (SS.holidayToday(SS.now()) !== q[0]) out.push(q[0] + ' is not today on its date');
+        const dress = G.W.pieces.filter(p => p.dress);
+        if (dress.length < 2) out.push(q[0] + ' does not dress the home (' + dress.length + ')');
+        if (dress.some(p => !G.W.check(p.host ? { id: p.id, host: p.host, spot: p.spot } : p.wall ? { id: p.id, f: p.f, wall: p.wall, side: p.side } : { id: p.id, f: p.f, x: p.x, y: p.y, r: p.r }, p).ok)) out.push(q[0] + '\'s dressing does not fit where it is');
+        // its pieces are on sale in season
+        const mine = SS.CATALOG.filter(d => d.holiday === q[0]); if (mine.length < 2) out.push(q[0] + ' has no Holiday tab pieces');
+        const list = G.catalogList('holiday').items.filter(it => it.def.holiday === q[0]); if (!list.length || list.some(it => !it.season)) out.push(q[0] + '\'s pieces are not "This season" on the day');
+        if ((q[0] === 'sarah-bday' || q[0] === 'keegan-bday') !== !!G.partyHat) out.push(q[0] + ': the cats\' party hats are wrong');
+      });
+      // the next day the dressing goes away, unless she kept it
+      SS.setDate(2028, 9, 31); G.openMode('life'); const keep = G.W.pieces.find(p => p.dress); SS.keepDressing(G, keep); G.changed(true);
+      SS.setDate(2028, 10, 1); G.openMode('life');
+      if (G.W.pieces.some(p => p.dress)) out.push('day dressing stays after its day');
+      if (!G.W.pieces.some(p => p.uid === keep.uid) || G.save.made.indexOf(keep.id) < 0) out.push('a kept dressing piece is not hers');
+      // out of season: the right month, in Life; in Sandbox everything is there
+      SS.setDate(2027, 4, 2); G.openMode('life');
+      const val = G.catalogList('holiday').items.find(it => it.id === 'heart-garland'); if (!val || val.away !== 'BACK IN FEBRUARY') out.push('out of season does not say the right month: ' + (val && val.away));
+      G.openMode('sandbox'); if (G.catalogList('holiday').items.some(it => it.away)) out.push('Sandbox holds back holiday pieces');
+      // fireworks on the Fourth after dark, and the moment
+      SS.setDate(2027, 6, 4); SS.setClock(22, 0); G.openMode('life'); SS.bookDay(G);
+      if (!G.look.fireworks || !SS.hasMoment('july4')) out.push('no fireworks or moment after dark on the Fourth');
+      SS.setDate(null); SS.setClock(null);
+      return out;
+    });
+    r.forEach(o => bad.push(o));
+    bad.push(...errors); await ctx.close();
+    report('the year\'s holidays (spec 009, step 3): every day dresses the home, its pieces in season, party hats, kept pieces, the right month, fireworks', bad);
+  }
+
+  // ---------- 6l. visitors: the knock, the chat and Dot's story (spec 008, part A and part B for Dot) ----------
+  {
+    const bad = [];
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    await page.evaluate(() => { const G = SSG; G.confirm = null; SS.setClock(14, 0); G.openMode('life'); G.toastT = null; G.pop = null; G.setFloor(0); G.centerCam(true); });
+    // the knock comes on its own after a few minutes of play, at most once per opening
+    const k = await page.evaluate(() => { const G = SSG, out = []; if (G.knock) out.push('a knock came straight away'); if (G.knockAt - performance.now() < 110000 || G.knockAt - performance.now() > 310000) out.push('the knock is not set for 2 to 5 minutes in'); G.knockAt = performance.now() - 1; SS.knockTick(G); if (!G.knock || G.knock.who !== 'dot') out.push('Dot does not knock first'); SS.knockNotNow(G); G.knockAt = performance.now() - 1; SS.knockTick(G); if (G.knock) out.push('a second knock came in the same opening'); return out; });
+    k.forEach(o => bad.push(o));
+    // Let in by touch
+    await page.evaluate(() => SS.forceKnock(SSG, 'dot')); await page.waitForTimeout(150);
+    const btn = await page.evaluate(() => { const h = SSG.hits.filter(q => q.w === 100 && q.h === 22); const l = h[h.length - 1]; return [l.x + 50, l.y + 11]; });
+    await tapAt(page, btn[0], btn[1]); await page.waitForTimeout(100);
+    if (await page.evaluate(() => SSG.menu && SSG.menu.kind) !== 'visit') bad.push('Let in does not open the chat');
+    await page.screenshot({ path: path.join(DIST, 'screen-visitor-375x667.png') });
+    for (let i = 0; i < 2; i++) { await page.keyboard.press('z'); await page.waitForTimeout(40); }   // A turns the chat, two lines at a time
+    const asking = await page.evaluate(() => SSG.menu && SSG.menu.asking);
+    if (!asking) bad.push('the chat does not end with her ask');
+    const story = await page.evaluate(() => {
+      const G = SSG, out = []; if (!SS.hasMoment('visitor')) out.push('the first visitor is not in the memory book');
+      if (G.menu.cur !== 0) out.push('the choices do not start on yes');
+      const c0 = G.save.coins; SS.visitPick(G, 0);
+      if (!G.gig || G.gig.offer.story !== 0) { out.push('yes does not start her story gig'); return out; }
+      if (G.catalogList('tables').items.some(i => i.id === 'potting-bench')) out.push('her set shows before it unlocks');
+      const play = () => { if (G.gig.outfit) { SS.wear(G, 'guest', 'long-wool-coat'); SS.wear(G, 'guest', 'canvas-high-tops'); SS.handInOutfit(G); } else { const W = G.W; [['monstera', 0, 0], ['side-table', 1, 0], ['double-bed', 2, 1], ['club-armchair', 0, 1]].forEach(q => { const p = { id: q[0], f: 0, x: W.ax + q[1], y: W.ay + q[2], r: 0, sw: 0 }; if (W.check(p).ok) W.add(p); }); SS.handIn(G); } const pay = G.menu.pay; SS.gigDone(G); return pay; };
+      const pays = [play()];
+      for (let s = 1; s < 4; s++) {
+        const v = SS.visitOf(G, 'dot');
+        if (SS.visitorDue(G)) out.push('a second story visit is due the same day');
+        v.last = 'yesterday'; SS.forceKnock(G, 'dot'); SS.letIn(G); G.menu.asking = true; SS.visitPick(G, 0);
+        if (!G.gig || G.gig.offer.story !== s) { out.push('story visit ' + (s + 1) + ' does not start its gig'); return out; }
+        if (s === 2 && !G.gig.outfit) out.push('visit 3 is not an outfit gig');
+        pays.push(play());
+        if (s === 1 && !G.catalogList('tables').items.some(i => i.id === 'potting-bench')) out.push('visit 2 does not unlock the potting bench');
+      }
+      if (JSON.stringify(pays) !== '[250,250,250,600]') out.push('story gigs do not pay 250, and 600 for the home: ' + JSON.stringify(pays));
+      if (G.save.coins !== c0 + 1350) out.push('the pay did not reach her coins');
+      const v = SS.visitOf(G, 'dot'); if (v.step !== 4 || v.home !== 'done') out.push('the story does not finish');
+      if (!['flower-cart', 'wicker-chair', 'big-fern'].every(id => G.catalogList(SS.DEF[id].tab).items.some(i => i.id === id))) out.push('the rest of the set does not unlock');
+      ['story', 'neighbor-redone', 'gig', 'visitor-gift'].forEach(id => { if (!SS.hasMoment(id)) out.push('the ' + id + ' moment did not fire'); });
+      // after the story: ordinary visits, chat lines that don't repeat until the pool is used up, friendship only grows
+      const seen = []; let h0 = SS.friendHearts(G, 'dot');
+      for (let i = 0; i < 4; i++) { v.last = 'x'; SS.forceKnock(G, 'dot'); SS.letIn(G); seen.push(...G.menu.lines.slice(0, 2)); G.menu = null; const h1 = SS.friendHearts(G, 'dot'); if (h1 < h0) out.push('friendship went down'); h0 = h1; }
+      if (new Set(seen).size !== seen.length) out.push('chat lines repeated before the pool ran out');
+      v.last = 'x'; SS.forceKnock(G, 'dot'); SS.letIn(G); G.menu.asking = true; SS.visitPick(G, 0); if (!G.menu || G.menu.kind !== 'gig' || G.menu.offers.some(k => SS.GIGS[k].who !== 'dot')) out.push('an ordinary visit does not offer her gig');
+      G.menu = null;
+      // Sandbox: every set piece is there, and story gigs pay nothing
+      G.openMode('sandbox'); if (!G.catalogList('plants').items.some(i => i.id === 'big-fern')) out.push('Sandbox does not have the set');
+      SS.forceKnock(G, 'dot'); SS.letIn(G); G.menu.asking = true; SS.visitPick(G, 0); if (G.gig) { SS.handIn(G); if (G.menu.pay !== 0) out.push('a Sandbox story gig pays coins'); SS.gigDone(G); }
+      SS.setClock(null);
+      return out;
+    });
+    story.forEach(o => bad.push(o));
+    bad.push(...errors); await ctx.close();
+    report('visitors (spec 008 A, B for Dot): the knock after a few minutes, Let in, the hall chat, her four story gigs and pay, her set in two steps, moments, chat pool, friendship', bad);
   }
 
   // ---------- 6c. turning the home (bible, Building, Turning the home; spec 001, part B) ----------

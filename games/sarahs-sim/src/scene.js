@@ -8,6 +8,9 @@
   var I = SS.I, FH = SS.FH, poly = StudioIso.poly, line = SS.line;
   var INK = 'rgba(59,36,48,.85)';
   var OFF = SS.OFF = [210, 300], WORLD = SS.WORLD = [420, 520];   // the world canvas: lot tile 0,0 at OFF
+  // the world canvas grows with the lot (spec 004, part A: small 16, medium 24, large 32 tiles); the arrays change in place, so
+  // everything holding them sees the new size. 16 tiles gives the sizes above.
+  SS.setLot = function (n) { OFF[0] = n * 11 + 34; OFF[1] = 300; WORLD[0] = OFF[0] * 2; WORLD[1] = 300 + n * 11 + 44; };
   function R(c, x, y, w, h, col) { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
   // P: a lot point on the screen, through the view's turn (view.js). Q: a point already turned into the view, for the walls
   // and stairs, which are turned as a whole first so their visible faces and far sides follow the view
@@ -85,7 +88,14 @@
     var endFace = s.axis === 'x' ? [B, C, up(C), up(B)] : [D, C, up(C), up(D)];
     var fa = function (u, hh) { return s.axis === 'x' ? Q(s.x + u, s.y + th, Z + hh) : Q(s.x + th, s.y + u, Z + hh); };
     var faceAt = function (u0, u1, h0, h1) { return [fa(u0, h0), fa(u1, h0), fa(u1, h1), fa(u0, h1)]; };
-    if (paper) {
+    if (paper && paper.texture) { // a paper with its own texture (Nina's): drawn along the wall's slant at 1 px a game pixel,
+      // continuing from one tile of wall to the next, with the top cut where a wall is cut down
+      var tex = SS.paperTexture(paper.texture, 11 * 32, SS.WALL_UP), O = fa(0, hi), U1 = fa(1, hi), along = (s.axis === 'x' ? s.x : s.y) % 32;
+      c.save(); poly(c, face, paper.base); c.clip();
+      c.transform((U1[0] - O[0]) / 11, (U1[1] - O[1]) / 11, 0, 1, O[0], O[1]);
+      c.imageSmoothingEnabled = false; c.drawImage(tex, along * 11, SS.WALL_UP - hi, 11, hi - lo, 0, 0, 11, hi - lo);
+      c.restore();
+    } else if (paper) {
       poly(c, face, paper.base);
       for (var u = 0; u < 1; u += .5) poly(c, faceAt(u, u + .25, Math.max(lo, 0), hi), paper.stripe);
       if (hi > 20) for (var k = .25; k < 1; k += .5) for (var hh = 22; hh < hi - 4; hh += 14) { if (hh < lo) continue; var q = fa(k, hh + ((s.x + s.y) % 2 ? 7 : 0)); if (hh + 7 < hi - 2) R(c, q[0] - 1, q[1] - 1, 2, 2, paper.dot); }
@@ -120,6 +130,10 @@
       SS.clip(c, gl, function () {
         // rooftops across the street, with lit windows at night
         for (var k = 0; k < 3; k++) { var a = fa(u0 + k * .3, b0), top = 10 + ((s.x * 3 + s.y + k) % 3) * 3; R(c, a[0], a[1] - top - 6, 8, top + 6, ['#b46a5a', '#9e5a4e', '#b9786a'][k]); R(c, a[0], a[1] - top - 8, 8, 2, look.snow ? '#f7fbff' : '#8e5a4e'); if (look.dark > .3) { R(c, a[0] + 2, a[1] - top, 2, 2, '#ffd98a'); R(c, a[0] + 5, a[1] - top + 4, 2, 2, '#ffd98a'); } }
+        if (look.fireworks && look.dark > .3) for (var fw = 0; fw < 2; fw++) { // the Fourth of July: fireworks over the street after dark (spec 009, part B)
+          var ph = (t + fw * 5 + s.x) % 12, fc = fa(u0 + .3 + fw * .35, b1 - 6 - fw * 4), col = ['#ffd56b', '#e46f8b', '#8fd0ff'][(Math.floor((t + fw * 5) / 12) + fw) % 3];
+          if (ph < 8) for (var ray = 0; ray < 8; ray++) { var an = ray * Math.PI / 4, rr = 1 + ph * .7; R(c, fc[0] + Math.cos(an) * rr, fc[1] + Math.sin(an) * rr * .8, 1, 1, ph > 5 ? 'rgba(255,240,200,.6)' : col); }
+        }
         if (look.stars) for (var i = 0; i < 4; i++) { var sp = fa(u0 + .1 + i * .2, b1 - 3 - (i % 2) * 4); R(c, sp[0], sp[1], 1, 1, '#fff'); }
         if (look.snow) for (var j = 0; j < 5; j++) { var sx = fa(u0 + ((j * .23 + t * .013 * (1 + j % 2)) % 1) * (u1 - u0), b1 - ((j * 7 + t * 1.3) % 24)); R(c, sx[0], sx[1], 1, 1, 'rgba(255,255,255,.9)'); }
       });
@@ -238,6 +252,7 @@
   var BASE = {};
   SS.drawScene = function (c, W, o) {
     var F = o.floor, t = o.t, look = o.look;
+    SS.setLot(W.lot); if (c.canvas.width !== WORLD[0] || c.canvas.height !== WORLD[1]) { c.canvas.width = WORLD[0]; c.canvas.height = WORLD[1]; }
     c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, WORLD[0], WORLD[1]);
     c.setTransform(1, 0, 0, 1, OFF[0], OFF[1]);
     var hits = [];
@@ -360,7 +375,7 @@
 
   // ---------- light ----------
   var MASK = null;
-  function maskCanvas() { if (!MASK) { MASK = document.createElement('canvas'); MASK.width = WORLD[0]; MASK.height = WORLD[1]; } return MASK; }
+  function maskCanvas() { if (!MASK || MASK.width !== WORLD[0] || MASK.height !== WORLD[1]) { MASK = document.createElement('canvas'); MASK.width = WORLD[0]; MASK.height = WORLD[1]; } return MASK; }
   function applyLight(c, W, F, o) {
     var L = o.look;
     if (L.tint) { // multiply the light's color over what's drawn (masked, so empty parts of the world canvas stay empty)
