@@ -3,17 +3,21 @@
 //   ss.version     the save version (1 from the first build); older saves are backed up, then each upgrade step runs
 //   ss.gift        '1' once the first-open gift has been opened, for the whole game (never shows again)
 //   ss.last        the mode she played last: 'sandbox' or 'life' (Continue opens it)
-//   ss.sandbox     Sandbox's save: its home and pieces (and stored pieces)
+//   ss.sandbox     Sandbox's save: its home and pieces (and stored pieces), and homes: each built-on home's own walls and rooms
+//                  (version 2, the Build screen) and the pieces in homes other than the Philly home
 //   ss.life        Life's save: its home and pieces, coins, crafts made, the painting pool's shown list
 //   ss.favorites   rooms and outfits, shared by every mode (spec 001, part E, not built yet: kept empty)
 //   ss.backupAt    when she last made a backup file; ss.remindAt  when the title may offer one again
 // A backup file holds every key above (engine/backup.js), so importing on a new phone keeps every mode, the favorites
 // and the gift.
 (function () {
-  var VERSION = SS.SAVE_VERSION = 1;
+  var VERSION = SS.SAVE_VERSION = 2;
   var PRE = SS.PRE = (window.Studio ? Studio.savePrefix('ss.') : 'ss.');
   // upgrade steps: UPGRADES[n] turns a version n save into version n + 1. Old steps are never changed.
-  var UPGRADES = {};
+  var UPGRADES = {
+    // 1 to 2 (Nov 28, the Build screen, spec 004): a save keeps the homes she builds on, apart from the Philly home's pieces
+    1: function (s) { s.homes = s.homes || {}; s.home = s.home || 'philly'; return s; }
+  };
   function get(k) { try { return localStorage.getItem(PRE + k); } catch (e) { return null; } }
   function set(k, v) { try { localStorage.setItem(PRE + k, v); } catch (e) {} }
   SS.store = { get: get, set: set };
@@ -35,7 +39,7 @@
   };
   // a new save for a mode: the furnished Philly home (spec 001, part F; in Sandbox and Life it starts the same)
   SS.newSave = function (mode) {
-    var s = { v: VERSION, mode: mode, home: 'philly', pieces: SS.World.startPieces(SS.HOMES.philly), stored: [], made: [], started: Date.now() };
+    var s = { v: VERSION, mode: mode, home: 'philly', homes: {}, pieces: SS.World.startPieces(SS.HOMES.philly), stored: [], made: [], started: Date.now() };
     if (mode === 'life') { s.coins = 500; s.shown = { painting: [] }; }   // Life starts with 500 coins (spec 006, part A)
     return s;
   };

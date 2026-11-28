@@ -854,6 +854,156 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     report('coins, the shop and gigs (spec 006 F): prices, buying, selling back on Keep, Sandbox free, coins kept, a gig offered, designed, rated and paid', bad);
   }
 
+  // ---------- 6h. the Build screen: lots, rooms and walls (spec 004, parts A and B) ----------
+  {
+    const bad = [];
+    for (const [w, h] of [[375, 667], [320, 480]]) {
+      const { ctx, page, errors } = await fresh({ w, h, init: () => localStorage.setItem('ss.gift', '1') });
+      // part A: each street lot and a Sandbox new lot in all three sizes, the 8 tools with the picked one named, the view moves
+      const a = await page.evaluate(() => {
+        const G = SSG, out = []; G.confirm = null; G.openMode('sandbox'); G.toastT = null;
+        G.menuPick(SS.MENU_ROWS.findIndex(r => r[1] === 'homes'));
+        const list = SS.homeList(G); if (list.length !== 4) out.push('Homes does not list the Philly home and the street\'s three lots: ' + list.length);
+        ['lot-small', 'lot-medium', 'lot-large'].forEach((id, i) => {
+          G.menu = { kind: 'homes', cur: 0 }; G.homePick(SS.homeList(G).findIndex(q => q.id === id));
+          if (G.save.home !== id || G.W.lot !== [16, 24, 32][i]) out.push(id + ' does not open as a ' + [16, 24, 32][i] + ' lot');
+          if (G.trayState() !== 'build') out.push(id + ' does not open on the Build tab');
+        });
+        [16, 24, 32].forEach(n => { SS.newLot(G, n); if (G.W.lot !== n || !/^new-/.test(G.save.home)) out.push('New lot ' + n + ' does not open'); });
+        return out;
+      });
+      a.forEach(o => bad.push(w + 'x' + h + ': ' + o));
+      // the tools row: 8 tools, tapping one names it
+      await page.waitForTimeout(100);
+      const tools = await page.evaluate(() => SSG.hits.filter(q => q.y > SSG.H - SS.TRAY_H.build + 15 && q.y < SSG.H - SS.TRAY_H.build + 40).length);
+      if (tools < 8) bad.push(w + 'x' + h + ': the Build tab does not show 8 tools (' + tools + ')');
+      const tb = await page.evaluate(() => { const q = SSG.hits.filter(q => q.y > SSG.H - SS.TRAY_H.build + 15 && q.y < SSG.H - SS.TRAY_H.build + 40)[7]; return [q.x + q.w / 2, q.y + q.h / 2]; });
+      await tapAt(page, tb[0], tb[1]); await page.waitForTimeout(60);
+      if (await page.evaluate(() => SSG.build.tool) !== 'erase') bad.push(w + 'x' + h + ': tapping the erase tool does not pick it');
+      await page.evaluate(() => { SSG.build.tool = 'room'; });
+      // the D-pad moves the view around a large lot, as far as its corners
+      const pan = await page.evaluate(() => { const G = SSG, x0 = G.cam.x, y0 = G.cam.y; return { x0, y0 }; });
+      for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowRight');
+      for (let i = 0; i < 30; i++) await page.keyboard.press('ArrowDown');
+      const pan2 = await page.evaluate(() => ({ x: SSG.cam.x, y: SSG.cam.y }));
+      if (pan2.x - pan.x0 < 150 || pan2.y - pan.y0 < 100) bad.push(w + 'x' + h + ': the D-pad does not slide far across a large lot: ' + JSON.stringify([pan, pan2]));
+      if (w === 375) await page.screenshot({ path: path.join(DIST, 'screen-build-375x667.png') });
+      bad.push(...errors.map(e => w + 'x' + h + ': ' + e)); await ctx.close();
+    }
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    await page.evaluate(() => { const G = SSG; G.confirm = null; G.openMode('sandbox'); G.toastT = null; SS.goHome(G, 'lot-medium'); SS.enterBuild(G); G.cam.zoom = 1; G.centerCam(); });
+    await page.waitForTimeout(80);
+    // part B by touch: drag a box from one tile to another; the size tag shows while dragging; letting go builds the room
+    const scr = (x, y) => page.evaluate(([x, y]) => { const q = SS.vp(x + .5, y + .5, 0); return SSG.toScreen(q[0], q[1]); }, [x, y]);
+    const b = await page.locator('#cv').boundingBox(), k = b.width / 240;
+    async function dragTiles(t0, t1, corner) {
+      const p0 = corner ? await page.evaluate(([x, y]) => { const q = SS.vp(x, y, 0); return SSG.toScreen(q[0], q[1]); }, t0) : await scr(t0[0], t0[1]);
+      const p1 = corner ? await page.evaluate(([x, y]) => { const q = SS.vp(x, y, 0); return SSG.toScreen(q[0], q[1]); }, t1) : await scr(t1[0], t1[1]);
+      await page.mouse.move(b.x + p0[0] * k, b.y + p0[1] * k); await page.mouse.down();
+      for (let s = 1; s <= 10; s++) { await page.mouse.move(b.x + (p0[0] + (p1[0] - p0[0]) * s / 10) * k, b.y + (p0[1] + (p1[1] - p0[1]) * s / 10) * k); await page.waitForTimeout(16); }
+      const tag = await page.evaluate(() => SSG.build.drag && SSG.build.drag.tag);
+      await page.mouse.up(); await page.waitForTimeout(60);
+      return tag;
+    }
+    const tag = await dragTiles([10, 10], [14, 15]);
+    if (tag !== '5 × 6') bad.push('the size tag does not show 5 × 6 while dragging (' + tag + ')');
+    const R1 = await page.evaluate(() => SSG.W.home.floors[0].rooms.map(r => r.t.length));
+    if (R1.length !== 1 || R1[0] !== 30) bad.push('dragging a box does not build a 5 × 6 room: ' + JSON.stringify(R1));
+    // the rules: 2 × 2 at least, inside the lot; against another room it shares the wall
+    const rules = await page.evaluate(() => {
+      const G = SSG, out = [], B = SS._build, D = () => SS.toLotForm(SS.homeData(G.save, G.save.home));
+      if (B.roomEdit(D(), 0, 2, 2, 3, 3).D) out.push('a 1 × 1 room can be built');
+      if (!B.roomEdit(D(), 0, 2, 2, 4, 4).D) out.push('a 2 × 2 room can\'t be built');
+      if (B.roomEdit(D(), 0, 22, 2, 25, 5).D) out.push('a room can go past the lot\'s edge');
+      const r = B.roomEdit(D(), 0, 15, 10, 18, 13); if (!r.D) { out.push('a room against another can\'t be built'); return out; }
+      SS.buildCommit(G, r.D);
+      const W = G.W; if (W.home.floors[0].rooms.length !== 2) out.push('two rooms side by side are not two rooms');
+      const shared = W.walls[0].filter(s => s.axis === 'y' && s.x === 15 && s.y >= 10 && s.y < 13); if (shared.length !== 3 || shared.some(s => !s.a || !s.b)) out.push('rooms side by side do not share one wall');
+      return out;
+    });
+    rules.forEach(o => bad.push(o));
+    // the wall tool: a line across a room cuts it in two; walls closing in a space make it a room
+    await page.evaluate(() => { SSG.build.tool = 'wall'; });
+    await dragTiles([12, 10], [12, 16], true);
+    const cut = await page.evaluate(() => SSG.W.home.floors[0].rooms.map(r => r.t.length).sort((a, b) => a - b));
+    if (JSON.stringify(cut) !== '[9,12,18]') bad.push('a wall across a room does not cut it in two: ' + JSON.stringify(cut));
+    const shut = await page.evaluate(() => {
+      const G = SSG, B = SS._build; let D = SS.toLotForm(SS.homeData(G.save, G.save.home));
+      [['x', 2, 2, 5], ['x', 5, 2, 5], ['y', 2, 2, 5], ['y', 5, 2, 5]].forEach(q => { const r = B.wallEdit(D, 0, q[0], q[1], q[2], q[3]); if (r.D) D = r.D; });
+      SS.buildCommit(G, D); return G.W.home.floors[0].rooms.map(r => r.t.length).sort((a, b) => a - b);
+    });
+    if (shut.indexOf(9) < 0 || shut.length !== 4) bad.push('four walls around a space do not make it a room: ' + JSON.stringify(shut));
+    // tap a wall to pick it; the D-pad moves it a tile; the chip erases it
+    await page.evaluate(() => { SSG.build.tool = 'room'; SSG.walls = 'up'; });
+    const wp = await page.evaluate(() => { const G = SSG, s = G.W.seg(0, 12, 12, 'y'), q = SS.vp(12, 12.5, 23); return G.toScreen(q[0], q[1]); });
+    await tapAt(page, wp[0], wp[1]);
+    const picked = await page.evaluate(() => SSG.build.wall && SSG.build.wall.run.length);
+    if (picked !== 6) bad.push('tapping a wall does not pick its whole run (' + picked + ')');
+    else {
+      const before = await page.evaluate(() => SSG.W.room(0, 10, 11).t.length);
+      await page.evaluate(() => SS.moveWall(SSG, 1));
+      const after = await page.evaluate(() => ({ rooms: SSG.W.room(0, 10, 11).t.length, at: SSG.build.wall && SSG.build.wall.run[0][0] }));
+      if (before !== 12 || after.rooms !== 18 || after.at !== 13) bad.push('moving a wall a tile does not move it: ' + JSON.stringify([before, after]));
+      await page.evaluate(() => SS.eraseWall(SSG));
+      const er = await page.evaluate(() => SSG.W.home.floors[0].rooms.map(r => r.t.length).sort((a, b) => a - b));
+      if (JSON.stringify(er) !== '[9,9,30]') bad.push('erasing the wall between two rooms does not open them into one: ' + JSON.stringify(er));
+    }
+    // erase a floor tile; undo steps back through the changes
+    const un = await page.evaluate(() => {
+      const G = SSG, out = [], n0 = G.undo.length; G.build.tool = 'erase';
+      const tiles = () => G.W.home.floors[0].rooms.reduce((n, r) => n + r.t.length, 0), t0 = tiles();
+      G.walls = 'down'; const q = SS.vp(10.5, 10.5, 0); SS.buildTap(G, q, [10, 10, 10.5, 10.5]);
+      if (tiles() !== t0 - 1) out.push('erase does not take out a floor tile: ' + (G.toastT && G.toastT.text));
+      SS.buildTap(G, SS.vp(11.5, 12.5, 0), [11, 12, 11.5, 12.5]); if (tiles() !== t0 - 1) out.push('a hole can be erased in the middle of a room');
+      if (G.undo.length < 5) out.push('build changes are not undo steps (' + G.undo.length + ')');
+      while (G.undo.length) G.doUndo();
+      if (G.W.home.floors[0].rooms.length) out.push('undoing every change does not bring back the empty lot');
+      void n0; return out;
+    });
+    un.forEach(o => bad.push(o));
+    // the Philly home: a wall moved over furniture sends it to storage, so nothing is lost; walls kept after reopening
+    const ph = await page.evaluate(() => {
+      const G = SSG, out = []; SS.goHome(G, 'philly'); SS.enterBuild(G); G.setFloor(0); G.floor = 0;
+      const n0 = G.W.pieces.length + G.save.stored.length;
+      const s = G.W.seg(0, 9, 11, 'x'); G.build.wall = { f: 0, run: SS.wallRun(G.W, 0, s).map(q => [q.x, q.y, q.axis]) };
+      SS.moveWall(G, 1);   // the dining nook's wall a tile into the living room, over the lamps and the plant
+      if (!G.W.seg(0, 9, 12, 'x')) out.push('the wall did not move: ' + (G.toastT && G.toastT.text));
+      // the front wall can't move in: the floors above would hang over nothing
+      const f2 = G.W.seg(0, 6, 16, 'x'); G.build.wall = { f: 0, run: SS.wallRun(G.W, 0, f2).map(q => [q.x, q.y, q.axis]) }; SS.moveWall(G, -1);
+      if (!G.W.seg(0, 6, 16, 'x')) out.push('the front wall moved in under the floors above');
+      if (G.W.pieces.length + G.save.stored.length !== n0) out.push('pieces were lost when a wall moved');
+      if (!G.save.stored.length) out.push('a piece in the way of a moved wall did not go to storage');
+      const bad2 = G.W.pieces.filter(p => !p.host && !G.W.check(p.wall ? { id: p.id, f: p.f, wall: p.wall, side: p.side } : { id: p.id, f: p.f, x: p.x, y: p.y, r: p.r || 0 }, p).ok && /OUTSIDE|WALL/.test(G.W.check(p.wall ? { id: p.id, f: p.f, wall: p.wall, side: p.side } : { id: p.id, f: p.f, x: p.x, y: p.y, r: p.r || 0 }, p).why));
+      if (bad2.length) out.push('pieces are left in walls or outside: ' + bad2.map(p => p.id).join());
+      const living = (G.W.room(0, 5, 14).t || []).length; G.changed(true); G.openMode('life'); G.openMode('sandbox');
+      if (!G.W.room(0, 5, 14) || G.W.room(0, 5, 14).t.length !== living) out.push('the Philly home\'s new walls are not kept');
+      // she left off on another lot: Continue opens it there, with her home waiting
+      SS.goHome(G, 'lot-medium'); G.changed(true); G.openMode('life'); G.openMode('sandbox');
+      if (G.save.home !== 'lot-medium' || G.W.lot !== 24 || !G.away) out.push('reopening does not go back to the lot she was on');
+      SS.goHome(G, 'philly'); if (G.W.lot !== 16 || !G.agents.length) out.push('going home does not bring back the home and everyone in it');
+      return out;
+    });
+    ph.forEach(o => bad.push(o));
+    // Life: walls and floors cost 5 coins a tile, shown before she lets go; erasing gives back what she paid; not enough is refused
+    const life = await page.evaluate(() => {
+      const G = SSG, out = []; G.openMode('life'); G.toastT = null; SS.goHome(G, 'lot-small'); SS.enterBuild(G); G.build.tool = 'room'; G.save.coins = 500;
+      SS.buildDragStart(G, [2, 2, 2.5, 2.5]); SS.buildDrag(G, [4, 4, 4.5, 4.5]);
+      const shown = G.build.drag.cost; SS.buildDragEnd(G);
+      if (shown !== (9 + 12) * 5) out.push('a 3 × 3 room does not show 105 coins: ' + shown);
+      if (G.save.coins !== 500 - 105) out.push('building does not charge: ' + G.save.coins);
+      const s = G.W.seg(0, 2, 2, 'x'); G.build.wall = { f: 0, run: SS.wallRun(G.W, 0, s).map(q => [q.x, q.y, q.axis]) }; SS.eraseWall(G);
+      if (G.save.coins !== 500 - 105 + 15) out.push('erasing a wall does not give its coins back: ' + G.save.coins);
+      G.save.coins = 10; const n = G.W.home.floors[0].rooms.length; SS.buildDragStart(G, [8, 8, 8.5, 8.5]); SS.buildDrag(G, [10, 10, 10.5, 10.5]); SS.buildDragEnd(G);
+      if (G.W.home.floors[0].rooms.length !== n || G.save.coins !== 10) out.push('a room she can\'t afford still gets built');
+      if (!SS.hasMoment('first-wall')) out.push('the first wall on an empty lot is not in the memory book');
+      SS.goHome(G, 'philly');
+      return out;
+    });
+    life.forEach(o => bad.push(o));
+    bad.push(...errors); await ctx.close();
+    report('the Build screen (spec 004 A, B): lots in 3 sizes, the 8 tools, rooms with a size tag, single walls, pick, move and erase, nothing lost, undo, prices, saved', bad);
+  }
+
   // ---------- 6c. turning the home (bible, Building, Turning the home; spec 001, part B) ----------
   {
     const bad = [];

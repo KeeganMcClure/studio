@@ -8,6 +8,9 @@
   var I = SS.I, FH = SS.FH, poly = StudioIso.poly, line = SS.line;
   var INK = 'rgba(59,36,48,.85)';
   var OFF = SS.OFF = [210, 300], WORLD = SS.WORLD = [420, 520];   // the world canvas: lot tile 0,0 at OFF
+  // the world canvas grows with the lot (spec 004, part A: small 16, medium 24, large 32 tiles); the arrays change in place, so
+  // everything holding them sees the new size. 16 tiles gives the sizes above.
+  SS.setLot = function (n) { OFF[0] = n * 11 + 34; OFF[1] = 300; WORLD[0] = OFF[0] * 2; WORLD[1] = 300 + n * 11 + 44; };
   function R(c, x, y, w, h, col) { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
   // P: a lot point on the screen, through the view's turn (view.js). Q: a point already turned into the view, for the walls
   // and stairs, which are turned as a whole first so their visible faces and far sides follow the view
@@ -245,6 +248,7 @@
   var BASE = {};
   SS.drawScene = function (c, W, o) {
     var F = o.floor, t = o.t, look = o.look;
+    SS.setLot(W.lot); if (c.canvas.width !== WORLD[0] || c.canvas.height !== WORLD[1]) { c.canvas.width = WORLD[0]; c.canvas.height = WORLD[1]; }
     c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, WORLD[0], WORLD[1]);
     c.setTransform(1, 0, 0, 1, OFF[0], OFF[1]);
     var hits = [];
@@ -367,7 +371,7 @@
 
   // ---------- light ----------
   var MASK = null;
-  function maskCanvas() { if (!MASK) { MASK = document.createElement('canvas'); MASK.width = WORLD[0]; MASK.height = WORLD[1]; } return MASK; }
+  function maskCanvas() { if (!MASK || MASK.width !== WORLD[0] || MASK.height !== WORLD[1]) { MASK = document.createElement('canvas'); MASK.width = WORLD[0]; MASK.height = WORLD[1]; } return MASK; }
   function applyLight(c, W, F, o) {
     var L = o.look;
     if (L.tint) { // multiply the light's color over what's drawn (masked, so empty parts of the world canvas stay empty)

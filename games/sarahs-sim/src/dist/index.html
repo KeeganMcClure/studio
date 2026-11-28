@@ -3171,35 +3171,52 @@ var SS = window.SS = window.SS || {};
   function World(home, pieces, looks) {
     home = JSON.parse(JSON.stringify(home));
     if (looks) home.floors.forEach(function (fl, f) { fl.rooms.forEach(function (r) { var L = looks[f + ':' + r.id]; if (L) { if (L.floor) r.floor = L.floor; if (L.paper) r.paper = L.paper; } }); });
-    var W = { home: home, lot: home.lot, ax: home.at[0], ay: home.at[1], floors: home.floors.length, pieces: [], byUid: {}, nextUid: 1 };
-    var ax = W.ax, ay = W.ay;
+    // a home is either prebuilt data in house tiles (home.js: rooms as rectangles r, placed at home.at) or a save's own built
+    // home in lot tiles ("lot form", build.js: rooms as tile lists t, plus single walls). Everything below is in lot tiles.
+    var off = home.lotForm ? [0, 0] : home.at;
+    var W = { home: home, lot: home.lot, floors: home.floors.length, pieces: [], byUid: {}, nextUid: 1 };
     // rooms per tile
     W.rooms = home.floors.map(function (fl) {
       var g = {};
-      fl.rooms.forEach(function (r) { for (var x = r.r[0]; x < r.r[2]; x++) for (var y = r.r[1]; y < r.r[3]; y++) g[(x + ax) + ',' + (y + ay)] = r; });
+      fl.rooms.forEach(function (r) {
+        if (r.t) r.t.forEach(function (k) { g[k] = r; });
+        else for (var x = r.r[0]; x < r.r[2]; x++) for (var y = r.r[1]; y < r.r[3]; y++) g[(x + off[0]) + ',' + (y + off[1])] = r;
+      });
       return g;
     });
     W.room = function (f, x, y) { return (W.rooms[f] || {})[x + ',' + y] || null; };
+    // the house's footprint (every floor): where the camera starts and the front path runs from. An empty lot has none, so
+    // the middle of the lot stands in for it
+    var bx0 = 1e9, by0 = 1e9, bx1 = -1e9, by1 = -1e9;
+    W.rooms.forEach(function (g) { for (var k in g) { var q = k.split(','), x = +q[0], y = +q[1]; bx0 = Math.min(bx0, x); by0 = Math.min(by0, y); bx1 = Math.max(bx1, x + 1); by1 = Math.max(by1, y + 1); } });
+    if (bx0 > bx1) { bx0 = bx1 = Math.floor(W.lot / 2); by0 = by1 = Math.floor(W.lot / 2); }
+    W.ax = bx0; W.ay = by0; home.w = bx1 - bx0; home.d = by1 - by0;
+    var ax = off[0], ay = off[1];
     // stairs, in lot tiles
     W.stairs = home.stairs.map(function (s) { return { floor: s.floor, tiles: s.tiles.map(function (q) { return [q[0] + ax, q[1] + ay]; }), from: [s.from[0] + ax, s.from[1] + ay], to: [s.to[0] + ax, s.to[1] + ay] }; });
     W.stairAt = function (f, x, y) { for (var i = 0; i < W.stairs.length; i++) { var s = W.stairs[i]; if (s.floor === f && s.tiles.some(function (q) { return q[0] === x && q[1] === y; })) return s; } return null; };
     W.wellAt = function (f, x, y) { return W.stairs.some(function (s) { return s.floor === f - 1 && s.tiles.some(function (q) { return q[0] === x && q[1] === y; }); }); };
-    // walls: every tile edge between two different rooms (or a room and outside), unless they're open to each other
+    // walls: every tile edge between two different rooms (or a room and outside), unless they're open to each other, plus the
+    // single walls drawn with the wall tool (spec 004, part B), which can stand inside a room or out on the lot
     W.walls = home.floors.map(function (fl, f) {
       var segs = [], key = {};
-      var open = {}, wins = {};
+      var open = {}, wins = {}, single = {};
       fl.openings.forEach(function (o) { open[(o[0] + ax) + ',' + (o[1] + ay) + o[2]] = o[3]; });
       fl.windows.forEach(function (o) { for (var k = 0; k < o[3]; k++) wins[(o[2] === 'x' ? (o[0] + k + ax) + ',' + (o[1] + ay) : (o[0] + ax) + ',' + (o[1] + k + ay)) + o[2]] = { start: k === 0, end: k === o[3] - 1, len: o[3], k: k }; });
+      (fl.walls || []).forEach(function (o) { single[(o[0] + ax) + ',' + (o[1] + ay) + o[2]] = 1; });
       for (var x = 0; x <= W.lot; x++) for (var y = 0; y <= W.lot; y++) {
         [['x', x, y - 1, x, y], ['y', x - 1, y, x, y]].forEach(function (e) {
+          var k = x + ',' + y + e[0], one = single[k];
+          if ((e[0] === 'x' && x >= W.lot) || (e[0] === 'y' && y >= W.lot)) return;
           var a = W.room(f, e[1], e[2]), b = W.room(f, e[3], e[4]);
-          if (a === b || (!a && !b)) return;
-          if (a && b && a.group && a.group === b.group) return;
-          var k = x + ',' + y + e[0], op = open[k];
-          if (op === 'open') return;
-          var s = { f: f, x: x, y: y, axis: e[0], a: a, b: b, ext: !a || !b, op: op || null, win: wins[k] || null };
+          if (!one && (a === b || (!a && !b))) return;
+          if (!one && a && b && a.group && a.group === b.group) return;
+          var op = open[k];
+          if (op === 'open' && !one) return;
+          if (op === 'open') op = null;
+          var s = { f: f, x: x, y: y, axis: e[0], a: a, b: b, ext: !a !== !b, op: op || null, win: wins[k] || null, single: !!one };
           // a back wall: an outside wall on the far sides of the house (the ones that stay up when walls are cut away)
-          s.back = s.ext && ((e[0] === 'x' && !a) || (e[0] === 'y' && !a));
+          s.back = s.ext && !a;
           segs.push(s); key[k] = s;
         });
       }
@@ -3376,6 +3393,9 @@ var SS = window.SS = window.SS || {};
   var I = SS.I, FH = SS.FH, poly = StudioIso.poly, line = SS.line;
   var INK = 'rgba(59,36,48,.85)';
   var OFF = SS.OFF = [210, 300], WORLD = SS.WORLD = [420, 520];   // the world canvas: lot tile 0,0 at OFF
+  // the world canvas grows with the lot (spec 004, part A: small 16, medium 24, large 32 tiles); the arrays change in place, so
+  // everything holding them sees the new size. 16 tiles gives the sizes above.
+  SS.setLot = function (n) { OFF[0] = n * 11 + 34; OFF[1] = 300; WORLD[0] = OFF[0] * 2; WORLD[1] = 300 + n * 11 + 44; };
   function R(c, x, y, w, h, col) { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
   // P: a lot point on the screen, through the view's turn (view.js). Q: a point already turned into the view, for the walls
   // and stairs, which are turned as a whole first so their visible faces and far sides follow the view
@@ -3613,6 +3633,7 @@ var SS = window.SS = window.SS || {};
   var BASE = {};
   SS.drawScene = function (c, W, o) {
     var F = o.floor, t = o.t, look = o.look;
+    SS.setLot(W.lot); if (c.canvas.width !== WORLD[0] || c.canvas.height !== WORLD[1]) { c.canvas.width = WORLD[0]; c.canvas.height = WORLD[1]; }
     c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, WORLD[0], WORLD[1]);
     c.setTransform(1, 0, 0, 1, OFF[0], OFF[1]);
     var hits = [];
@@ -3735,7 +3756,7 @@ var SS = window.SS = window.SS || {};
 
   // ---------- light ----------
   var MASK = null;
-  function maskCanvas() { if (!MASK) { MASK = document.createElement('canvas'); MASK.width = WORLD[0]; MASK.height = WORLD[1]; } return MASK; }
+  function maskCanvas() { if (!MASK || MASK.width !== WORLD[0] || MASK.height !== WORLD[1]) { MASK = document.createElement('canvas'); MASK.width = WORLD[0]; MASK.height = WORLD[1]; } return MASK; }
   function applyLight(c, W, F, o) {
     var L = o.look;
     if (L.tint) { // multiply the light's color over what's drawn (masked, so empty parts of the world canvas stay empty)
@@ -3841,17 +3862,21 @@ var SS = window.SS = window.SS || {};
 //   ss.version     the save version (1 from the first build); older saves are backed up, then each upgrade step runs
 //   ss.gift        '1' once the first-open gift has been opened, for the whole game (never shows again)
 //   ss.last        the mode she played last: 'sandbox' or 'life' (Continue opens it)
-//   ss.sandbox     Sandbox's save: its home and pieces (and stored pieces)
+//   ss.sandbox     Sandbox's save: its home and pieces (and stored pieces), and homes: each built-on home's own walls and rooms
+//                  (version 2, the Build screen) and the pieces in homes other than the Philly home
 //   ss.life        Life's save: its home and pieces, coins, crafts made, the painting pool's shown list
 //   ss.favorites   rooms and outfits, shared by every mode (spec 001, part E, not built yet: kept empty)
 //   ss.backupAt    when she last made a backup file; ss.remindAt  when the title may offer one again
 // A backup file holds every key above (engine/backup.js), so importing on a new phone keeps every mode, the favorites
 // and the gift.
 (function () {
-  var VERSION = SS.SAVE_VERSION = 1;
+  var VERSION = SS.SAVE_VERSION = 2;
   var PRE = SS.PRE = (window.Studio ? Studio.savePrefix('ss.') : 'ss.');
   // upgrade steps: UPGRADES[n] turns a version n save into version n + 1. Old steps are never changed.
-  var UPGRADES = {};
+  var UPGRADES = {
+    // 1 to 2 (Nov 28, the Build screen, spec 004): a save keeps the homes she builds on, apart from the Philly home's pieces
+    1: function (s) { s.homes = s.homes || {}; s.home = s.home || 'philly'; return s; }
+  };
   function get(k) { try { return localStorage.getItem(PRE + k); } catch (e) { return null; } }
   function set(k, v) { try { localStorage.setItem(PRE + k, v); } catch (e) {} }
   SS.store = { get: get, set: set };
@@ -3873,7 +3898,7 @@ var SS = window.SS = window.SS || {};
   };
   // a new save for a mode: the furnished Philly home (spec 001, part F; in Sandbox and Life it starts the same)
   SS.newSave = function (mode) {
-    var s = { v: VERSION, mode: mode, home: 'philly', pieces: SS.World.startPieces(SS.HOMES.philly), stored: [], made: [], started: Date.now() };
+    var s = { v: VERSION, mode: mode, home: 'philly', homes: {}, pieces: SS.World.startPieces(SS.HOMES.philly), stored: [], made: [], started: Date.now() };
     if (mode === 'life') { s.coins = 500; s.shown = { painting: [] }; }   // Life starts with 500 coins (spec 006, part A)
     return s;
   };
@@ -4727,7 +4752,7 @@ var SS = window.SS = window.SS || {};
     var agents = (G.agents || []).filter(function (a) { return a.f === f.f && Math.abs(a.x - f.x) < 4.5 && Math.abs(a.y - f.y) < 4.5; }).map(function (a) {
       return { kind: a.kind, who: a.who, x: a.x, y: a.y, z: a.z || 0, pose: a.path && a.path.length ? 'stand' : a.pose, flip: !!a.flip, back: false, on: a.on || null, arms: a.arms || null };
     });
-    return { home: G.save.home, f: f.f, x: f.x, y: f.y, k: SS.view.k, pieces: pieces, agents: agents, xmas: !!G.xmasDay, looks: G.save.roomLook || null };
+    return { home: G.save.home, data: SS.builtData(G), f: f.f, x: f.x, y: f.y, k: SS.view.k, pieces: pieces, agents: agents, xmas: !!G.xmasDay, looks: SS.curLooks(G) };
   }
 
   // ---------- drawing a snapshot from its recipe (cached once drawn) ----------
@@ -4740,7 +4765,7 @@ var SS = window.SS = window.SS || {};
   // draws any picture recipe {home, f, x, y, k, pieces, agents, looks, xmas, span} small and crisp (the memory book's snapshots,
   // the favorites' room pictures). span: how many px of the world the picture spans across (176 by default)
   SS.drawRecipe = function (r, w, h, look, tag) {
-    var home = SS.HOMES[r.home] || SS.HOMES.philly, OFF = SS.OFF;
+    var home = r.data || SS.HOMES[r.home] || SS.HOMES.philly, OFF = SS.OFF;   // a built home brings its own data (spec 004)
     var pieces = JSON.parse(JSON.stringify(r.pieces)).map(function (p) { p.uid += 1e6; if (p.host) p.host += 1e6; return p; });   // their own sprites, apart from the live home's
     var W = SS.World(home, pieces, r.looks);
     var agents = (r.agents || []).map(function (a) {
@@ -4752,10 +4777,11 @@ var SS = window.SS = window.SS || {};
         } };
     });
     var cv = document.createElement('canvas'); cv.width = SS.WORLD[0]; cv.height = SS.WORLD[1];
-    var k0 = SS.view.k, q; SS.view.k = r.k || 0;   // drawn in the view it was seen in
-    try { SS.drawScene(cv.getContext('2d'), W, { version: tag || 'recipe', floor: r.f, walls: 'cut', t: 0, look: look, agents: agents }); q = SS.vp(r.x, r.y, r.f * SS.FH + 10); }
-    finally { SS.view.k = k0; }
-    var cw = r.span || 176, ch = Math.round(cw * h / w), sx = Math.round(q[0] + OFF[0] - cw / 2), sy = Math.round(q[1] + OFF[1] - ch / 2 - 12);
+    var k0 = SS.view.k, L0 = SS.view.L, q, sx, sy, cw = r.span || 176, ch = Math.round(cw * h / w); SS.view.k = r.k || 0; SS.view.L = W.lot;   // drawn in the view it was seen in
+    try {
+      SS.drawScene(cv.getContext('2d'), W, { version: tag || 'recipe', floor: r.f, walls: 'cut', t: 0, look: look, agents: agents }); q = SS.vp(r.x, r.y, r.f * SS.FH + 10);
+      sx = Math.round(q[0] + OFF[0] - cw / 2); sy = Math.round(q[1] + OFF[1] - ch / 2 - 12);
+    } finally { SS.view.k = k0; SS.view.L = L0; SS.setLot(SS.G && SS.G.W ? SS.G.W.lot : 16); }
     var out = document.createElement('canvas'); out.width = w; out.height = h; var oc = out.getContext('2d'); oc.imageSmoothingEnabled = false;
     oc.fillStyle = '#2a1b24'; oc.fillRect(0, 0, w, h); oc.drawImage(cv, sx, sy, cw, ch, 0, 0, w, h);
     return out;
@@ -5086,7 +5112,7 @@ var SS = window.SS = window.SS || {};
     var W = G.W, out = [];
     W.home.floors.forEach(function (fl, f) {
       fl.rooms.forEach(function (r) {
-        var room = null, tiles = []; for (var x = r.r[0] + W.ax; x < r.r[2] + W.ax; x++) for (var y = r.r[1] + W.ay; y < r.r[3] + W.ay; y++) { if (W.room(f, x, y) === r) { room = r; tiles.push(x + ',' + y); } }
+        var room = null, tiles = []; for (var k in W.rooms[f]) if (W.rooms[f][k] === r) { room = r; tiles.push(k); }
         if (!room) return;
         var inRoom = function (p) { return W.floorOf(p) === f && !p.wall && !p.host && tiles.indexOf(p.x + ',' + p.y) >= 0; };
         var rug = W.pieces.some(function (p) { return inRoom(p) && W.def(p).kind === 'rug'; }), seat = W.pieces.some(function (p) { var d = W.def(p); return inRoom(p) && (d.use === 'sofa' || d.use === 'chair' || d.seat); });
@@ -5247,7 +5273,7 @@ var SS = window.SS = window.SS || {};
     var fav = {
       kind: 'room', name: name, room: R0.r.name, w: R0.x1 - R0.x0, d: R0.y1 - R0.y0, floor: R0.r.floor, paper: R0.r.paper, pieces: rel, made: Date.now(),
       // its picture, as a recipe (book.js draws it): the room's own pieces where they stood, in the view she saved it from
-      pic: { home: G.save.home, f: f, x: (R0.x0 + R0.x1) / 2, y: (R0.y0 + R0.y1) / 2, k: SS.view.k, pieces: list.map(copy), agents: [], looks: G.save.roomLook || null, span: 22 * Math.max(R0.x1 - R0.x0, R0.y1 - R0.y0) + 40 }
+      pic: { home: G.save.home, data: SS.builtData(G), f: f, x: (R0.x0 + R0.x1) / 2, y: (R0.y0 + R0.y1) / 2, k: SS.view.k, pieces: list.map(copy), agents: [], looks: SS.curLooks(G), span: 22 * Math.max(R0.x1 - R0.x0, R0.y1 - R0.y0) + 40 }
     };
     var all = SS.favorites(); all.push(fav); saveFavs(all);
     SS.moment(G, 'favorite', { f: f, x: fav.pic.x, y: fav.pic.y });
@@ -5289,7 +5315,7 @@ var SS = window.SS = window.SS || {};
     });
     left.forEach(store);
     // the room takes the favorite's floor and wallpaper, for this save
-    if (fav.floor || fav.paper) { var L = G.save.roomLook || (G.save.roomLook = {}); L[f + ':' + R0.r.id] = { floor: fav.floor, paper: fav.paper }; R0.r.floor = fav.floor || R0.r.floor; R0.r.paper = fav.paper || R0.r.paper; }
+    if (fav.floor || fav.paper) { var L = SS.curLooks(G, true); L[f + ':' + R0.r.id] = { floor: fav.floor, paper: fav.paper }; R0.r.floor = fav.floor || R0.r.floor; R0.r.paper = fav.paper || R0.r.paper; }
     W.pieces.forEach(function (p) { SS.forgetSprite(p.uid); });
     G.changed(true);
     return { placed: placed, stored: stored };
@@ -5976,10 +6002,14 @@ var SS = window.SS = window.SS || {};
   // ---------- tray ----------
   function modeTabs(G, y, right) {
     ['HOME', 'STYLE', 'BUILD'].forEach(function (s, i) {
-      var tx = 6 + i * 52, on = i === 0;
+      var tx = 6 + i * 52, on = G.build.on ? i === 2 : i === 0;
       R(tx, y + 4, 48, 12, on ? P.rose : P.trayEdge); if (on) R(tx, y + 4, 48, 1, P.roseHi);
       txt(s, tx + 24, y + 6, on ? '#fff' : P.ink, 8, 'center');
-      hit(G, tx, y + 2, 48, 16, function () { if (i === 0) G.toggleTray(); else G.toast(s + ' IS COMING SOON', 1600, i === 1 ? 'Outfits come in their own part.' : 'Building comes in its own part.'); });
+      hit(G, tx, y + 2, 48, 16, function () {
+        if (i === 0) { if (G.build.on) SS.leaveBuild(G); else G.toggleTray(); }
+        else if (i === 2) { if (!G.build.on) SS.enterBuild(G); }   // the Build tab (spec 004; build.js)
+        else G.toast(s + ' IS COMING SOON', 1600, 'Outfits come in their own part.');
+      });
     });
     if (right) txt(right, G.W0 - 6, y + 7, P.soft, 6, 'right');
   }
@@ -5989,6 +6019,7 @@ var SS = window.SS = window.SS || {};
     hit(G, 0, y, W, h, function () {}, { block: true });
     if (st === 'closed') { modeTabs(G, y, G.mode === 'life' ? 'TAP TO WALK' : 'HOME: CATALOG'); return y; }
     if (st === 'catalog') return catalogTray(G, W, H, y), y;
+    if (st === 'build') return SS.drawBuildTray(G, W, H, y, modeTabs), y;
     if (st === 'piece') return pieceTray(G, W, H, y), y;
     return paintTray(G, W, H, y), y;
   };
@@ -6059,7 +6090,7 @@ var SS = window.SS = window.SS || {};
       hit(G, W - 66, y + 2, 60, 16, function () { G.snapshot(); p.props = !on; G.changed(true); });
     }
     var bx2 = W - (G.hasProps(d) ? 112 : 50);
-    if ((d.use === 'stove' || d.use === 'fridge') && !G.gig) { // cook for fun, in any mode (spec 006, part E: Sandbox too)
+    if ((d.use === 'stove' || d.use === 'fridge') && !G.gig && !G.away) { // cook for fun, in any mode (spec 006, part E: Sandbox too)
       SS.btn(bx2, y + 4, 44, 'COOK', false, 12, 5); hit(G, bx2, y + 2, 44, 16, function () { G.deselect(); SS.openCooking(G); }); bx2 -= 50;
     }
     if (G.mode === 'life' && p.paid && !G.gig) { // sell it back for every coin she paid (spec 006, part F)
@@ -6188,19 +6219,53 @@ var SS = window.SS = window.SS || {};
       var fy = y + 23 + ROWS.length * rh + 3, ago = Math.round((Date.now() - (SS.lastSaved || Date.now())) / 60000);
       SS.check(x + 10, fy + 3, P.sage[1]); txt(ago < 1 ? 'SAVED JUST NOW' : 'SAVED ' + ago + ' MIN AGO', x + 24, fy + 3, P.soft, 6);
     } else if (m.kind === 'homes') {
-      var w2 = 200, h2 = 22 + 46 + 26 + 18, x2 = (W - w2) / 2, y2 = Math.max(4, Math.round((H - h2) / 2) - 6);
+      // every home in this save (build.js): the Philly home, the street's three empty lots, and Sandbox's new lots; then New lot
+      var list = SS.homeList(G), rows2 = list.length + (G.mode === 'sandbox' ? 1 : 0), per = H < 300 ? 5 : 6, top = Math.floor(m.cur / per) * per;
+      if (m.newLot) return drawNewLot(G, W, H, m);
+      var shown = list.slice(top, top + per), w2 = 204, rh2 = 30, h2 = 24 + shown.length * rh2 + (G.mode === 'sandbox' && top + per >= list.length ? 22 : 0) + 22, x2 = (W - w2) / 2, y2 = Math.max(4, Math.round((H - h2) / 2) - 6);
       SS.frame(x2, y2, w2, h2); SS.header(x2, y2, w2, 'HOMES', G.mode === 'life' ? 'LIFE' : 'SANDBOX');
       hit(G, x2, y2, w2, h2, function () {}, { block: true });
-      var cx = x2 + 6, cy = y2 + 24;
-      R(cx, cy, w2 - 12, 42, P.cell); R(cx, cy + 41, w2 - 12, 1, P.trayEdge);
-      miniHome(c, cx + 6, cy + 5, G.t);
-      txt(G.W.home.name, cx + 46, cy + 8, P.ink, 7); txt(G.W.home.lotName, cx + 46, cy + 20, P.soft, 6);
-      R(cx + 46, cy + 28, 70, 10, P.sage[1]); R(cx + 46, cy + 37, 70, 1, P.sage[2]); txt('YOU ARE HERE', cx + 81, cy + 30, '#fff', 5, 'center');
-      if (G.mode === 'sandbox') { SS.addButton(x2 + 6, y2 + 72, w2 - 12, 'NEW LOT'); hit(G, x2 + 6, y2 + 72, w2 - 12, 18, function () { G.toast('NEW LOT IS COMING SOON', 1800, 'Building comes in its own part.'); }); }
+      shown.forEach(function (h, j) {
+        var i = top + j, cx = x2 + 6, cy = y2 + 23 + j * rh2, on = m.cur === i, here = h.id === G.save.home;
+        R(cx, cy, w2 - 12, rh2 - 3, on ? P.blush : P.cell); R(cx, cy + rh2 - 4, w2 - 12, 1, P.trayEdge);
+        if (on) { R(cx, cy, 2, rh2 - 3, P.rose); }
+        if (h.id === 'philly') miniHome(c, cx + 5, cy + 2, G.t, .7); else miniLot(c, cx + 5, cy + 3, h.lot, h.rooms);
+        txt(h.id === 'philly' ? h.name : h.rooms ? h.name : (h.street ? 'EMPTY ' : 'NEW ') + h.lotName, cx + 34, cy + 5, P.ink, 6);
+        txt(h.lot + ' × ' + h.lot + (h.street ? ' · ON THE STREET' : h.id === 'philly' ? ' · ' + h.lotName : ''), cx + 34, cy + 15, P.soft, 5);
+        if (here) { R(cx + w2 - 62, cy + 4, 46, 9, P.sage[1]); txt('HERE', cx + w2 - 39, cy + 6, '#fff', 5, 'center'); }
+        else SS.chev(cx + w2 - 22, cy + 9, on ? P.rose : P.soft);
+        hit(G, cx, cy, w2 - 12, rh2 - 3, function () { m.cur = i; G.homePick(i); });
+      });
+      var by2 = y2 + 23 + shown.length * rh2;
+      if (G.mode === 'sandbox' && top + per >= list.length) { var onN = m.cur === list.length; SS.addButton(x2 + 6, by2, w2 - 12, 'NEW LOT'); if (onN) R(x2 + 6, by2 + 17, w2 - 12, 1, P.rose); hit(G, x2 + 6, by2, w2 - 12, 18, function () { m.cur = list.length; G.homePick(list.length); }); by2 += 22; }
+      void rows2;
       SS.backHint(x2 + 8, y2 + h2 - 16); hit(G, x2 + 4, y2 + h2 - 18, 60, 16, function () { G.menu = { kind: 'start', cur: 2 }; });
     }
   };
-  function miniHome(c, x, y, t) { // the brick rowhouse from the title, 32 x 32 (start-menu-v1)
+  // New lot: pick a size (spec 004, part A)
+  function drawNewLot(G, W, H, m) {
+    var w = 204, h = 24 + 3 * 30 + 22, x = (W - w) / 2, y = Math.max(4, Math.round((H - h) / 2) - 6);
+    SS.frame(x, y, w, h); SS.header(x, y, w, 'NEW LOT', 'PICK A SIZE');
+    hit(G, x, y, w, h, function () {}, { block: true });
+    [16, 24, 32].forEach(function (n, i) {
+      var cx = x + 6, cy = y + 23 + i * 30, on = m.lotCur === i;
+      R(cx, cy, w - 12, 27, on ? P.blush : P.cell); R(cx, cy + 26, w - 12, 1, P.trayEdge); if (on) R(cx, cy, 2, 27, P.rose);
+      miniLot(G.c, cx + 5, cy + 3, n, 0);
+      txt(SS.LOTS[n], cx + 34, cy + 5, P.ink, 6); txt(n + ' × ' + n + ' TILES', cx + 34, cy + 15, P.soft, 5);
+      hit(G, cx, cy, w - 12, 27, function () { m.lotCur = i; SS.newLot(G, n); G.menu = null; });
+    });
+    SS.backHint(x + 8, y + h - 16); hit(G, x + 4, y + h - 18, 60, 16, function () { m.newLot = false; });
+  }
+  // a tiny lot: grass, scaled to its size, with a little house when something's built
+  function miniLot(c, x, y, n, rooms) {
+    var s = Math.round(8 + (n - 16) / 4);   // 8, 10 or 12 px
+    var cx = x + 12, cy = y + 11 - s / 2;
+    c.fillStyle = '#5e8f52'; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + s * 1.3, cy + s * .65); c.lineTo(cx, cy + s * 1.3); c.lineTo(cx - s * 1.3, cy + s * .65); c.closePath(); c.fill();
+    c.fillStyle = '#8bbd73'; c.beginPath(); c.moveTo(cx, cy - 1); c.lineTo(cx + s * 1.3, cy + s * .65 - 1); c.lineTo(cx, cy + s * 1.3 - 1); c.lineTo(cx - s * 1.3, cy + s * .65 - 1); c.closePath(); c.fill();
+    if (rooms) { R(cx - 4, cy + s * .65 - 7, 8, 6, '#ecc1b2'); R(cx - 5, cy + s * .65 - 9, 10, 2, '#b9584a'); }
+  }
+  function miniHome(c, x, y, t, k) { // the brick rowhouse from the title, 32 x 32 (start-menu-v1); k scales it down
+    if (k) { c.save(); c.translate(x, y); c.scale(k, k); miniHome(c, 0, 0, t); c.restore(); return; }
     R(x - 2, y - 2, 36, 36, '#3b2430'); R(x - 1, y - 1, 34, 34, '#2f3355');
     for (var i = 0; i < 6; i++) R(x + (i * 11 + t) % 32, y + (i * 7 + t * 2) % 20, 1, 1, '#fff');
     R(x + 4, y + 8, 24, 24, '#a9473f'); for (var j = 0; j < 6; j++) R(x + 4, y + 11 + j * 4, 24, 1, '#8f3b35');
@@ -6232,6 +6297,525 @@ var SS = window.SS = window.SS || {};
 })();
 
 </script>
+<script>/* build.js */
+// Sarah's Sim: building (spec 004, parts A and B; bible, Building; mockups/build-v1).
+//   Homes: each save keeps its own copy of a home's rooms and walls once she builds on it (save.homes[id].data, "lot form":
+//   rooms as lists of lot tiles, plus single walls). The Philly home starts from home.js and is only copied when she first
+//   changes it. Other homes are empty lots: small 16 x 16, medium 24 x 24 and large 32 x 32. The street's three empty lots are
+//   one of each (spec 004, Claude default; the street map itself comes with spec 008, so until then they're listed in Homes),
+//   and Sandbox's Homes list adds New lot.
+//   The Build tab: 8 tools as icons (room, wall, door, window, floor, paper, stairs, erase), the picked one named with a hint,
+//   and cards for it. Room: drag a box on the floor, with a size tag, to build four walls and a floor (2 x 2 at least, inside
+//   the lot; against another room it shares the wall). Wall: drag a line along the tile edges; walls that close a space make
+//   it a room. Tap a wall to pick it, then move it a tile at a time or erase it. Erase removes a wall or a floor tile.
+//   Furniture that no longer fits goes to storage, never lost (pillar 3). Undo steps back through the last 10 changes.
+//   Life prices (spec 004 part E; bible, Coins and prices): walls and floors 5 coins a tile, shown before she lets go; erasing
+//   gives back what she paid. Sandbox is free.
+//   Doors, windows, floors, papers and stairs are parts C and D (after Keegan's playtest of A and B).
+(function () {
+  var FH = SS.FH, P = SS.P;
+  var LOTS = SS.LOTS = { 16: 'SMALL LOT', 24: 'MEDIUM LOT', 32: 'LARGE LOT' };
+  SS.STREET = [{ id: 'lot-small', lot: 16 }, { id: 'lot-medium', lot: 24 }, { id: 'lot-large', lot: 32 }];
+  var TILE_PRICE = 5;
+
+  // ---------- homes in a save ----------
+  function emptyLot(id, n) {
+    return { id: id, name: 'NEW HOME', lot: n, lotName: LOTS[n], lotForm: true, at: [0, 0], floors: [{ rooms: [], walls: [], openings: [], windows: [] }], stairs: [], pieces: [] };
+  }
+  SS.emptyLot = emptyLot;
+  // the prebuilt Philly home (house tiles, rooms as rectangles) as lot-form data she can change
+  SS.toLotForm = function (home) {
+    if (home.lotForm) return JSON.parse(JSON.stringify(home));
+    var ax = home.at[0], ay = home.at[1], sh = function (o) { var q = o.slice(); q[0] += ax; q[1] += ay; return q; };
+    return { id: home.id, name: home.name, lot: home.lot, lotName: home.lotName, lotForm: true, at: [0, 0],
+      floors: home.floors.map(function (fl) {
+        return {
+          rooms: fl.rooms.map(function (r) {
+            var t = []; for (var x = r.r[0]; x < r.r[2]; x++) for (var y = r.r[1]; y < r.r[3]; y++) t.push((x + ax) + ',' + (y + ay));
+            var o = { id: r.id, name: r.name, t: t, floor: r.floor, paper: r.paper }; if (r.group) o.group = r.group; return o;
+          }),
+          walls: (fl.walls || []).map(sh), openings: fl.openings.map(sh), windows: fl.windows.map(sh)
+        };
+      }),
+      stairs: home.stairs.map(function (s) { return { floor: s.floor, tiles: s.tiles.map(sh), from: sh(s.from), to: sh(s.to) }; }) };
+  };
+  SS.homeRec = function (S, id, make) {
+    var H = S.homes || (S.homes = {});
+    if (!H[id] && make) {
+      var st = SS.STREET.filter(function (q) { return q.id === id; })[0];
+      H[id] = id === 'philly' ? {} : { data: emptyLot(id, st ? st.lot : 16), pieces: [] };
+    }
+    return H[id] || null;
+  };
+  SS.homeData = function (S, id) {
+    var rec = (S.homes || {})[id];
+    if (rec && rec.data) return rec.data;
+    if (id === 'philly') return SS.HOMES.philly;
+    var st = SS.STREET.filter(function (q) { return q.id === id; })[0];
+    return emptyLot(id, st ? st.lot : 16);
+  };
+  // the home she's in: its built data when it isn't the Philly home as first given (for pictures of it), and its looks
+  SS.builtData = function (G) { if (G.gig) return null; var rec = (G.save.homes || {})[G.save.home]; return rec && rec.data ? rec.data : null; };
+  SS.curLooks = function (G, make) {
+    if (G.save.home === 'philly' || G.gig) return make ? (G.save.roomLook || (G.save.roomLook = {})) : (G.save.roomLook || null);
+    var rec = SS.homeRec(G.save, G.save.home, true); return make ? (rec.roomLook || (rec.roomLook = {})) : (rec.roomLook || null);
+  };
+  // every home in this save for the Homes list: the Philly home, the street's three lots, and Sandbox's own new lots
+  SS.homeList = function (G) {
+    var S = G.save, out = [{ id: 'philly' }].concat(SS.STREET.map(function (q) { return { id: q.id }; }));
+    Object.keys(S.homes || {}).forEach(function (id) { if (/^new-/.test(id)) out.push({ id: id }); });
+    return out.map(function (h) { var d = SS.homeData(S, h.id); h.name = d.name; h.lot = d.lot; h.lotName = d.lotName; h.street = /^lot-/.test(h.id); h.rooms = d.floors.reduce(function (n, fl) { return n + fl.rooms.length; }, 0); return h; });
+  };
+  // a new lot in Sandbox (spec 004, part A, Claude default: not on the street)
+  SS.newLot = function (G, n) {
+    var S = G.save, k = 1; while ((S.homes || {})['new-' + k]) k++;
+    var id = 'new-' + k; SS.homeRec(S, id, true); S.homes[id].data = emptyLot(id, n); S.homes[id].pieces = [];
+    SS.goHome(G, id); SS.enterBuild(G);
+    G.toast('A NEW ' + LOTS[n], 1800, n + ' by ' + n + ' tiles. Drag a box to make a room.');
+  };
+
+  // going to another home: her own home (and everyone in it) waits as it was, like a gig (gig.js)
+  SS.goHome = function (G, id) {
+    var S = G.save; if (G.gig || id === S.home) return;
+    G.hold = null; G.sel = null; G.paint = null; G.bubble = null; G.meters = null; G.build.wall = null; G.build.drag = null;
+    G.changed(true);
+    var keep = { floor: G.floor, view: SS.view.k, undo: G.undo, cam: { x: G.cam.x, y: G.cam.y, zoom: G.cam.zoom }, walls: G.walls };
+    if (S.home === 'philly') { keep.W = G.W; keep.agents = G.agents; G.away = keep; }
+    else { var r0 = SS.homeRec(S, S.home, true); r0.view = SS.view.k; }
+    S.home = id;
+    if (id === 'philly') {
+      var h = G.away; G.away = null;
+      G.W = h.W; G.agents = h.agents; G.floor = h.floor; SS.view.k = h.view; G.undo = h.undo; G.walls = h.walls;
+      SS.view.L = G.W.lot; SS.setLot(G.W.lot); G.cam.x = h.cam.x; G.cam.y = h.cam.y; G.cam.zoom = h.cam.zoom;
+      // a change built on the Philly home from another lot never happens, so its world is as she left it
+    } else {
+      if (G.mode === 'life' && SS.stopActions && G.away && G.away.W) SS.stopActions(G);
+      var rec = SS.homeRec(S, id, true);
+      G.W = SS.World(rec.data, rec.pieces || [], rec.roomLook); G.agents = []; G.floor = 0; SS.view.k = (rec.view || 0) % 4;
+      G.undo = []; G.walls = 'cut'; G.tray.open = true;
+      SS.view.L = G.W.lot; SS.setLot(G.W.lot); G.centerCam(true);
+    }
+    G.changed(true);
+  };
+  SS.awayHome = function (G) { return !!G.away; };
+
+  // ---------- the rules, on lot-form data ----------
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function world(D) { return SS.World(D, []); }
+  function edgeKey(x, y, axis) { return x + ',' + y + axis; }
+  function newRoomId(D) { var ids = {}; D.floors.forEach(function (fl) { fl.rooms.forEach(function (r) { ids[r.id] = 1; }); }); var k = (D.nextRoom || 0) + 1; while (ids['r' + k]) k++; D.nextRoom = k; return 'r' + k; }
+  function roomOf(fl, k) { for (var i = 0; i < fl.rooms.length; i++) if (fl.rooms[i].t.indexOf(k) >= 0) return fl.rooms[i]; return null; }
+  function takeTile(fl, k) { var r = roomOf(fl, k); if (r) r.t.splice(r.t.indexOf(k), 1); return r; }
+  function floorAt(D, f) { while (D.floors.length <= f) D.floors.push({ rooms: [], walls: [], openings: [], windows: [] }); return D.floors[f]; }
+  // the two tiles on either side of a wall edge: [x, y] on its - side and its + side
+  function sides(x, y, axis) { return axis === 'x' ? [[x, y - 1], [x, y]] : [[x - 1, y], [x, y]]; }
+  function onEdge(o, k) { // does an opening or window entry cover this edge?
+    var n = o.length > 3 && typeof o[3] === 'number' ? o[3] : 1;
+    for (var i = 0; i < n; i++) if (edgeKey(o[2] === 'x' ? o[0] + i : o[0], o[2] === 'y' ? o[1] + i : o[1], o[2]) === k) return true;
+    return false;
+  }
+  // tidy a floor after a change: rooms cut in two become two rooms, spaces closed in by walls become rooms with their own floor,
+  // and single walls, doorways and windows that no longer sit on a wall are dropped
+  function resolve(D, f) {
+    var fl = D.floors[f]; if (!fl) return;
+    fl.rooms = fl.rooms.filter(function (r) { return r.t.length; });
+    var W = world(D), n = D.lot, D4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    var blocked = function (x, y, nx, ny) { var s = nx !== x ? W.seg(f, Math.max(x, nx), y, 'y') : W.seg(f, x, Math.max(y, ny), 'x'); return !!s; };
+    // 1. a room split by walls: the biggest part keeps the room, the rest become new rooms
+    fl.rooms.slice().forEach(function (r) {
+      var left = {}; r.t.forEach(function (k) { left[k] = 1; });
+      var parts = [];
+      r.t.forEach(function (k0) {
+        if (!left[k0]) return; var part = [], q = [k0]; delete left[k0];
+        while (q.length) { var k = q.pop(); part.push(k); var p = k.split(',').map(Number); D4.forEach(function (d) { var nk = (p[0] + d[0]) + ',' + (p[1] + d[1]); if (left[nk] && !blocked(p[0], p[1], p[0] + d[0], p[1] + d[1])) { delete left[nk]; q.push(nk); } }); }
+        parts.push(part);
+      });
+      if (parts.length < 2) return;
+      parts.sort(function (a, b) { return b.length - a.length; });
+      r.t = parts[0];
+      parts.slice(1).forEach(function (part) { var o = { id: newRoomId(D), name: 'Room', t: part, floor: r.floor, paper: r.paper }; fl.rooms.push(o); });
+    });
+    // 2. outside tiles walled in on every side become a room
+    W = world(D);
+    var seen = {}, isRoom = function (x, y) { return !!W.room(f, x, y); };
+    var q2 = [];
+    for (var i = 0; i < n; i++) [[i, 0], [i, n - 1], [0, i], [n - 1, i]].forEach(function (p) { var k = p[0] + ',' + p[1]; if (!isRoom(p[0], p[1]) && !seen[k]) { seen[k] = 1; q2.push(p); } });
+    while (q2.length) { var p2 = q2.pop(); D4.forEach(function (d) { var x = p2[0] + d[0], y = p2[1] + d[1], k = x + ',' + y; if (x < 0 || y < 0 || x >= n || y >= n || seen[k] || isRoom(x, y) || blocked(p2[0], p2[1], x, y)) return; seen[k] = 1; q2.push([x, y]); }); }
+    var shut = {}; for (var x = 0; x < n; x++) for (var y = 0; y < n; y++) { var k3 = x + ',' + y; if (!seen[k3] && !isRoom(x, y)) shut[k3] = 1; }
+    Object.keys(shut).forEach(function (k0) {
+      if (!shut[k0]) return; var part = [], q = [k0]; delete shut[k0];
+      while (q.length) { var k = q.pop(); part.push(k); var p = k.split(',').map(Number); D4.forEach(function (d) { var nk = (p[0] + d[0]) + ',' + (p[1] + d[1]); if (shut[nk] && !blocked(p[0], p[1], p[0] + d[0], p[1] + d[1])) { delete shut[nk]; q.push(nk); } }); }
+      // on an upper floor, only over rooms below (spec 004, part D, Claude default)
+      if (f > 0 && part.some(function (k) { var p = k.split(','); return !W.room(f - 1, +p[0], +p[1]); })) return;
+      fl.rooms.push({ id: newRoomId(D), name: 'Room', t: part, floor: 'planks', paper: G0().build.paper || 'cream' });
+    });
+    // 3. single walls that now sit on a room's edge anyway, and doorways and windows with no wall left under them
+    W = world(D);
+    var raw = function (x, y, axis) {
+      var sd = sides(x, y, axis), a = W.room(f, sd[0][0], sd[0][1]), b = W.room(f, sd[1][0], sd[1][1]);
+      return a !== b && !!(a || b) && !(a && b && a.group && a.group === b.group);
+    };
+    fl.walls = (fl.walls || []).filter(function (w) { return !raw(w[0], w[1], w[2]) && w[0] >= 0 && w[1] >= 0 && w[0] <= n && w[1] <= n; });
+    var single = {}; fl.walls.forEach(function (w) { single[edgeKey(w[0], w[1], w[2])] = 1; });
+    var hasWall = function (k, x, y, axis) { return single[k] || raw(x, y, axis); };
+    fl.openings = fl.openings.filter(function (o) { return hasWall(edgeKey(o[0], o[1], o[2]), o[0], o[1], o[2]); });
+    fl.windows = fl.windows.filter(function (o) { for (var i = 0; i < o[3]; i++) { var x = o[2] === 'x' ? o[0] + i : o[0], y = o[2] === 'y' ? o[1] + i : o[1]; if (!hasWall(edgeKey(x, y, o[2]), x, y, o[2])) return false; } return true; });
+    // empty floors at the top go
+    while (D.floors.length > 1) { var top = D.floors[D.floors.length - 1]; if (top.rooms.length || (top.walls || []).length) break; D.floors.pop(); }
+  }
+  function G0() { return SS.G; }
+  // is the home still sound? Rooms above stand on rooms below; stairs stand on floor and land on floor
+  function sound(D) {
+    var W = world(D);
+    for (var f = 1; f < D.floors.length; f++) for (var k in W.rooms[f]) { var p = k.split(','); if (!W.room(f - 1, +p[0], +p[1])) return 'A ROOM ABOVE NEEDS ONE UNDER IT'; }
+    for (var i = 0; i < W.stairs.length; i++) { var s = W.stairs[i]; if (!s.tiles.every(function (q) { return W.room(s.floor, q[0], q[1]); }) || !W.room(s.floor, s.from[0], s.from[1]) || !W.room(s.floor + 1, s.to[0], s.to[1])) return 'KEEP THE STAIRS STANDING'; }
+    return null;
+  }
+  // what a home's walls and floors are worth at 5 coins a tile (Life prices)
+  function worth(D) { var W = world(D), n = 0; W.walls.forEach(function (segs) { n += segs.length; }); W.rooms.forEach(function (g) { n += Object.keys(g).length; }); return n * TILE_PRICE; }
+
+  // the edits; each returns {D} or {why}
+  function roomEdit(D0, f, x0, y0, x1, y1, paper) {
+    var n = D0.lot;
+    if (x1 - x0 < 2 || y1 - y0 < 2) return { why: '2 × 2 IS THE SMALLEST ROOM' };
+    if (x0 < 0 || y0 < 0 || x1 > n || y1 > n) return { why: 'INSIDE THE LOT' };
+    var D = clone(D0), fl = floorAt(D, f), W0 = world(D0);
+    if (f > 0) for (var x = x0; x < x1; x++) for (var y = y0; y < y1; y++) if (!W0.room(f - 1, x, y)) return { why: 'IT NEEDS A ROOM UNDER IT' };
+    var t = [];
+    for (var x2 = x0; x2 < x1; x2++) for (var y2 = y0; y2 < y1; y2++) { var k = x2 + ',' + y2; takeTile(fl, k); t.push(k); }
+    var inner = function (x, y, axis) { return axis === 'x' ? x >= x0 && x < x1 && y > y0 && y < y1 : y >= y0 && y < y1 && x > x0 && x < x1; };
+    var border = function (x, y, axis) { return axis === 'x' ? x >= x0 && x < x1 && (y === y0 || y === y1) : y >= y0 && y < y1 && (x === x0 || x === x1); };
+    fl.walls = (fl.walls || []).filter(function (w) { return !inner(w[0], w[1], w[2]); });
+    fl.openings = fl.openings.filter(function (o) { return !inner(o[0], o[1], o[2]) && !(o[3] === 'open' && border(o[0], o[1], o[2])); });
+    fl.windows = fl.windows.filter(function (o) { for (var i = 0; i < o[3]; i++) if (inner(o[2] === 'x' ? o[0] + i : o[0], o[2] === 'y' ? o[1] + i : o[1], o[2])) return false; return true; });
+    fl.rooms.push({ id: newRoomId(D), name: 'Room', t: t, floor: 'planks', paper: paper || 'cream' });
+    resolve(D, f);
+    var why = sound(D); return why ? { why: why } : { D: D };
+  }
+  function wallEdit(D0, f, axis, at, a0, a1) {
+    var n = D0.lot; if (a1 <= a0) return { why: 'DRAG ALONG THE TILE EDGES' };
+    if (at < 0 || at > n || a0 < 0 || a1 > n) return { why: 'INSIDE THE LOT' };
+    var D = clone(D0), fl = floorAt(D, f), W0 = world(D0), added = 0;
+    fl.walls = fl.walls || [];
+    for (var u = a0; u < a1; u++) {
+      var x = axis === 'x' ? u : at, y = axis === 'x' ? at : u, k = edgeKey(x, y, axis), n0 = fl.openings.length;
+      fl.openings = fl.openings.filter(function (o) { return !(o[3] === 'open' && edgeKey(o[0], o[1], o[2]) === k); });
+      if (fl.openings.length < n0) added++;
+      if (W0.seg(f, x, y, axis)) continue;
+      fl.walls.push([x, y, axis]); added++;
+    }
+    if (!added) return { why: 'THERE\'S A WALL THERE ALREADY' };
+    resolve(D, f);
+    var why = sound(D); return why ? { why: why } : { D: D };
+  }
+  // a wall run: a straight stretch of wall between corners and joins (what a tap picks)
+  SS.wallRun = function (W, f, s) {
+    var out = [s], ax = s.axis;
+    var joint = function (x, y) { return ax === 'x' ? !!(W.seg(f, x, y - 1, 'y') || W.seg(f, x, y, 'y')) : !!(W.seg(f, x - 1, y, 'x') || W.seg(f, x, y, 'x')); };
+    for (var d = -1; d <= 1; d += 2) {
+      var cur = s;
+      for (;;) {
+        var nx = ax === 'x' ? cur.x + d : cur.x, ny = ax === 'y' ? cur.y + d : cur.y;
+        var jx = ax === 'x' ? (d > 0 ? cur.x + 1 : cur.x) : cur.x, jy = ax === 'y' ? (d > 0 ? cur.y + 1 : cur.y) : cur.y;
+        var nxt = W.seg(f, nx, ny, ax); if (!nxt || joint(jx, jy)) break;
+        if (d < 0) out.unshift(nxt); else out.push(nxt); cur = nxt;
+      }
+    }
+    return out;
+  };
+  function eraseRun(D0, f, run) {
+    var D = clone(D0), fl = D.floors[f];
+    run.forEach(function (s) {
+      var k = edgeKey(s.x, s.y, s.axis), sd = sides(s.x, s.y, s.axis);
+      fl.walls = (fl.walls || []).filter(function (w) { return edgeKey(w[0], w[1], w[2]) !== k; });
+      fl.openings = fl.openings.filter(function (o) { return edgeKey(o[0], o[1], o[2]) !== k; });
+      fl.windows = fl.windows.filter(function (o) { return !onEdge(o, k); });
+      if (s.single) return;
+      var a = roomOf(fl, sd[0][0] + ',' + sd[0][1]), b = roomOf(fl, sd[1][0] + ',' + sd[1][1]);
+      if (a && b && a !== b) { // two rooms open up into one: the bigger one keeps its name, floor and paper
+        var big = a.t.length >= b.t.length ? a : b, small = big === a ? b : a;
+        big.t = big.t.concat(small.t); fl.rooms.splice(fl.rooms.indexOf(small), 1);
+      } else if (a || b) fl.openings.push([s.x, s.y, s.axis, 'open']);   // an outside wall erased: the room stays, open on that side
+    });
+    resolve(D, f);
+    var why = sound(D); return why ? { why: why } : { D: D };
+  }
+  function moveRun(D0, f, run, dir) {
+    var D = clone(D0), fl = D.floors[f], n = D.lot, ax = run[0].axis;
+    var at = (ax === 'x' ? run[0].y : run[0].x) + dir; if (at < 0 || at > n) return { why: 'INSIDE THE LOT' };
+    var W0 = world(D0), keys = {};
+    run.forEach(function (s) { keys[edgeKey(s.x, s.y, s.axis)] = 1; });
+    // the row of tiles the wall passes over changes sides: it joins the room the wall is moving away from
+    var moves = [];
+    run.forEach(function (s) {
+      var sd = sides(s.x, s.y, s.axis), from = dir > 0 ? sd[0] : sd[1], over = dir > 0 ? sd[1] : sd[0];
+      if (over[0] < 0 || over[1] < 0 || over[0] >= n || over[1] >= n) return;
+      moves.push({ k: over[0] + ',' + over[1], to: W0.room(f, from[0], from[1]) });
+    });
+    moves.forEach(function (m) {
+      takeTile(fl, m.k);
+      if (m.to) { var r = fl.rooms.filter(function (q) { return q.id === m.to.id; })[0]; if (r) r.t.push(m.k); }
+    });
+    var shift = function (o) { if (ax === 'x') o[1] += dir; else o[0] += dir; };
+    (fl.walls || []).forEach(function (w) { if (keys[edgeKey(w[0], w[1], w[2])]) shift(w); });
+    fl.openings.forEach(function (o) { if (keys[edgeKey(o[0], o[1], o[2])]) shift(o); });
+    fl.windows.forEach(function (o) { if (o[2] === ax && keys[edgeKey(o[0], o[1], o[2])]) shift(o); });
+    resolve(D, f);
+    var why = sound(D); return why ? { why: why } : { D: D };
+  }
+  function eraseTile(D0, f, x, y) {
+    var D = clone(D0), fl = D.floors[f], k = x + ',' + y;
+    if (!fl || !roomOf(fl, k)) return { why: 'NOTHING TO ERASE THERE' };
+    var W0 = world(D0); if (W0.stairAt(f, x, y) || W0.wellAt(f, x, y)) return { why: 'STAIRS COME WITH THE STAIRS TOOL' };
+    takeTile(fl, k);
+    resolve(D, f);
+    if (roomOf(D.floors[f] || { rooms: [] }, k)) return { why: 'TAKE TILES FROM A ROOM\'S EDGE' };   // a hole in the middle closes up again
+    var why = sound(D); return why ? { why: why } : { D: D };
+  }
+
+  // ---------- applying a change ----------
+  var STRUCT = { OUTSIDE: 1, WALL: 1, 'NEEDS A WALL': 1, 'NEEDS A WINDOW': 1, STAIRS: 1, 'NO SPOT': 1 };
+  function candOf(p) { return p.wall ? { id: p.id, f: p.f, wall: p.wall, side: p.side } : { id: p.id, f: p.f, x: p.x, y: p.y, r: p.r || 0 }; }
+  function stash(G, W, p, out) { W.stacked(p).forEach(function (q) { stash(G, W, q, out); }); out.push({ id: p.id, sw: p.sw || 0, colors: p.colors, pats: p.pats, props: p.props, paid: p.paid }); }
+  // the new data becomes the home: the world is rebuilt, pieces that no longer fit go to storage, everyone stands somewhere
+  // they can, and Life pays or refunds the difference
+  function commit(G, D, label) {
+    var S = G.save, rec = SS.homeRec(S, S.home, true), before = SS.homeData(S, S.home);
+    var cost = G.mode === 'life' ? worth(D) - worth(before) : 0, spent = (before.spent || 0);
+    if (cost > 0 && (S.coins || 0) < cost) { G.toast('NOT ENOUGH COINS', 2000, 'That\'s ' + cost + ' coins and you have ' + (S.coins || 0) + '. Gigs at the desk pay 100 to 200.'); return false; }
+    G.snapshot();
+    var refund = cost < 0 ? Math.min(-cost, spent) : 0;
+    D.spent = Math.max(0, spent + (cost > 0 ? cost : -refund));
+    if (cost > 0) S.coins -= cost; if (refund) S.coins += refund;
+    rec.data = D;
+    var old = G.W.pieces.map(function (p) { var q = {}; for (var k in p) if (k !== 'work') q[k] = p[k]; return clone(q); });
+    G.W = SS.World(D, old, SS.curLooks(G));
+    var W = G.W, gone = [], again = true;
+    while (again) {
+      again = false;
+      W.pieces.slice().forEach(function (p) { if (p.host || !W.byUid[p.uid]) return; var r = W.check(candOf(p), p); if (!r.ok && STRUCT[r.why]) { stash(G, W, p, gone); W.remove(p); again = true; } });
+    }
+    gone.forEach(function (q) { S.stored.push(q); });
+    settle(G);
+    G.build.wall = null; G.sel = null;
+    G.changed(true);
+    if (G.floor >= W.floors && G.floor > 0 && !G.build.on) G.setFloor(W.floors - 1);
+    var line = [];
+    if (cost > 0) line.push('-' + cost + ' coins'); if (refund) line.push('+' + refund + ' coins back');
+    if (gone.length) line.push(gone.length + (gone.length === 1 ? ' piece went' : ' pieces went') + ' to storage');
+    if (label || line.length) G.toast(label || 'DONE', 1300, line.join(' · '));
+    if (S.home !== 'philly' && SS.moment && (before.floors.every(function (fl) { return !fl.rooms.length && !(fl.walls || []).length; }))) SS.moment(G, 'first-wall');
+    return true;
+  }
+  SS.buildCommit = commit;
+  SS._build = { roomEdit: roomEdit, wallEdit: wallEdit, eraseRun: eraseRun, moveRun: moveRun, eraseTile: eraseTile, resolve: resolve, worth: worth };   // for the checks
+  // after the walls change: anyone on a seat that went to storage gets up, and anyone standing where they can't steps aside
+  function settle(G) {
+    var W = G.W;
+    (G.agents || []).forEach(function (a) {
+      if (a.on && !W.byUid[a.on] && SS.agentGetUp) SS.agentGetUp(G, a);
+      a.path = []; a.arrive = null;
+      var tx = Math.floor(a.x), ty = Math.floor(a.y);
+      if (!W.walkable(a.f, tx, ty)) {
+        var q = StudioMove.nearestOpen(tx, ty, W.lot, W.lot, function (x, y) { return W.walkable(a.f, x, y); });
+        if (q) { a.x = q[0] + .5; a.y = q[1] + .5; }
+      }
+    });
+    if (G.mode === 'life' && G.people && SS.stopActions && !G.away) SS.stopActions(G);
+  }
+
+  // ---------- the Build tab ----------
+  var TOOLS = SS.BUILD_TOOLS = ['room', 'wall', 'door', 'window', 'floor', 'paper', 'stairs', 'erase'];
+  var NAMES = { room: 'ROOM', wall: 'WALL', door: 'DOOR', window: 'WINDOW', floor: 'FLOOR', paper: 'PAPER', stairs: 'STAIRS', erase: 'ERASE' };
+  var HINTS = { room: 'DRAG A BOX · PICK A WALL STYLE', wall: 'DRAG ALONG THE EDGES · TAP A WALL', erase: 'TAP A WALL OR A FLOOR TILE' };
+  var LATER = { door: 1, window: 1, floor: 1, paper: 1, stairs: 1 };
+  SS.TRAY_H.build = 92;
+  SS.enterBuild = function (G) {
+    if (G.gig) { G.toast('GIGS ARE FOR DECORATING', 1600, 'Their walls stay as they are.'); return; }
+    if (G.hold && G.cancelHold) G.cancelHold(false);
+    G.deselect(); G.bubble = null; G.meters = null; G.focus = null;
+    G.build.on = true; G.build.wall = null; G.build.drag = null; G.tray.open = true; G.walls = 'cut';   // walls cut away while building (Claude default)
+  };
+  SS.leaveBuild = function (G) {
+    G.build.on = false; G.build.wall = null; G.build.drag = null; G.tray.open = true;
+    if (G.floor >= G.W.floors) G.setFloor(G.W.floors - 1);
+  };
+  SS.pickTool = function (G, t) {
+    G.build.tool = t; G.build.wall = null; G.build.drag = null;
+    if (LATER[t]) G.toast(NAMES[t] + ' COMES NEXT', 1700, t === 'stairs' ? 'Stairs and upper floors come in the next build part.' : 'Doors, windows, floors and papers come in the next build part.');
+  };
+  function toolIcon(i, x, y, on) {
+    var R = SS.R, k = on ? '#fff' : P.ink, k2 = on ? '#ffd9e2' : P.soft;   // mockups/build-v1
+    [function () { R(x, y + 2, 12, 8, k); R(x + 1, y + 3, 10, 6, k2); },
+      function () { R(x, y + 4, 12, 3, k); R(x + 1, y + 5, 10, 1, k2); },
+      function () { R(x + 3, y, 7, 11, k); R(x + 4, y + 1, 5, 10, k2); R(x + 7, y + 6, 1, 1, k); },
+      function () { R(x + 1, y + 1, 10, 9, k); R(x + 2, y + 2, 8, 7, '#a9c9e8'); R(x + 6, y + 2, 1, 7, k); R(x + 2, y + 5, 8, 1, k); },
+      function () { for (var a = 0; a < 3; a++) for (var b = 0; b < 3; b++) R(x + a * 4, y + 1 + b * 3, 3, 2, (a + b) % 2 ? k : k2); },
+      function () { R(x + 1, y + 1, 10, 9, k2); for (var s = 1; s < 10; s += 3) R(x + s, y + 1, 1, 9, k); },
+      function () { for (var s = 0; s < 4; s++) R(x + s * 3, y + 8 - s * 2, 12 - s * 3, 2, k); },
+      function () { R(x + 2, y + 3, 8, 6, k); R(x + 4, y + 1, 4, 2, k); R(x + 3, y + 4, 6, 4, k2); }
+    ][i]();
+  }
+  // a wall style card: a little stretch of the paper, as in build-v1's swatches
+  function paperCard(c, key, x, y, w, on) {
+    var R = SS.R, pp = SS.PAPERS[key];
+    R(x, y, w, 24, on ? '#fde3ea' : P.cell); R(x, y + 23, w, 1, P.trayEdge);
+    var fx = x + 6, fy = y + 4, fw = w - 12, fh = 15;
+    R(fx - 1, fy - 1, fw + 2, fh + 2, '#3b2430');
+    if (pp.texture) { var tex = SS.paperTexture(pp.texture, 64, SS.WALL_UP); c.drawImage(tex, 0, SS.WALL_UP - 40, fw, 40, fx, fy, fw, fh); }
+    else { R(fx, fy, fw, fh, pp.base); for (var s = 2; s < fw; s += 5) R(fx + s, fy, 2, fh - 4, pp.stripe); R(fx, fy + fh - 4, fw, 4, pp.low); R(fx, fy + fh - 5, fw, 1, '#fff1e2'); }
+    if (on) { c.strokeStyle = P.rose; c.lineWidth = 2; c.strokeRect(x + 1, y + 1, w - 2, 22); c.lineWidth = 1; }
+  }
+  var PAPER_KEYS = ['rose', 'sage', 'cream', 'honey', 'blue', 'lilac', 'nina'];
+  SS.drawBuildTray = function (G, W, H, y, modeTabs) {
+    var c = G.c, R = SS.R, txt = SS.txt, B = G.build, hit = SS.hit;
+    modeTabs(G, y, G.W.lot + ' × ' + G.W.lot);
+    TOOLS.forEach(function (t, i) {
+      var tx = 4 + i * 29.2, on = t === B.tool;
+      R(tx, y + 20, 27, 18, on ? P.rose : (LATER[t] ? '#f3e7da' : '#fbeedd')); R(tx, y + 37, 27, 1, on ? P.roseSh : P.trayEdge);
+      c.globalAlpha = LATER[t] && !on ? .55 : 1; toolIcon(i, tx + 8, y + 23, on); c.globalAlpha = 1;
+      hit(G, tx - 1, y + 18, 29, 22, function () { SS.pickTool(G, t); });
+    });
+    txt(NAMES[B.tool], 6, y + 43, P.ink, 6);
+    var hint = LATER[B.tool] ? 'COMES IN THE NEXT PART' : B.wall ? 'MOVE IT OR ERASE IT' : HINTS[B.tool];
+    txt(hint, W - 6, y + 43, P.soft, 5, 'right');
+    var cy = y + 53;
+    if (B.tool === 'room' || B.tool === 'wall') {
+      var cw = (W - 8) / PAPER_KEYS.length;
+      PAPER_KEYS.forEach(function (k, i) { var cx = 4 + i * cw; paperCard(c, k, cx + 1, cy, cw - 2, B.paper === k); hit(G, cx, cy - 2, cw, 28, function () { B.paper = k; G.toast((SS.PAPERS[k].name || k.toUpperCase() + ' STRIPE').toUpperCase(), 800, 'New rooms get this wall style.'); }); });
+    } else if (B.tool === 'erase') {
+      SS.vt('Tap a wall to erase it, or a floor tile to take it out.', 8, cy + 2, P.ink, 12);
+      SS.vt(G.mode === 'life' ? 'You get back the coins you paid.' : 'Furniture that no longer fits goes to storage.', 8, cy + 14, P.soft, 12);
+    } else {
+      SS.vt(B.tool === 'stairs' ? 'Upper floors and the four kinds of stairs' : 'Doors, windows, floors and wallpapers', 8, cy + 2, P.ink, 12);
+      SS.vt('come in the next build part, after you play this one.', 8, cy + 14, P.soft, 12);
+    }
+  };
+
+  // ---------- drags and taps on the home ----------
+  // corner nearest a world point (for walls) and the tile under it (for rooms), in lot tiles
+  SS.buildDragStart = function (G, tl) {
+    var B = G.build; if (B.tool !== 'room' && B.tool !== 'wall') return false;
+    B.wall = null;
+    B.drag = { tool: B.tool, f: G.floor, a: [tl[0], tl[1]], b: [tl[0], tl[1]], ca: [Math.round(tl[2]), Math.round(tl[3])], cb: [Math.round(tl[2]), Math.round(tl[3])] };
+    preview(G); return true;
+  };
+  SS.buildDrag = function (G, tl) { var d = G.build.drag; if (!d) return; d.b = [tl[0], tl[1]]; d.cb = [Math.round(tl[2]), Math.round(tl[3])]; preview(G); };
+  function shape(d) {
+    if (d.tool === 'room') return { x0: Math.min(d.a[0], d.b[0]), y0: Math.min(d.a[1], d.b[1]), x1: Math.max(d.a[0], d.b[0]) + 1, y1: Math.max(d.a[1], d.b[1]) + 1 };
+    var dx = Math.abs(d.cb[0] - d.ca[0]), dy = Math.abs(d.cb[1] - d.ca[1]);
+    return dx >= dy ? { axis: 'x', at: d.ca[1], a0: Math.min(d.ca[0], d.cb[0]), a1: Math.max(d.ca[0], d.cb[0]) } : { axis: 'y', at: d.ca[0], a0: Math.min(d.ca[1], d.cb[1]), a1: Math.max(d.ca[1], d.cb[1]) };
+  }
+  function tryShape(G, d) {
+    var D0 = SS.toLotForm(SS.homeData(G.save, G.save.home)), s = shape(d);
+    return d.tool === 'room' ? roomEdit(D0, d.f, s.x0, s.y0, s.x1, s.y1, G.build.paper) : wallEdit(D0, d.f, s.axis, s.at, s.a0, s.a1);
+  }
+  function preview(G) {
+    var d = G.build.drag, r = tryShape(G, d), s = shape(d);
+    d.ok = !!r.D; d.why = r.why; d.shape = s;
+    d.cost = r.D && G.mode === 'life' ? Math.max(0, worth(r.D) - worth(SS.homeData(G.save, G.save.home))) : 0;
+    d.tag = d.tool === 'room' ? (s.x1 - s.x0) + ' × ' + (s.y1 - s.y0) : String(s.a1 - s.a0);
+  }
+  SS.buildDragEnd = function (G) {
+    var d = G.build.drag; if (!d) return; G.build.drag = null;
+    var r = tryShape(G, d);
+    if (!r.D) { G.toast(r.why || 'NOT THERE', 1300); return; }
+    commit(G, r.D, d.tool === 'room' ? 'ROOM BUILT' : 'WALL BUILT');
+  };
+  SS.buildCancel = function (G) { G.build.drag = null; };
+  // which wall is under a world point on this floor (by the middle of each wall as it stands in the view)
+  SS.wallAt = function (G, w) {
+    var W = G.W, f = G.floor, best = null;
+    (W.walls[f] || []).forEach(function (s) {
+      var vs = SS.vseg(s), h = G.walls === 'up' ? SS.WALL_UP : G.walls === 'cut' ? (vs.back ? SS.WALL_UP : 8) : 4;
+      var a = SS.vp(s.x, s.y, f * FH + h / 2), b = SS.vp(s.axis === 'x' ? s.x + 1 : s.x, s.axis === 'y' ? s.y + 1 : s.y, f * FH + h / 2);
+      var vx = b[0] - a[0], vy = b[1] - a[1], L = vx * vx + vy * vy, k = Math.max(0, Math.min(1, ((w[0] - a[0]) * vx + (w[1] - a[1]) * vy) / L));
+      var dd = Math.hypot(a[0] + vx * k - w[0], a[1] + vy * k - w[1]);
+      if (dd < Math.max(5, h / 2 + 2) && (!best || dd < best.d)) best = { d: dd, s: s };
+    });
+    return best ? best.s : null;
+  };
+  SS.buildTap = function (G, w, tl) {
+    var B = G.build, W = G.W, s = SS.wallAt(G, w);
+    if (B.tool === 'erase') {
+      if (s) { var r = eraseRun(SS.toLotForm(SS.homeData(G.save, G.save.home)), G.floor, SS.wallRun(W, G.floor, s)); if (r.D) commit(G, r.D, 'WALL ERASED'); else G.toast(r.why, 1400); return; }
+      var r2 = eraseTile(SS.toLotForm(SS.homeData(G.save, G.save.home)), G.floor, tl[0], tl[1]);
+      if (r2.D) commit(G, r2.D, 'FLOOR TILE ERASED'); else G.toast(r2.why, 1200);
+      return;
+    }
+    if (s && (B.tool === 'room' || B.tool === 'wall')) { B.wall = { f: G.floor, run: SS.wallRun(W, G.floor, s).map(function (q) { return [q.x, q.y, q.axis]; }) }; return; }
+    B.wall = null;
+  };
+  function pickedRun(G) { var B = G.build, W = G.W; if (!B.wall || B.wall.f !== G.floor) return null; var run = B.wall.run.map(function (q) { return W.seg(B.wall.f, q[0], q[1], q[2]); }); return run.every(Boolean) ? run : null; }
+  SS.pickedRun = pickedRun;
+  SS.moveWall = function (G, dir) {
+    var run = pickedRun(G); if (!run) return;
+    var r = moveRun(SS.toLotForm(SS.homeData(G.save, G.save.home)), G.floor, run, dir);
+    if (!r.D) { G.toast(r.why, 1200); return; }
+    var keep = G.build.wall;
+    if (commit(G, r.D, null)) { keep.run = keep.run.map(function (q) { return q[2] === 'x' ? [q[0], q[1] + dir, q[2]] : [q[0] + dir, q[1], q[2]]; }); G.build.wall = keep; if (!pickedRun(G)) G.build.wall = null; }
+  };
+  SS.eraseWall = function (G) {
+    var run = pickedRun(G); if (!run) return;
+    var r = eraseRun(SS.toLotForm(SS.homeData(G.save, G.save.home)), G.floor, run);
+    if (r.D) commit(G, r.D, 'WALL ERASED'); else G.toast(r.why, 1400);
+  };
+  // the D-pad moves a picked wall: a press across it moves it that way, in the view she's looking from
+  SS.wallPress = function (G, k) {
+    var run = pickedRun(G); if (!run) return false;
+    var D0 = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[k], d = SS.vdirInv(D0[0], D0[1]), ax = run[0].axis;
+    var dir = ax === 'x' ? d[1] : d[0];
+    if (!dir) { // the press runs along the wall: use the screen's sense of it instead (left and up move it back, right and down forward)
+      dir = (k === 'down' || k === 'right') ? 1 : -1;
+      var n = ax === 'x' ? SS.vdir(0, 1) : SS.vdir(1, 0); if (n[0] + n[1] < 0) dir = -dir;
+    }
+    SS.moveWall(G, dir); return true;
+  };
+
+  // ---------- drawing over the home ----------
+  // the ghost room or wall with its size tag and price, and the picked wall's glow with its chips
+  SS.drawBuildOver = function (G, toScreen) {
+    var c = G.c, B = G.build, Z = G.floor * FH;
+    var S = function (x, y, h) { var q = SS.vp(x, y, Z + (h || 0)); return toScreen(q[0], q[1]); };
+    var quad = function (pts, fill, stroke) { c.beginPath(); pts.forEach(function (q, i) { if (i) c.lineTo(q[0], q[1]); else c.moveTo(q[0], q[1]); }); c.closePath(); c.fillStyle = fill; c.fill(); if (stroke) { c.strokeStyle = stroke; c.stroke(); } };
+    var face = function (x0, y0, x1, y1, h, fill) { quad([S(x0, y0), S(x1, y1), S(x1, y1, h), S(x0, y0, h)], fill); };
+    var d = B.drag;
+    if (d && d.shape) {
+      var sh = d.shape, ok = d.ok, tile = ok ? 'rgba(143,208,140,.5)' : 'rgba(228,111,139,.45)', wall = ok ? 'rgba(255,241,226,.45)' : 'rgba(228,111,139,.4)', mid;
+      if (d.tool === 'room') {
+        for (var x = sh.x0; x < sh.x1; x++) for (var y = sh.y0; y < sh.y1; y++) quad([S(x, y), S(x + 1, y), S(x + 1, y + 1), S(x, y + 1)], tile, 'rgba(255,255,255,.5)');
+        [[sh.x0, sh.y0, sh.x1, sh.y0], [sh.x0, sh.y0, sh.x0, sh.y1], [sh.x1, sh.y0, sh.x1, sh.y1], [sh.x0, sh.y1, sh.x1, sh.y1]].forEach(function (e) { face(e[0], e[1], e[2], e[3], 22, wall); });
+        mid = S((sh.x0 + sh.x1) / 2, (sh.y0 + sh.y1) / 2, 4);
+      } else {
+        var e0 = sh.axis === 'x' ? [sh.a0, sh.at] : [sh.at, sh.a0], e1 = sh.axis === 'x' ? [sh.a1, sh.at] : [sh.at, sh.a1];
+        face(e0[0], e0[1], e1[0], e1[1], 30, wall);
+        var p0 = S(e0[0], e0[1]), p1 = S(e1[0], e1[1]); c.strokeStyle = ok ? '#8fd08c' : '#e46f8b'; c.lineWidth = 2; c.beginPath(); c.moveTo(p0[0], p0[1]); c.lineTo(p1[0], p1[1]); c.stroke(); c.lineWidth = 1;
+        mid = S((e0[0] + e1[0]) / 2, (e0[1] + e1[1]) / 2, 30);
+      }
+      // the size tag ("5 × 6"), with its price in Life and a check or a cross, so color isn't the only sign
+      var label = d.tag + (d.cost ? '  ' + d.cost : ''), tw = SS.tw(label, 7) + (d.cost ? 12 : 0) + 24, tx = Math.round(mid[0] - tw / 2), ty = Math.round(mid[1] - 26);
+      SS.R(tx, ty, tw, 15, '#fff6ea'); c.strokeStyle = ok ? P.rose : '#e46f8b'; c.strokeRect(tx + .5, ty + .5, tw - 1, 14);
+      SS.txt(d.tag, tx + 6, ty + 4, P.ink, 7);
+      if (d.cost) { var cx = tx + 9 + SS.tw(d.tag, 7); c.fillStyle = '#ffd56b'; c.beginPath(); c.arc(cx + 4, ty + 7.5, 3, 0, 7); c.fill(); SS.txt(String(d.cost), cx + 9, ty + 4, P.ink, 7); }
+      if (ok) SS.check(tx + tw - 12, ty + 4, '#5fae5a'); else SS.cross(tx + tw - 11, ty + 4, '#e46f8b');
+      if (!ok && d.why) SS.txt(d.why, G.W0 / 2, G.viewBottom - 24, '#ffd9e2', 5, 'center');
+      return;
+    }
+    var run = pickedRun(G);
+    if (run) {
+      var h = function (s) { var vs = SS.vseg(s); return G.walls === 'up' ? SS.WALL_UP : G.walls === 'cut' ? (vs.back ? SS.WALL_UP : 8) : 4; };
+      run.forEach(function (s) { face(s.x, s.y, s.axis === 'x' ? s.x + 1 : s.x, s.axis === 'y' ? s.y + 1 : s.y, h(s) + 2, 'rgba(228,111,139,.45)'); });
+      var m = run[Math.floor(run.length / 2)], top = S(m.axis === 'x' ? m.x + .5 : m.x, m.axis === 'y' ? m.y + .5 : m.y, h(m) + 6);
+      var n = m.axis === 'x' ? SS.vdir(0, 1) : SS.vdir(1, 0), fwd = n[0] + n[1] > 0 ? 1 : -1;   // which way "forward" (toward her) is
+      SS.drawChips(G, top[0], Math.max(24, top[1] - 18), [
+        { icon: '‹', fn: function () { SS.moveWall(G, -fwd); } }, { icon: '›', fn: function () { SS.moveWall(G, fwd); } }, { icon: 'away', fn: function () { SS.eraseWall(G); } }]);
+    }
+  };
+  // the lot's name and size under the top bar while building (build-v1)
+  SS.drawBuildLabel = function (G) { SS.txt(G.W.home.lotName + ' · ' + G.W.lot + ' × ' + G.W.lot, 8, 26, 'rgba(255,241,226,.75)', 5); };
+})();
+
+</script>
 <script>/* game.js */
 // Sarah's Sim: the game. Screens (spec 001, part A): the first-open gift (once only), the title in winter, and the home.
 // The home screen (part B) shows the home in the diagonal view with the top bar, the view controls and the tray; decorating
@@ -6246,7 +6830,7 @@ var SS = window.SS = window.SS || {};
   var wc = world.getContext('2d');
   var G = SS.G = { c: c, W0: W0, H: 320, screen: 'title', hits: [], t: 0, mode: null, save: null, W: null, floor: 0, walls: 'cut',
     cam: StudioIso.camera({ zoom: 1 }), tray: { open: true, tab: 'seating', page: 0, cur: 0 }, sel: null, paint: null, hold: null, menu: null, confirm: null,
-    toastT: null, bubble: null, undo: [], focus: null, titleCur: 0, look: SS.look(new Date(), 'sandbox'), viewBottom: 200, agents: [] };
+    toastT: null, bubble: null, undo: [], focus: null, build: { on: false, tool: 'room', paper: 'cream', drag: null, wall: null }, away: null, titleCur: 0, look: SS.look(new Date(), 'sandbox'), viewBottom: 200, agents: [] };
   window.SSG = G;   // for the checks
 
   // ---------- sizing: 240 px wide and as tall as the screen allows, crisp pixels ----------
@@ -6276,7 +6860,10 @@ var SS = window.SS = window.SS || {};
   // ---------- modes and saves ----------
   function openMode(mode) {
     var s = SS.modeSave(mode) || SS.newSave(mode);
-    G.mode = mode; G.save = s; G.W = SS.World(SS.HOMES[s.home], s.pieces, s.roomLook);
+    // the Philly home is where everyone lives; if she left off on another lot, it opens there after (build.js)
+    var cur = s.home || 'philly'; s.home = 'philly'; s.homes = s.homes || {};
+    G.mode = mode; G.save = s; G.away = null; G.build.on = false; G.build.drag = null; G.build.wall = null;
+    G.W = SS.World(SS.homeData(s, 'philly'), s.pieces, s.roomLook); SS.setLot(G.W.lot);
     s.stored = s.stored || []; s.made = s.made || [];
     G.undo = []; G.sel = null; G.paint = null; G.hold = null; G.bubble = null; G.menu = null; G.focus = null;
     G.look = SS.look(SS.now(), mode);
@@ -6290,20 +6877,36 @@ var SS = window.SS = window.SS || {};
     G.sel = null; centerCam(true); SS.startSarahIdle(G); SS.applyHolidays(G); G.pop = null; G._bookDay = null;
     G.screen = 'home';
     G.changed(true);
+    if (cur !== 'philly' && s.homes[cur]) SS.goHome(G, cur);
   }
   G.changed = function (save, keepSel) {
     G.version = (G.version || 0) + 1;
     if (save) {
       // a piece lifted to move is out of the home until it's set down; a save meanwhile (the app closing mid-move) keeps it, and
       // what was stacked on it, where they were, so nothing is ever lost
-      var all = G.gig ? G.gig.home.W.pieces : G.W.pieces, H = G.gig ? null : G.hold;   // during a gig, her own home is what's saved if (H && H.from === 'move' && H.orig && !G.W.byUid[H.orig.uid]) all = all.concat([H.orig]).concat(H.stack || []);
-      G.save.pieces = all.map(function (p) { var q = {}; for (var k in p) if (k !== 'work') q[k] = p[k]; return q; }); SS.writeMode(G.mode, G.save);
+      // during a gig her own home is what's saved; on another lot (build.js) both the Philly home and that lot are
+      var homeW = G.gig ? G.gig.home.W : G.away ? G.away.W : G.W;
+      var withHold = function (W) { var H = G.hold, all = W.pieces; if (W === G.W && !G.gig && H && H.from === 'move' && H.orig && !W.byUid[H.orig.uid]) all = all.concat([H.orig]).concat(H.stack || []); return all; };
+      var strip = function (all) { return all.map(function (p) { var q = {}; for (var k in p) if (k !== 'work') q[k] = p[k]; return q; }); };
+      G.save.pieces = strip(withHold(homeW));
+      if (G.away && !G.gig) SS.homeRec(G.save, G.save.home, true).pieces = strip(withHold(G.W));
+      SS.writeMode(G.mode, G.save);
     }
   };
-  G.snapshot = function () { G.undo.push(JSON.stringify({ pieces: G.W.pieces, stored: G.save.stored })); if (G.undo.length > 10) G.undo.shift(); };
+  // an undo step: the pieces and storage, plus (outside a gig) the home's walls and rooms and her coins (spec 004, part B)
+  G.snapshot = function () {
+    var o = { pieces: G.W.pieces, stored: G.save.stored };
+    if (!G.gig) { var rec = (G.save.homes || {})[G.save.home]; o.data = rec && rec.data ? rec.data : null; o.coins = G.save.coins; }
+    G.undo.push(JSON.stringify(o)); if (G.undo.length > 10) G.undo.shift();
+  };
   G.doUndo = function () {
     if (!G.undo.length) { G.toast('NOTHING TO UNDO', 1000); return; }
     var s = JSON.parse(G.undo.pop());
+    if (s.data !== undefined && !G.gig) {
+      var rec = SS.homeRec(G.save, G.save.home, true);
+      if (JSON.stringify(s.data) !== JSON.stringify(rec.data || null)) { if (s.data) rec.data = s.data; else delete rec.data; G.W = SS.World(SS.homeData(G.save, G.save.home), [], SS.curLooks(G)); G.build.wall = null; }
+      if (s.coins !== undefined) G.save.coins = s.coins;
+    }
     G.W.pieces = []; G.W.byUid = {}; s.pieces.forEach(function (p) { G.W.add(p); }); G.save.stored = s.stored;
     G.sel = null; G.paint = null; G.hold = null; G.changed(true); G.toast('UNDONE', 800);
   };
@@ -6324,14 +6927,14 @@ var SS = window.SS = window.SS || {};
   }
   function clampCam() { var W = G.W, l = I.p(0, W.lot)[0] + SS.OFF[0] + 40, r = I.p(W.lot, 0)[0] + SS.OFF[0] - 40, t = I.p(0, 0, (G.floor + 1) * FH + 20)[1] + SS.OFF[1], b = I.p(W.lot, W.lot)[1] + SS.OFF[1] - 30; G.cam.clamp(l, t, r, b); }
   G.centerCam = centerCam;
-  G.setFloor = function (f) { if (f === G.floor || f >= G.W.floors) return; G.cam.y -= (f - G.floor) * FH; G.floor = f; G.bubble = null; clampCam(); };
+  G.setFloor = function (f) { if (f === G.floor || f >= G.W.floors) return; G.build.wall = null; G.cam.y -= (f - G.floor) * FH; G.floor = f; G.bubble = null; clampCam(); };
   // turning the home a quarter turn clockwise (bible, Building, Turning the home): the same spot stays in the middle of the
   // screen at the same zoom, the walls nearest her follow the view, and the home remembers it (spec 001, part B)
   G.turnHome = function () {
     if (!G.W || G.screen !== 'home') return;
     var Z = G.floor * FH, v = I.tile(G.cam.x - SS.OFF[0], G.cam.y - SS.OFF[1], Z), w = SS.vinv(v[0], v[1]);
     var snap = document.createElement('canvas'); snap.width = W0; snap.height = G.H; snap.getContext('2d').drawImage(cv, 0, 0, cv.width, cv.height, 0, 0, W0, G.H);
-    SS.view.k = (SS.view.k + 1) % 4; G.save.view = SS.view.k;
+    SS.view.k = (SS.view.k + 1) % 4; if (G.away) SS.homeRec(G.save, G.save.home, true).view = SS.view.k; else G.save.view = SS.view.k;
     var v2 = SS.vxy(w[0], w[1]), q = I.p(v2[0], v2[1], Z);
     G.cam.x = q[0] + SS.OFF[0]; G.cam.y = q[1] + SS.OFF[1]; clampCam();
     G.turnAnim = { t0: performance.now(), img: snap };
@@ -6370,6 +6973,7 @@ var SS = window.SS = window.SS || {};
 
   // ---------- the tray ----------
   G.trayState = function () {
+    if (G.build.on) return 'build';   // the Build tab (build.js)
     if (G.sel && G.W.byUid[G.sel]) return G.paint ? 'paint' : 'piece';
     return G.tray.open ? 'catalog' : 'closed';
   };
@@ -6543,10 +7147,20 @@ var SS = window.SS = window.SS || {};
     G.menu = { kind: 'start', cur: 0 };
   };
   G.closeMenu = function () { G.menu = null; };
+  // Homes: go to a home (or an empty lot), or start a New lot in Sandbox (spec 004, part A; build.js)
+  G.homePick = function (i) {
+    var list = SS.homeList(G), m = G.menu;
+    if (i >= list.length) { if (G.mode === 'sandbox') { m.newLot = true; m.lotCur = 0; } return; }
+    var h = list[i]; G.menu = null;
+    if (h.id === G.save.home) return;
+    SS.goHome(G, h.id);
+    if (h.id !== 'philly' && !h.rooms) { SS.enterBuild(G); G.toast(h.lotName + ' · ' + h.lot + ' × ' + h.lot, 1800, 'An empty lot. Drag a box to make a room.'); }
+    else G.toast(h.name, 1200);
+  };
   G.menuPick = function (i) {
     var r = SS.MENU_ROWS[i][1];
     if (r === 'home') G.closeMenu();
-    else if (r === 'homes') G.menu = { kind: 'homes', cur: 0 };
+    else if (r === 'homes') G.menu = { kind: 'homes', cur: Math.max(0, SS.homeList(G).map(function (h) { return h.id; }).indexOf(G.save.home)), lotCur: 0 };
     else if (r === 'backup') backup();
     else if (r === 'title') { G.changed(true); G.menu = null; G.screen = 'title'; G.titleCur = 0; }
     else if (r === 'book') SS.openBook(G);
@@ -6606,6 +7220,7 @@ var SS = window.SS = window.SS || {};
   function worldTap(p) {
     var W = G.W, w = toWorld(p);
     if (G.camera) return;   // the camera only frames; taps do nothing
+    if (G.build.on) { SS.buildTap(G, w, tileAt(p)); return; }   // building (build.js)
     if (G.favUse) { SS.favTap(G, tileAt(p)); return; }   // a picked favorite fills the room she taps
     if (G.hold) { // tap the held piece to turn it; tap elsewhere to move it there
       var g = ghostScreen(G.hold), gs = toScreen(g[0], g[1]);
@@ -6613,7 +7228,7 @@ var SS = window.SS = window.SS || {};
       return;
     }
     var pick = SS.pick(G.lastHits || [], w[0], w[1]);
-    var playing = G.mode === 'life' && G.trayState() === 'closed' && !G.gig;   // a gig's room is for decorating only
+    var playing = G.mode === 'life' && G.trayState() === 'closed' && !G.gig && !G.away;   // a gig's room is for decorating only
     if (playing) {
       G.bubble = null; G.meters = null;
       // looking for the charger: a tap on a place it could hide (a sofa, a bed, a cat) is a guess; any other tap stops looking
@@ -6667,6 +7282,7 @@ var SS = window.SS = window.SS || {};
     if (h && h.card && !h.card.soon) { G.takeCard(h.card, p); drag = { kind: 'hold', fromTray: true }; return; }
     if (h) { drag = { kind: 'none' }; return; }
     if (G.hold) { drag = { kind: 'hold' }; aimHold(p, false); return; }
+    if (G.build.on && SS.buildDragStart(G, tileAt(p0))) { SS.buildDrag(G, tileAt(p)); drag = { kind: 'build' }; return; }   // a room box or a wall line
     // drag a selected piece to move it straight away
     var w = toWorld(p0), pick = SS.pick(G.lastHits || [], w[0], w[1], { noAgents: true });
     if (pick && pick.piece && pick.piece.uid === G.sel) { G.startMove(pick.piece); drag = { kind: 'hold', moving: true }; aimHold(p, false); return; }
@@ -6675,6 +7291,7 @@ var SS = window.SS = window.SS || {};
   function onDrag(p) {
     if (!drag) return;
     if (drag.kind === 'hold' && G.hold) aimHold(p, false);
+    if (drag.kind === 'build') SS.buildDrag(G, tileAt(p));
     if (drag.kind === 'pan') { G.cam.x -= (p.x - drag.last.x) / G.cam.zoom; G.cam.y -= (p.y - drag.last.y) / G.cam.zoom; drag.last = p; clampCam(); }
   }
   function onDragEnd(p) {
@@ -6684,6 +7301,7 @@ var SS = window.SS = window.SS || {};
       if (Math.abs(dx) > 24 && G.menu && G.menu.kind === 'cook') SS.cookPress(G, dx < 0 ? 'right' : 'left');   // swipe for the other dishes
       drag = null; return;
     }
+    if (drag && drag.kind === 'build') { drag = null; if (p.y > G.H - SS.TRAY_H[G.trayState()]) SS.buildCancel(G); else SS.buildDragEnd(G); return; }
     if (drag && drag.kind === 'hold' && G.hold) {
       // let go to place it; if it doesn't fit, it slides back to the tray (or back where it was)
       if (p.y > G.H - SS.TRAY_H[G.trayState()]) cancelHold(true);
@@ -6691,7 +7309,7 @@ var SS = window.SS = window.SS || {};
     }
     drag = null;
   }
-  function onCancel() { if (drag && drag.kind === 'hold') cancelHold(true); drag = null; }
+  function onCancel() { if (drag && drag.kind === 'hold') cancelHold(true); if (drag && drag.kind === 'build') SS.buildCancel(G); drag = null; }
   function onPinch(g) { if (G.screen !== 'home' || G.menu) return; zoomAt(g.scale, g.mid); G.cam.x -= g.dx / G.cam.zoom; G.cam.y -= g.dy / G.cam.zoom; clampCam(); }
   // raw touches for the cooking step games (hold, stir, chop), in canvas pixels
   ['pointerdown', 'pointermove', 'pointerup', 'pointercancel'].forEach(function (ev) {
@@ -6728,6 +7346,8 @@ var SS = window.SS = window.SS || {};
     if (G.menu) {
       var m = G.menu;
       if (m.kind === 'start') { if (k === 'up') m.cur = (m.cur + 7) % 8; if (k === 'down') m.cur = (m.cur + 1) % 8; if (k === 'a') G.menuPick(m.cur); if (k === 'b' || k === 'start') G.closeMenu(); }
+      else if (m.kind === 'homes' && m.newLot) { if (k === 'up') m.lotCur = (m.lotCur + 2) % 3; if (k === 'down') m.lotCur = (m.lotCur + 1) % 3; if (k === 'a') { G.menu = null; SS.newLot(G, [16, 24, 32][m.lotCur]); } if (k === 'b') m.newLot = false; }
+      else if (m.kind === 'homes') { var nh = SS.homeList(G).length + (G.mode === 'sandbox' ? 1 : 0); if (k === 'up') m.cur = (m.cur + nh - 1) % nh; if (k === 'down') m.cur = (m.cur + 1) % nh; if (k === 'a') G.homePick(m.cur); if (k === 'b') G.menu = { kind: 'start', cur: 2 }; if (k === 'start') G.closeMenu(); }
       else if (k === 'b' || k === 'a') G.menu = { kind: 'start', cur: 2 };
       return;
     }
@@ -6736,6 +7356,7 @@ var SS = window.SS = window.SS || {};
     if (G.meters && k === 'b' && !G.bubble) { G.meters = null; return; }
     if (G.hunt && k === 'b') { G.hunt = null; G.toast('MAYBE LATER', 800); return; }
     if (G.bubble) { var b = G.bubble, nb = Math.max(1, b.actions.length); if (k === 'b') G.meters = null; if (k === 'left' || k === 'up') b.cur = (b.cur + nb - 1) % nb; if (k === 'right' || k === 'down') b.cur = (b.cur + 1) % nb; if (k === 'a') G.doBubble(b.cur); if (k === 'b') G.bubble = null; return; }
+    if (G.build.on) { buildPress(k); return; }
     if (G.hold) { if (k === 'a') placeHold(); else if (k === 'b') cancelHold(false); else if (k === 'select') turnHold(); else if (DIRS[k]) moveHold(k); return; }
     if (G.focus === 'cards') {
       var T = G.tray, list = G.catalogList(T.tab).items;
@@ -6749,7 +7370,7 @@ var SS = window.SS = window.SS || {};
     var sel = G.sel && G.W.byUid[G.sel];
     if (sel) { if (k === 'select') turnPiece(sel); if (k === 'b') { if (G.paint) G.paint = null; else G.deselect(); } if (k === 'a') G.deselect(); if (DIRS[k]) pan(k); return; }
     if (k === 'select') { G.turnHome(); return; }   // nothing picked: Select turns the home (spec 001, part B)
-    var playing = G.mode === 'life' && G.trayState() === 'closed' && !G.gig;
+    var playing = G.mode === 'life' && G.trayState() === 'closed' && !G.gig && !G.away;
     if (playing && DIRS[k]) { stepSarah(k); return; }
     if (playing && k === 'a') { nearbyBubble(); return; }
     if (k === 'a' && G.trayState() === 'catalog') { G.focus = 'cards'; G.tray.cur = G.tray.page * 8; return; }
@@ -6757,6 +7378,23 @@ var SS = window.SS = window.SS || {};
     if (DIRS[k]) pan(k);
   }
   var DIRS = { up: 1, down: 1, left: 1, right: 1 };
+  // buttons while building: A starts a room box (or a wall line) on the tile in the middle of the view, the D-pad stretches it
+  // and A builds it, B cancels. A picked wall moves with the D-pad; B lets it go. Select turns the home, B leaves Build.
+  function buildPress(k) {
+    var B = G.build, mid = { x: W0 / 2, y: (24 + G.viewBottom) / 2 };
+    if (B.drag) {
+      if (k === 'a') SS.buildDragEnd(G); else if (k === 'b') SS.buildCancel(G);
+      else if (DIRS[k]) { var D0 = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[k], d = SS.vdirInv(D0[0], D0[1]), dr = B.drag;
+        dr.b = [dr.b[0] + d[0], dr.b[1] + d[1]]; dr.cb = [dr.cb[0] + d[0], dr.cb[1] + d[1]]; SS.buildDrag(G, [dr.b[0], dr.b[1], dr.cb[0], dr.cb[1]]); }
+      return;
+    }
+    if (B.wall) { if (DIRS[k]) { SS.wallPress(G, k); return; } if (k === 'b') { B.wall = null; return; } if (k === 'a') { SS.eraseWall(G); return; } }
+    if (k === 'select') { G.turnHome(); return; }
+    if (k === 'a' && (B.tool === 'room' || B.tool === 'wall')) { SS.buildDragStart(G, tileAt(mid)); return; }
+    if (k === 'a' && B.tool === 'erase') { var w = toWorld(mid); SS.buildTap(G, w, tileAt(mid)); return; }
+    if (k === 'b') { SS.leaveBuild(G); return; }
+    if (DIRS[k]) pan(k);
+  }
   function pan(k) { var D = { up: [0, -12], down: [0, 12], left: [-12, 0], right: [12, 0] }[k]; G.cam.x += D[0] / G.cam.zoom; G.cam.y += D[1] / G.cam.zoom; clampCam(); }
   function stepSarah(k) { // the D-pad walks her a tile at a time (up is toward the back, down toward the front)
     var s = G.people.sarah; if (s.path.length > 1) return;
@@ -6885,8 +7523,8 @@ var SS = window.SS = window.SS || {};
       SS.drawChips(G, ss[0], Math.max(24, ss[1] - 18), chips);
     }
     // the hint line
-    var hint = G.hold ? (G.hold.ok ? 'DRAG TO MOVE · TAP IT TO TURN · OK PLACES' : (G.hold.why === 'DOORWAY' ? 'KEEP DOORWAYS CLEAR' : G.hold.why === 'NEEDS A WINDOW' ? 'CURTAINS GO ON A WINDOW' : G.hold.why === 'STAIRS' ? 'KEEP THE STAIRS CLEAR' : 'IT DOESN\'T FIT HERE'))
-      : G.trayState() === 'catalog' ? 'DRAG A PIECE INTO THE ROOM' : G.trayState() === 'closed' && G.mode === 'life' ? 'TAP THE FLOOR TO WALK · TAP THINGS TO DO' : G.sel ? 'TAP A SWATCH · PAINT ANY PART' : '';
+    var hint = G.build.on ? '' : G.hold ? (G.hold.ok ? 'DRAG TO MOVE · TAP IT TO TURN · OK PLACES' : (G.hold.why === 'DOORWAY' ? 'KEEP DOORWAYS CLEAR' : G.hold.why === 'NEEDS A WINDOW' ? 'CURTAINS GO ON A WINDOW' : G.hold.why === 'STAIRS' ? 'KEEP THE STAIRS CLEAR' : 'IT DOESN\'T FIT HERE'))
+      : G.trayState() === 'catalog' ? 'DRAG A PIECE INTO THE ROOM' : G.trayState() === 'closed' && G.mode === 'life' && !G.away ? 'TAP THE FLOOR TO WALK · TAP THINGS TO DO' : G.sel ? 'TAP A SWATCH · PAINT ANY PART' : '';
     if (hint && !G.menu) SS.txt(hint, W0 / 2, H - trayH - 12, 'rgba(255,241,226,.85)', 5, 'center');
     // the charger hunt's hint: a bouncing marker over the spot, the first time (spec 006, part D)
     SS.huntMarks(G).forEach(function (hm, i) {
@@ -6896,9 +7534,11 @@ var SS = window.SS = window.SS || {};
       SS.R(mx - 5, my - 11, 11, 10, '#3b2430'); SS.R(mx - 4, my - 10, 9, 8, SS.P.rose); SS.txt('?', mx + 1, my - 9, '#fff', 6, 'center');
       SS.R(mx - 1, my - 2, 3, 2, SS.P.rose); SS.R(mx, my, 1, 2, SS.P.rose);
     });
+    if (G.build.on) { SS.drawBuildOver(G, toScreen); if (!G.build.drag && !G.build.wall && !G.menu) SS.txt(G.build.tool === 'room' ? 'DRAG A BOX TO MAKE A ROOM' : G.build.tool === 'wall' ? 'DRAG A LINE TO BUILD A WALL' : G.build.tool === 'erase' ? 'TAP WHAT TO ERASE' : '', W0 / 2, H - trayH - 12, 'rgba(255,241,226,.85)', 5, 'center'); }
     if (G.sleeping) sleepScene(H - trayH, now);
     if (G.gig) SS.drawGigBanner(G, W0); else SS.drawTopBar(G, W0);   // a gig's banner takes the top bar's place (gig-v1)
     if (G.favUse) SS.drawFavBanner(G, W0, H);
+    if (G.build.on && !G.gig) SS.drawBuildLabel(G);
     SS.drawViewControls(G, W0, G.mode === 'life' && (G.act || G.queue.length) ? 40 : 24, H - trayH - 16);
     SS.drawTray(G, W0, H);
     if (G.slideBack) slideBackAnim(now, H);
@@ -6959,12 +7599,12 @@ var SS = window.SS = window.SS || {};
         if (now - lastSecond > 1000) {
           lastSecond = now; G.look = SS.look(SS.now(), G.mode); if (G.mode === 'life') lampPhase(false);
           var today = SS.now().toDateString() + SS.now().getHours(); if (G._bookDay !== today) { G._bookDay = today; SS.bookDay(G); }   // dated moments (spec 007)
-          if (!G.gig) SS.bookTick(G);
+          if (!G.gig && !G.away) SS.bookTick(G);
         }
         if (G.zoomTo) { G.cam.zoom += (G.zoomTo - G.cam.zoom) * .3; if (Math.abs(G.zoomTo - G.cam.zoom) < .01) { G.cam.zoom = G.zoomTo; G.zoomTo = null; } }
-        if (!G.gig) SS.updateAgents(G, dt);   // during a gig she's in their room; her home waits as it was
+        if (!G.gig && !G.away) SS.updateAgents(G, dt);   // during a gig she's in their room; her home waits as it was
         if (G.menu && G.menu.kind === 'cook') SS.cookTick(G, dt);
-        var sf = G.people.sarah.f; if (G.mode === 'life' && G.sarahF !== undefined && sf !== G.sarahF && sf !== G.floor) G.setFloor(sf); G.sarahF = sf;   // follow her up and down the stairs
+        var sf = G.away ? G.sarahF : G.people.sarah.f; if (G.mode === 'life' && G.sarahF !== undefined && sf !== G.sarahF && sf !== G.floor) G.setFloor(sf); G.sarahF = sf;   // follow her up and down the stairs
         drawHome(H, t, now);
         if (!G.menu && !(G.camera && G.camera.shot)) SS.drawPop(G, W0);   // a new memory book moment slides in at the top (spec 007, part A)
         if (G.menu) SS.drawMenu(G, W0, H);
@@ -6987,6 +7627,7 @@ var SS = window.SS = window.SS || {};
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { SS.forgetAll && SS.forgetAll(); });
   requestAnimationFrame(loop);
   G.openMode = openMode;   // for the checks
+  G.cancelHold = function (back) { if (G.hold) cancelHold(back); };
 })();
 
 </script>

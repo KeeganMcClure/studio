@@ -2,6 +2,60 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 28, 2026: the Build screen, lots, rooms and walls (Dev)
+
+Spec 004, parts A and B, from `build-v1`. Playtest gate: Keegan plays this before parts C and D.
+
+### What was built
+
+- **Homes she can change:** each save now keeps its own copy of a home's rooms and walls once she builds on it. The save version goes from 1 to 2; older saves are backed up first, then upgraded, and open exactly as before.
+- **Lots:** small 16 × 16, medium 24 × 24 and large 32 × 32, each grass with a path to the front.
+  - Start → Homes lists the Philly home and the street's three empty lots (one of each size), each with its size.
+  - In Sandbox, Homes also has **New lot**, where she picks a size and starts fresh.
+  - Going to another home leaves everyone at home just as they were; coming back picks up where they left off. If she closes the game on a lot, it opens there again.
+- **The Build tab** (Home / Style / Build in the tray):
+  - the 8 tools as icons, the picked one named with a hint, and cards for it;
+  - walls switch to cut away while she builds, and the lot's name and size show under the top bar, as in `build-v1`.
+- **Room tool:** drag a box on the floor. A ghost room with walls follows her finger, with a size tag ("5 × 6"), a check or a cross, and in Life its price. Letting go builds four walls and a floor in the picked wall style (7 styles, Nina's wallpaper included).
+  - The smallest room is 2 × 2, and nothing goes past the lot's edge; the ghost turns rose with a cross and says why.
+  - A room against another room shares the wall between them.
+- **Wall tool:** drag a line along the tile edges. A wall across a room cuts it into two rooms, and walls that close in a space make it a room with its own floor.
+- **Picking walls:** with the room or wall tool, tap a wall to pick its whole straight stretch. The chips (or the D-pad) move it a tile at a time, and the cross erases it.
+- **Erase tool:** tap a wall to erase it, or a floor tile to take it out.
+  - Erasing the wall between two rooms opens them into one room. Erasing an outside wall leaves the room open on that side.
+- **Nothing lost:** furniture that no longer fits after a change goes to storage, with what was stacked on it. People and cats standing in the way step aside.
+- **Undo** steps back through the last 10 changes, walls and coins included.
+- **Life prices:** walls and floors 5 coins a tile, shown on the ghost before she lets go. Erasing gives back what she paid on that home. A change she can't afford isn't built. Sandbox is free.
+- **Memory book:** "First wall on an empty lot" fires the first time she builds on one.
+- **Buttons:** A starts a room box (or wall line) in the middle of the view, the D-pad stretches it, A builds and B cancels. With a wall picked, the D-pad moves it and A erases it. B leaves the Build tab.
+
+### Also fixed
+
+- Saving while a piece was lifted to move could drop it, and what was stacked on it, if the app closed right then. A code comment had swallowed that line in the coins update; it's back.
+
+### What's left
+
+- Parts C and D (doors and windows, the floor and paper tools, upper floors and the four kinds of stairs) come after Keegan's playtest. Their tools are in the row but say they come next.
+- Part E (naming a home, moving in, "A whole new home finished").
+- The street itself (spec 008). Until then, its three lots are in Homes.
+
+### Checks
+
+- `npm run check` passes, with a new Build section at 375 × 667 and 320 × 480:
+  - every lot size opens, and the 8 tools show;
+  - the D-pad slides across a large lot;
+  - rooms are built by dragging with the size tag, and the rules hold;
+  - walls cut rooms, and walls closing in a space make a room;
+  - walls are picked, moved and erased, and floor tiles are erased;
+  - undo works, nothing is lost on the Philly home, and changes are kept after reopening;
+  - Life charges and refunds.
+
+### Changes from the spec
+
+- The street's three lots are listed in Homes until the street (spec 008) is built.
+- Upper floors keep the floors the home already has. Building new floors comes with part D, though a room on floor 2 or 3 of the Philly home already has to sit over a room below.
+- Moving a wall's chips use ‹ and › for the two directions, since a wall only moves across itself.
+
 ## Nov 28, 2026: Nina's wallpaper (Dev)
 
 Bible To do (Keegan, Nov 26); spec 004, part D; `mockups/papers-nina-v1`.

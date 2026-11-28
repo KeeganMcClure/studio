@@ -98,7 +98,7 @@
     var agents = (G.agents || []).filter(function (a) { return a.f === f.f && Math.abs(a.x - f.x) < 4.5 && Math.abs(a.y - f.y) < 4.5; }).map(function (a) {
       return { kind: a.kind, who: a.who, x: a.x, y: a.y, z: a.z || 0, pose: a.path && a.path.length ? 'stand' : a.pose, flip: !!a.flip, back: false, on: a.on || null, arms: a.arms || null };
     });
-    return { home: G.save.home, f: f.f, x: f.x, y: f.y, k: SS.view.k, pieces: pieces, agents: agents, xmas: !!G.xmasDay, looks: G.save.roomLook || null };
+    return { home: G.save.home, data: SS.builtData(G), f: f.f, x: f.x, y: f.y, k: SS.view.k, pieces: pieces, agents: agents, xmas: !!G.xmasDay, looks: SS.curLooks(G) };
   }
 
   // ---------- drawing a snapshot from its recipe (cached once drawn) ----------
@@ -111,7 +111,7 @@
   // draws any picture recipe {home, f, x, y, k, pieces, agents, looks, xmas, span} small and crisp (the memory book's snapshots,
   // the favorites' room pictures). span: how many px of the world the picture spans across (176 by default)
   SS.drawRecipe = function (r, w, h, look, tag) {
-    var home = SS.HOMES[r.home] || SS.HOMES.philly, OFF = SS.OFF;
+    var home = r.data || SS.HOMES[r.home] || SS.HOMES.philly, OFF = SS.OFF;   // a built home brings its own data (spec 004)
     var pieces = JSON.parse(JSON.stringify(r.pieces)).map(function (p) { p.uid += 1e6; if (p.host) p.host += 1e6; return p; });   // their own sprites, apart from the live home's
     var W = SS.World(home, pieces, r.looks);
     var agents = (r.agents || []).map(function (a) {
@@ -123,10 +123,11 @@
         } };
     });
     var cv = document.createElement('canvas'); cv.width = SS.WORLD[0]; cv.height = SS.WORLD[1];
-    var k0 = SS.view.k, q; SS.view.k = r.k || 0;   // drawn in the view it was seen in
-    try { SS.drawScene(cv.getContext('2d'), W, { version: tag || 'recipe', floor: r.f, walls: 'cut', t: 0, look: look, agents: agents }); q = SS.vp(r.x, r.y, r.f * SS.FH + 10); }
-    finally { SS.view.k = k0; }
-    var cw = r.span || 176, ch = Math.round(cw * h / w), sx = Math.round(q[0] + OFF[0] - cw / 2), sy = Math.round(q[1] + OFF[1] - ch / 2 - 12);
+    var k0 = SS.view.k, L0 = SS.view.L, q, sx, sy, cw = r.span || 176, ch = Math.round(cw * h / w); SS.view.k = r.k || 0; SS.view.L = W.lot;   // drawn in the view it was seen in
+    try {
+      SS.drawScene(cv.getContext('2d'), W, { version: tag || 'recipe', floor: r.f, walls: 'cut', t: 0, look: look, agents: agents }); q = SS.vp(r.x, r.y, r.f * SS.FH + 10);
+      sx = Math.round(q[0] + OFF[0] - cw / 2); sy = Math.round(q[1] + OFF[1] - ch / 2 - 12);
+    } finally { SS.view.k = k0; SS.view.L = L0; SS.setLot(SS.G && SS.G.W ? SS.G.W.lot : 16); }
     var out = document.createElement('canvas'); out.width = w; out.height = h; var oc = out.getContext('2d'); oc.imageSmoothingEnabled = false;
     oc.fillStyle = '#2a1b24'; oc.fillRect(0, 0, w, h); oc.drawImage(cv, sx, sy, cw, ch, 0, 0, w, h);
     return out;
@@ -457,7 +458,7 @@
     var W = G.W, out = [];
     W.home.floors.forEach(function (fl, f) {
       fl.rooms.forEach(function (r) {
-        var room = null, tiles = []; for (var x = r.r[0] + W.ax; x < r.r[2] + W.ax; x++) for (var y = r.r[1] + W.ay; y < r.r[3] + W.ay; y++) { if (W.room(f, x, y) === r) { room = r; tiles.push(x + ',' + y); } }
+        var room = null, tiles = []; for (var k in W.rooms[f]) if (W.rooms[f][k] === r) { room = r; tiles.push(k); }
         if (!room) return;
         var inRoom = function (p) { return W.floorOf(p) === f && !p.wall && !p.host && tiles.indexOf(p.x + ',' + p.y) >= 0; };
         var rug = W.pieces.some(function (p) { return inRoom(p) && W.def(p).kind === 'rug'; }), seat = W.pieces.some(function (p) { var d = W.def(p); return inRoom(p) && (d.use === 'sofa' || d.use === 'chair' || d.seat); });

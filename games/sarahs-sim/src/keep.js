@@ -45,7 +45,7 @@
     var fav = {
       kind: 'room', name: name, room: R0.r.name, w: R0.x1 - R0.x0, d: R0.y1 - R0.y0, floor: R0.r.floor, paper: R0.r.paper, pieces: rel, made: Date.now(),
       // its picture, as a recipe (book.js draws it): the room's own pieces where they stood, in the view she saved it from
-      pic: { home: G.save.home, f: f, x: (R0.x0 + R0.x1) / 2, y: (R0.y0 + R0.y1) / 2, k: SS.view.k, pieces: list.map(copy), agents: [], looks: G.save.roomLook || null, span: 22 * Math.max(R0.x1 - R0.x0, R0.y1 - R0.y0) + 40 }
+      pic: { home: G.save.home, data: SS.builtData(G), f: f, x: (R0.x0 + R0.x1) / 2, y: (R0.y0 + R0.y1) / 2, k: SS.view.k, pieces: list.map(copy), agents: [], looks: SS.curLooks(G), span: 22 * Math.max(R0.x1 - R0.x0, R0.y1 - R0.y0) + 40 }
     };
     var all = SS.favorites(); all.push(fav); saveFavs(all);
     SS.moment(G, 'favorite', { f: f, x: fav.pic.x, y: fav.pic.y });
@@ -87,7 +87,7 @@
     });
     left.forEach(store);
     // the room takes the favorite's floor and wallpaper, for this save
-    if (fav.floor || fav.paper) { var L = G.save.roomLook || (G.save.roomLook = {}); L[f + ':' + R0.r.id] = { floor: fav.floor, paper: fav.paper }; R0.r.floor = fav.floor || R0.r.floor; R0.r.paper = fav.paper || R0.r.paper; }
+    if (fav.floor || fav.paper) { var L = SS.curLooks(G, true); L[f + ':' + R0.r.id] = { floor: fav.floor, paper: fav.paper }; R0.r.floor = fav.floor || R0.r.floor; R0.r.paper = fav.paper || R0.r.paper; }
     W.pieces.forEach(function (p) { SS.forgetSprite(p.uid); });
     G.changed(true);
     return { placed: placed, stored: stored };
