@@ -59,6 +59,7 @@
     G.screen = 'home';
     G.changed(true);
     if (cur !== 'philly' && s.homes[cur]) SS.goHome(G, cur);
+    G.styleGig = null; SS.scheduleKnock(G);   // a visitor may knock after a few minutes (spec 008, part A)
   }
   G.changed = function (save, keepSel) {
     G.version = (G.version || 0) + 1;
@@ -160,7 +161,7 @@
   };
   G.toggleTray = function () { G.tray.open = !G.tray.open; G.focus = null; G.bubble = null; };
   G.catalogList = function (tab) {
-    var defs = SS.CATALOG.filter(function (d) { return d.tab === tab && (!d.craft || G.mode === 'sandbox' || G.save.made.indexOf(d.id) >= 0); });
+    var defs = SS.CATALOG.filter(function (d) { return d.tab === tab && (!d.craft || G.mode === 'sandbox' || G.save.made.indexOf(d.id) >= 0) && !SS.setLocked(G, d); });   // a neighbor's set waits for their story (spec 008)
     if (tab === 'storage') defs.sort(function (a, b) { return (a.row ? (a.row === 'kitchen' ? 1 : 2) : 0) - (b.row ? (b.row === 'kitchen' ? 1 : 2) : 0); });
     var now = SS.now();
     var items = defs.map(function (d) {
@@ -533,6 +534,8 @@
     if (G.menu && G.menu.kind === 'gigdone') { SS.gigDonePress(G, k); return; }
     if (G.menu && G.menu.kind === 'style') { SS.stylePress(G, k); return; }
     if (G.menu && G.menu.kind === 'creator') { SS.creatorPress(G, k); return; }
+    if (G.menu && G.menu.kind === 'visit') { SS.visitPress(G, k); return; }
+    if (G.knock && !G.menu && SS.knockPress(G, k)) return;
     if (G.menu && G.menu.kind === 'people') { SS.peoplePress(G, k); return; }
     if (G.camera && !G.menu && !G.confirm) { // the camera: A takes the picture, B closes, the D-pad slides the view
       if (G.camera.shot) { if (k === 'a' || k === 'b') G.camera = null; return; }
@@ -737,6 +740,7 @@
     if (G.gig) SS.drawGigBanner(G, W0); else SS.drawTopBar(G, W0);   // a gig's banner takes the top bar's place (gig-v1)
     if (G.favUse) SS.drawFavBanner(G, W0, H);
     if (G.build.on && !G.gig) SS.drawBuildLabel(G);
+    if (G.knock && !G.menu) SS.drawKnock(G, W0, H, toScreen);   // a visitor at the door
     SS.drawViewControls(G, W0, G.mode === 'life' && (G.act || G.queue.length) ? 40 : 24, H - trayH - 16);
     SS.drawTray(G, W0, H);
     if (G.slideBack) slideBackAnim(now, H);
@@ -798,6 +802,7 @@
           lastSecond = now; G.look = SS.look(SS.now(), G.mode); if (G.mode === 'life') lampPhase(false);
           var today = SS.now().toDateString() + SS.now().getHours(); if (G._bookDay !== today) { G._bookDay = today; SS.bookDay(G); }   // dated moments (spec 007)
           if (!G.gig && !G.away) SS.bookTick(G);
+          SS.knockTick(G);
         }
         if (G.zoomTo) { G.cam.zoom += (G.zoomTo - G.cam.zoom) * .3; if (Math.abs(G.zoomTo - G.cam.zoom) < .01) { G.cam.zoom = G.zoomTo; G.zoomTo = null; } }
         if (!G.gig && !G.away) SS.updateAgents(G, dt);   // during a gig she's in their room; her home waits as it was

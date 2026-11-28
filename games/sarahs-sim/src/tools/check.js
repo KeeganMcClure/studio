@@ -146,7 +146,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     home.nouse.forEach(t => bad.push('nobody can get to ' + t));
     // the starting catalog: every tab holds spec 001's draft list (plus the easel, the cat bowls and the litter box)
     const tabs = await page.evaluate(() => { const n = {}; SS.CATALOG.filter(d => !d.craft).forEach(d => { n[d.tab] = (n[d.tab] || 0) + 1; }); return n; });
-    const want = { seating: 10, tables: 9, beds: 6, storage: 12, lights: 7, plants: 7, rugs: 6, wall: 10, decor: 16, holiday: 27 };   // holiday: the tree, the Christmas set, and two pieces for each of the year's other 9 holidays (spec 009)   // decor: 13 + the easel + the cat bowls and litter box (spec 006, part D)
+    const want = { seating: 11, tables: 10, beds: 6, storage: 12, lights: 7, plants: 8, rugs: 6, wall: 10, decor: 17, holiday: 27 };   // plus Dot's florist set in seating, tables, plants and decor (spec 008)   // holiday: the tree, the Christmas set, and two pieces for each of the year's other 9 holidays (spec 009)   // decor: 13 + the easel + the cat bowls and litter box (spec 006, part D)
     const few = await page.evaluate(() => SS.CATALOG.filter(d => !d.craft && d.tab !== 'none' && (d.swatches.length < 4 || d.swatches.length > 6)).map(d => d.id + ' (' + d.swatches.length + ')'));
     few.forEach(id => bad.push('swatches should be 4 to 6 (spec 001, part D): ' + id));
     Object.keys(want).forEach(t => { if (tabs[t] !== want[t]) bad.push(`the ${t} tab has ${tabs[t] || 0} pieces, the starting list has ${want[t]}`); });
@@ -1193,6 +1193,62 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     r.forEach(o => bad.push(o));
     bad.push(...errors); await ctx.close();
     report('the year\'s holidays (spec 009, step 3): every day dresses the home, its pieces in season, party hats, kept pieces, the right month, fireworks', bad);
+  }
+
+  // ---------- 6l. visitors: the knock, the chat and Dot's story (spec 008, part A and part B for Dot) ----------
+  {
+    const bad = [];
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    await page.evaluate(() => { const G = SSG; G.confirm = null; SS.setClock(14, 0); G.openMode('life'); G.toastT = null; G.pop = null; G.setFloor(0); G.centerCam(true); });
+    // the knock comes on its own after a few minutes of play, at most once per opening
+    const k = await page.evaluate(() => { const G = SSG, out = []; if (G.knock) out.push('a knock came straight away'); if (G.knockAt - performance.now() < 110000 || G.knockAt - performance.now() > 310000) out.push('the knock is not set for 2 to 5 minutes in'); G.knockAt = performance.now() - 1; SS.knockTick(G); if (!G.knock || G.knock.who !== 'dot') out.push('Dot does not knock first'); SS.knockNotNow(G); G.knockAt = performance.now() - 1; SS.knockTick(G); if (G.knock) out.push('a second knock came in the same opening'); return out; });
+    k.forEach(o => bad.push(o));
+    // Let in by touch
+    await page.evaluate(() => SS.forceKnock(SSG, 'dot')); await page.waitForTimeout(150);
+    const btn = await page.evaluate(() => { const h = SSG.hits.filter(q => q.w === 100 && q.h === 22); const l = h[h.length - 1]; return [l.x + 50, l.y + 11]; });
+    await tapAt(page, btn[0], btn[1]); await page.waitForTimeout(100);
+    if (await page.evaluate(() => SSG.menu && SSG.menu.kind) !== 'visit') bad.push('Let in does not open the chat');
+    await page.screenshot({ path: path.join(DIST, 'screen-visitor-375x667.png') });
+    for (let i = 0; i < 2; i++) { await page.keyboard.press('z'); await page.waitForTimeout(40); }   // A turns the chat, two lines at a time
+    const asking = await page.evaluate(() => SSG.menu && SSG.menu.asking);
+    if (!asking) bad.push('the chat does not end with her ask');
+    const story = await page.evaluate(() => {
+      const G = SSG, out = []; if (!SS.hasMoment('visitor')) out.push('the first visitor is not in the memory book');
+      if (G.menu.cur !== 0) out.push('the choices do not start on yes');
+      const c0 = G.save.coins; SS.visitPick(G, 0);
+      if (!G.gig || G.gig.offer.story !== 0) { out.push('yes does not start her story gig'); return out; }
+      if (G.catalogList('tables').items.some(i => i.id === 'potting-bench')) out.push('her set shows before it unlocks');
+      const play = () => { if (G.gig.outfit) { SS.wear(G, 'guest', 'long-wool-coat'); SS.wear(G, 'guest', 'canvas-high-tops'); SS.handInOutfit(G); } else { const W = G.W; [['monstera', 0, 0], ['side-table', 1, 0], ['double-bed', 2, 1], ['club-armchair', 0, 1]].forEach(q => { const p = { id: q[0], f: 0, x: W.ax + q[1], y: W.ay + q[2], r: 0, sw: 0 }; if (W.check(p).ok) W.add(p); }); SS.handIn(G); } const pay = G.menu.pay; SS.gigDone(G); return pay; };
+      const pays = [play()];
+      for (let s = 1; s < 4; s++) {
+        const v = SS.visitOf(G, 'dot');
+        if (SS.visitorDue(G)) out.push('a second story visit is due the same day');
+        v.last = 'yesterday'; SS.forceKnock(G, 'dot'); SS.letIn(G); G.menu.asking = true; SS.visitPick(G, 0);
+        if (!G.gig || G.gig.offer.story !== s) { out.push('story visit ' + (s + 1) + ' does not start its gig'); return out; }
+        if (s === 2 && !G.gig.outfit) out.push('visit 3 is not an outfit gig');
+        pays.push(play());
+        if (s === 1 && !G.catalogList('tables').items.some(i => i.id === 'potting-bench')) out.push('visit 2 does not unlock the potting bench');
+      }
+      if (JSON.stringify(pays) !== '[250,250,250,600]') out.push('story gigs do not pay 250, and 600 for the home: ' + JSON.stringify(pays));
+      if (G.save.coins !== c0 + 1350) out.push('the pay did not reach her coins');
+      const v = SS.visitOf(G, 'dot'); if (v.step !== 4 || v.home !== 'done') out.push('the story does not finish');
+      if (!['flower-cart', 'wicker-chair', 'big-fern'].every(id => G.catalogList(SS.DEF[id].tab).items.some(i => i.id === id))) out.push('the rest of the set does not unlock');
+      ['story', 'neighbor-redone', 'gig', 'visitor-gift'].forEach(id => { if (!SS.hasMoment(id)) out.push('the ' + id + ' moment did not fire'); });
+      // after the story: ordinary visits, chat lines that don't repeat until the pool is used up, friendship only grows
+      const seen = []; let h0 = SS.friendHearts(G, 'dot');
+      for (let i = 0; i < 4; i++) { v.last = 'x'; SS.forceKnock(G, 'dot'); SS.letIn(G); seen.push(...G.menu.lines.slice(0, 2)); G.menu = null; const h1 = SS.friendHearts(G, 'dot'); if (h1 < h0) out.push('friendship went down'); h0 = h1; }
+      if (new Set(seen).size !== seen.length) out.push('chat lines repeated before the pool ran out');
+      v.last = 'x'; SS.forceKnock(G, 'dot'); SS.letIn(G); G.menu.asking = true; SS.visitPick(G, 0); if (!G.menu || G.menu.kind !== 'gig' || G.menu.offers.some(k => SS.GIGS[k].who !== 'dot')) out.push('an ordinary visit does not offer her gig');
+      G.menu = null;
+      // Sandbox: every set piece is there, and story gigs pay nothing
+      G.openMode('sandbox'); if (!G.catalogList('plants').items.some(i => i.id === 'big-fern')) out.push('Sandbox does not have the set');
+      SS.forceKnock(G, 'dot'); SS.letIn(G); G.menu.asking = true; SS.visitPick(G, 0); if (G.gig) { SS.handIn(G); if (G.menu.pay !== 0) out.push('a Sandbox story gig pays coins'); SS.gigDone(G); }
+      SS.setClock(null);
+      return out;
+    });
+    story.forEach(o => bad.push(o));
+    bad.push(...errors); await ctx.close();
+    report('visitors (spec 008 A, B for Dot): the knock after a few minutes, Let in, the hall chat, her four story gigs and pay, her set in two steps, moments, chat pool, friendship', bad);
   }
 
   // ---------- 6c. turning the home (bible, Building, Turning the home; spec 001, part B) ----------

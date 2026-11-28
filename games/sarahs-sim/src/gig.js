@@ -34,6 +34,7 @@
     books: { label: 'books', test: function (ps) { return ps.some(function (p) { return /book/.test(p.id); }); } },
     seating: { label: 'a comfy seat', test: function (ps) { return ps.some(function (p) { var u = SS.DEF[p.id].use; return u === 'sofa' || u === 'chair'; }); } },
     table: { label: 'a little table', test: function (ps) { return ps.some(function (p) { return SS.DEF[p.id].tab === 'tables'; }); } },
+    bed: { label: 'a bed to sleep in', test: function (ps) { return ps.some(function (p) { return SS.DEF[p.id].use === 'bed'; }); } },
     rug: { label: 'a rug', test: function (ps) { return ps.some(function (p) { return SS.DEF[p.id].kind === 'rug'; }); } },
     lights: { label: 'soft light', test: function (ps) { return ps.some(function (p) { var d = SS.DEF[p.id]; return d.lamp || d.light; }); } },
     art: { label: 'art', test: function (ps) { return ps.some(function (p) { var d = SS.DEF[p.id]; return d.kind === 'wall' && !d.window; }); } },
@@ -45,19 +46,25 @@
   SS.gigMatches = function (G) { var g = G.gig, ps = G.W.pieces; return g.offer.likes.map(function (k) { return LIKES[k].test(ps); }); };
 
   // ---------- offers: Find a gig at the desk ----------
-  SS.findGigs = function (G) {
+  SS.findGigs = function (G, who) {   // who: only that visitor's gigs (an ordinary visit, spec 008)
     var S = G.save; S.shown = S.shown || {}; var sh = S.shown.gigs || (S.shown.gigs = []);
-    var left = POOL.map(function (g, i) { return i; }).filter(function (i) { return sh.indexOf(i) < 0; });
-    if (left.length < 3) { sh.length = 0; left = POOL.map(function (g, i) { return i; }); }
+    var mine = POOL.map(function (g, i) { return i; }).filter(function (i) { return !who || POOL[i].who === who; });
+    var left = mine.filter(function (i) { return sh.indexOf(i) < 0; });
+    if (left.length < (who ? 1 : 3)) { sh.length = 0; left = mine.slice(); }
     var picks = [], whos = {};
     while (picks.length < 3 && left.length) { var k = left.splice(Math.floor(Math.random() * left.length), 1)[0]; if (whos[POOL[k].who]) continue; whos[POOL[k].who] = 1; picks.push(k); }
     G.bubble = null; G.meters = null; G.toastT = null;
     G.menu = { kind: 'gig', offers: picks, cur: 0 };
   };
   SS.acceptGig = function (G, k) {
-    var o = POOL[k], S = G.save; (S.shown.gigs = S.shown.gigs || []).push(k);
+    var S = G.save; (S.shown.gigs = S.shown.gigs || []).push(k);
+    SS.startGig(G, POOL[k], k);
+  };
+  // any room gig: an ordinary one, or a visitor's story gig (spec 008, part B), with its own pay and size
+  SS.startGig = function (G, o, k) {
+    var lot = Math.max(o.w, o.d) + 4;
     // the gig's space: one small empty room of theirs, with windows, on its own little lot
-    var lot = Math.max(o.w, o.d) + 4, home = { id: 'gig', name: WHO[o.who].name, lot: lot, lotName: '', at: [2, 2], w: o.w, d: o.d,
+    var home = { id: 'gig', name: WHO[o.who].name, lot: lot, lotName: '', at: [2, 2], w: o.w, d: o.d,
       floors: [{ rooms: [{ id: 'gig', name: 'Room', r: [0, 0, o.w, o.d], floor: o.floor, paper: o.paper }], openings: [], windows: [[1, 0, 'x', 2], [0, 1, 'y', 2]] }], stairs: [], pieces: [] };
     if (!SS.PAPERS[o.paper]) home.floors[0].rooms[0].paper = 'cream';
     SS.HOMES.gig = home;
@@ -75,16 +82,19 @@
     if (G.hold) return;
     var pic = { home: 'gig', f: 0, x: G.W.ax + o.w / 2, y: G.W.ay + o.d / 2, k: SS.view.k, pieces: JSON.parse(JSON.stringify(G.W.pieces)), agents: [], span: 22 * Math.max(o.w, o.d) + 30 };
     var missed = o.likes.filter(function (k, i) { return !m[i]; });
-    G.menu = { kind: 'gigdone', hearts: hearts, pay: [100, 150, 200][hearts - 1], missed: missed, pic: pic, img: null };
+    var pay = o.story !== undefined ? (G.mode === 'life' ? (o.pay || 250) : 0) : [100, 150, 200][hearts - 1];   // story gigs pay 250 (a home 600); Sandbox's story pays none
+    G.menu = { kind: 'gigdone', hearts: hearts, pay: pay, missed: missed, pic: pic, img: null };
   };
   SS.gigDone = function (G) {
     var r = G.menu, o = G.gig.offer, S = G.save; G.menu = null;
-    S.coins = (S.coins || 0) + r.pay; S.friends = S.friends || {}; S.friends[o.who] = (S.friends[o.who] || 0) + 1;
-    leave(G);
+    S.coins = (S.coins || 0) + r.pay; S.friends = S.friends || {};
+    if (o.story === undefined) S.friends[o.who] = (S.friends[o.who] || 0) + r.hearts;   // more hearts, more friendship (spec 008, part A)
+    if (G.gig.outfit) { G.gig = null; G.styleGig = null; } else leave(G);
     SS.moment(G, 'gig');
-    G.toast('+' + r.pay + ' COINS', 2200, WHO[o.who].name.charAt(0) + WHO[o.who].name.slice(1).toLowerCase() + ' will remember this. +1 friendship.');
+    if (o.story !== undefined) SS.storyGigDone(G, o, r.hearts);
+    G.toast(r.pay ? '+' + r.pay + ' COINS' : 'THANK YOU', 2200, WHO[o.who].name.charAt(0) + WHO[o.who].name.slice(1).toLowerCase() + ' will remember this. Friendship grew.');
   };
-  SS.gigQuit = function (G) { leave(G); G.toast('GIG LEFT FOR NOW', 1600, 'Find another at the desk any time.'); };
+  SS.gigQuit = function (G) { if (G.gig.outfit) { G.gig = null; G.styleGig = null; G.menu = null; } else leave(G); G.toast('GIG LEFT FOR NOW', 1600, 'Find another at the desk any time.'); };
 
   // ---------- drawing ----------
   var P = SS.P, R = SS.R, txt = SS.txt;
@@ -105,7 +115,7 @@
     R(x, y, w, 18, P.rose); txt('A GIG FOR YOU', x + w / 2, y + 6, '#fff', 6, 'center');
     portrait(G, o.who, x + 8, y + 24, 48, 50);
     txt(wh.name, x + 62, y + 28, P.ink, 7); SS.vt(wh.rel, x + 62, y + 40, P.soft, 11);
-    var fr = (G.save.friends || {})[o.who] || 0; for (var i = 0; i < 5; i++) heart(c, x + 62 + i * 10, y + 56, i < Math.min(5, 1 + fr)); SS.vt('Friends', x + 116, y + 53, P.soft, 11);
+    var fh = SS.friendHearts(G, o.who); for (var i = 0; i < 5; i++) heart(c, x + 62 + i * 10, y + 56, i < fh); SS.vt('Friends', x + 116, y + 53, P.soft, 11);
     R(x + 8, y + 80, w - 16, 1, P.trayEdge);
     txt('WHAT ' + wh.she + ' WANT' + (wh.she === 'THEY' ? '' : 'S'), x + 8, y + 86, P.soft, 5);
     SS.hand(c, '"' + o.ask + '."', x + 8, y + 106, 13, P.ink, 'left', w - 16);
@@ -146,8 +156,9 @@
     var w = Math.min(224, W - 12), h = 282, x = (W - w) / 2, y = Math.max(6, Math.round((H - h) / 2));
     R(x + 2, y + 3, w, h, 'rgba(34,23,31,.35)'); R(x, y, w, h, P.tray); c.strokeStyle = P.rose; c.strokeRect(x + .5, y + .5, w - 1, h - 1);
     R(x, y, w, 18, P.rose); txt(wh.name + (r.hearts === 3 ? ' LOVES IT' : r.hearts === 2 ? ' IS HAPPY' : ' SAYS THANKS'), x + w / 2, y + 6, '#fff', 5, 'center');
-    if (!r.img) r.img = SS.drawRecipe(r.pic, w - 40, 70, SS.look(new Date(2026, 0, 1, 12), 'sandbox'), 'gig:' + G.gig.start);
-    c.imageSmoothingEnabled = false; c.drawImage(r.img, x + 20, y + 24);
+    if (r.outfitImg) { R(x + 20, y + 24, w - 40, 70, '#f3d2c4'); c.imageSmoothingEnabled = false; c.drawImage(r.outfitImg, 0, 0, 52, 70, x + w / 2 - 26, y + 24, 52, 70); }
+    else { if (!r.img) r.img = SS.drawRecipe(r.pic, w - 40, 70, SS.look(new Date(2026, 0, 1, 12), 'sandbox'), 'gig:' + G.gig.start);
+      c.imageSmoothingEnabled = false; c.drawImage(r.img, x + 20, y + 24); }
     for (var i = 0; i < 3; i++) bigHeart(c, x + w / 2 - 40 + i * 30, y + 102, i < r.hearts);
     portrait(G, o.who, x + 8, y + 128, 34, 34);
     SAYS[r.hearts].forEach(function (l, i) { SS.vt(l, x + 48, y + 128 + i * 12, P.ink, 12); });
@@ -155,9 +166,10 @@
     var bw = (w - 24) / 2;
     R(x + 8, y + 178, bw, 18, '#fbeedd'); R(x + 12, y + 183, 7, 7, '#e7bb4f'); R(x + 13, y + 184, 5, 5, '#ffd56b'); txt('+' + r.pay, x + 24, y + 183, P.ink, 7);
     R(x + 16 + bw, y + 178, bw, 18, '#fde3ea'); heart(c, x + 20 + bw, y + 184, true); SS.vt('+1 Friends', x + 31 + bw, y + 180, P.roseSh, 12);
-    if (r.missed.length) SS.vt('Hint: ' + wh.she.toLowerCase() + ' like' + (wh.she === 'THEY' ? '' : 's') + ' ' + LIKES[r.missed[0]].label + '. Try again any time.', x + w / 2, y + 204, P.soft, 11, 'center');
-    SS.btn(x + 6, y + h - 26, bw + 2, 'TRY AGAIN', false); hit(G, x + 6, y + h - 28, bw + 2, 20, function () { G.menu = null; });
+    if (r.missed.length) SS.vt('Hint: ' + wh.she.toLowerCase() + ' like' + (wh.she === 'THEY' ? '' : 's') + ' ' + (LIKES[r.missed[0]] || SS.OUTFIT_LIKES[r.missed[0]]).label + '. Try again any time.', x + w / 2, y + 204, P.soft, 11, 'center');
+    SS.btn(x + 6, y + h - 26, bw + 2, 'TRY AGAIN', false); hit(G, x + 6, y + h - 28, bw + 2, 20, function () { G.menu = G.gig && G.gig.outfit ? { kind: 'style', who: 'guest', face: 0, tab: 'tops', page: 0, cur: 0 } : null; });
     SS.btn(x + 14 + bw, y + h - 26, bw + 2, 'DONE', true); hit(G, x + 14 + bw, y + h - 28, bw + 2, 20, function () { SS.gigDone(G); });
   };
-  SS.gigDonePress = function (G, k) { if (k === 'a') SS.gigDone(G); if (k === 'b') G.menu = null; };
+  SS.gigDonePress = function (G, k) { if (k === 'a') SS.gigDone(G); if (k === 'b') G.menu = G.gig && G.gig.outfit ? { kind: 'style', who: 'guest', face: 0, tab: 'tops', page: 0, cur: 0 } : null; };
+  SS.GIG_WHO = WHO;
 })();

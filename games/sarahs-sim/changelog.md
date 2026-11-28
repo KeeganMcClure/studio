@@ -2,6 +2,55 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 28, 2026: visitors, with Dot's story (Dev)
+
+Spec 008, part A, with part B for one neighbor (build order step 2), from `visitor-v1` (approved Nov 25, per the bible's screen list). Playtest gate: Keegan plays this before the other three stories and the street.
+
+### What was built
+
+- **The knock (Life):** 2 to 5 minutes after she opens the game, a visitor may knock.
+  - A bubble with their face shows over the front door, saying KNOCK KNOCK, with a card: Let in or Not now.
+  - Not now is fine; they come another day. There's at most one knock each time she opens the game.
+- **Visitor chat:** the front hall from `visitor-v1`, the door open onto the street, with Sarah and Dot drawn large.
+  - The dialog box has Dot's name tab and her friendship hearts.
+  - A tap or A turns the lines, two at a time. Then comes her ask, with "I'd love to!" picked and "Maybe another time".
+- **Dot's story,** four visits, one a day at most. The beats are the bible's:
+  1. a cheerful arrangement for her table;
+  2. a window box (her potting bench unlocks);
+  3. an outfit for her granddaughter's train trip, on the Style screen, with a banner of her likes (warm, comfy shoes, bright) and Hand in;
+  4. her dusty sunroom into a guest room, one big gig.
+- **Pay and the set:**
+  - Story gigs pay 250 and the sunroom pays 600, judged in hearts like any gig.
+  - When the sunroom's done, the rest of her **vintage florist set** unlocks: the flower cart, the wicker chair and the big fern.
+  - In Sandbox the story plays the same but pays nothing, and the whole set is always there.
+- **After the story** she keeps visiting with an ordinary chat and one of her gigs. Chat lines come from her pool and don't repeat until it's used up.
+- **Friendship** grows with every chat and gig (more with more hearts) and never goes down.
+  - At 3 hearts she brings flowers from her garden ("A visitor brings a gift").
+  - At 5 she gives her favorite plant.
+  - Ordinary gigs now grow friendship by their hearts too.
+- **Memory book:** First visitor, First gig done, A neighbor's home redone, First friend's story finished, A visitor brings a gift.
+
+### What's left
+
+- **Christmas parties** (spec 009, part C) aren't built yet. Guests mingling in the home need map sprites for them, and only Dot is drawn, at the hall's size. Marco and Jules, Theo and Priya need drawings, and made people need part F of outfits (their map sprites).
+- The other three neighbors' stories, the street (part C, from `neighborhood-v1`), real friends and family (part D) and the rest of part E.
+- Visiting Dot's own home to say hi comes with the street. For now the sunroom redo opens straight from her ask.
+
+### Checks
+
+- `npm run check` passes, with a new visitors section:
+  - the knock waits 2 to 5 minutes and comes once;
+  - Let in opens the chat by touch, and the chat ends on her ask;
+  - all four story gigs play and pay, and the set unlocks in two steps;
+  - the moments fire, the chat pool doesn't repeat, and friendship only grows;
+  - ordinary visits offer her gig, and Sandbox pays nothing for the story.
+
+### Changes from the spec
+
+- The bible lists `visitor-v1` as the approved Visitor chat mockup, so I built from it; the spec's "To draw" row is out of date.
+- The set's first piece unlocks when visit 2's gig is handed in, not when the visit starts.
+- Dot's 3-heart gift and 5-heart favorite are a vase of flowers and a snake plant from the catalog, until her own pieces are drawn.
+
 ## Nov 28, 2026: the rest of the year's holidays (Dev)
 
 Spec 009, build order step 3: the other holidays in calendar order, as content and day dressing, with no new screens.

@@ -55,7 +55,7 @@
     ['#8a8288', '#6f686e', '#575157', '#403b40'], ['#bcb6ba', '#a19aa0', '#857f85', '#69636a'], ['#e9e5e8', '#d6d0d4', '#bcb5bb', '#9d969d'], ['#d9737b', '#b9505a', '#8e3a44', '#682a32']];
   var PEOPLE = SS.STYLE_PEOPLE = { sarah: 'SARAH', keegan: 'KEEGAN' };
   SS.madePeople = function (G) { return G.save.people || (G.save.people = []); };
-  SS.personName = function (G, who) { if (PEOPLE[who]) return PEOPLE[who]; if (who === 'draft') return 'NEW PERSON'; var p = SS.madePeople(G).filter(function (q) { return q.id === who; })[0]; return p ? p.name.toUpperCase() : who.toUpperCase(); };
+  SS.personName = function (G, who) { if (PEOPLE[who]) return PEOPLE[who]; if (who === 'guest') return 'HER GRANDDAUGHTER'; if (who === 'draft') return 'NEW PERSON'; var p = SS.madePeople(G).filter(function (q) { return q.id === who; })[0]; return p ? p.name.toUpperCase() : who.toUpperCase(); };
   SS.styleWho = function (G) { return Object.keys(PEOPLE).concat(SS.madePeople(G).map(function (q) { return q.id; })); };
   // a person's look: Sarah's and Keegan's own faces (bible, Homes and people), or a made person's parts (spec 003, creator.js)
   var LOOKS = {
@@ -65,6 +65,7 @@
   SS.lookOf = function (G, who) {
     var raw = LOOKS[who];
     if (!raw && who === 'draft' && G.menu && G.menu.kind === 'creator') raw = G.menu.p.look;
+    if (!raw && who === 'guest' && G.styleGig) raw = G.styleGig.look;
     if (!raw) { var p = SS.madePeople(G).filter(function (q) { return q.id === who; })[0]; raw = p ? p.look : LOOKS.sarah; }
     var L = {}; for (var k in raw) L[k] = raw[k];
     L.skin = SS.SKINS[raw.skin || 0] || SS.SKINS[1]; L.eye = SS.EYE_COLORS[raw.eye || 0]; L.lip = raw.lip !== undefined ? SS.LIP_COLORS[raw.lip] : null;
@@ -85,9 +86,9 @@
     return who === 'keegan' ? { hair: 'buzz', shade: 0, top: { id: 'green-flannel', sw: 0 }, bottom: { id: 'straight-jeans', sw: 0 }, shoes: { id: 'canvas-high-tops', sw: 0 } }
       : { hair: 'pinned', top: { id: 'orange-rocks-tee', sw: 0 }, bottom: { id: 'straight-jeans', sw: 0 }, shoes: { id: 'tan-suede-boots', sw: 0 } };
   }
-  SS.outfitOf = function (G, who) { if (who === 'draft' && G.menu && G.menu.kind === 'creator') return G.menu.p.outfit; var S = G.save, o = S.style || (S.style = {}); return o[who] || (o[who] = fresh(who)); };
+  SS.outfitOf = function (G, who) { if (who === 'guest' && G.styleGig) return G.styleGig.outfit; if (who === 'draft' && G.menu && G.menu.kind === 'creator') return G.menu.p.outfit; var S = G.save, o = S.style || (S.style = {}); return o[who] || (o[who] = fresh(who)); };
   function owned(G) { var S = G.save; if (!S.clothes) { S.clothes = []; ['sarah', 'keegan'].forEach(function (w) { var o = SS.outfitOf(G, w); ['top', 'coat', 'bottom', 'dress', 'shoes', 'hat'].forEach(function (k) { if (o[k] && S.clothes.indexOf(o[k].id) < 0) S.clothes.push(o[k].id); }); }); } return S.clothes; }
-  function priceOf(G, d) { return G.mode === 'life' && owned(G).indexOf(d.id) < 0 ? d.price : 0; }
+  function priceOf(G, d) { return !G.styleGig && G.mode === 'life' && owned(G).indexOf(d.id) < 0 ? d.price : 0; }
   function wearing(o, d) { var w = o[d.slot]; return !!(w && w.id === d.id); }
   // put a piece on (or take it off): a dress takes off the top and bottom, and a top or bottom takes off a dress
   SS.wear = function (G, who, id) {
@@ -399,7 +400,10 @@
     owned(G);
     G.menu = { kind: 'style', who: who || 'sarah', face: 0, tab: 'tops', page: 0, cur: 0, happy: 0 };
   };
-  SS.closeStyle = function (G) { G.menu = null; G.changed(true); };
+  SS.closeStyle = function (G) {
+    if (G.styleGig) { G.confirm = { title: 'LEAVE THIS GIG?', text: 'Hand it in from the banner. Leaving now pays nothing.', options: ['KEEP GOING', 'LEAVE'], cur: 0, pick: function (i) { if (i === 1) SS.gigQuit(G); } }; return; }
+    G.menu = null; G.changed(true);
+  };
   SS.spinStyle = function (G, d) { var m = G.menu; m.face = (m.face + (d || 1) + 4) % 4; };
   SS.ralphBow = function (G) {
     var on = !G.save.ralphBow;
@@ -519,7 +523,8 @@
     var cy = 26, name = SS.personName(G, m.who), nw = SS.tw(name, 7) + 22;
     R(W / 2 - nw / 2, cy, nw, 15, '#fff6ea'); R(W / 2 - nw / 2, cy + 14, nw, 1, P.trayEdge); txt(name, W / 2 - 4, cy + 4, P.ink, 7, 'center');
     R(W / 2 + nw / 2 - 10, cy + 6, 5, 1, P.ink); R(W / 2 + nw / 2 - 9, cy + 7, 3, 1, P.ink); R(W / 2 + nw / 2 - 8, cy + 8, 1, 1, P.ink);
-    hit(G, W / 2 - nw / 2 - 4, cy - 2, nw + 8, 19, function () { var ks = SS.styleWho(G); m.who = ks[(ks.indexOf(m.who) + 1) % ks.length]; m.face = 0; m.page = 0; m.cur = 0; });
+    if (G.styleGig) drawOutfitBanner(G, W);
+    else hit(G, W / 2 - nw / 2 - 4, cy - 2, nw + 8, 19, function () { var ks = SS.styleWho(G); m.who = ks[(ks.indexOf(m.who) + 1) % ks.length]; m.face = 0; m.page = 0; m.cur = 0; });
     R(W - 56, cy, 22, 15, '#fff6ea'); R(W - 56, cy + 14, 22, 1, P.trayEdge); SS.heart(W - 48, cy + 5, P.rose);
     hit(G, W - 58, cy - 2, 24, 19, function () { G.toast('OUTFIT FAVORITES COME NEXT', 1700, 'Saving a look and its picture come in the next outfits part.'); });
     R(W - 30, cy, 22, 15, '#fff6ea'); R(W - 30, cy + 14, 22, 1, P.trayEdge); R(W - 24, cy + 5, 10, 7, P.ink); R(W - 21, cy + 3, 4, 2, P.ink); R(W - 21, cy + 6, 4, 4, '#fff6ea'); R(W - 20, cy + 7, 2, 2, P.ink);
@@ -554,6 +559,15 @@
     });
     SS.drawStyleDrag(G);
   };
+  // an outfit gig's banner (spec 008; the gig-v1 banner): who it's for, the likes ticking off, and Hand in
+  function drawOutfitBanner(G, W) {
+    var c = G.c, R = SS.R, txt = SS.txt, g = G.styleGig, o = g.offer, m = SS.outfitMatches(G), x = 4, y = 44, w = W - 8, h = 30;
+    R(x + 2, y + 3, w, h, 'rgba(34,23,31,.35)'); R(x, y, w, h, P.tray); c.strokeStyle = P.rose; c.strokeRect(x + .5, y + .5, w - 1, h - 1);
+    txt('FOR DOT', x + 6, y + 4, P.soft, 4); SS.vt(o.ask.length > 40 ? o.ask.slice(0, 39) + '…' : o.ask, x + 40, y, P.ink, 11);
+    var tx = x + 6; o.likes.forEach(function (k, i) { c.font = '10px "VT323", monospace'; var tw = Math.ceil(c.measureText(SS.OUTFIT_LIKES[k].label).width) + 12; R(tx, y + 15, tw, 10, m[i] ? '#e8f3dd' : P.cell); if (m[i]) SS.check(tx + 1, y + 16, '#437a47'); SS.vt(SS.OUTFIT_LIKES[k].label, tx + 9, y + 14, m[i] ? '#437a47' : P.soft, 10); tx += tw + 3; });
+    R(x + w - 54, y + 14, 50, 12, P.rose); R(x + w - 54, y + 25, 50, 1, P.roseSh); txt('HAND IN', x + w - 29, y + 17, '#fff', 5, 'center');
+    SS.hit(G, x + w - 56, y + 12, 54, 16, function () { SS.handInOutfit(G); });
+  }
   SS.drawStyleDrag = function (G) { var m = G.menu; if (!m || !m.drag) return; var a = m.drag.at; SS.R(a.x - 15, a.y - 14, 30, 26, 'rgba(255,246,234,.9)'); icon(G.c, m.drag.it, a.x - 13, a.y - 11, G, m.who); };
   // buttons: left and right move along the cards, up and down change the tab, A puts on (or takes off), Select spins, B closes
   SS.stylePress = function (G, k) {
