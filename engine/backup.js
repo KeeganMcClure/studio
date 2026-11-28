@@ -3,6 +3,8 @@
 // named exception to studio-bible/saves.md). Knows nothing about any game.
 //
 //   StudioBackup.collect(prefix)            {key without prefix: value} for every localStorage key under the prefix
+//   StudioBackup.saveFile(blob, name)       hands any file to the share sheet (or downloads it); resolves 'shared',
+//                                           'cancelled' or 'downloaded'
 //   StudioBackup.file(o)                    makes the backup: o = {game, prefix, version, name}. On a phone that can share
 //                                           files (iOS), the share sheet opens so it can go to Files; elsewhere it downloads.
 //                                           Resolves to 'shared', 'downloaded' or 'cancelled'.
@@ -19,8 +21,11 @@
   function file(o) {
     var obj = { game: o.game, version: o.version, made: new Date().toISOString(), keys: collect(o.prefix) };
     var text = JSON.stringify(obj), name = o.name || (o.game + '-backup.json');
-    var blob = new Blob([text], { type: 'application/json' });
-    var f = null; try { f = new File([blob], name, { type: 'application/json' }); } catch (e) {}
+    return saveFile(new Blob([text], { type: 'application/json' }), name);
+  }
+  // any file (a backup, a picture): the share sheet on a phone that has one (so it can go to Photos or Files), else a download
+  function saveFile(blob, name) {
+    var f = null; try { f = new File([blob], name, { type: blob.type }); } catch (e) {}
     if (f && navigator.canShare && navigator.share && navigator.canShare({ files: [f] })) {
       return navigator.share({ files: [f], title: name }).then(function () { return 'shared'; }, function () { return 'cancelled'; });
     }
@@ -48,5 +53,5 @@
     Object.keys(collect(prefix)).forEach(function (k) { if (keep.indexOf(k) < 0) localStorage.removeItem(prefix + k); });
     Object.keys(obj.keys).forEach(function (k) { if (keep.indexOf(k) < 0) localStorage.setItem(prefix + k, obj.keys[k]); });
   }
-  window.StudioBackup = { collect: collect, file: file, pick: pick, read: read, restore: restore };
+  window.StudioBackup = { collect: collect, file: file, saveFile: saveFile, pick: pick, read: read, restore: restore };
 })();

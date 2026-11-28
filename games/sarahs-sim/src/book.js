@@ -66,6 +66,7 @@
     return BOOK;
   };
   function saveBook() { SS.store.set('book', JSON.stringify(BOOK)); }
+  SS.saveBookNow = function () { if (BOOK) saveBook(); };
   SS.forgetBook = function () { BOOK = null; SNAP = {}; };   // after an import, read it again
   SS.hasMoment = function (id) { return !!SS.book().moments[id]; };
   SS.chapterCount = function (k) { var b = SS.book(); return SS.momentsIn(k).filter(function (m) { return b.moments[m.id]; }).length; };
@@ -97,7 +98,7 @@
     var agents = (G.agents || []).filter(function (a) { return a.f === f.f && Math.abs(a.x - f.x) < 4.5 && Math.abs(a.y - f.y) < 4.5; }).map(function (a) {
       return { kind: a.kind, who: a.who, x: a.x, y: a.y, z: a.z || 0, pose: a.path && a.path.length ? 'stand' : a.pose, flip: !!a.flip, back: false, on: a.on || null, arms: a.arms || null };
     });
-    return { home: G.save.home, f: f.f, x: f.x, y: f.y, k: SS.view.k, pieces: pieces, agents: agents, xmas: !!G.xmasDay };
+    return { home: G.save.home, f: f.f, x: f.x, y: f.y, k: SS.view.k, pieces: pieces, agents: agents, xmas: !!G.xmasDay, looks: G.save.roomLook || null };
   }
 
   // ---------- drawing a snapshot from its recipe (cached once drawn) ----------
@@ -105,10 +106,15 @@
   SS.snapshot = function (id, w, h) {
     var key = id + '|' + w + 'x' + h; if (SNAP[key]) return SNAP[key];
     var e = SS.book().moments[id]; if (!e || !e.snap) return null;
-    var r = e.snap, home = SS.HOMES[r.home] || SS.HOMES.philly, OFF = SS.OFF;
+    return (SNAP[key] = SS.drawRecipe(e.snap, w, h, SS.look(new Date(e.date), e.mode), 'snap:' + id));
+  };
+  // draws any picture recipe {home, f, x, y, k, pieces, agents, looks, xmas, span} small and crisp (the memory book's snapshots,
+  // the favorites' room pictures). span: how many px of the world the picture spans across (176 by default)
+  SS.drawRecipe = function (r, w, h, look, tag) {
+    var home = SS.HOMES[r.home] || SS.HOMES.philly, OFF = SS.OFF;
     var pieces = JSON.parse(JSON.stringify(r.pieces)).map(function (p) { p.uid += 1e6; if (p.host) p.host += 1e6; return p; });   // their own sprites, apart from the live home's
-    var W = SS.World(home, pieces);
-    var agents = r.agents.map(function (a) {
+    var W = SS.World(home, pieces, r.looks);
+    var agents = (r.agents || []).map(function (a) {
       return { kind: a.kind, who: a.who, f: r.f, x: a.x, y: a.y, z: a.z, pose: a.pose, flip: a.flip, back: false, on: a.on ? a.on + 1e6 : null, path: [], walked: 0,
         draw: function (c, p) {
           if (a.kind === 'cat') SS.cat(c, a.who, p[0], p[1], { pose: a.pose === 'walk1' || a.pose === 'walk2' ? 'sit' : a.pose, flip: a.flip, hat: r.xmas });
@@ -118,12 +124,12 @@
     });
     var cv = document.createElement('canvas'); cv.width = SS.WORLD[0]; cv.height = SS.WORLD[1];
     var k0 = SS.view.k, q; SS.view.k = r.k || 0;   // drawn in the view it was seen in
-    try { SS.drawScene(cv.getContext('2d'), W, { version: 'snap:' + id, floor: r.f, walls: 'cut', t: 0, look: SS.look(new Date(e.date), e.mode), agents: agents }); q = SS.vp(r.x, r.y, r.f * SS.FH + 10); }
+    try { SS.drawScene(cv.getContext('2d'), W, { version: tag || 'recipe', floor: r.f, walls: 'cut', t: 0, look: look, agents: agents }); q = SS.vp(r.x, r.y, r.f * SS.FH + 10); }
     finally { SS.view.k = k0; }
-    var cw = 176, ch = Math.round(cw * h / w), sx = Math.round(q[0] + OFF[0] - cw / 2), sy = Math.round(q[1] + OFF[1] - ch / 2 - 12);
+    var cw = r.span || 176, ch = Math.round(cw * h / w), sx = Math.round(q[0] + OFF[0] - cw / 2), sy = Math.round(q[1] + OFF[1] - ch / 2 - 12);
     var out = document.createElement('canvas'); out.width = w; out.height = h; var oc = out.getContext('2d'); oc.imageSmoothingEnabled = false;
     oc.fillStyle = '#2a1b24'; oc.fillRect(0, 0, w, h); oc.drawImage(cv, sx, sy, cw, ch, 0, 0, w, h);
-    SNAP[key] = out; return out;
+    return out;
   };
 
   // ---------- the pop card: slides in at the top for about 3 seconds; tap opens the page ----------
@@ -152,8 +158,8 @@
   SS.openBook = function (G, tab, page) { G.bubble = null; G.toastT = null; G.menu = { kind: 'book', tab: tab || 'cats', page: page || 0 }; };
   SS.bookPages = function (G, tab) {
     if (tab === 'notes') return Math.max(1, Math.ceil(foundNotes().length / 6));
-    if (tab === 'photos') return 1;
-    return Math.ceil(SS.momentsIn(tab).length / 2);
+    if (tab === 'photos') return Math.max(1, Math.ceil(SS.book().photos.length / 4));
+    return Math.ceil((SS.momentsIn(tab).length + SS.book().photos.filter(function (p) { return p.ch === tab; }).length) / 2);
   };
   SS.bookTurn = function (G, d) { var m = G.menu; var n = SS.bookPages(G, m.tab); m.page = Math.max(0, Math.min(n - 1, m.page + d)); };
   SS.bookTab = function (G, d) { var m = G.menu, i = SS.BOOK_TABS.indexOf(m.tab); m.tab = SS.BOOK_TABS[(i + d + SS.BOOK_TABS.length) % SS.BOOK_TABS.length]; m.page = 0; };
@@ -266,17 +272,21 @@
     return chp.rewards[step] + ': coming in an update';
   }
   function chapterPage(G, W, H, m) {
-    var chp = SS.chapterOf(m.tab), list = SS.momentsIn(m.tab), got = SS.chapterCount(m.tab), b = bookFrame(G, W, H, m.tab), x = b.x + 8, w = b.w - 16, book = SS.book();
-    var pages = Math.ceil(list.length / 2); m.page = Math.min(m.page, pages - 1);
-    txt(chp.name, x, b.y + 8, P.ink, 8); txt(got + ' OF ' + list.length, b.x + b.w - 8, b.y + 9, P.soft, 6, 'right');
+    var chp = SS.chapterOf(m.tab), moms = SS.momentsIn(m.tab), got = SS.chapterCount(m.tab), b = bookFrame(G, W, H, m.tab), x = b.x + 8, w = b.w - 16, book = SS.book();
+    var extras = book.photos.filter(function (p) { return p.ch === m.tab; }).map(function (p) { return { photo: p }; });   // her photos, added after the moments
+    var list = moms.concat(extras), pages = Math.ceil(list.length / 2); m.page = Math.min(m.page, pages - 1);
+    txt(chp.name, x, b.y + 8, P.ink, 8); txt(got + ' OF ' + moms.length, b.x + b.w - 8, b.y + 9, P.soft, 6, 'right');
     var top = b.y + 22;
     if (m.page === 0) { ribbon(G, x, top, w - 6, chp, got); vt(rewardLine(G, chp, got), x + 2, top + 32, P.roseSh, 10); top += 48; }
     var bottom = b.y + b.h - 24, slot = Math.floor((bottom - top) / 2);
     [0, 1].forEach(function (i) {
       var mo = list[m.page * 2 + i]; if (!mo) return;
-      var e = book.moments[mo.id], sy = top + i * slot, sh = Math.max(30, slot - 34), sw = Math.min(w - 20, Math.round(sh * 1.55));
+      var e = mo.photo ? null : book.moments[mo.id], sy = top + i * slot, sh = Math.max(30, slot - 34), sw = Math.min(w - 20, Math.round(sh * 1.55));
       var sx = x + Math.round((w - sw) / 2) - 2;
-      if (e) {
+      if (mo.photo) { // a photo she added: an extra page, not counted toward the chapter
+        var im = photoImg(mo.photo); snapFrame(sx, sy + 4, sw, sh, (hash(i, 5) - .5) * .06, im.complete ? im : null);
+        var dph = new Date(mo.photo.date); hand(c, 'A photo', x + 6, sy + sh + 18, 12); hand(c, ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][dph.getMonth()] + ' ' + dph.getDate() + ', ' + dph.getFullYear(), x + 6, sy + sh + 29, 11, P.handSoft);
+      } else if (e) {
         snapFrame(sx, sy + 4, sw, sh, (hash(mo.id.length, i) - .5) * .06, SS.snapshot(mo.id, sw - 6, sh - 6));
         hand(c, mo.cap, x + 6, sy + sh + 18, 12, P.hand, 'left', w - 24);
         var d = new Date(e.date); hand(c, ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear(), x + 6, sy + sh + 29, 11, P.handSoft);
@@ -315,15 +325,52 @@
     }
     pageFoot(G, b, m.page + 1, pages);
   }
+  // the Photos tab: her camera photos; tapping one shows it with the chapters, to add it to one as an extra page (it doesn't count
+  // toward finishing the chapter) or take it off again (spec 007, part B)
   function photosPage(G, W, H, m) {
-    var b = bookFrame(G, W, H, 'photos'), x = b.x + 8, w = b.w - 16;
-    txt('PHOTOS', x, b.y + 8, P.ink, 8); txt(SS.book().photos.length + ' PHOTOS', b.x + b.w - 8, b.y + 9, P.soft, 6, 'right');
-    var cy = b.y + b.h / 2 - 30;
-    R(x + w / 2 - 16, cy, 32, 24, '#5d7fa6'); R(x + w / 2 - 6, cy - 4, 12, 5, '#5d7fa6'); R(x + w / 2 - 7, cy + 5, 14, 14, '#fff'); R(x + w / 2 - 4, cy + 8, 8, 8, '#5d7fa6');
-    hand(c, 'Photos you take with the camera', x + w / 2, cy + 44, 12, P.handSoft, 'center');
-    hand(c, 'go here. You can add any of them', x + w / 2, cy + 56, 12, P.handSoft, 'center');
-    hand(c, 'to a chapter\'s pages.', x + w / 2, cy + 68, 12, P.handSoft, 'center');
-    pageFoot(G, b, 1, 1);
+    var b = bookFrame(G, W, H, 'photos'), x = b.x + 8, w = b.w - 16, ph = SS.book().photos;
+    txt('PHOTOS', x, b.y + 8, P.ink, 8); txt(ph.length + ' OF 60', b.x + b.w - 8, b.y + 9, P.soft, 6, 'right');
+    if (!ph.length) {
+      var cy = b.y + b.h / 2 - 30;
+      R(x + w / 2 - 16, cy, 32, 24, '#5d7fa6'); R(x + w / 2 - 6, cy - 4, 12, 5, '#5d7fa6'); R(x + w / 2 - 7, cy + 5, 14, 14, '#fff'); R(x + w / 2 - 4, cy + 8, 8, 8, '#5d7fa6');
+      hand(c, 'Photos you take with the camera', x + w / 2, cy + 44, 12, P.handSoft, 'center');
+      hand(c, 'go here. You can add any of them', x + w / 2, cy + 56, 12, P.handSoft, 'center');
+      hand(c, 'to a chapter\'s pages.', x + w / 2, cy + 68, 12, P.handSoft, 'center');
+      pageFoot(G, b, 1, 1); return;
+    }
+    var cols = 2, tw = Math.floor((w - 8) / cols), th = Math.round(tw * .78) + 12, rows = 2, per = cols * rows, pages = Math.ceil(ph.length / per);
+    m.page = Math.min(m.page, pages - 1);
+    ph.slice(m.page * per, m.page * per + per).forEach(function (p, i) {
+      var px = x + (i % cols) * (tw + 8), py = b.y + 24 + Math.floor(i / cols) * (th + 6);
+      photoTile(G, p, px, py, tw, th - 12, i);
+      var d = new Date(p.date); hand(c, ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()] + ' ' + d.getDate() + (p.ch ? ' · ' + SS.chapterOf(p.ch).name.toLowerCase() : ''), px + 2, py + th - 1, 10, P.handSoft, 'left', tw);
+      G.hits.push({ x: px, y: py, w: tw, h: th, fn: function () { m.photo = p.id; } });
+    });
+    pageFoot(G, b, m.page + 1, pages);
+    if (m.photo) photoChooser(G, W, H, m);
+  }
+  var IMG = {};
+  function photoImg(p) { if (!IMG[p.id]) { var im = new Image(); im.src = p.data; IMG[p.id] = im; } return IMG[p.id]; }
+  function photoTile(G, p, x, y, w, h, i) {
+    var a = (hash(i, 9) - .5) * .05; c.save(); c.translate(x + w / 2, y + h / 2); c.rotate(a); c.translate(-w / 2, -h / 2);
+    R(2, 3, w, h, 'rgba(90,60,40,.22)'); R(0, 0, w, h, '#fff'); var im = photoImg(p); c.imageSmoothingEnabled = false; if (im.complete) c.drawImage(im, 3, 3, w - 6, h - 6);
+    c.restore(); tape(x + w / 2, y + 1, 18, (hash(i, 4) - .5) * .4);
+  }
+  function photoChooser(G, W, H, m) {
+    var p = SS.book().photos.filter(function (q) { return q.id === m.photo; })[0]; if (!p) { m.photo = null; return; }
+    R(0, 0, W, H, 'rgba(34,18,28,.6)'); G.hits.push({ x: 0, y: 0, w: W, h: H, fn: function () { m.photo = null; } });
+    var cw = W - 40, x = 20, im = photoImg(p), ih = Math.round((cw - 12) * (im.naturalHeight || 3) / (im.naturalWidth || 4)), chs = SS.CHAPTERS, ch = 22 + ih + 14 + Math.ceil(chs.length / 2) * 16 + 24, y = Math.max(8, (H - ch) / 2);
+    R(x + 2, y + 3, cw, ch, 'rgba(20,10,16,.4)'); R(x, y, cw, ch, P.page); G.hits.push({ x: x, y: y, w: cw, h: ch, fn: function () {} });
+    txt('ADD TO A CHAPTER', x + 8, y + 8, P.ink, 6);
+    c.imageSmoothingEnabled = false; if (im.complete) c.drawImage(im, x + 6, y + 20, cw - 12, ih);
+    var gy = y + 26 + ih, bw = (cw - 18) / 2;
+    chs.forEach(function (chp, i) {
+      var bx = x + 6 + (i % 2) * (bw + 6), by = gy + Math.floor(i / 2) * 16, on = p.ch === chp.k;
+      R(bx, by, bw, 13, on ? chp.col : '#fbeedd'); R(bx, by + 12, bw, 1, P.edge); txt(chp.name.slice(0, 13), bx + bw / 2, by + 4, on ? '#fff' : P.ink, 4, 'center');
+      G.hits.push({ x: bx, y: by, w: bw, h: 14, fn: function () { p.ch = on ? null : chp.k; SS.saveBookNow(); } });
+    });
+    var dy = gy + Math.ceil(chs.length / 2) * 16 + 4;
+    R(x + 6, dy, cw - 12, 14, P.rose); txt('DONE', x + cw / 2, dy + 4, '#fff', 6, 'center'); G.hits.push({ x: x + 6, y: dy, w: cw - 12, h: 16, fn: function () { m.photo = null; } });
   }
   // ---------- Note found (memory-book-v1, state note): a folded paper opens over the dimmed home ----------
   // A fresh note says PUT IN THE BOOK, which files it; one read again from the Notes tab just closes.

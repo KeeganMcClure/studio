@@ -263,6 +263,7 @@
     var c = G.c, m = G.menu;
     if (m.kind === 'book') return SS.drawBook(G, W, H);   // the memory book (book.js)
     if (m.kind === 'note') return SS.drawNote(G, W, H);
+    if (m.kind === 'fav') return SS.drawFavorites(G, W, H);   // favorites (keep.js)
     R(0, 0, W, H, 'rgba(34,18,28,.62)');   // the home dims and holds still behind the menu
     hit(G, 0, 0, W, H, function () { G.closeMenu(); });
     if (m.kind === 'start') {

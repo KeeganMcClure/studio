@@ -7,7 +7,11 @@
   var FH = SS.FH = 52;      // one storey, in px (wall 48 + floor 4)
   var WALL_UP = SS.WALL_UP = 46;
 
-  function World(home, pieces) {
+  // looks: this save's own floor and wallpaper for a room, {'f:roomId': {floor, paper}} (a room favorite brings its own, spec
+  // 001 part E; named papers like Nina's, spec 004 part D). The home's data is copied, so a save's looks never reach another.
+  function World(home, pieces, looks) {
+    home = JSON.parse(JSON.stringify(home));
+    if (looks) home.floors.forEach(function (fl, f) { fl.rooms.forEach(function (r) { var L = looks[f + ':' + r.id]; if (L) { if (L.floor) r.floor = L.floor; if (L.paper) r.paper = L.paper; } }); });
     var W = { home: home, lot: home.lot, ax: home.at[0], ay: home.at[1], floors: home.floors.length, pieces: [], byUid: {}, nextUid: 1 };
     var ax = W.ax, ay = W.ay;
     // rooms per tile

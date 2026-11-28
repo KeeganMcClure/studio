@@ -41,7 +41,7 @@
   // ---------- modes and saves ----------
   function openMode(mode) {
     var s = SS.modeSave(mode) || SS.newSave(mode);
-    G.mode = mode; G.save = s; G.W = SS.World(SS.HOMES[s.home], s.pieces);
+    G.mode = mode; G.save = s; G.W = SS.World(SS.HOMES[s.home], s.pieces, s.roomLook);
     s.stored = s.stored || []; s.made = s.made || [];
     G.undo = []; G.sel = null; G.paint = null; G.hold = null; G.bubble = null; G.menu = null; G.focus = null;
     G.look = SS.look(SS.now(), mode);
@@ -306,6 +306,8 @@
     else if (r === 'backup') backup();
     else if (r === 'title') { G.changed(true); G.menu = null; G.screen = 'title'; G.titleCur = 0; }
     else if (r === 'book') SS.openBook(G);
+    else if (r === 'fav') SS.openFavorites(G);
+    else if (r === 'camera') SS.openCamera(G);
     else G.toast(SS.MENU_ROWS[i][0] + ' IS COMING SOON', 1800, { people: 'People and Style come with outfits (spec 002).', fav: 'Favorites come in a later part.', camera: 'The camera comes in a later part.', book: 'The memory book comes in its own part.' }[r]);
   };
   function backup() {
@@ -357,6 +359,8 @@
   }
   function worldTap(p) {
     var W = G.W, w = toWorld(p);
+    if (G.camera) return;   // the camera only frames; taps do nothing
+    if (G.favUse) { SS.favTap(G, tileAt(p)); return; }   // a picked favorite fills the room she taps
     if (G.hold) { // tap the held piece to turn it; tap elsewhere to move it there
       var g = ghostScreen(G.hold), gs = toScreen(g[0], g[1]);
       if (Math.hypot(gs[0] - p.x, gs[1] - p.y) < 14 * G.cam.zoom) turnHold(); else aimHold(p, false);
@@ -451,6 +455,14 @@
       if (k === 'b' || k === 'start') G.menu = null; return;
     }
     if (G.menu && G.menu.kind === 'note') { if (k === 'a' || k === 'b') SS.closeNote(G); return; }
+    if (G.menu && G.menu.kind === 'fav') { SS.favPress(G, k); return; }
+    if (G.camera && !G.menu && !G.confirm) { // the camera: A takes the picture, B closes, the D-pad slides the view
+      if (G.camera.shot) { if (k === 'a' || k === 'b') G.camera = null; return; }
+      if (k === 'a') SS.snap(G); else if (k === 'b' || k === 'start') G.camera = null; else if (k === 'select') G.cycleWalls(); else if (DIRS[k]) pan(k); return;
+    }
+    if (G.favUse && !G.menu && !G.confirm) { // a favorite picked: A fills (or saves) the room in the middle of the view, B cancels
+      if (k === 'b') { SS.favCancel(G); return; } if (k === 'a') { SS.favTap(G, tileAt({ x: W0 / 2, y: (24 + G.viewBottom) / 2 })); return; } if (DIRS[k]) { pan(k); return; }
+    }
     if (G.menu) {
       var m = G.menu;
       if (m.kind === 'start') { if (k === 'up') m.cur = (m.cur + 7) % 8; if (k === 'down') m.cur = (m.cur + 1) % 8; if (k === 'a') G.menuPick(m.cur); if (k === 'b' || k === 'start') G.closeMenu(); }
@@ -582,7 +594,9 @@
       if (cd.x !== undefined && d.kind !== 'wall' && !cd.host) { var sz = W.size(d, Hd.r), tl = []; var n0 = d.kind === 'small' ? 1 : Math.ceil(sz[0] - 1e-6), n1 = d.kind === 'small' ? 1 : Math.ceil(sz[1] - 1e-6); for (var x = 0; x < n0; x++) for (var y = 0; y < n1; y++) tl.push([cd.x + x, cd.y + y]); glows.push({ tiles: tl, ok: Hd.ok }); }
       ghost = ghostItem(Hd, t);
     }
-    G.cam.fit(W0, H);
+    G.cam.fit(W0, H); G.worldCanvas = world;
+    // the room a favorite will fill (or be saved from) glows: the one in the middle of the view (spec 001, part E)
+    if (G.favUse) { var mt = tileAt({ x: W0 / 2, y: (24 + G.viewBottom) / 2 }), RM = SS.roomAt(G, G.floor, mt[0], mt[1]); if (RM) glows.push({ tiles: RM.tiles.map(function (k) { return k.split(',').map(Number); }), ok: true }); }
     var selP = G.sel && W.byUid[G.sel];
     if (selP && !selP.wall && W.floorOf(selP) === G.floor) { var fs = W.foot(selP.host ? W.hostOf(selP) : selP), st = []; for (var sx2 = fs[0]; sx2 < fs[2]; sx2++) for (var sy2 = fs[1]; sy2 < fs[3]; sy2++) st.push([sx2, sy2]); glows.push({ tiles: st, sel: true }); }
     var hits = SS.drawScene(wc, W, { version: G.version + ':' + (G.hold ? G.hold.from : ''), floor: G.floor, walls: G.walls, t: t, look: G.look, agents: G.agents, glows: glows, ghost: ghost, sel: G.sel });
@@ -591,6 +605,7 @@
     c.imageSmoothingEnabled = false;
     c.drawImage(world, src[0], src[1], src[2], src[3], 0, 0, W0, H);
     if (G.turnAnim) turnAnim(now, H - trayH);
+    if (G.camera) { SS.drawCamera(G, W0, H); return; }   // the camera: just the room, framed (spec 001, part E)
     // a soft ring where she tapped to walk
     if (G.tap && now - G.tap.t0 < 600 && G.tap.f === G.floor) { var tq = SS.vp(G.tap.x + .5, G.tap.y + .5, G.floor * FH), ts = toScreen(tq[0], tq[1]), k = (now - G.tap.t0) / 600; c.strokeStyle = 'rgba(255,255,255,' + (1 - k) + ')'; c.beginPath(); c.ellipse(ts[0], ts[1], (6 + k * 6) * G.cam.zoom, (3 + k * 3) * G.cam.zoom, 0, 0, 7); c.stroke(); }
     // chips over the held or selected piece
@@ -621,6 +636,7 @@
     });
     if (G.sleeping) sleepScene(H - trayH, now);
     SS.drawTopBar(G, W0);
+    if (G.favUse) SS.drawFavBanner(G, W0, H);
     SS.drawViewControls(G, W0, G.mode === 'life' && (G.act || G.queue.length) ? 40 : 24, H - trayH - 16);
     SS.drawTray(G, W0, H);
     if (G.slideBack) slideBackAnim(now, H);
@@ -687,7 +703,7 @@
         SS.updateAgents(G, dt);
         var sf = G.people.sarah.f; if (G.mode === 'life' && G.sarahF !== undefined && sf !== G.sarahF && sf !== G.floor) G.setFloor(sf); G.sarahF = sf;   // follow her up and down the stairs
         drawHome(H, t, now);
-        if (!G.menu) SS.drawPop(G, W0);   // a new memory book moment slides in at the top (spec 007, part A)
+        if (!G.menu && !(G.camera && G.camera.shot)) SS.drawPop(G, W0);   // a new memory book moment slides in at the top (spec 007, part A)
         if (G.menu) SS.drawMenu(G, W0, H);
       }
       if (G.toastT) { if (now > G.toastT.until) G.toastT = null; else SS.drawToast(G, W0, H, G.toastT); }

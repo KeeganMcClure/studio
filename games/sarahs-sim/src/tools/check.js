@@ -689,6 +689,58 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     report('the memory book (spec 007 A, B): moments once with a date and snapshot, the pop card, one book, dated moments, the note, the book screen', bad);
   }
 
+  // ---------- 6e. favorites and the camera (spec 001, part E) ----------
+  {
+    const bad = [];
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    const r = await page.evaluate(() => {
+      const G = SSG, out = []; G.confirm = null; SS.setClock(14, 0); G.openMode('sandbox'); G.toastT = null;
+      // Save this room keeps every piece in it, with spot, turn, colors and props, plus its floor and paper
+      const sofa = G.W.pieces.find(p => p.id === 'three-seat-sofa'); sofa.colors = { fabric: '#9a7bb4' }; sofa.props = false;
+      const R0 = SS.roomAt(G, 0, sofa.x, sofa.y), inRoom = G.W.pieces.filter(p => p.f === 0 && !p.host && !p.wall && R0.tiles.includes(p.x + ',' + p.y)).length;
+      const fav = SS.saveRoom(G, 0, sofa.x, sofa.y);
+      if (!fav || fav.pieces.filter(p => !p.host && !p.wall).length !== inRoom) out.push('Save this room does not keep every piece in the room');
+      const fs = fav && fav.pieces.find(p => p.id === 'three-seat-sofa'); if (!fs || !fs.colors || fs.colors.fabric !== '#9a7bb4' || fs.props !== false || fs.r !== sofa.r) out.push('a favorite loses a piece\'s colors, props or turn');
+      if (!fav || !fav.floor || !fav.paper) out.push('a favorite does not keep the floor and wallpaper');
+      if (!/living room/i.test(fav.name)) out.push('the default name is not like "Cozy living room": ' + fav.name);
+      if (!SS.hasMoment('favorite')) out.push('the first favorite is not in the memory book');
+      // kept once for the whole game: it rebuilds in another mode, in another room; what doesn't fit goes to storage
+      G.openMode('life'); if (!SS.favorites().length) out.push('favorites are not shared by every mode');
+      const bed = G.W.pieces.find(p => p.id === 'double-bed'), n0 = G.W.pieces.length, s0 = G.save.stored.length;
+      const res = SS.applyFavorite(G, SS.favorites()[0], 2, bed.x, bed.y);
+      if (!res || res.placed + res.stored !== fav.pieces.length) out.push('using a favorite loses pieces: ' + JSON.stringify(res));
+      if (G.W.pieces.length - n0 !== res.placed || G.save.stored.length - s0 !== res.stored) out.push('placed and stored counts do not match the home');
+      const R2 = SS.roomAt(G, 2, bed.x, bed.y); if (R2.r.floor !== fav.floor || R2.r.paper !== fav.paper) out.push('the room does not take the favorite\'s floor and wallpaper');
+      G.changed(true); G.openMode('life'); const R3 = SS.roomAt(G, 2, bed.x, bed.y); if (R3.r.paper !== fav.paper) out.push('the room\'s new wallpaper is not kept');
+      G.openMode('sandbox'); const R4 = SS.roomAt(G, 2, bed.x, bed.y); if (R4.r.paper === fav.paper && SS.HOMES.philly.floors[2].rooms.find(x => x.id === R4.r.id).paper !== fav.paper) out.push('a room\'s new wallpaper reaches the other mode');
+      return out;
+    });
+    r.forEach(o => bad.push(o));
+    // the screens by touch: Favorites from the Start menu, pick, tap a room
+    await page.evaluate(() => { SSG.openMode('sandbox'); SSG.openMenu(); SSG.menuPick(SS.MENU_ROWS.findIndex(x => x[1] === 'fav')); });
+    if (await page.evaluate(() => !SSG.menu || SSG.menu.kind !== 'fav')) bad.push('the Start menu does not open Favorites');
+    await page.waitForTimeout(150); await page.screenshot({ path: path.join(DIST, 'screen-favorites-375x667.png') });
+    await page.keyboard.press('z'); await page.waitForTimeout(60);
+    if (await page.evaluate(() => !SSG.favUse || SSG.favUse.i !== 0)) bad.push('A on a favorite does not pick it');
+    const tile = await page.evaluate(() => { const G = SSG, p = G.W.pieces.find(q => q.id === 'double-bed'); G.setFloor(2); const q = SS.vp(p.x + .5, p.y + 2.5, 2 * SS.FH); return G.toScreen(q[0], q[1]); });
+    await page.waitForTimeout(150); await tapAt(page, tile[0], tile[1]);
+    if (await page.evaluate(() => !!SSG.favUse)) bad.push('tapping a room does not fill it with the favorite');
+    // the camera: everything else dark, the heart takes a clean picture into the memory book's Photos
+    await page.evaluate(() => { SSG.toastT = null; SSG.openMenu(); SSG.menuPick(SS.MENU_ROWS.findIndex(x => x[1] === 'camera')); });
+    if (await page.evaluate(() => !SSG.camera)) bad.push('the Start menu does not open the camera');
+    await page.waitForTimeout(150); await page.screenshot({ path: path.join(DIST, 'screen-camera-375x667.png') });
+    const clean = await page.evaluate(() => { const n0 = SS.book().photos.length; SS.snap(SSG); const S = SSG.camera.shot; return { added: SS.book().photos.length - n0, w: S.img.width, h: S.img.height, moment: SS.hasMoment('photo') }; });
+    if (clean.added !== 1) bad.push('the picture does not go in the memory book\'s Photos');
+    if (!clean.moment) bad.push('the first photo is not a memory book moment');
+    // the saved picture has no buttons: it comes from the world alone, so the top bar's and the tray's colors never show in it
+    const noUi = await page.evaluate(() => { const S = SSG.camera.shot, d = S.img.getContext('2d').getImageData(0, 0, S.img.width, Math.min(40, S.img.height)).data; let tray = 0; for (let i = 0; i < d.length; i += 4) if (d[i] === 0xff && d[i + 1] === 0xf6 && d[i + 2] === 0xea) tray++; return tray; });
+    if (noUi > 50) bad.push('the saved picture has buttons or bars in it');
+    await page.waitForTimeout(400); await page.screenshot({ path: path.join(DIST, 'screen-camera-saved-375x667.png') });
+    await page.keyboard.press('z'); if (await page.evaluate(() => !!SSG.camera)) bad.push('Done does not close the camera');
+    bad.push(...errors); await ctx.close();
+    report('favorites and the camera (spec 001 E): save a room, use it in another mode and room, storage, floor and paper, the screens, a clean picture into the book', bad);
+  }
+
   // ---------- 6c. turning the home (bible, Building, Turning the home; spec 001, part B) ----------
   {
     const bad = [];

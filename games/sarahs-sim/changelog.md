@@ -2,6 +2,53 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 28, 2026: favorites and the camera (Dev)
+
+Spec 001, part E, from `favorites-v1` and `camera-v1`.
+
+### What was built
+
+- **Favorites** (Start menu, Favorites):
+  - a menu card with Rooms and Outfits tabs and a two-across grid; each room favorite shows a small picture of the room as saved, its name and its piece count;
+  - the last tile is **Save this room**: a banner asks her to tap a room, and it keeps every piece in that room (spot, turn, colors, props, what's stacked on it and what hangs on its walls, on the room's side), plus the room's floor and wallpaper;
+  - it gets a short name like "Cozy living room", and she can type her own when the phone asks;
+  - favorites are kept once for the whole game, in every mode, with no limit; the grid pages with the D-pad.
+- **Using a favorite:**
+  - pick it, and the menu closes;
+  - a banner shows it with Cancel, the room in the middle of the view glows, and a note says pieces that don't fit go to storage;
+  - tap any room in any mode: every piece that fits is placed, the rest go to storage, and the room takes the favorite's floor and wallpaper.
+  - Undo steps it back. A works the middle room and B cancels.
+- **The Outfits tab** says outfit favorites come with Style (spec 002).
+- **The camera** (Start menu, Camera):
+  - only the room shows: everything outside the frame is dark, with corner marks and a faint grid;
+  - she can still pinch, slide and flip the walls;
+  - the heart (or A) takes the picture.
+- **The picture:**
+  - it's clean, cut from the world itself with no tray, bar or buttons, and scaled up crisp;
+  - it goes to her phone through the share sheet (Photos or Files);
+  - a small copy goes into the memory book's Photos.
+  - It drops in as a tilted print with the home's name and the date, and a note says it's saved and added, with Share and Done.
+- **The memory book's Photos tab** now shows her photos. Tapping one lets her add it to a chapter as an extra page (not counted toward the chapter) or take it off again. The book keeps up to 60 and asks before the oldest goes.
+- **Memory book moments:** First favorite saved, First photo taken.
+- **Shared engine:** `engine/backup.js` has `saveFile(blob, name)`, the share sheet (or a download) for any file, which backups now use too.
+- **Each save can now give a room its own floor and wallpaper** (`roomLook`). The home's data is copied per save, so this never reaches the other mode. Nina's wallpaper will use the same thing.
+
+### Checks
+
+- `npm run check` has a favorites-and-camera section:
+  - Save this room keeps every piece with colors, props, turn, floor and paper, and gets a "Cozy living room" style name;
+  - it's shared by both modes;
+  - using it in another mode's bedroom places what fits and stores the rest, with matching counts;
+  - the room takes the floor and paper, kept for that save and not the other;
+  - Favorites, A and a tap on a room work by touch and buttons;
+  - the camera opens, and the picture goes in the book with the moment and no bars or buttons in it.
+- New screens: `src/dist/screen-favorites`, `screen-camera` and `screen-camera-saved-375x667.png`.
+
+### Changes from the spec
+
+- In Life, placing a favorite is free for now, like every piece in Life, until coins and the shop (spec 006, part F). Then pieces she doesn't own will show their price first.
+- The camera takes rooms. Outfits join it with Style (spec 002, part E).
+
 ## Nov 28, 2026: the memory book (Dev)
 
 Spec 007, parts A and B: the moments and the book screen. Part B ends in Keegan's playtest (spec 007, build order), so parts C (Keegan's notes hidden around the home) and D (the reward pieces) come after his notes.
