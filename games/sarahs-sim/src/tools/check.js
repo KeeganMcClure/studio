@@ -1012,7 +1012,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       // Style opens from a person, from a wardrobe, from the Start menu's People row; the person spins all four ways
       const r = await page.evaluate(() => {
         const G = SSG, out = []; G.confirm = null; G.openMode('sandbox'); G.toastT = null;
-        G.menuPick(SS.MENU_ROWS.findIndex(q => q[1] === 'people')); if (!G.menu || G.menu.kind !== 'style') out.push('People does not open Style');
+        G.menuPick(SS.MENU_ROWS.findIndex(q => q[1] === 'people')); if (!G.menu || G.menu.kind !== 'people') out.push('People does not list the people'); else { SS.peoplePress(G, 'a'); if (!G.menu || G.menu.kind !== 'style') out.push('People does not open Style'); }
         G.menu = null; G.openMode('life'); G.toastT = null;
         const ward = G.W.pieces.find(p => p.id === 'wardrobe'); const acts = SS.actionsFor(G, { piece: ward }); const ch = acts.findIndex(a => a.fx === 'style');
         G.bubble = { target: { piece: ward }, actions: acts, cur: 0, tip: [100, 100], title: 'W' }; G.doBubble(ch);
@@ -1029,7 +1029,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       await page.waitForTimeout(150);
       const sp = await page.evaluate(() => { const G = SSG, s = G.people.sarah; if (s.f !== G.floor) G.setFloor(s.f); s.path = []; const q = SS.vp(s.x, s.y, s.f * SS.FH + 16); G.cam.x = q[0] + SS.OFF[0]; G.cam.y = q[1] + SS.OFF[1] + 20; return null; });
       await page.waitForTimeout(150);
-      const sp2 = await page.evaluate(() => { const G = SSG, s = G.people.sarah; const q = SS.vp(s.x, s.y, s.f * SS.FH + 16); return G.toScreen(q[0], q[1]); }); void sp;
+      const sp2 = await page.evaluate(() => { const G = SSG, s = G.people.sarah; let best = null; [16, 20, 12, 24, 8, 28].forEach(dz => [0, -2, 2].forEach(dx => { if (best) return; const q = SS.vp(s.x, s.y, s.f * SS.FH + dz); const pk = SS.pick(G.lastHits || [], q[0] + dx, q[1]); if (pk && pk.agent === s) best = G.toScreen(q[0] + dx, q[1]); })); if (!best) { const q = SS.vp(s.x, s.y, s.f * SS.FH + 16); best = G.toScreen(q[0], q[1]); } return best; }); void sp;
       await page.waitForTimeout(150);
       await tapAt(page, sp2[0], sp2[1]);
       const tapped = await page.evaluate(() => SSG.menu && SSG.menu.kind === 'style' && SSG.menu.who);
@@ -1092,6 +1092,69 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     if (await page.evaluate(() => SSG.menu.face) !== 1) bad.push('a swipe across the person does not spin them');
     bad.push(...errors); await ctx.close();
     report('outfits (spec 002 A, B): Style from a person, a wardrobe and People, four turns at 375 x 667 and 320 x 480, 10 pieces on and off by tap and drag, layers, ginger hair, prices, kept, the bowtie', bad);
+  }
+
+  // ---------- 6j. the Creator (spec 003, parts A and B) ----------
+  {
+    const bad = [];
+    for (const [w, h] of [[375, 667], [320, 480]]) {
+      const { ctx, page, errors } = await fresh({ w, h, init: () => localStorage.setItem('ss.gift', '1') });
+      const r = await page.evaluate(() => {
+        const G = SSG, out = []; G.confirm = null; G.openMode('sandbox'); G.toastT = null;
+        // People has New person at the bottom, and it opens the Creator
+        G.menuPick(SS.MENU_ROWS.findIndex(q => q[1] === 'people')); const n = SS.styleWho(G).length;
+        G.menu.cur = n; SS.peoplePress(G, 'a'); if (!G.menu || G.menu.kind !== 'creator') { out.push('New person does not open the Creator'); return out; }
+        return out;
+      });
+      r.forEach(o => bad.push(w + 'x' + h + ': ' + o));
+      // all nine tabs, nothing cut off, the person spins
+      for (const tab of ['age', 'face', 'eyes', 'nose', 'lips', 'hair', 'body', 'skin', 'more']) {
+        await page.evaluate(t => { SSG.menu.tab = t; }, tab); await page.waitForTimeout(60);
+        const ok = await page.evaluate(() => { const hs = SSG.hits.filter(q => q.y > SSG.H - SS.CREATOR_TRAY); return hs.length > 3 && hs.every(q => q.x >= -1 && q.x + q.w <= 241 && q.y + q.h <= SSG.H + 1); });
+        if (!ok) bad.push(w + 'x' + h + ': the ' + tab + ' tab is cut off');
+        if (w === 375 && (tab === 'eyes' || tab === 'hair')) await page.screenshot({ path: path.join(DIST, 'screen-creator-' + tab + '-375x667.png') });
+      }
+      for (let f = 0; f < 4; f++) { await page.keyboard.press('Backspace'); await page.waitForTimeout(40); }
+      if (await page.evaluate(() => SSG.menu.face) !== 0) bad.push(w + 'x' + h + ': Select does not spin the person all the way round');
+      bad.push(...errors.map(e => w + 'x' + h + ': ' + e)); await ctx.close();
+    }
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    const r2 = await page.evaluate(() => {
+      const G = SSG, out = []; G.confirm = null; G.openMode('sandbox'); G.toastT = null; SS.openCreator(G);
+      const m = () => G.menu, img = () => SS.figure(G, 'draft', 0, 0).toDataURL();
+      // every shape and color on the lists, the person changes straight away
+      const lists = { face: ['round', 'oval', 'heart', 'square'], eyes: ['almond', 'round', 'sleepy', 'lashes', 'small'], nose: ['button', 'long', 'wide', 'pointed'], lips: ['smile', 'full', 'small', 'soft'], build: ['slim', 'broad', 'curvy', 'sturdy'], hair: Object.keys(SS.HAIRSTYLES) };
+      Object.keys(lists).forEach(k => { let last = null; lists[k].forEach(v => { SS.creatorSet(G, k, v); [0, 1, 2].forEach(f => SS.figure(G, 'draft', f, 0)); const now = img(); if (now === last) out.push(k + ' ' + v + ' does not change the person'); last = now; }); });
+      [['skin', SS.SKINS.length], ['eye', SS.EYE_COLORS.length], ['lip', SS.LIP_COLORS.length], ['shade', SS.HAIR_SHADES.length]].forEach(q => { let last = null; for (let i = 0; i < q[1]; i++) { SS.creatorSet(G, q[0], i); const now = img(); if (now === last) out.push(q[0] + ' ' + i + ' does not change the person'); last = now; } });
+      if (SS.SKINS.length !== 16 || SS.HAIR_SHADES.length !== 16 || SS.EYE_COLORS.length !== 12 || SS.LIP_COLORS.length !== 10) out.push('the color lists are not 16 skins, 16 hair shades, 12 eye and 10 lip colors');
+      // Undo steps back; Random rolls a new person (or just the open tab)
+      const before = JSON.stringify(m().p); SS.creatorSet(G, 'face', 'heart'); SS.creatorUndo(G); if (JSON.stringify(m().p) !== before) out.push('Undo does not step back');
+      for (let i = 0; i < 25; i++) SS.creatorSet(G, 'face', ['round', 'oval'][i % 2]); if (m().undo.length !== 20) out.push('Undo does not keep 20 steps');
+      const p0 = JSON.stringify(m().p); let changed = false; for (let i = 0; i < 5 && !changed; i++) { SS.creatorRandom(G); changed = JSON.stringify(m().p) !== p0; } if (!changed) out.push('Random does not roll a new person');
+      const L0 = JSON.parse(JSON.stringify(m().p.look)); SS.creatorRandom(G, 'hair'); const L1 = m().p.look; if (JSON.stringify(L0) !== JSON.stringify(L1)) out.push('holding Random on Hair changes more than the hair');
+      // Done: a name, then Style for the new person; kept in this mode's save
+      const id = SS.creatorDone(G, 'Robin');
+      if (!G.menu || G.menu.kind !== 'style' || G.menu.who !== id) out.push('Done does not open Style for the new person');
+      if (SS.personName(G, id) !== 'ROBIN') out.push('the new person is not named');
+      SS.wear(G, id, 'pink-slip-dress'); if (!SS.styleCards(G, id, 'hair').some(c => c.shade !== undefined)) out.push('a made person has no hair colors in Style');
+      G.menu = null; G.changed(true); G.openMode('life'); if (SS.madePeople(G).length) out.push('a person made in Sandbox shows up in Life');
+      G.openMode('sandbox'); if (!SS.madePeople(G).some(q => q.id === id) || SS.outfitOf(G, id).dress.id !== 'pink-slip-dress') out.push('the made person is not kept');
+      // Keegan and Sarah are never opened in the Creator: People opens Style for them
+      SS.openPeople(G); G.menu.cur = 0; SS.peoplePress(G, 'a'); if (G.menu.kind !== 'style' || G.menu.who !== 'sarah') out.push('Sarah does not open in Style');
+      return out;
+    });
+    r2.forEach(o => bad.push(o));
+    // by touch: a swipe across the person spins them; a tap on a shape card picks it
+    await page.evaluate(() => { const G = SSG; G.menu = null; SS.openCreator(G); G.menu.tab = 'nose'; });
+    await page.waitForTimeout(120);
+    const card = await page.evaluate(() => { const hs = SSG.hits.filter(q => q.y > SSG.H - SS.CREATOR_TRAY + 25 && q.w === 55 && q.h === 26); const q = hs[2]; return [q.x + 20, q.y + 10]; });
+    await tapAt(page, card[0], card[1]);
+    if (await page.evaluate(() => SSG.menu.p.look.nose) !== 'wide') bad.push('tapping a shape card does not pick it');
+    const bb = await page.locator('#cv').boundingBox(), k = bb.width / 240;
+    await page.mouse.move(bb.x + 160 * k, bb.y + 150 * k); await page.mouse.down(); await page.mouse.move(bb.x + 90 * k, bb.y + 150 * k, { steps: 6 }); await page.mouse.up();
+    if (await page.evaluate(() => SSG.menu.face) !== 1) bad.push('a swipe does not spin the person');
+    bad.push(...errors); await ctx.close();
+    report('the Creator (spec 003 A, B): New person from People, nine tabs at 375 x 667 and 320 x 480, every shape and color, Random, Undo, Done to Style, kept per mode', bad);
   }
 
   // ---------- 6c. turning the home (bible, Building, Turning the home; spec 001, part B) ----------

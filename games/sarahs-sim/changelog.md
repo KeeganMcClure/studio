@@ -2,6 +2,50 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 28, 2026: the Creator (Dev)
+
+Spec 003, parts A and B (build order step 1: half the shapes), from `creator-v1`. Playtest gate: Keegan plays this before parts C and D.
+
+### What was built
+
+- **People** in the Start menu now lists Sarah, Keegan and everyone she's made (each opens Style), with **New person** at the bottom.
+- **The Creator screen**, as in `creator-v1`: the mirror view on top, nine tabs (age, face, eyes, nose, lips, hair, body, skin, more), then shape cards, a color row, and Random, Undo and Done.
+  - The person spins with the arrows, a swipe or Select. On the face, eyes, nose and lips tabs the view zooms in on the head.
+  - Each shape card shows the person with that choice, so she sees it before she picks it.
+- **The starting lists** (half the shapes, as the build order says):
+  - 4 face shapes;
+  - 5 eye shapes with 12 eye colors;
+  - 4 noses;
+  - 4 lip shapes with 10 lip colors;
+  - 12 hairstyles with 16 natural shades. The new styles are bald, long straight, afro, two braids, a high bun and locs, joining Sarah's four, the buzz cut and the crop;
+  - 4 builds (slim, broad, curvy, sturdy);
+  - 16 skin tones, each with its own warm shading and blush.
+- **Random** rolls a whole new person from hand-made sets that go together: a skin tone with hair, eye and lip colors that suit it. Holding it down rolls only the open tab.
+- **Undo** steps back through the last 20 changes.
+- **Done** asks for a name, then opens Style so they can get dressed. Made people can wear every piece and any hair color.
+- Each mode keeps its own people.
+- Keegan and Sarah are never opened in the Creator; People opens Style for them.
+- The new hairstyles and hair colors are in Style too, for made people and for Keegan.
+
+### What's left
+
+- Part C (sliders and switches) and part D (ages, gender and pronouns, and the extras). The Age and More tabs say they come next.
+- The other half of the shapes.
+- Part E (moving made people into a built home, editing them again, the Friends moment). Spec 004's homes are ready for it.
+
+### Checks
+
+- `npm run check` passes, with a new Creator section at 375 × 667 and 320 × 480:
+  - New person opens the Creator, all nine tabs fit, and the person spins;
+  - every shape and color changes the person;
+  - Undo keeps 20 steps, and Random rolls a new person or just one tab;
+  - Done names the person and opens Style, and made people are kept per mode.
+
+### Changes from the spec
+
+- The mockup's NEXT button is Done, as the spec says.
+- Builds are drawn by widening the body from the middle, which keeps every pixel crisp. Each age's own body (part D) is drawn separately later.
+
 ## Nov 28, 2026: outfits, the Style screen (Dev)
 
 Spec 002, parts A and B (build order step 1: the first 10 pieces), from `style-v1`. Playtest gate: Keegan plays this before parts C and D.

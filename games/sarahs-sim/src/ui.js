@@ -282,6 +282,8 @@
     if (m.kind === 'gig') return SS.drawGigOffer(G, W, H);   // gigs (gig.js)
     if (m.kind === 'gigdone') return SS.drawGigDone(G, W, H);
     if (m.kind === 'style') return SS.drawStyle(G, W, H);   // the Style screen (style.js)
+    if (m.kind === 'creator') return SS.drawCreator(G, W, H);   // the Creator (creator.js)
+    if (m.kind === 'people') return SS.drawPeople(G, W, H);
     R(0, 0, W, H, 'rgba(34,18,28,.62)');   // the home dims and holds still behind the menu
     hit(G, 0, 0, W, H, function () { G.closeMenu(); });
     if (m.kind === 'start') {

@@ -347,7 +347,7 @@
     else if (r === 'book') SS.openBook(G);
     else if (r === 'fav') SS.openFavorites(G);
     else if (r === 'camera') SS.openCamera(G);
-    else if (r === 'people') SS.openStyle(G, 'sarah');   // Style, with her name to switch to Keegan (spec 002, part A)
+    else if (r === 'people') SS.openPeople(G);   // the people in this save, and New person (spec 002 part A, spec 003 part A)
     else G.toast(SS.MENU_ROWS[i][0] + ' IS COMING SOON', 1800, { people: 'People and Style come with outfits (spec 002).', fav: 'Favorites come in a later part.', camera: 'The camera comes in a later part.', book: 'The memory book comes in its own part.' }[r]);
   };
   function backup() {
@@ -461,6 +461,7 @@
   var drag = null;
   function onDragStart(p0, p) {
     if (G.screen === 'home' && G.menu && (G.menu.kind === 'book' || (G.menu.kind === 'cook' && G.menu.state === 'recipe'))) { drag = { kind: 'swipe', x0: p0.x }; return; }
+    if (G.screen === 'home' && G.menu && G.menu.kind === 'creator' && !G.confirm) { drag = p0.y < G.H - SS.CREATOR_TRAY ? { kind: 'creatorspin', x0: p0.x } : { kind: 'none' }; return; }
     if (G.screen === 'home' && G.menu && G.menu.kind === 'style' && !G.confirm) { // Style: drag a card onto the person, or swipe across them to spin
       var sh = uiHit(p0); if (sh && sh.styleCard) { drag = { kind: 'stylecard', it: sh.styleCard, at: p }; return; }
       var F = G.menu.fig; if (F && p0.y < G.H - SS.STYLE_TRAY) { drag = { kind: 'stylespin', x0: p0.x }; return; }
@@ -492,6 +493,7 @@
       drag = null; return;
     }
     if (drag && drag.kind === 'stylecard') { if (G.menu) G.menu.drag = null; var F2 = G.menu && G.menu.fig; if (F2 && p.x > F2.x - 10 && p.x < F2.x + F2.w + 10 && p.y > F2.y && p.y < F2.y + F2.h) SS.stylePick(G, drag.it); drag = null; return; }
+    if (drag && drag.kind === 'creatorspin') { if (Math.abs(p.x - drag.x0) > 16 && G.menu && G.menu.kind === 'creator') G.menu.face = (G.menu.face + (p.x < drag.x0 ? 1 : 3)) % 4; drag = null; return; }
     if (drag && drag.kind === 'stylespin') { if (Math.abs(p.x - drag.x0) > 16 && G.menu && G.menu.kind === 'style') SS.spinStyle(G, p.x < drag.x0 ? 1 : -1); drag = null; return; }
     if (drag && drag.kind === 'build') { drag = null; if (p.y > G.H - SS.TRAY_H[G.trayState()]) SS.buildCancel(G); else SS.buildDragEnd(G); return; }
     if (drag && drag.kind === 'hold' && G.hold) {
@@ -506,6 +508,7 @@
   // raw touches for the cooking step games (hold, stir, chop), in canvas pixels
   ['pointerdown', 'pointermove', 'pointerup', 'pointercancel'].forEach(function (ev) {
     cv.addEventListener(ev, function (e) {
+      if (G.menu && G.menu.kind === 'creator' && ev === 'pointerdown') G.menu.downAt = performance.now();   // holding Random (creator.js)
       if (!G.menu || G.menu.kind !== 'cook') return;
       var r = cv.getBoundingClientRect(), p = { x: (e.clientX - r.left) * W0 / r.width, y: (e.clientY - r.top) * G.H / r.height };
       SS.cookPointer(G, ev === 'pointerdown' ? 'down' : ev === 'pointermove' ? 'move' : 'up', p);
@@ -529,6 +532,8 @@
     if (G.menu && G.menu.kind === 'gig') { SS.gigOfferPress(G, k); return; }
     if (G.menu && G.menu.kind === 'gigdone') { SS.gigDonePress(G, k); return; }
     if (G.menu && G.menu.kind === 'style') { SS.stylePress(G, k); return; }
+    if (G.menu && G.menu.kind === 'creator') { SS.creatorPress(G, k); return; }
+    if (G.menu && G.menu.kind === 'people') { SS.peoplePress(G, k); return; }
     if (G.camera && !G.menu && !G.confirm) { // the camera: A takes the picture, B closes, the D-pad slides the view
       if (G.camera.shot) { if (k === 'a' || k === 'b') G.camera = null; return; }
       if (k === 'a') SS.snap(G); else if (k === 'b' || k === 'start') G.camera = null; else if (k === 'select') G.cycleWalls(); else if (DIRS[k]) pan(k); return;
