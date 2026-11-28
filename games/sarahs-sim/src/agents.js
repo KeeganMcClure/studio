@@ -23,7 +23,7 @@
       if (a.kind === 'person' && pose === 'lie' && a.on && SS.G && SS.G.W.byUid[a.on] && SS.G.W.def(SS.G.W.byUid[a.on]).use === 'bed') lieAt = drawLie(c, a, SS.G.W.byUid[a.on], fc.flip);
       else if (a.kind === 'person' && pose === 'bath') drawBath(c, a, p, fc.flip);
       else if (a.kind === 'person') SS.person(c, a.who, p[0], p[1], { pose: pose, back: fc.back, flip: fc.flip, t: performance.now(), arms: walking ? null : a.arms, seatH: a.z || 0 });
-      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: SS.vface(a.flip, a.back).flip, hat: SS.G && SS.G.xmasDay });
+      else SS.cat(c, a.who, p[0], p[1], { pose: walking ? (beat < 2 ? 'walk1' : 'walk2') : a.pose, flip: SS.vface(a.flip, a.back).flip, hat: SS.G && SS.G.xmasDay, bow: a.who === 'ralph' && SS.G && SS.G.save && !!SS.G.save.ralphBow });
       var headY = p[1] - (a.kind === 'cat' ? 22 : (a.pose === 'sit' ? (a.who === 'sarah' ? 32 : 36) : a.pose === 'lie' ? 16 : a.pose === 'bath' ? 34 : 42));
       a.lieHead = lieAt;   // where her head rests on screen (the checks read it)
       if (lieAt) { p = [lieAt[0], p[1]]; headY = lieAt[1]; }   // in bed: bubbles and the bar sit over the head on the pillow
@@ -337,7 +337,7 @@
     tub: [{ name: 'BATH', icon: 'bath', dur: 25, how: 'tub', fx: 'bath', fill: { energy: .25, fun: .2 } }],
     bookshelf: [{ name: 'READ', icon: 'book', dur: 15, how: 'stand', fx: 'read', fill: { fun: .25 } }, { name: 'MEMORY', sub: 'BOOK', icon: 'book', fx: 'book', instant: true }],
     desk: [{ name: 'FIND A GIG', icon: 'star', fx: 'gig', instant: true }, { name: 'VIDEO-CALL', sub: 'MOM', icon: 'chat', soon: 'Calls home come with idle life.' }],
-    wardrobe: [{ name: 'CHANGE', sub: 'OUTFIT', icon: 'heart', soon: 'Style comes in its own part.' }],
+    wardrobe: [{ name: 'CHANGE', sub: 'OUTFIT', icon: 'heart', fx: 'style', instant: true }],   // the Style screen (spec 002; style.js)
     lamp: [{ name: 'LIGHT', sub: 'ON / OFF', icon: 'lamp', dur: 1, how: 'stand', fx: 'lamp' }],
     tv: [{ name: 'WATCH', sub: 'A SHOW', icon: 'tv', dur: 20, how: 'stand', tv: true, fill: { fun: .3 } }],
     cat: [{ name: 'PET', icon: 'heart', dur: 4, how: 'stand', fx: 'pet', fill: { fun: .1 } }, { name: 'TREAT', icon: 'treat', dur: 5, how: 'stand', fx: 'treat', fill: { fun: .08 } }, { name: 'PLAY', icon: 'star', dur: 10, how: 'stand', fx: 'play', fill: { fun: .25 } }],
@@ -373,7 +373,12 @@
     return null;
   };
   SS.actionsFor = function (G, target) {
-    if (target.agent) { if (target.agent.kind === 'cat') return ACTIONS.cat; if (target.agent.who === 'keegan') return ACTIONS.keegan; return SS.phoneOf(G) < .99 && !G.charging && !G.hunt ? ACTIONS.sarah : null; }
+    // Style for either of them, and Ralph's bowtie (spec 002, parts A and B)
+    if (target.agent) {
+      if (target.agent.kind === 'cat') return target.agent.who === 'ralph' ? ACTIONS.cat.concat([{ name: 'BOWTIE', sub: 'ON / OFF', icon: 'heart', fx: 'bow', instant: true }]) : ACTIONS.cat;
+      if (target.agent.who === 'keegan') return ACTIONS.keegan.concat([{ name: 'STYLE', sub: 'HIS OUTFIT', icon: 'heart', fx: 'style', who: 'keegan', instant: true }]);
+      return (SS.phoneOf(G) < .99 && !G.charging && !G.hunt ? ACTIONS.sarah : []).concat([{ name: 'STYLE', sub: 'HER OUTFIT', icon: 'heart', fx: 'style', who: 'sarah', instant: true }]);
+    }
     if (target.door) return ACTIONS.backdoor;
     var d = G.W.def(target.piece), own = d.use ? ACTIONS[d.use] : null;
     if (target.piece.dress && d.use !== 'gift') return [{ name: 'KEEP IT', icon: 'heart', fx: 'keep', instant: true }].concat(own || []);   // day dressing she can keep (spec 009)

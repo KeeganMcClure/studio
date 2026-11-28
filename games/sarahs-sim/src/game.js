@@ -347,6 +347,7 @@
     else if (r === 'book') SS.openBook(G);
     else if (r === 'fav') SS.openFavorites(G);
     else if (r === 'camera') SS.openCamera(G);
+    else if (r === 'people') SS.openStyle(G, 'sarah');   // Style, with her name to switch to Keegan (spec 002, part A)
     else G.toast(SS.MENU_ROWS[i][0] + ' IS COMING SOON', 1800, { people: 'People and Style come with outfits (spec 002).', fav: 'Favorites come in a later part.', camera: 'The camera comes in a later part.', book: 'The memory book comes in its own part.' }[r]);
   };
   function backup() {
@@ -381,6 +382,8 @@
     if (a.fx === 'book') { G.meters = null; SS.openBook(G); return; }
     if (a.fx === 'cook') { G.meters = null; SS.openCooking(G); return; }   // the Cooking screen (spec 006, part E)
     if (a.fx === 'gig') { SS.findGigs(G); return; }   // gigs at the desk (spec 006, part F)
+    if (a.fx === 'style') { G.meters = null; SS.openStyle(G, a.who || 'sarah'); return; }   // the Style screen (spec 002)
+    if (a.fx === 'bow') { G.meters = null; SS.ralphBow(G); return; }
     if (a.fx === 'keep') { b.target.piece.dress = null; G.changed(true); G.toast('IT\'S YOURS TO KEEP', 1500); return; }
     G.meters = null;
     var r = SS.chooseAction(G, b.target, a);
@@ -435,8 +438,8 @@
     }
     // decorating
     if (pick && pick.agent) {
-      if (pick.agent.kind === 'cat') { var a = pick.agent; a.bubble = { icon: a.who === 'louie' ? '!' : 'heart', until: performance.now() + 1500 }; return; }
-      G.toast('STYLE IS COMING SOON', 1500, 'Tap a person to dress them once outfits are built (spec 002).'); return;
+      if (pick.agent.kind === 'cat') { var a = pick.agent; if (a.who === 'ralph') { SS.ralphBow(G); return; } a.bubble = { icon: '!', until: performance.now() + 1500 }; return; }
+      SS.openStyle(G, pick.agent.who); return;   // tap a person to dress them (spec 002, part A)
     }
     if (pick && pick.piece) { G.select(pick.piece); return; }
     G.deselect(); G.focus = null;
@@ -458,6 +461,11 @@
   var drag = null;
   function onDragStart(p0, p) {
     if (G.screen === 'home' && G.menu && (G.menu.kind === 'book' || (G.menu.kind === 'cook' && G.menu.state === 'recipe'))) { drag = { kind: 'swipe', x0: p0.x }; return; }
+    if (G.screen === 'home' && G.menu && G.menu.kind === 'style' && !G.confirm) { // Style: drag a card onto the person, or swipe across them to spin
+      var sh = uiHit(p0); if (sh && sh.styleCard) { drag = { kind: 'stylecard', it: sh.styleCard, at: p }; return; }
+      var F = G.menu.fig; if (F && p0.y < G.H - SS.STYLE_TRAY) { drag = { kind: 'stylespin', x0: p0.x }; return; }
+      drag = { kind: 'none' }; return;
+    }
     if (G.screen !== 'home' || G.menu || G.confirm) { drag = { kind: 'none' }; return; }
     var h = uiHit(p0);
     if (h && h.card && !h.card.soon) { G.takeCard(h.card, p); drag = { kind: 'hold', fromTray: true }; return; }
@@ -473,6 +481,7 @@
     if (!drag) return;
     if (drag.kind === 'hold' && G.hold) aimHold(p, false);
     if (drag.kind === 'build') SS.buildDrag(G, tileAt(p));
+    if (drag.kind === 'stylecard' && G.menu) G.menu.drag = { it: drag.it, at: p };
     if (drag.kind === 'pan') { G.cam.x -= (p.x - drag.last.x) / G.cam.zoom; G.cam.y -= (p.y - drag.last.y) / G.cam.zoom; drag.last = p; clampCam(); }
   }
   function onDragEnd(p) {
@@ -482,6 +491,8 @@
       if (Math.abs(dx) > 24 && G.menu && G.menu.kind === 'cook') SS.cookPress(G, dx < 0 ? 'right' : 'left');   // swipe for the other dishes
       drag = null; return;
     }
+    if (drag && drag.kind === 'stylecard') { if (G.menu) G.menu.drag = null; var F2 = G.menu && G.menu.fig; if (F2 && p.x > F2.x - 10 && p.x < F2.x + F2.w + 10 && p.y > F2.y && p.y < F2.y + F2.h) SS.stylePick(G, drag.it); drag = null; return; }
+    if (drag && drag.kind === 'stylespin') { if (Math.abs(p.x - drag.x0) > 16 && G.menu && G.menu.kind === 'style') SS.spinStyle(G, p.x < drag.x0 ? 1 : -1); drag = null; return; }
     if (drag && drag.kind === 'build') { drag = null; if (p.y > G.H - SS.TRAY_H[G.trayState()]) SS.buildCancel(G); else SS.buildDragEnd(G); return; }
     if (drag && drag.kind === 'hold' && G.hold) {
       // let go to place it; if it doesn't fit, it slides back to the tray (or back where it was)
@@ -517,6 +528,7 @@
     if (G.menu && G.menu.kind === 'cook') { SS.cookPress(G, k); return; }
     if (G.menu && G.menu.kind === 'gig') { SS.gigOfferPress(G, k); return; }
     if (G.menu && G.menu.kind === 'gigdone') { SS.gigDonePress(G, k); return; }
+    if (G.menu && G.menu.kind === 'style') { SS.stylePress(G, k); return; }
     if (G.camera && !G.menu && !G.confirm) { // the camera: A takes the picture, B closes, the D-pad slides the view
       if (G.camera.shot) { if (k === 'a' || k === 'b') G.camera = null; return; }
       if (k === 'a') SS.snap(G); else if (k === 'b' || k === 'start') G.camera = null; else if (k === 'select') G.cycleWalls(); else if (DIRS[k]) pan(k); return;

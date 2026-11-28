@@ -2,6 +2,63 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 28, 2026: outfits, the Style screen (Dev)
+
+Spec 002, parts A and B (build order step 1: the first 10 pieces), from `style-v1`. Playtest gate: Keegan plays this before parts C and D.
+
+### What was built
+
+- **The Style screen**, as in `style-v1`: the person stands big in front of the standing mirror, with the wardrobe tray below. They breathe and blink.
+  - The arrows spin them a quarter turn at a time: front, side, back, other side. So do a swipe across them and Select.
+  - The name at the top switches between Sarah and Keegan.
+  - The HOME tab (or B) goes back to the home.
+- **Getting there:**
+  - tap Sarah or Keegan while decorating;
+  - in Life, their bubbles have Style;
+  - the wardrobe, dresser and mirror have Change outfit;
+  - the Start menu's People row opens Style.
+- **The wardrobe tray:** the 8 tabs (hair, tops, bottoms, dresses, shoes, extras, Ours, Holiday). Each card shows the piece, its swatch dots, and a heart if it's from their real clothes.
+  - Tap a card (or drag it onto the person) to put it on. Tap a worn card to take it off. A new piece gets a small happy hop.
+  - Buttons: up and down change the tab, left and right move along the cards, A puts on or takes off.
+- **The first 10 pieces:**
+  - tops: the ORANGE ROCKS tee (with "ORANGE ROCKS" on the front and "AND SO DO I" on the back), the green tartan flannel and the lilac hoodie;
+  - coat: the long wool coat;
+  - bottoms: straight blue jeans and the pleated skirt;
+  - dress: the pink satin slip dress;
+  - shoes: tan suede boots and canvas high-tops;
+  - extra: the black cap with the green underbrim.
+- **Layers:**
+  - a coat goes over a top or a dress;
+  - a dress takes off the top and bottom, and a top or bottom takes off the dress;
+  - the cap sits over the hair.
+- **Hair:**
+  - Sarah's four styles (pinned up, loose bob, long curls, ponytail), with no color row: her hair is always ginger.
+  - Keegan has his buzz cut and a short crop, in 6 colors.
+- **What they wear** is kept in each mode's save. They start as drawn: Sarah in the ORANGE ROCKS tee, jeans and boots; Keegan in his flannel, jeans and high-tops.
+- **Life:** pieces they don't have yet show their price (50 to 150); a tap buys it and puts it on. Sandbox is free.
+- **Ralph's bowtie:** tapping Ralph while decorating (or Bowtie in his Life bubble) asks Bowtie on or off, and he wears it on the map.
+
+### What's left
+
+- Parts C and D (swatches, paint, the six patterns and her own prints), then the rest of the 60 pieces.
+- Part E (outfit favorites and the Style camera). The heart and camera chips say they come next.
+- Part F: the map sprites don't wear the new pieces yet; they keep their drawn outfits until then.
+
+### Checks
+
+- `npm run check` passes, with a new outfits section at 375 × 667 and 320 × 480:
+  - Style opens from a tap on Sarah, the wardrobe, Keegan's bubble and People;
+  - all four turns fit;
+  - every piece goes on and comes off both of them, by tap and by drag, and a swipe spins them;
+  - the layers follow the table, and Sarah's hair can't be recolored;
+  - outfits are kept, Life prices work, and the bowtie goes on.
+
+### Changes from the spec
+
+- `style-v1` draws the front and back only. I drew the two side views to match.
+- The People row opens Style on Sarah, and her name switches to Keegan, rather than a separate list first.
+- Keegan's hairstyles and colors are a small starting set until the Creator's full list (spec 003).
+
 ## Nov 28, 2026: the Build screen, lots, rooms and walls (Dev)
 
 Spec 004, parts A and B, from `build-v1`. Playtest gate: Keegan plays this before parts C and D.

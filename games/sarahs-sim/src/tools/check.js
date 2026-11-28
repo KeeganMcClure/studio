@@ -450,7 +450,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     });
     cats.forEach(a => bad.push(a));
     if (await page.evaluate(() => { SSG.openMode('sandbox'); return !!SS.lowNeed(SSG, 'sarah') || SSG.mode !== 'sandbox'; })) bad.push('Sandbox has needs');
-    const soon = await page.evaluate(() => { const need = ['CHANGE', 'GO TO', 'VIDEO-CALL', 'WIND DOWN']; const all = [].concat.apply([], Object.keys(SS.ACTIONS).map(k => SS.ACTIONS[k])); return need.filter(n => !all.some(a => a.name === n && a.soon)); });
+    const soon = await page.evaluate(() => { const need = ['GO TO', 'VIDEO-CALL', 'WIND DOWN']; const all = [].concat.apply([], Object.keys(SS.ACTIONS).map(k => SS.ACTIONS[k])); return need.filter(n => !all.some(a => a.name === n && a.soon)); });
     soon.forEach(n => bad.push(n + ' does not show Coming soon'));
     report('spec 006: four light looks, lamps at 5 PM, walking up the stairs, every starter action, crafts, the queue; needs; together actions; the cats\' needs; Keegan\'s day; her phone', bad.concat(errors));
     await ctx.close();
@@ -1002,6 +1002,96 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     life.forEach(o => bad.push(o));
     bad.push(...errors); await ctx.close();
     report('the Build screen (spec 004 A, B): lots in 3 sizes, the 8 tools, rooms with a size tag, single walls, pick, move and erase, nothing lost, undo, prices, saved', bad);
+  }
+
+  // ---------- 6i. outfits: the Style screen and wearing pieces (spec 002, parts A and B) ----------
+  {
+    const bad = [];
+    for (const [w, h] of [[375, 667], [320, 480]]) {
+      const { ctx, page, errors } = await fresh({ w, h, init: () => localStorage.setItem('ss.gift', '1') });
+      // Style opens from a person, from a wardrobe, from the Start menu's People row; the person spins all four ways
+      const r = await page.evaluate(() => {
+        const G = SSG, out = []; G.confirm = null; G.openMode('sandbox'); G.toastT = null;
+        G.menuPick(SS.MENU_ROWS.findIndex(q => q[1] === 'people')); if (!G.menu || G.menu.kind !== 'style') out.push('People does not open Style');
+        G.menu = null; G.openMode('life'); G.toastT = null;
+        const ward = G.W.pieces.find(p => p.id === 'wardrobe'); const acts = SS.actionsFor(G, { piece: ward }); const ch = acts.findIndex(a => a.fx === 'style');
+        G.bubble = { target: { piece: ward }, actions: acts, cur: 0, tip: [100, 100], title: 'W' }; G.doBubble(ch);
+        if (!G.menu || G.menu.kind !== 'style' || G.menu.who !== 'sarah') out.push('Change outfit at the wardrobe does not open Style');
+        G.menu = null; const ka = SS.actionsFor(G, { agent: G.people.keegan }); const ks = ka.findIndex(a => a.fx === 'style');
+        G.bubble = { target: { agent: G.people.keegan }, actions: ka, cur: 0, tip: [100, 100], title: 'K' }; G.doBubble(ks);
+        if (!G.menu || G.menu.kind !== 'style' || G.menu.who !== 'keegan') out.push('Style from Keegan does not open on him');
+        G.menu = null; G.openMode('sandbox'); G.toastT = null;
+        return out;
+      });
+      r.forEach(o => bad.push(w + 'x' + h + ': ' + o));
+      // a tap on Sarah while decorating opens Style on her
+      await page.evaluate(() => { const G = SSG; G.tray.open = false; G.menu = null; G.version++; });
+      await page.waitForTimeout(150);
+      const sp = await page.evaluate(() => { const G = SSG, s = G.people.sarah; if (s.f !== G.floor) G.setFloor(s.f); s.path = []; const q = SS.vp(s.x, s.y, s.f * SS.FH + 16); G.cam.x = q[0] + SS.OFF[0]; G.cam.y = q[1] + SS.OFF[1] + 20; return null; });
+      await page.waitForTimeout(150);
+      const sp2 = await page.evaluate(() => { const G = SSG, s = G.people.sarah; const q = SS.vp(s.x, s.y, s.f * SS.FH + 16); return G.toScreen(q[0], q[1]); }); void sp;
+      await page.waitForTimeout(150);
+      await tapAt(page, sp2[0], sp2[1]);
+      const tapped = await page.evaluate(() => SSG.menu && SSG.menu.kind === 'style' && SSG.menu.who);
+      if (tapped !== 'sarah') bad.push(w + 'x' + h + ': tapping Sarah does not open Style on her (' + tapped + ')');
+      await page.evaluate(() => SS.openStyle(SSG, 'sarah'));
+      for (let f = 0; f < 4; f++) {
+        await page.waitForTimeout(80);
+        const fit = await page.evaluate(() => { const F = SSG.menu.fig; return F && F.y >= 20 && F.y + F.h <= SSG.H - SS.STYLE_TRAY + 4 && F.x >= 0 && F.x + F.w <= 240; });
+        if (!fit) bad.push(w + 'x' + h + ': the person is cut off in turn ' + f);
+        if (w === 375) await page.screenshot({ path: path.join(DIST, 'screen-style-' + ['front', 'side', 'back', 'side2'][f] + '-375x667.png') });
+        await page.keyboard.press('Backspace');   // Select spins a quarter turn
+      }
+      if (await page.evaluate(() => SSG.menu.face) !== 0) bad.push(w + 'x' + h + ': four spins do not come back to the front');
+      bad.push(...errors.map(e => w + 'x' + h + ': ' + e)); await ctx.close();
+    }
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    const r2 = await page.evaluate(() => {
+      const G = SSG, out = []; G.confirm = null; G.openMode('sandbox'); G.toastT = null; SS.openStyle(G, 'sarah');
+      const o = () => SS.outfitOf(G, 'sarah');
+      // every piece on and off by tap, for both of them
+      ['sarah', 'keegan'].forEach(who => { G.menu.who = who; SS.CLOTHES.forEach(d => {
+        const was = !!(SS.outfitOf(G, who)[d.slot] && SS.outfitOf(G, who)[d.slot].id === d.id);
+        if (was) SS.wear(G, who, d.id);
+        SS.wear(G, who, d.id); if (!(SS.outfitOf(G, who)[d.slot] && SS.outfitOf(G, who)[d.slot].id === d.id)) out.push(d.id + ' does not go on ' + who);
+        SS.wear(G, who, d.id); if (SS.outfitOf(G, who)[d.slot] && SS.outfitOf(G, who)[d.slot].id === d.id) out.push(d.id + ' does not come off ' + who);
+        SS.figure(G, who, 0, 0); SS.figure(G, who, 1, 0); SS.figure(G, who, 2, 0);
+      }); });
+      G.menu.who = 'sarah';
+      // layering: a dress takes off the top and bottom; a coat stays over it; a top takes the dress off
+      SS.wear(G, 'sarah', 'orange-rocks-tee'); SS.wear(G, 'sarah', 'straight-jeans'); SS.wear(G, 'sarah', 'long-wool-coat'); SS.wear(G, 'sarah', 'pink-slip-dress');
+      if (o().top || o().bottom || !o().dress || !o().coat) out.push('a dress does not replace the top and bottom under a coat: ' + JSON.stringify(o()));
+      SS.wear(G, 'sarah', 'lilac-hoodie'); if (o().dress || !o().top) out.push('a top does not take the dress off');
+      // Sarah's hair: styles only, always ginger
+      const hair = SS.styleCards(G, 'sarah', 'hair'); if (hair.some(c => c.shade !== undefined) || hair.length !== 4) out.push('Sarah\'s hair tab is not just her 4 styles');
+      SS.setHair(G, 'sarah', 'bob', 3); if (o().shade !== undefined || o().hair !== 'bob') out.push('Sarah\'s hair can be recolored');
+      if (!SS.styleCards(G, 'keegan', 'hair').some(c => c.shade !== undefined)) out.push('Keegan\'s hair has no colors');
+      if (SS.styleCards(G, 'sarah', 'ours').length < 5 || SS.styleCards(G, 'sarah', 'ours').some(c => !c.piece.ours)) out.push('Ours does not list their real clothes');
+      // kept: reopening the mode keeps what they wear
+      G.changed(true); G.menu = null; G.openMode('life'); G.openMode('sandbox'); if (SS.outfitOf(G, 'sarah').hair !== 'bob' || SS.outfitOf(G, 'sarah').top.id !== 'lilac-hoodie') out.push('outfits are not kept');
+      // Life: a piece she doesn't have costs its price; not enough coins is refused
+      G.openMode('life'); G.toastT = null; SS.openStyle(G, 'sarah'); G.save.coins = 500;
+      SS.wear(G, 'sarah', 'pleated-skirt'); if (G.save.coins !== 430) out.push('a new piece in Life does not cost its price: ' + G.save.coins);
+      SS.wear(G, 'sarah', 'pleated-skirt'); SS.wear(G, 'sarah', 'pleated-skirt'); if (G.save.coins !== 430) out.push('a piece she owns costs again');
+      G.save.coins = 10; SS.wear(G, 'sarah', 'long-wool-coat'); if (SS.outfitOf(G, 'sarah').coat) out.push('a piece she can\'t afford still goes on');
+      // Ralph's bowtie
+      G.menu = null; SS.ralphBow(G); G.confirmPick(1); if (!G.save.ralphBow) out.push('Ralph\'s bowtie does not go on');
+      return out;
+    });
+    r2.forEach(o => bad.push(o));
+    // by touch: drag a card onto the person; swipe across them to spin
+    await page.evaluate(() => { const G = SSG; G.menu = null; G.openMode('sandbox'); SS.openStyle(G, 'sarah'); G.menu.tab = 'bottoms'; });
+    await page.waitForTimeout(150);
+    const pts = await page.evaluate(() => { const G = SSG, cards = G.hits.filter(h => h.styleCard), card = cards.find(h => h.styleCard.piece.id === 'pleated-skirt'), F = G.menu.fig; return { card: [card.x + 20, card.y + 14], fig: [F.x + F.w / 2, F.y + 60] }; });
+    const bb = await page.locator('#cv').boundingBox(), k = bb.width / 240;
+    await page.mouse.move(bb.x + pts.card[0] * k, bb.y + pts.card[1] * k); await page.mouse.down();
+    for (let s = 1; s <= 10; s++) { await page.mouse.move(bb.x + (pts.card[0] + (pts.fig[0] - pts.card[0]) * s / 10) * k, bb.y + (pts.card[1] + (pts.fig[1] - pts.card[1]) * s / 10) * k); await page.waitForTimeout(16); }
+    await page.mouse.up(); await page.waitForTimeout(60);
+    if (await page.evaluate(() => (SS.outfitOf(SSG, 'sarah').bottom || {}).id) !== 'pleated-skirt') bad.push('dragging a card onto the person does not put it on');
+    await page.mouse.move(bb.x + (pts.fig[0] + 30) * k, bb.y + (pts.fig[1] - 20) * k); await page.mouse.down(); await page.mouse.move(bb.x + (pts.fig[0] - 30) * k, bb.y + (pts.fig[1] - 20) * k, { steps: 6 }); await page.mouse.up();
+    if (await page.evaluate(() => SSG.menu.face) !== 1) bad.push('a swipe across the person does not spin them');
+    bad.push(...errors); await ctx.close();
+    report('outfits (spec 002 A, B): Style from a person, a wardrobe and People, four turns at 375 x 667 and 320 x 480, 10 pieces on and off by tap and drag, layers, ginger hair, prices, kept, the bowtie', bad);
   }
 
   // ---------- 6c. turning the home (bible, Building, Turning the home; spec 001, part B) ----------
