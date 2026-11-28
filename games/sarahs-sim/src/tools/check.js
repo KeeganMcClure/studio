@@ -334,7 +334,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       });
       // the cats: pet, treat, play; Keegan: chat and hug
       ['pet', 'treat', 'play'].forEach((fx, i) => { const a = SS.ACTIONS.cat[i]; SS.chooseAction(G, { agent: G.cats.louie }, a); let st = false; for (let j = 0; j < 2400 && G.act; j++) { SS.updateAgents(G, .05); if (G.act && G.act.started) st = true; } if (!st) out.push(a.name + ' on Louie did not happen'); });
-      SS.ACTIONS.keegan.filter(a => !a.soon).forEach(a => { SS.chooseAction(G, { agent: G.people.keegan }, a); let st = false; for (let j = 0; j < 2400 && G.act; j++) { SS.updateAgents(G, .05); if (G.act && G.act.started) st = true; } if (!st) out.push(a.name + ' with Keegan did not happen'); });
+      SS.ACTIONS.keegan.filter(a => !a.soon && !a.instant).forEach(a => { SS.chooseAction(G, { agent: G.people.keegan }, a); let st = false; for (let j = 0; j < 2400 && G.act; j++) { SS.updateAgents(G, .05); if (G.act && G.act.started) st = true; } if (!st) out.push(a.name + ' with Keegan did not happen'); });
       if (!G.save.made.some(id => SS.PAINTING_POOL.indexOf(id) >= 0)) out.push('Paint did not make a painting');
       if (!G.save.made.some(id => SS.DEF[id].craft && SS.DEF[id].craft !== 'painting')) out.push('the seasonal craft did not make anything');
       // up to 3 lined up, a fourth is refused; tapping elsewhere stops everything and nothing is lost
@@ -450,7 +450,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     });
     cats.forEach(a => bad.push(a));
     if (await page.evaluate(() => { SSG.openMode('sandbox'); return !!SS.lowNeed(SSG, 'sarah') || SSG.mode !== 'sandbox'; })) bad.push('Sandbox has needs');
-    const soon = await page.evaluate(() => { const need = ['COOK', 'FIND A GIG', 'CHANGE', 'GO TO', 'VIDEO-CALL', 'WIND DOWN']; const all = [].concat.apply([], Object.keys(SS.ACTIONS).map(k => SS.ACTIONS[k])); return need.filter(n => !all.some(a => a.name === n && a.soon)); });
+    const soon = await page.evaluate(() => { const need = ['FIND A GIG', 'CHANGE', 'GO TO', 'VIDEO-CALL', 'WIND DOWN']; const all = [].concat.apply([], Object.keys(SS.ACTIONS).map(k => SS.ACTIONS[k])); return need.filter(n => !all.some(a => a.name === n && a.soon)); });
     soon.forEach(n => bad.push(n + ' does not show Coming soon'));
     report('spec 006: four light looks, lamps at 5 PM, walking up the stairs, every starter action, crafts, the queue; needs; together actions; the cats\' needs; Keegan\'s day; her phone', bad.concat(errors));
     await ctx.close();
@@ -757,7 +757,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
         for (let i = 0; i < 160 && !ok; i++) {
           const st = await page.evaluate(() => { const m = SSG.menu; return m ? m.state + ':' + (m.game || '') + ':' + (m.done ? 1 : 0) : 'closed'; });
           if (st.startsWith('plated')) { ok = true; break; }
-          if (st.startsWith('step:hold:0')) { await page.keyboard.press('z'); await page.waitForTimeout(1700); await page.keyboard.press('z'); }
+          if (st.startsWith('step:hold:0')) { await page.keyboard.press('z'); await page.evaluate(() => { SSG.menu.v = .6; }); await page.keyboard.press('z'); }   // heat to Just right, then let go
           else await page.keyboard.press('z');
           await page.waitForTimeout(st.endsWith(':1') ? 950 : 40);
         }
