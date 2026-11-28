@@ -357,6 +357,50 @@
     cv.getContext('2d').drawImage(b, 0, 0, b.width, h, 0, 0, b.width, h);
     CACHE[k] = cv; return cv;
   };
+  // ---------- Dot, the retired florist two doors up (bible, Visitors; drawn in mockups/visitor-v1, approved Nov 25) ----------
+  var c;
+  var D = { o: '#3b2430', hair: ['#f4f1f5', '#d9d3dc', '#b5adb9'], sk: ['#f6d2b8', '#e8b898', '#cf9a7c'], glass: '#a88a5a',
+    card: ['#9cc1a0', '#7fa784', '#5d8565'], blouse: '#fbf4ea', skirt: ['#a8708a', '#8f5d73', '#6f4558'], shoe: '#6b4a30', scarf: ['#f39bb0', '#ffd56b'] };
+  function dotSprite(X, Y, S, t, noFlowers) {
+    function r(x, y, w, h, col) { c.fillStyle = col; c.fillRect(X + x * S, Y + y * S, w * S, h * S); }
+    function e(cx, cy, rx, ry, col) { for (var yy = -ry; yy <= ry; yy++) { var hw = Math.round(rx * Math.sqrt(Math.max(0, 1 - (yy * yy) / (ry * ry)))); r(cx - hw, cy + yy, hw * 2 + 1, 1, col); } }
+    // bun on top
+    e(10, 2, 4, 2, D.o); e(10, 2, 3, 1, D.hair[1]); r(9, 1, 2, 1, D.hair[0]);
+    // hair and face
+    e(10, 10, 8, 8, D.o); e(10, 10, 7, 7, D.hair[1]); e(8, 8, 5, 4, D.hair[0]);
+    e(10, 12, 6, 6, D.o); e(10, 12, 5, 5, D.sk[1]); e(9, 11, 3, 3, D.sk[0]);
+    r(4, 6, 12, 3, D.hair[1]); r(5, 6, 5, 1, D.hair[0]); r(3, 8, 2, 6, D.hair[2]); r(15, 8, 2, 6, D.hair[2]);
+    // round glasses and a kind smile
+    var blink = t % 9 === 0;
+    [[6, 10], [11, 10]].forEach(function (g) { r(g[0], g[1], 4, 1, D.glass); r(g[0], g[1] + 3, 4, 1, D.glass); r(g[0] - 1, g[1] + 1, 1, 2, D.glass); r(g[0] + 4, g[1] + 1, 1, 2, D.glass); r(g[0] + 1, g[1] + 1, 2, blink ? 1 : 2, D.o); if (!blink) r(g[0] + 1, g[1] + 1, 1, 1, '#fff'); });
+    r(10, 11, 1, 1, D.glass); r(5, 15, 1, 1, '#f2aaa2'); r(15, 15, 1, 1, '#f2aaa2'); r(8, 16, 4, 1, '#b86a62'); r(7, 15, 1, 1, '#b86a62'); r(12, 15, 1, 1, '#b86a62');
+    r(9, 14, 2, 1, D.sk[2]);
+    // neck scarf with little flowers
+    r(5, 18, 10, 3, D.o); r(6, 18, 8, 2, D.scarf[0]); r(7, 18, 1, 1, D.scarf[1]); r(11, 19, 1, 1, D.scarf[1]); r(12, 20, 2, 3, D.scarf[0]);
+    // cardigan over a cream blouse
+    r(3, 20, 14, 12, D.o); r(4, 20, 12, 11, D.card[1]); r(4, 20, 4, 10, D.card[0]); r(13, 21, 3, 10, D.card[2]); r(8, 20, 4, 10, D.blouse); r(9, 22, 1, 1, D.card[2]); r(9, 25, 1, 1, D.card[2]); r(9, 28, 1, 1, D.card[2]);
+    r(5, 26, 3, 2, D.card[2]); // pocket with garden shears peeking out
+    r(6, 25, 1, 1, '#d6dde2');
+    r(1, 21, 2, 10, D.o); r(1, 21, 1, 9, D.card[0]); r(17, 21, 2, 10, D.o); r(18, 21, 1, 9, D.card[2]);
+    r(1, 30, 2, 2, D.sk[1]); r(17, 30, 2, 2, D.sk[2]);
+    // long plum skirt, sensible shoes
+    r(3, 31, 14, 7, D.o); r(4, 31, 12, 6, D.skirt[1]); r(4, 31, 4, 6, D.skirt[0]); r(13, 31, 3, 6, D.skirt[2]);
+    r(5, 37, 4, 1, D.sk[1]); r(11, 37, 4, 1, D.sk[2]);
+    r(4, 38, 6, 2, D.o); r(5, 38, 4, 1, D.shoe); r(10, 38, 6, 2, D.o); r(11, 38, 4, 1, D.shoe);
+    if (noFlowers) return;
+    // a bunch of flowers from her garden, held in front
+    r(14, 24, 2, 8, '#437a47'); r(16, 23, 1, 7, '#6aa361'); r(13, 25, 1, 6, '#6aa361');
+    r(12, 29, 6, 2, '#fbf4ea'); r(12, 30, 6, 1, '#e8dccd');
+    var sw = Math.round(Math.sin(t / 2) * .6);
+    [[12 + sw, 20, '#e46f8b'], [15 + sw, 19, '#ffd56b'], [17 + sw, 21, '#c8a6d8'], [13 + sw, 23, '#f39bb0'], [16 + sw, 22, '#e46f6a']].forEach(function (f) { r(f[0], f[1], 2, 2, f[2]); r(f[0], f[1], 1, 1, 'rgba(255,255,255,.6)'); });
+    r(18, 24, 1, 2, '#a8d88a'); r(11, 22, 1, 2, '#a8d88a');
+  }
+  function dotHead(X, Y, S, t) { // just the face, for the knock bubble
+    c.save(); c.beginPath(); c.rect(X, Y, 20 * S, 19 * S); c.clip(); dotSprite(X, Y, S, t, true); c.restore();
+  }
+
+  SS.drawDot = function (ctx, X, Y, S, t, noFlowers) { c = ctx; dotSprite(X, Y, S, t || 0, noFlowers); };
+  SS.drawDotHead = function (ctx, X, Y, S, t) { c = ctx; dotHead(X, Y, S, t || 0); };
   SS.personSize = function (who) { var b = base(who, false); return [b.width, b.height]; };
 
   var CATS = {

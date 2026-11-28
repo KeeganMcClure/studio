@@ -7,7 +7,7 @@
 //   The camera: the room view with everything else dark, corner marks showing exactly what she'll get; she can still pinch, slide
 //   and flip the walls. The heart takes the picture: a clean picture of the room (no tray, bar or buttons) goes to her phone through
 //   the share sheet, and a small copy into the memory book's Photos (up to 60; it asks before the oldest goes).
-// Life mode: until coins and the shop (spec 006, part F), placing a favorite costs nothing, as with every piece in Life for now.
+// Life mode: pieces she doesn't own show their total price first; she buys them all or places only what she owns (spec 006 F).
 (function () {
   // ---------- favorites ----------
   SS.favorites = function () { try { return JSON.parse(SS.store.get('favorites') || '[]'); } catch (e) { return []; } };
@@ -53,9 +53,19 @@
   };
   SS.renameFavorite = function (i, name) { var all = SS.favorites(); if (!all[i] || !name) return; all[i].name = String(name).slice(0, 24); saveFavs(all); PICS = {}; };
   // use a favorite on the room at a tile: everything that fits is placed; the rest goes to storage
-  SS.applyFavorite = function (G, fav, f, x, y) {
+  // how (Life, spec 006 part F): 'owned' places only what she already has in storage; 'buy' pays for the rest first
+  SS.applyFavorite = function (G, fav, f, x, y, how) {
     var R0 = SS.roomAt(G, f, x, y); if (!R0) { G.toast('TAP A ROOM', 1000); return null; }
-    var W = G.W, placed = 0, stored = 0, map = {}, store = function (p) { G.save.stored.push({ id: p.id, sw: p.sw || 0, colors: p.colors, pats: p.pats, props: p.props }); stored++; };
+    var cost = SS.favoriteCost(G, fav), skip = {};
+    if (cost.cost) {
+      if (how === 'owned') fav.pieces.forEach(function (p, k) { if (cost.owned[k] === undefined) skip[p.uid] = 1; });
+      else { if ((G.save.coins || 0) < cost.cost) { G.toast('NOT ENOUGH COINS', 2000, 'Place only what you own, or earn more with gigs.'); return null; } G.save.coins -= cost.cost; SS.moment(G, 'bought'); }
+    }
+    // pieces she owns come out of storage (each one once); the rest are new
+    var used = Object.keys(cost.owned).map(function (k) { return G.save.stored[cost.owned[k]]; });
+    G.save.stored = G.save.stored.filter(function (s) { return used.indexOf(s) < 0; });
+    var W = G.W, placed = 0, stored = 0, map = {}, store = function (p) { if (skip[p.uid]) return; G.save.stored.push({ id: p.id, sw: p.sw || 0, colors: p.colors, pats: p.pats, props: p.props }); stored++; };
+    fav = { pieces: fav.pieces.filter(function (p) { return !skip[p.uid] && !(p.host && skip[p.host]); }), floor: fav.floor, paper: fav.paper };
     G.snapshot();
     var fresh = function (p) { var q = JSON.parse(JSON.stringify(p)); delete q.uid; delete q.host; delete q.spot; return q; };
     // floor pieces first, then what hangs on the walls, then what stacks on them
@@ -147,9 +157,16 @@
       return true;
     }
     var f0 = SS.favorites()[U.i]; if (!f0) { G.favUse = null; return true; }
-    var res = SS.applyFavorite(G, f0, G.floor, tl[0], tl[1]); if (!res) return true;
-    G.favUse = null;
-    G.toast(f0.name.toUpperCase(), 2200, res.placed + ' pieces placed' + (res.stored ? ', ' + res.stored + ' went to storage.' : '.'));
+    if (!SS.roomAt(G, G.floor, tl[0], tl[1])) { G.toast('TAP A ROOM', 1000); return true; }
+    var go = function (how) {
+      var res = SS.applyFavorite(G, f0, G.floor, tl[0], tl[1], how); if (!res) return;
+      G.favUse = null;
+      G.toast(f0.name.toUpperCase(), 2200, res.placed + ' pieces placed' + (res.stored ? ', ' + res.stored + ' went to storage.' : '.'));
+    };
+    // in Life, pieces she doesn't own show their total price first (spec 001 part E; spec 006 part F)
+    var cost = SS.favoriteCost(G, f0);
+    if (cost.cost) G.confirm = { title: 'SOME AREN\'T YOURS YET', text: 'The pieces you don\'t own cost ' + cost.cost + ' coins. Buy them all, or place only what you own?', options: ['ONLY MINE', 'BUY ALL'], cur: 0, pick: function (i) { go(i === 1 ? 'buy' : 'owned'); } };
+    else go();
     return true;
   };
   SS.drawFavBanner = function (G, W, H, glowRoom) {

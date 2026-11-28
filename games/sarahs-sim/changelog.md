@@ -2,6 +2,56 @@
 
 What the Developer has built, newest first. The Designer reads this before every rules check.
 
+## Nov 28, 2026: coins, the shop and gigs (Dev)
+
+Spec 006, part F, from `gig-v1`.
+
+### What was built
+
+- **The shop is the catalog.** In Life, each card shows its price with a coin.
+  - Taking a card she can afford holds the piece, and setting it down buys it: the coins come off the top bar, and the first one is a memory book moment.
+  - A card she can't afford says so, with how much she has, and that gigs pay 100 to 200.
+  - Pieces in storage are already hers and place free. Her own crafts say YOURS. Holiday pieces keep their "This season" and "Back in December" labels.
+- **Selling back:** a bought piece's tray has SELL. It asks first, with the cursor on Keep, then refunds every coin she paid; anything stacked on it goes to storage. Starting pieces were never bought, so they're put away instead.
+- **Favorites in Life:** pieces she doesn't own show their total price first, with Only mine or Buy all.
+- **Sandbox** stays free, and there are still no bills, rent or running costs.
+- **Gigs:** Find a gig at the desk offers 2 or 3 gigs from the four neighbors on the gig card from `gig-v1`:
+  - who asked, with friendship hearts;
+  - what they want in one line, and where;
+  - three likes and the pay;
+  - "Pieces are lent free"; swipe or the D-pad for the others; Not now or Accept.
+  - The pool is 8 room gigs, two per neighbor, and they don't repeat until they've all been offered.
+- **Doing it:**
+  - Accept opens their own small room, empty and windowed, to decorate with the normal catalog;
+  - every piece says FREE and is lent, so her coins and her home are never touched, and her home's save stays exactly as it was;
+  - the banner (in place of the top bar) shows who it's for, the ask, the three likes ticking green as the design matches them, "2 of 3 likes matched" and HAND IN;
+  - Start asks whether to leave the gig.
+- **Judging:**
+  - 1 to 3 hearts, one per like matched (at least one: there's no wrong answer);
+  - 100, 150 or 200 coins, and +1 friendship;
+  - the card shows the design, what they say and a hint for a like they missed;
+  - Try again goes back to the room, and Done pays and brings her home as she left it.
+  - The first gig is a memory book moment.
+- **The likes:** plants, books, a comfy seat, a little table, a rug, soft light, art, soft things (fabric pieces), warm colors and cool colors.
+
+### Checks
+
+- `npm run check` has a coins-and-gigs section:
+  - cards show prices; taking holds the price, and setting down buys it with its moment;
+  - selling back asks on Keep and refunds every coin;
+  - she can't take what she can't afford, and Sandbox is free;
+  - coins are kept;
+  - Find a gig offers 2 or 3; accepting opens their empty room with free pieces, without changing her home's save;
+  - Hand in rates by likes matched and pays 100 to 200 with friendship and the moment, and Done brings her home as she left it;
+  - an empty room still pays 100.
+- New screen: `src/dist/screen-gig-375x667.png`.
+
+### Changes from the spec
+
+- **Who asks:** gigs come from the four neighbors before she's "met" them, since visits come with spec 008.
+- **Portraits:** only Dot has an approved drawing (`visitor-v1`). Marco and Jules, Theo and Priya show a soft card with their initials until they're drawn for spec 008. The Designer may want those portraits mocked up.
+- **Not yet:** outfit gigs come with Style (spec 002). A visitor bringing a gig to the door, story gigs (250) and whole homes (600) come with spec 008.
+
 ## Nov 28, 2026: cooking (Dev)
 
 Spec 006, part E, from `cooking-v1`.

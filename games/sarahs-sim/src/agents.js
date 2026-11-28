@@ -336,7 +336,7 @@
     easel: [{ name: 'PAINT', icon: 'brush', dur: 20, how: 'stand', fx: 'paint', fill: { fun: .35 } }, { name: 'SEASONAL', sub: 'CRAFT', icon: 'star', dur: 20, how: 'stand', fx: 'craft', fill: { fun: .35 } }],
     tub: [{ name: 'BATH', icon: 'bath', dur: 25, how: 'tub', fx: 'bath', fill: { energy: .25, fun: .2 } }],
     bookshelf: [{ name: 'READ', icon: 'book', dur: 15, how: 'stand', fx: 'read', fill: { fun: .25 } }, { name: 'MEMORY', sub: 'BOOK', icon: 'book', fx: 'book', instant: true }],
-    desk: [{ name: 'FIND A GIG', icon: 'star', soon: 'Gigs come in their own part.' }, { name: 'VIDEO-CALL', sub: 'MOM', icon: 'chat', soon: 'Calls home come with idle life.' }],
+    desk: [{ name: 'FIND A GIG', icon: 'star', fx: 'gig', instant: true }, { name: 'VIDEO-CALL', sub: 'MOM', icon: 'chat', soon: 'Calls home come with idle life.' }],
     wardrobe: [{ name: 'CHANGE', sub: 'OUTFIT', icon: 'heart', soon: 'Style comes in its own part.' }],
     lamp: [{ name: 'LIGHT', sub: 'ON / OFF', icon: 'lamp', dur: 1, how: 'stand', fx: 'lamp' }],
     tv: [{ name: 'WATCH', sub: 'A SHOW', icon: 'tv', dur: 20, how: 'stand', tv: true, fill: { fun: .3 } }],

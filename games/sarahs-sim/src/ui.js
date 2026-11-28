@@ -147,7 +147,9 @@
       it.def.swatches.slice(0, 4).forEach(function (s, k) { var base = s[it.def.parts[0] ? it.def.parts[0][0] : 'x'] || '#c88d5a'; R(sx + 34 + (k % 2) * 9, sy + 5 + Math.floor(k / 2) * 9, 7, 7, '#3b2430'); R(sx + 35 + (k % 2) * 9, sy + 6 + Math.floor(k / 2) * 9, 5, 5, base); });
       if (it.season) { R(sx + 1, sy + 1, 38, 7, P.rose); txt(it.season, sx + 20, sy + 2, '#fff', 4, 'center'); }
       if (it.away) { R(sx, sy, 55, 27, 'rgba(251,238,221,.7)'); R(sx + 1, sy + 9, 53, 9, P.trayEdge); txt('BACK IN', sx + 27, sy + 10, P.ink, 4, 'center'); txt('DECEMBER', sx + 27, sy + 14, P.ink, 4, 'center'); }
-      if (it.stored) { R(sx + 33, sy + 19, 20, 7, P.sage[1]); txt('×' + it.stored, sx + 43, sy + 20, '#fff', 5, 'center'); }
+      if (it.stored && !G.gig) { R(sx + 33, sy + 19, 20, 7, P.sage[1]); txt('×' + it.stored, sx + 43, sy + 20, '#fff', 5, 'center'); }
+      var tag = !it.away && SS.cardTag(G, it);   // its price in Life, FREE during a gig (spec 006, part F)
+      if (tag) { var tw2 = SS.tw(tag.text, 4) + (tag.coin ? 8 : 4); R(sx + 2, sy + 19, tw2, 7, tag.bg); if (tag.coin) { R(sx + 3, sy + 20, 5, 5, '#e7bb4f'); R(sx + 4, sy + 21, 3, 3, '#ffd56b'); } txt(tag.text, sx + (tag.coin ? 10 : 4), sy + 21, tag.col, 4); }
       if (focused) { c.strokeStyle = P.rose; c.lineWidth = 2; c.strokeRect(sx + 1, sy + 1, 53, 25); c.lineWidth = 1; }
       hit(G, sx, sy, 55, 27, function () { G.takeCard(it); }, { card: it });
     });
@@ -161,8 +163,12 @@
       var on = p.props !== false; SS.btn(W - 66, y + 4, 60, on ? 'PROPS ON' : 'PROPS OFF', on, 12, 5);
       hit(G, W - 66, y + 2, 60, 16, function () { G.snapshot(); p.props = !on; G.changed(true); });
     }
-    if (d.use === 'stove' || d.use === 'fridge') { // cook for fun, in any mode (spec 006, part E: Sandbox too)
-      var cx = W - (G.hasProps(d) ? 112 : 50); SS.btn(cx, y + 4, 44, 'COOK', false, 12, 5); hit(G, cx, y + 2, 44, 16, function () { G.deselect(); SS.openCooking(G); });
+    var bx2 = W - (G.hasProps(d) ? 112 : 50);
+    if ((d.use === 'stove' || d.use === 'fridge') && !G.gig) { // cook for fun, in any mode (spec 006, part E: Sandbox too)
+      SS.btn(bx2, y + 4, 44, 'COOK', false, 12, 5); hit(G, bx2, y + 2, 44, 16, function () { G.deselect(); SS.openCooking(G); }); bx2 -= 50;
+    }
+    if (G.mode === 'life' && p.paid && !G.gig) { // sell it back for every coin she paid (spec 006, part F)
+      SS.btn(bx2, y + 4, 44, 'SELL', false, 12, 5); hit(G, bx2, y + 2, 44, 16, function () { SS.sellBack(G, p); });
     }
     txt(d.name.toUpperCase(), 6, y + 22, P.ink, 7);
     var part0 = d.parts[0] && d.parts[0][0];
@@ -268,6 +274,8 @@
     if (m.kind === 'note') return SS.drawNote(G, W, H);
     if (m.kind === 'fav') return SS.drawFavorites(G, W, H);   // favorites (keep.js)
     if (m.kind === 'cook') return SS.drawCooking(G, W, H);   // the Cooking screen (cooking.js)
+    if (m.kind === 'gig') return SS.drawGigOffer(G, W, H);   // gigs (gig.js)
+    if (m.kind === 'gigdone') return SS.drawGigDone(G, W, H);
     R(0, 0, W, H, 'rgba(34,18,28,.62)');   // the home dims and holds still behind the menu
     hit(G, 0, 0, W, H, function () { G.closeMenu(); });
     if (m.kind === 'start') {

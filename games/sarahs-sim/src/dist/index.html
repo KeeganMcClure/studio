@@ -2688,6 +2688,50 @@ var SS = window.SS = window.SS || {};
     cv.getContext('2d').drawImage(b, 0, 0, b.width, h, 0, 0, b.width, h);
     CACHE[k] = cv; return cv;
   };
+  // ---------- Dot, the retired florist two doors up (bible, Visitors; drawn in mockups/visitor-v1, approved Nov 25) ----------
+  var c;
+  var D = { o: '#3b2430', hair: ['#f4f1f5', '#d9d3dc', '#b5adb9'], sk: ['#f6d2b8', '#e8b898', '#cf9a7c'], glass: '#a88a5a',
+    card: ['#9cc1a0', '#7fa784', '#5d8565'], blouse: '#fbf4ea', skirt: ['#a8708a', '#8f5d73', '#6f4558'], shoe: '#6b4a30', scarf: ['#f39bb0', '#ffd56b'] };
+  function dotSprite(X, Y, S, t, noFlowers) {
+    function r(x, y, w, h, col) { c.fillStyle = col; c.fillRect(X + x * S, Y + y * S, w * S, h * S); }
+    function e(cx, cy, rx, ry, col) { for (var yy = -ry; yy <= ry; yy++) { var hw = Math.round(rx * Math.sqrt(Math.max(0, 1 - (yy * yy) / (ry * ry)))); r(cx - hw, cy + yy, hw * 2 + 1, 1, col); } }
+    // bun on top
+    e(10, 2, 4, 2, D.o); e(10, 2, 3, 1, D.hair[1]); r(9, 1, 2, 1, D.hair[0]);
+    // hair and face
+    e(10, 10, 8, 8, D.o); e(10, 10, 7, 7, D.hair[1]); e(8, 8, 5, 4, D.hair[0]);
+    e(10, 12, 6, 6, D.o); e(10, 12, 5, 5, D.sk[1]); e(9, 11, 3, 3, D.sk[0]);
+    r(4, 6, 12, 3, D.hair[1]); r(5, 6, 5, 1, D.hair[0]); r(3, 8, 2, 6, D.hair[2]); r(15, 8, 2, 6, D.hair[2]);
+    // round glasses and a kind smile
+    var blink = t % 9 === 0;
+    [[6, 10], [11, 10]].forEach(function (g) { r(g[0], g[1], 4, 1, D.glass); r(g[0], g[1] + 3, 4, 1, D.glass); r(g[0] - 1, g[1] + 1, 1, 2, D.glass); r(g[0] + 4, g[1] + 1, 1, 2, D.glass); r(g[0] + 1, g[1] + 1, 2, blink ? 1 : 2, D.o); if (!blink) r(g[0] + 1, g[1] + 1, 1, 1, '#fff'); });
+    r(10, 11, 1, 1, D.glass); r(5, 15, 1, 1, '#f2aaa2'); r(15, 15, 1, 1, '#f2aaa2'); r(8, 16, 4, 1, '#b86a62'); r(7, 15, 1, 1, '#b86a62'); r(12, 15, 1, 1, '#b86a62');
+    r(9, 14, 2, 1, D.sk[2]);
+    // neck scarf with little flowers
+    r(5, 18, 10, 3, D.o); r(6, 18, 8, 2, D.scarf[0]); r(7, 18, 1, 1, D.scarf[1]); r(11, 19, 1, 1, D.scarf[1]); r(12, 20, 2, 3, D.scarf[0]);
+    // cardigan over a cream blouse
+    r(3, 20, 14, 12, D.o); r(4, 20, 12, 11, D.card[1]); r(4, 20, 4, 10, D.card[0]); r(13, 21, 3, 10, D.card[2]); r(8, 20, 4, 10, D.blouse); r(9, 22, 1, 1, D.card[2]); r(9, 25, 1, 1, D.card[2]); r(9, 28, 1, 1, D.card[2]);
+    r(5, 26, 3, 2, D.card[2]); // pocket with garden shears peeking out
+    r(6, 25, 1, 1, '#d6dde2');
+    r(1, 21, 2, 10, D.o); r(1, 21, 1, 9, D.card[0]); r(17, 21, 2, 10, D.o); r(18, 21, 1, 9, D.card[2]);
+    r(1, 30, 2, 2, D.sk[1]); r(17, 30, 2, 2, D.sk[2]);
+    // long plum skirt, sensible shoes
+    r(3, 31, 14, 7, D.o); r(4, 31, 12, 6, D.skirt[1]); r(4, 31, 4, 6, D.skirt[0]); r(13, 31, 3, 6, D.skirt[2]);
+    r(5, 37, 4, 1, D.sk[1]); r(11, 37, 4, 1, D.sk[2]);
+    r(4, 38, 6, 2, D.o); r(5, 38, 4, 1, D.shoe); r(10, 38, 6, 2, D.o); r(11, 38, 4, 1, D.shoe);
+    if (noFlowers) return;
+    // a bunch of flowers from her garden, held in front
+    r(14, 24, 2, 8, '#437a47'); r(16, 23, 1, 7, '#6aa361'); r(13, 25, 1, 6, '#6aa361');
+    r(12, 29, 6, 2, '#fbf4ea'); r(12, 30, 6, 1, '#e8dccd');
+    var sw = Math.round(Math.sin(t / 2) * .6);
+    [[12 + sw, 20, '#e46f8b'], [15 + sw, 19, '#ffd56b'], [17 + sw, 21, '#c8a6d8'], [13 + sw, 23, '#f39bb0'], [16 + sw, 22, '#e46f6a']].forEach(function (f) { r(f[0], f[1], 2, 2, f[2]); r(f[0], f[1], 1, 1, 'rgba(255,255,255,.6)'); });
+    r(18, 24, 1, 2, '#a8d88a'); r(11, 22, 1, 2, '#a8d88a');
+  }
+  function dotHead(X, Y, S, t) { // just the face, for the knock bubble
+    c.save(); c.beginPath(); c.rect(X, Y, 20 * S, 19 * S); c.clip(); dotSprite(X, Y, S, t, true); c.restore();
+  }
+
+  SS.drawDot = function (ctx, X, Y, S, t, noFlowers) { c = ctx; dotSprite(X, Y, S, t || 0, noFlowers); };
+  SS.drawDotHead = function (ctx, X, Y, S, t) { c = ctx; dotHead(X, Y, S, t || 0); };
   SS.personSize = function (who) { var b = base(who, false); return [b.width, b.height]; };
 
   var CATS = {
@@ -4200,7 +4244,7 @@ var SS = window.SS = window.SS || {};
     easel: [{ name: 'PAINT', icon: 'brush', dur: 20, how: 'stand', fx: 'paint', fill: { fun: .35 } }, { name: 'SEASONAL', sub: 'CRAFT', icon: 'star', dur: 20, how: 'stand', fx: 'craft', fill: { fun: .35 } }],
     tub: [{ name: 'BATH', icon: 'bath', dur: 25, how: 'tub', fx: 'bath', fill: { energy: .25, fun: .2 } }],
     bookshelf: [{ name: 'READ', icon: 'book', dur: 15, how: 'stand', fx: 'read', fill: { fun: .25 } }, { name: 'MEMORY', sub: 'BOOK', icon: 'book', fx: 'book', instant: true }],
-    desk: [{ name: 'FIND A GIG', icon: 'star', soon: 'Gigs come in their own part.' }, { name: 'VIDEO-CALL', sub: 'MOM', icon: 'chat', soon: 'Calls home come with idle life.' }],
+    desk: [{ name: 'FIND A GIG', icon: 'star', fx: 'gig', instant: true }, { name: 'VIDEO-CALL', sub: 'MOM', icon: 'chat', soon: 'Calls home come with idle life.' }],
     wardrobe: [{ name: 'CHANGE', sub: 'OUTFIT', icon: 'heart', soon: 'Style comes in its own part.' }],
     lamp: [{ name: 'LIGHT', sub: 'ON / OFF', icon: 'lamp', dur: 1, how: 'stand', fx: 'lamp' }],
     tv: [{ name: 'WATCH', sub: 'A SHOW', icon: 'tv', dur: 20, how: 'stand', tv: true, fill: { fun: .3 } }],
@@ -5027,6 +5071,67 @@ var SS = window.SS = window.SS || {};
 })();
 
 </script>
+<script>/* shop.js */
+// Sarah's Sim: coins and the shop (spec 006, part F; bible, Play, Coins and prices).
+//   The shop is the catalog. In Life each card shows its price; taking a card she can afford holds the piece, and setting it down
+//   buys it. A piece in storage is already hers, so it's free to place again. Her own crafts and holiday gifts show a ribbon
+//   instead of a price. A bought piece can be sold back from its tray for every coin she paid, after a confirm that starts on
+//   Keep (studio-bible/play.md). There are no bills, rent or running costs (bible, Nothing is lost). Sandbox has everything free.
+//   During a gig (gig.js) every piece is lent free.
+(function () {
+  // what a catalog card costs her now: 0 when it's free (Sandbox, a gig, in storage, her own crafts), else its price
+  SS.priceOf = function (G, it) {
+    if (G.mode !== 'life' || G.gig) return 0;
+    if (it.stored || it.def.craft || it.def.tab === 'ours') return 0;
+    return it.def.price || 0;
+  };
+  SS.cardTag = function (G, it) { // the little line on a card: its price, FREE, or how it's earned
+    if (G.gig) return { text: 'FREE', col: '#437a47', bg: '#e8f3dd' };
+    if (G.mode !== 'life') return null;
+    if (it.stored) return null;
+    if (it.def.craft || it.def.tab === 'ours') return { text: 'YOURS', col: '#b44f63', bg: '#fde3ea' };
+    return { text: String(it.def.price || 0), coin: true, col: '#3b2430', bg: '#fff6ea' };
+  };
+  // can she take this card? Says why not
+  SS.canBuy = function (G, it) {
+    var p = SS.priceOf(G, it); if (!p) return true;
+    if ((G.save.coins || 0) >= p) return true;
+    G.toast('NOT ENOUGH COINS', 2000, 'It\'s ' + p + ' coins and you have ' + (G.save.coins || 0) + '. Gigs at the desk pay 100 to 200.');
+    return false;
+  };
+  // setting a new piece down buys it
+  SS.payFor = function (G, p, price) {
+    if (!price) return;
+    G.save.coins = (G.save.coins || 0) - price; p.paid = price;
+    SS.moment(G, 'bought');
+    G.toast('BOUGHT', 1200, '-' + price + ' coins');
+  };
+  // selling back: every coin she paid, after a confirm that starts on Keep
+  SS.sellBack = function (G, p) {
+    if (!p || !p.paid) return;
+    var d = SS.DEF[p.id];
+    G.confirm = { title: 'SELL IT BACK?', text: d.name + ' sells back for every coin you paid: ' + p.paid + '. What\'s stacked on it goes to storage.', options: ['KEEP', 'SELL +' + p.paid], cur: 0, pick: function (i) {
+      if (i !== 1) return;
+      G.snapshot();
+      G.W.stacked(p).forEach(function (q) { G.save.stored.push({ id: q.id, sw: q.sw || 0, colors: q.colors, pats: q.pats, props: q.props, paid: q.paid }); });
+      G.save.coins = (G.save.coins || 0) + p.paid; G.W.remove(p); G.deselect(); G.changed(true);
+      G.toast('SOLD', 1400, '+' + p.paid + ' coins');
+    } };
+  };
+  // a room favorite in Life: what she doesn't own yet costs its price. Returns {cost, owned: [indexes into storage]}
+  SS.favoriteCost = function (G, fav) {
+    if (G.mode !== 'life' || G.gig) return { cost: 0, owned: {} };
+    var pool = G.save.stored.map(function (s, i) { return { id: s.id, i: i }; }), owned = {}, cost = 0;
+    fav.pieces.forEach(function (p, k) {
+      var j = pool.findIndex(function (s) { return s.id === p.id; });
+      if (j >= 0) { owned[k] = pool[j].i; pool.splice(j, 1); }
+      else { var d = SS.DEF[p.id]; if (d && !d.craft && d.tab !== 'ours') cost += d.price || 0; }
+    });
+    return { cost: cost, owned: owned };
+  };
+})();
+
+</script>
 <script>/* keep.js */
 // Sarah's Sim: keeping designs, favorites and the camera (spec 001, part E; bible, Play, Keeping designs; mockups/favorites-v1,
 // mockups/camera-v1).
@@ -5037,7 +5142,7 @@ var SS = window.SS = window.SS || {};
 //   The camera: the room view with everything else dark, corner marks showing exactly what she'll get; she can still pinch, slide
 //   and flip the walls. The heart takes the picture: a clean picture of the room (no tray, bar or buttons) goes to her phone through
 //   the share sheet, and a small copy into the memory book's Photos (up to 60; it asks before the oldest goes).
-// Life mode: until coins and the shop (spec 006, part F), placing a favorite costs nothing, as with every piece in Life for now.
+// Life mode: pieces she doesn't own show their total price first; she buys them all or places only what she owns (spec 006 F).
 (function () {
   // ---------- favorites ----------
   SS.favorites = function () { try { return JSON.parse(SS.store.get('favorites') || '[]'); } catch (e) { return []; } };
@@ -5083,9 +5188,19 @@ var SS = window.SS = window.SS || {};
   };
   SS.renameFavorite = function (i, name) { var all = SS.favorites(); if (!all[i] || !name) return; all[i].name = String(name).slice(0, 24); saveFavs(all); PICS = {}; };
   // use a favorite on the room at a tile: everything that fits is placed; the rest goes to storage
-  SS.applyFavorite = function (G, fav, f, x, y) {
+  // how (Life, spec 006 part F): 'owned' places only what she already has in storage; 'buy' pays for the rest first
+  SS.applyFavorite = function (G, fav, f, x, y, how) {
     var R0 = SS.roomAt(G, f, x, y); if (!R0) { G.toast('TAP A ROOM', 1000); return null; }
-    var W = G.W, placed = 0, stored = 0, map = {}, store = function (p) { G.save.stored.push({ id: p.id, sw: p.sw || 0, colors: p.colors, pats: p.pats, props: p.props }); stored++; };
+    var cost = SS.favoriteCost(G, fav), skip = {};
+    if (cost.cost) {
+      if (how === 'owned') fav.pieces.forEach(function (p, k) { if (cost.owned[k] === undefined) skip[p.uid] = 1; });
+      else { if ((G.save.coins || 0) < cost.cost) { G.toast('NOT ENOUGH COINS', 2000, 'Place only what you own, or earn more with gigs.'); return null; } G.save.coins -= cost.cost; SS.moment(G, 'bought'); }
+    }
+    // pieces she owns come out of storage (each one once); the rest are new
+    var used = Object.keys(cost.owned).map(function (k) { return G.save.stored[cost.owned[k]]; });
+    G.save.stored = G.save.stored.filter(function (s) { return used.indexOf(s) < 0; });
+    var W = G.W, placed = 0, stored = 0, map = {}, store = function (p) { if (skip[p.uid]) return; G.save.stored.push({ id: p.id, sw: p.sw || 0, colors: p.colors, pats: p.pats, props: p.props }); stored++; };
+    fav = { pieces: fav.pieces.filter(function (p) { return !skip[p.uid] && !(p.host && skip[p.host]); }), floor: fav.floor, paper: fav.paper };
     G.snapshot();
     var fresh = function (p) { var q = JSON.parse(JSON.stringify(p)); delete q.uid; delete q.host; delete q.spot; return q; };
     // floor pieces first, then what hangs on the walls, then what stacks on them
@@ -5177,9 +5292,16 @@ var SS = window.SS = window.SS || {};
       return true;
     }
     var f0 = SS.favorites()[U.i]; if (!f0) { G.favUse = null; return true; }
-    var res = SS.applyFavorite(G, f0, G.floor, tl[0], tl[1]); if (!res) return true;
-    G.favUse = null;
-    G.toast(f0.name.toUpperCase(), 2200, res.placed + ' pieces placed' + (res.stored ? ', ' + res.stored + ' went to storage.' : '.'));
+    if (!SS.roomAt(G, G.floor, tl[0], tl[1])) { G.toast('TAP A ROOM', 1000); return true; }
+    var go = function (how) {
+      var res = SS.applyFavorite(G, f0, G.floor, tl[0], tl[1], how); if (!res) return;
+      G.favUse = null;
+      G.toast(f0.name.toUpperCase(), 2200, res.placed + ' pieces placed' + (res.stored ? ', ' + res.stored + ' went to storage.' : '.'));
+    };
+    // in Life, pieces she doesn't own show their total price first (spec 001 part E; spec 006 part F)
+    var cost = SS.favoriteCost(G, f0);
+    if (cost.cost) G.confirm = { title: 'SOME AREN\'T YOURS YET', text: 'The pieces you don\'t own cost ' + cost.cost + ' coins. Buy them all, or place only what you own?', options: ['ONLY MINE', 'BUY ALL'], cur: 0, pick: function (i) { go(i === 1 ? 'buy' : 'owned'); } };
+    else go();
     return true;
   };
   SS.drawFavBanner = function (G, W, H, glowRoom) {
@@ -5537,6 +5659,172 @@ var SS = window.SS = window.SS || {};
 })();
 
 </script>
+<script>/* gig.js */
+// Sarah's Sim: design gigs (spec 006, part F; bible, Play, Job: design gigs; mockups/gig-v1).
+//   Find a gig at the desk offers 2 or 3 small room jobs from the neighbors (bible, Visitors: Dot, Marco and Jules, Theo, Priya).
+//   The card (gig-v1, left) shows who asked, what they want in one line, where, what they like (3 tags), the pay and Accept / Not now.
+//   Accepting opens the gig's space: a small room of theirs, empty, to decorate with the normal catalog. Every piece is lent free
+//   and goes back when she hands it in, so her own coins and her own home are never touched. A banner shows the ask, the tags
+//   ticking off as the design matches them, and Hand in.
+//   Judging: 1 to 3 hearts, one per tag matched (at least one, there's no wrong answer); 100, 150 or 200 coins; +1 friendship.
+//   Try again goes back into the room to change it; Done pays, and she's home.
+//   Outfit gigs come with Style (spec 002); a visitor at the door bringing a gig comes with Visitors (spec 008).
+(function () {
+  var WHO = {
+    dot: { name: 'DOT', she: 'SHE', rel: 'Your neighbor two doors up' },
+    mj: { name: 'MARCO & JULES', she: 'THEY', rel: 'The couple next door' },
+    theo: { name: 'THEO', she: 'HE', rel: 'The painter on the corner' },
+    priya: { name: 'PRIYA', she: 'SHE', rel: 'The nurse with Biscuit' }
+  };
+  // ordinary room gigs (a Claude default pool): who, the ask, where, the room's size, floor and paper, and three likes
+  var POOL = [
+    { who: 'dot', ask: 'A reading corner that feels like fall', where: 'Her sunroom, by the big windows', w: 5, d: 5, floor: 'planks', paper: 'honey', likes: ['plants', 'warm', 'books'] },
+    { who: 'dot', ask: 'A sitting spot for her afternoon tea', where: 'The corner of her front room', w: 4, d: 5, floor: 'planks', paper: 'rose', likes: ['seating', 'table', 'plants'] },
+    { who: 'mj', ask: 'A cozy corner to sit in, finally', where: 'Behind the wall of boxes', w: 5, d: 4, floor: 'planks', paper: 'cream', likes: ['seating', 'rug', 'lights'] },
+    { who: 'mj', ask: 'Somewhere soft to put their feet up', where: 'Their half-unpacked den', w: 5, d: 5, floor: 'planks', paper: 'sage', likes: ['soft', 'rug', 'cool'] },
+    { who: 'theo', ask: 'A spot by the window to paint in', where: 'His tiny studio', w: 4, d: 4, floor: 'planks', paper: 'cream', likes: ['art', 'lights', 'plants'] },
+    { who: 'theo', ask: 'A wall of art he\'s proud of', where: 'The studio\'s back room', w: 5, d: 4, floor: 'planks', paper: 'lilac', likes: ['art', 'seating', 'warm'] },
+    { who: 'priya', ask: 'A calm corner for after night shifts', where: 'Her bedroom window', w: 5, d: 5, floor: 'planks', paper: 'sage', likes: ['cool', 'soft', 'lights'] },
+    { who: 'priya', ask: 'A dog-proof place to curl up', where: 'Her living room, Biscuit\'s favorite', w: 5, d: 5, floor: 'planks', paper: 'honey', likes: ['rug', 'seating', 'books'] }
+  ];
+  SS.GIGS = POOL;
+  // the likes, and how a design matches each one
+  function hue(hex) { var n = parseInt((hex || '#888888').slice(1), 16), r = (n >> 16 & 255) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, h = 0; if (!d) return { h: 0, s: 0 }; h = mx === r ? (g - b) / d % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; if (h < 0) h += 360; return { h: h, s: d / (1 - Math.abs(mx + mn - 1)) }; }
+  function mainColor(p) { var d = SS.DEF[p.id], part = d.parts[0] && d.parts[0][0]; return (p.colors && p.colors[part]) || ((d.swatches[p.sw || 0] || d.swatches[0] || {})[part]); }
+  var LIKES = {
+    plants: { label: 'plants', test: function (ps) { return ps.some(function (p) { return SS.DEF[p.id].tab === 'plants'; }); } },
+    books: { label: 'books', test: function (ps) { return ps.some(function (p) { return /book/.test(p.id); }); } },
+    seating: { label: 'a comfy seat', test: function (ps) { return ps.some(function (p) { var u = SS.DEF[p.id].use; return u === 'sofa' || u === 'chair'; }); } },
+    table: { label: 'a little table', test: function (ps) { return ps.some(function (p) { return SS.DEF[p.id].tab === 'tables'; }); } },
+    rug: { label: 'a rug', test: function (ps) { return ps.some(function (p) { return SS.DEF[p.id].kind === 'rug'; }); } },
+    lights: { label: 'soft light', test: function (ps) { return ps.some(function (p) { var d = SS.DEF[p.id]; return d.lamp || d.light; }); } },
+    art: { label: 'art', test: function (ps) { return ps.some(function (p) { var d = SS.DEF[p.id]; return d.kind === 'wall' && !d.window; }); } },
+    soft: { label: 'soft things', test: function (ps) { return ps.filter(function (p) { return SS.DEF[p.id].parts.some(function (q) { return q[1] === 'fab'; }); }).length >= 2; } },
+    warm: { label: 'warm colors', test: function (ps) { var c = ps.map(mainColor).map(hue).filter(function (h) { return h.s > .25; }); return c.length >= 2 && c.filter(function (h) { return h.h < 60 || h.h > 330; }).length * 2 >= c.length; } },
+    cool: { label: 'cool colors', test: function (ps) { var c = ps.map(mainColor).map(hue).filter(function (h) { return h.s > .2; }); return c.length >= 2 && c.filter(function (h) { return h.h >= 150 && h.h <= 270; }).length * 2 >= c.length; } }
+  };
+  SS.GIG_LIKES = LIKES;
+  SS.gigMatches = function (G) { var g = G.gig, ps = G.W.pieces; return g.offer.likes.map(function (k) { return LIKES[k].test(ps); }); };
+
+  // ---------- offers: Find a gig at the desk ----------
+  SS.findGigs = function (G) {
+    var S = G.save; S.shown = S.shown || {}; var sh = S.shown.gigs || (S.shown.gigs = []);
+    var left = POOL.map(function (g, i) { return i; }).filter(function (i) { return sh.indexOf(i) < 0; });
+    if (left.length < 3) { sh.length = 0; left = POOL.map(function (g, i) { return i; }); }
+    var picks = [], whos = {};
+    while (picks.length < 3 && left.length) { var k = left.splice(Math.floor(Math.random() * left.length), 1)[0]; if (whos[POOL[k].who]) continue; whos[POOL[k].who] = 1; picks.push(k); }
+    G.bubble = null; G.meters = null; G.toastT = null;
+    G.menu = { kind: 'gig', offers: picks, cur: 0 };
+  };
+  SS.acceptGig = function (G, k) {
+    var o = POOL[k], S = G.save; (S.shown.gigs = S.shown.gigs || []).push(k);
+    // the gig's space: one small empty room of theirs, with windows, on its own little lot
+    var lot = Math.max(o.w, o.d) + 4, home = { id: 'gig', name: WHO[o.who].name, lot: lot, lotName: '', at: [2, 2], w: o.w, d: o.d,
+      floors: [{ rooms: [{ id: 'gig', name: 'Room', r: [0, 0, o.w, o.d], floor: o.floor, paper: o.paper }], openings: [], windows: [[1, 0, 'x', 2], [0, 1, 'y', 2]] }], stairs: [], pieces: [] };
+    if (!SS.PAPERS[o.paper]) home.floors[0].rooms[0].paper = 'cream';
+    SS.HOMES.gig = home;
+    G.gig = { k: k, offer: o, home: { W: G.W, agents: G.agents, floor: G.floor, view: SS.view.k, undo: G.undo, cam: { x: G.cam.x, y: G.cam.y, zoom: G.cam.zoom }, walls: G.walls, tray: G.tray.open }, start: Date.now() };
+    G.menu = null; G.sel = null; G.hold = null; G.paint = null;
+    G.W = SS.World(home, []); G.agents = []; G.floor = 0; SS.view.k = 0; G.undo = []; G.walls = 'cut'; G.tray.open = true; G.tray.tab = 'seating'; G.tray.page = 0;
+    SS.view.L = G.W.lot; G.centerCam(true); G.changed(false);
+  };
+  function leave(G) {
+    var h = G.gig.home; G.W = h.W; G.agents = h.agents; G.floor = h.floor; SS.view.k = h.view; SS.view.L = G.W.lot; G.undo = h.undo; G.walls = h.walls; G.tray.open = h.tray;
+    G.cam.x = h.cam.x; G.cam.y = h.cam.y; G.cam.zoom = h.cam.zoom; G.gig = null; G.sel = null; G.hold = null; G.paint = null; G.changed(true);
+  }
+  SS.handIn = function (G) {
+    var m = SS.gigMatches(G), n = m.filter(Boolean).length, hearts = Math.max(1, n), o = G.gig.offer;
+    if (G.hold) return;
+    var pic = { home: 'gig', f: 0, x: G.W.ax + o.w / 2, y: G.W.ay + o.d / 2, k: SS.view.k, pieces: JSON.parse(JSON.stringify(G.W.pieces)), agents: [], span: 22 * Math.max(o.w, o.d) + 30 };
+    var missed = o.likes.filter(function (k, i) { return !m[i]; });
+    G.menu = { kind: 'gigdone', hearts: hearts, pay: [100, 150, 200][hearts - 1], missed: missed, pic: pic, img: null };
+  };
+  SS.gigDone = function (G) {
+    var r = G.menu, o = G.gig.offer, S = G.save; G.menu = null;
+    S.coins = (S.coins || 0) + r.pay; S.friends = S.friends || {}; S.friends[o.who] = (S.friends[o.who] || 0) + 1;
+    leave(G);
+    SS.moment(G, 'gig');
+    G.toast('+' + r.pay + ' COINS', 2200, WHO[o.who].name.charAt(0) + WHO[o.who].name.slice(1).toLowerCase() + ' will remember this. +1 friendship.');
+  };
+  SS.gigQuit = function (G) { leave(G); G.toast('GIG LEFT FOR NOW', 1600, 'Find another at the desk any time.'); };
+
+  // ---------- drawing ----------
+  var P = SS.P, R = SS.R, txt = SS.txt;
+  function hit(G, x, y, w, h, fn) { G.hits.push({ x: x, y: y, w: w, h: h, fn: fn }); }
+  function heart(c, x, y, on) { var col = on ? P.rose : '#e8dccd'; R(x + 1, y, 2, 1, col); R(x + 4, y, 2, 1, col); R(x, y + 1, 7, 2, col); R(x + 1, y + 3, 5, 1, col); R(x + 2, y + 4, 3, 1, col); R(x + 3, y + 5, 1, 1, col); }
+  function bigHeart(c, x, y, on) { var col = on ? P.rose : '#e8dccd', s = 3; [[1, 0, 2, 1], [4, 0, 2, 1], [0, 1, 7, 2], [1, 3, 5, 1], [2, 4, 3, 1], [3, 5, 1, 1]].forEach(function (q) { R(x + q[0] * s, y + q[1] * s, q[2] * s, q[3] * s, col); }); }
+  // a neighbor's picture: Dot as drawn (visitor-v1); the others wait for their drawings (spec 008), so a soft card with initials
+  function portrait(G, who, x, y, w, h) {
+    var c = G.c; R(x, y, w, h, '#3b2430'); R(x + 1, y + 1, w - 2, h - 2, who === 'dot' ? '#cfe3d3' : '#f1dcc8');
+    if (who === 'dot') { c.save(); c.beginPath(); c.rect(x + 1, y + 1, w - 2, h - 2); c.clip(); var S = Math.max(1, Math.floor((w - 4) / 20)); SS.drawDot(c, x + Math.round((w - 20 * S) / 2), y + 3, S, G.t, true); c.restore(); return; }
+    var ini = { mj: 'M&J', theo: 'T', priya: 'P' }[who]; txt(ini, x + w / 2, y + h / 2 - 4, P.soft, who === 'mj' ? 6 : 9, 'center');
+  }
+  SS.drawGigOffer = function (G, W, H) {
+    var c = G.c, m = G.menu, o = POOL[m.offers[m.cur]], wh = WHO[o.who];
+    R(0, 0, W, H, 'rgba(34,18,28,.62)'); hit(G, 0, 0, W, H, function () {});
+    var w = Math.min(220, W - 12), h = 262, x = (W - w) / 2, y = Math.max(6, Math.round((H - h) / 2));
+    R(x + 2, y + 3, w, h, 'rgba(34,23,31,.35)'); R(x, y, w, h, P.tray); c.strokeStyle = P.rose; c.strokeRect(x + .5, y + .5, w - 1, h - 1);
+    R(x, y, w, 18, P.rose); txt('A GIG FOR YOU', x + w / 2, y + 6, '#fff', 6, 'center');
+    portrait(G, o.who, x + 8, y + 24, 48, 50);
+    txt(wh.name, x + 62, y + 28, P.ink, 7); SS.vt(wh.rel, x + 62, y + 40, P.soft, 11);
+    var fr = (G.save.friends || {})[o.who] || 0; for (var i = 0; i < 5; i++) heart(c, x + 62 + i * 10, y + 56, i < Math.min(5, 1 + fr)); SS.vt('Friends', x + 116, y + 53, P.soft, 11);
+    R(x + 8, y + 80, w - 16, 1, P.trayEdge);
+    txt('WHAT ' + wh.she + ' WANT' + (wh.she === 'THEY' ? '' : 'S'), x + 8, y + 86, P.soft, 5);
+    SS.hand(c, '"' + o.ask + '."', x + 8, y + 106, 13, P.ink, 'left', w - 16);
+    txt('WHERE', x + 8, y + 116, P.soft, 5); SS.vt(o.where, x + 8, y + 123, P.ink, 12);
+    txt(wh.she + ' LIKE' + (wh.she === 'THEY' ? '' : 'S'), x + 8, y + 142, P.soft, 5);
+    var tx = x + 8; o.likes.forEach(function (k) { c.font = '11px "VT323", monospace'; var tw = Math.ceil(c.measureText(LIKES[k].label).width) + 8; R(tx, y + 150, tw, 13, P.cell); SS.vt(LIKES[k].label, tx + 4, y + 150, P.ink, 11); tx += tw + 4; });
+    txt('PAY', x + 8, y + 172, P.soft, 5); R(x + 8, y + 181, 7, 7, '#e7bb4f'); R(x + 9, y + 182, 5, 5, '#ffd56b'); txt('100 TO 200', x + 18, y + 181, P.ink, 7); SS.vt('More if ' + wh.she.toLowerCase() + ' love' + (wh.she === 'THEY' ? '' : 's') + ' it', x + w - 8, y + 178, P.soft, 11, 'right');
+    SS.vt('Pieces are lent free. Your coins stay yours.', x + w / 2, y + 196, P.soft, 11, 'center');
+    m.offers.forEach(function (k, i) { R(x + w / 2 - m.offers.length * 5 + i * 10, y + 214, 6, 6, i === m.cur ? P.rose : P.trayEdge); });
+    hit(G, x, y + 80, 40, 130, function () { m.cur = (m.cur + m.offers.length - 1) % m.offers.length; }); hit(G, x + w - 40, y + 80, 40, 130, function () { m.cur = (m.cur + 1) % m.offers.length; });
+    var bw = (w - 20) / 2;
+    SS.btn(x + 6, y + h - 26, bw, 'NOT NOW', false); hit(G, x + 6, y + h - 28, bw, 20, function () { G.menu = null; });
+    SS.btn(x + 14 + bw, y + h - 26, bw, 'ACCEPT', true); hit(G, x + 14 + bw, y + h - 28, bw, 20, function () { SS.acceptGig(G, m.offers[m.cur]); });
+  };
+  SS.gigOfferPress = function (G, k) { var m = G.menu; if (k === 'left') m.cur = (m.cur + m.offers.length - 1) % m.offers.length; if (k === 'right') m.cur = (m.cur + 1) % m.offers.length; if (k === 'a') SS.acceptGig(G, m.offers[m.cur]); if (k === 'b') G.menu = null; };
+  // the banner while she designs (gig-v1, middle): who it's for, the ask, the likes ticking off, Hand in
+  SS.drawGigBanner = function (G, W) {
+    var c = G.c, g = G.gig, o = g.offer, m = SS.gigMatches(G), x = 4, y = 4, w = W - 32, h = 50;
+    R(x + 2, y + 3, w, h, 'rgba(34,23,31,.35)'); R(x, y, w, h, P.tray); c.strokeStyle = P.rose; c.strokeRect(x + .5, y + .5, w - 1, h - 1);
+    portrait(G, o.who, x + 4, y + 4, 26, 26);
+    txt('FOR ' + WHO[o.who].name, x + 34, y + 5, P.soft, 4);
+    SS.vt(o.ask.length > 34 ? o.ask.slice(0, 33) + '…' : o.ask, x + 34, y + 10, P.ink, 11);
+    var tx = x + 34; o.likes.forEach(function (k, i) { c.font = '10px "VT323", monospace'; var tw = Math.ceil(c.measureText(LIKES[k].label).width) + 12; R(tx, y + 24, tw, 10, m[i] ? '#e8f3dd' : P.cell); if (m[i]) SS.check(tx + 1, y + 25, '#437a47'); SS.vt(LIKES[k].label, tx + 9, y + 23, m[i] ? '#437a47' : P.soft, 10); tx += tw + 3; });
+    var n = m.filter(Boolean).length; SS.vt(n + ' of 3 likes matched', x + 34, y + 36, '#437a47', 11);
+    R(x + w - 54, y + 35, 50, 12, P.rose); R(x + w - 54, y + 46, 50, 1, P.roseSh); txt('HAND IN', x + w - 29, y + 38, '#fff', 5, 'center');
+    hit(G, x + w - 56, y + 33, 54, 16, function () { SS.handIn(G); });
+    hit(G, x, y, w, h, function () {});
+  };
+  // the verdict (gig-v1, right): the design, hearts, what they say, the pay, +1 friends, a hint for what they missed
+  var SAYS = {
+    1: ['"It\'s a start, and I\'m grateful.', 'Maybe next time a little more me?"'],
+    2: ['"Oh, it\'s lovely! It\'s nearly just', 'what I pictured."'],
+    3: ['"It\'s perfect. I could live in this', 'corner forever. Thank you!"']
+  };
+  SS.drawGigDone = function (G, W, H) {
+    var c = G.c, r = G.menu, o = G.gig.offer, wh = WHO[o.who];
+    R(0, 0, W, H, 'rgba(34,18,28,.62)'); hit(G, 0, 0, W, H, function () {});
+    var w = Math.min(224, W - 12), h = 282, x = (W - w) / 2, y = Math.max(6, Math.round((H - h) / 2));
+    R(x + 2, y + 3, w, h, 'rgba(34,23,31,.35)'); R(x, y, w, h, P.tray); c.strokeStyle = P.rose; c.strokeRect(x + .5, y + .5, w - 1, h - 1);
+    R(x, y, w, 18, P.rose); txt(wh.name + (r.hearts === 3 ? ' LOVES IT' : r.hearts === 2 ? ' IS HAPPY' : ' SAYS THANKS'), x + w / 2, y + 6, '#fff', 5, 'center');
+    if (!r.img) r.img = SS.drawRecipe(r.pic, w - 40, 70, SS.look(new Date(2026, 0, 1, 12), 'sandbox'), 'gig:' + G.gig.start);
+    c.imageSmoothingEnabled = false; c.drawImage(r.img, x + 20, y + 24);
+    for (var i = 0; i < 3; i++) bigHeart(c, x + w / 2 - 40 + i * 30, y + 102, i < r.hearts);
+    portrait(G, o.who, x + 8, y + 128, 34, 34);
+    SAYS[r.hearts].forEach(function (l, i) { SS.vt(l, x + 48, y + 128 + i * 12, P.ink, 12); });
+    R(x + 8, y + 170, w - 16, 1, P.trayEdge);
+    var bw = (w - 24) / 2;
+    R(x + 8, y + 178, bw, 18, '#fbeedd'); R(x + 12, y + 183, 7, 7, '#e7bb4f'); R(x + 13, y + 184, 5, 5, '#ffd56b'); txt('+' + r.pay, x + 24, y + 183, P.ink, 7);
+    R(x + 16 + bw, y + 178, bw, 18, '#fde3ea'); heart(c, x + 20 + bw, y + 184, true); SS.vt('+1 Friends', x + 31 + bw, y + 180, P.roseSh, 12);
+    if (r.missed.length) SS.vt('Hint: ' + wh.she.toLowerCase() + ' like' + (wh.she === 'THEY' ? '' : 's') + ' ' + LIKES[r.missed[0]].label + '. Try again any time.', x + w / 2, y + 204, P.soft, 11, 'center');
+    SS.btn(x + 6, y + h - 26, bw + 2, 'TRY AGAIN', false); hit(G, x + 6, y + h - 28, bw + 2, 20, function () { G.menu = null; });
+    SS.btn(x + 14 + bw, y + h - 26, bw + 2, 'DONE', true); hit(G, x + 14 + bw, y + h - 28, bw + 2, 20, function () { SS.gigDone(G); });
+  };
+  SS.gigDonePress = function (G, k) { if (k === 'a') SS.gigDone(G); if (k === 'b') G.menu = null; };
+})();
+
+</script>
 <script>/* ui.js */
 // Sarah's Sim screen parts, drawn to the approved mockups at 240 px wide:
 //   the top bar (look-iso-v1; Sandbox shows the mode and the home's name, decorate-v1), the view controls (build-v1: floors 1 to 3
@@ -5687,7 +5975,9 @@ var SS = window.SS = window.SS || {};
       it.def.swatches.slice(0, 4).forEach(function (s, k) { var base = s[it.def.parts[0] ? it.def.parts[0][0] : 'x'] || '#c88d5a'; R(sx + 34 + (k % 2) * 9, sy + 5 + Math.floor(k / 2) * 9, 7, 7, '#3b2430'); R(sx + 35 + (k % 2) * 9, sy + 6 + Math.floor(k / 2) * 9, 5, 5, base); });
       if (it.season) { R(sx + 1, sy + 1, 38, 7, P.rose); txt(it.season, sx + 20, sy + 2, '#fff', 4, 'center'); }
       if (it.away) { R(sx, sy, 55, 27, 'rgba(251,238,221,.7)'); R(sx + 1, sy + 9, 53, 9, P.trayEdge); txt('BACK IN', sx + 27, sy + 10, P.ink, 4, 'center'); txt('DECEMBER', sx + 27, sy + 14, P.ink, 4, 'center'); }
-      if (it.stored) { R(sx + 33, sy + 19, 20, 7, P.sage[1]); txt('×' + it.stored, sx + 43, sy + 20, '#fff', 5, 'center'); }
+      if (it.stored && !G.gig) { R(sx + 33, sy + 19, 20, 7, P.sage[1]); txt('×' + it.stored, sx + 43, sy + 20, '#fff', 5, 'center'); }
+      var tag = !it.away && SS.cardTag(G, it);   // its price in Life, FREE during a gig (spec 006, part F)
+      if (tag) { var tw2 = SS.tw(tag.text, 4) + (tag.coin ? 8 : 4); R(sx + 2, sy + 19, tw2, 7, tag.bg); if (tag.coin) { R(sx + 3, sy + 20, 5, 5, '#e7bb4f'); R(sx + 4, sy + 21, 3, 3, '#ffd56b'); } txt(tag.text, sx + (tag.coin ? 10 : 4), sy + 21, tag.col, 4); }
       if (focused) { c.strokeStyle = P.rose; c.lineWidth = 2; c.strokeRect(sx + 1, sy + 1, 53, 25); c.lineWidth = 1; }
       hit(G, sx, sy, 55, 27, function () { G.takeCard(it); }, { card: it });
     });
@@ -5701,8 +5991,12 @@ var SS = window.SS = window.SS || {};
       var on = p.props !== false; SS.btn(W - 66, y + 4, 60, on ? 'PROPS ON' : 'PROPS OFF', on, 12, 5);
       hit(G, W - 66, y + 2, 60, 16, function () { G.snapshot(); p.props = !on; G.changed(true); });
     }
-    if (d.use === 'stove' || d.use === 'fridge') { // cook for fun, in any mode (spec 006, part E: Sandbox too)
-      var cx = W - (G.hasProps(d) ? 112 : 50); SS.btn(cx, y + 4, 44, 'COOK', false, 12, 5); hit(G, cx, y + 2, 44, 16, function () { G.deselect(); SS.openCooking(G); });
+    var bx2 = W - (G.hasProps(d) ? 112 : 50);
+    if ((d.use === 'stove' || d.use === 'fridge') && !G.gig) { // cook for fun, in any mode (spec 006, part E: Sandbox too)
+      SS.btn(bx2, y + 4, 44, 'COOK', false, 12, 5); hit(G, bx2, y + 2, 44, 16, function () { G.deselect(); SS.openCooking(G); }); bx2 -= 50;
+    }
+    if (G.mode === 'life' && p.paid && !G.gig) { // sell it back for every coin she paid (spec 006, part F)
+      SS.btn(bx2, y + 4, 44, 'SELL', false, 12, 5); hit(G, bx2, y + 2, 44, 16, function () { SS.sellBack(G, p); });
     }
     txt(d.name.toUpperCase(), 6, y + 22, P.ink, 7);
     var part0 = d.parts[0] && d.parts[0][0];
@@ -5808,6 +6102,8 @@ var SS = window.SS = window.SS || {};
     if (m.kind === 'note') return SS.drawNote(G, W, H);
     if (m.kind === 'fav') return SS.drawFavorites(G, W, H);   // favorites (keep.js)
     if (m.kind === 'cook') return SS.drawCooking(G, W, H);   // the Cooking screen (cooking.js)
+    if (m.kind === 'gig') return SS.drawGigOffer(G, W, H);   // gigs (gig.js)
+    if (m.kind === 'gigdone') return SS.drawGigDone(G, W, H);
     R(0, 0, W, H, 'rgba(34,18,28,.62)');   // the home dims and holds still behind the menu
     hit(G, 0, 0, W, H, function () { G.closeMenu(); });
     if (m.kind === 'start') {
@@ -5933,7 +6229,7 @@ var SS = window.SS = window.SS || {};
     if (save) {
       // a piece lifted to move is out of the home until it's set down; a save meanwhile (the app closing mid-move) keeps it, and
       // what was stacked on it, where they were, so nothing is ever lost
-      var all = G.W.pieces, H = G.hold; if (H && H.from === 'move' && H.orig && !G.W.byUid[H.orig.uid]) all = all.concat([H.orig]).concat(H.stack || []);
+      var all = G.gig ? G.gig.home.W.pieces : G.W.pieces, H = G.gig ? null : G.hold;   // during a gig, her own home is what's saved if (H && H.from === 'move' && H.orig && !G.W.byUid[H.orig.uid]) all = all.concat([H.orig]).concat(H.stack || []);
       G.save.pieces = all.map(function (p) { var q = {}; for (var k in p) if (k !== 'work') q[k] = p[k]; return q; }); SS.writeMode(G.mode, G.save);
     }
   };
@@ -5960,7 +6256,8 @@ var SS = window.SS = window.SS || {};
     G.cam.x = q[0] + SS.OFF[0] - 10; G.cam.y = q[1] + SS.OFF[1] + (G.H / 2 - vc) / G.cam.zoom;
   }
   function clampCam() { var W = G.W, l = I.p(0, W.lot)[0] + SS.OFF[0] + 40, r = I.p(W.lot, 0)[0] + SS.OFF[0] - 40, t = I.p(0, 0, (G.floor + 1) * FH + 20)[1] + SS.OFF[1], b = I.p(W.lot, W.lot)[1] + SS.OFF[1] - 30; G.cam.clamp(l, t, r, b); }
-  G.setFloor = function (f) { if (f === G.floor) return; G.cam.y -= (f - G.floor) * FH; G.floor = f; G.bubble = null; clampCam(); };
+  G.centerCam = centerCam;
+  G.setFloor = function (f) { if (f === G.floor || f >= G.W.floors) return; G.cam.y -= (f - G.floor) * FH; G.floor = f; G.bubble = null; clampCam(); };
   // turning the home a quarter turn clockwise (bible, Building, Turning the home): the same spot stays in the middle of the
   // screen at the same zoom, the walls nearest her follow the view, and the home remembers it (spec 001, part B)
   G.turnHome = function () {
@@ -6027,12 +6324,13 @@ var SS = window.SS = window.SS || {};
   G.takeCard = function (it, p) {
     if (it.soon) return;
     if (it.away) { G.toast(it.away, 1600, 'Christmas pieces are in the shop from December 1 to January 6.'); return; }
+    var d = it.def, st = G.gig ? null : G.save.stored.filter(function (s) { return s.id === d.id; })[0];
+    if (!st && !SS.canBuy(G, it)) return;   // the shop is the catalog (spec 006, part F)
     G.deselect(); G.bubble = null;
-    var d = it.def, st = G.save.stored.filter(function (s) { return s.id === d.id; })[0];
     var inst = { id: d.id, sw: st ? st.sw : 0, props: st ? st.props !== false : true };
-    if (st) { if (st.colors) inst.colors = st.colors; if (st.pats) inst.pats = st.pats; }
+    if (st) { if (st.colors) inst.colors = st.colors; if (st.pats) inst.pats = st.pats; if (st.paid) inst.paid = st.paid; }
     if (d.lamp) inst.lit = G.mode === 'sandbox' || G.save.lampPhase === 'on';
-    G.hold = { inst: inst, from: 'new', stored: st || null, r: 0, f: G.floor };
+    G.hold = { inst: inst, from: 'new', stored: st || null, r: 0, f: G.floor, price: st ? 0 : SS.priceOf(G, it) };
     var at = p || { x: W0 / 2, y: G.viewBottom / 2 + 10 };
     aimHold(at, !p);
   };
@@ -6102,10 +6400,11 @@ var SS = window.SS = window.SS || {};
     p.f = cd.f; p.r = SS.DEF[p.id].kind === 'wall' ? 0 : H.r;
     delete p.side; if (cd.wall) { p.wall = cd.wall; if ((cd.side || 1) < 0) p.side = -1; } else if (cd.host) { p.host = cd.host; p.spot = cd.spot; delete p.f; } else { p.x = cd.x; p.y = cd.y; }
     if (H.from === 'move') { W.add(p); H.stack.forEach(function (q) { W.add(q); }); }
-    else { W.add(p); if (H.stored) G.save.stored.splice(G.save.stored.indexOf(H.stored), 1); }
+    else { W.add(p); if (H.stored) G.save.stored.splice(G.save.stored.indexOf(H.stored), 1); if (H.price) SS.payFor(G, p, H.price); }
     if (p.host) p.f = W.floorOf(p);
     SS.forgetSprite(p.uid);
     G.hold = null; G.changed(true);
+    if (G.gig) return true;   // designing a gig: her own home's moments and cats stay out of it
     if (H.from === 'new') SS.catsNotice(G, p);
     SS.roomEdit(G, p); SS.bookRooms(G); SS.bookTree(G);   // memory book moments (spec 007, part A)
     return true;
@@ -6139,8 +6438,10 @@ var SS = window.SS = window.SS || {};
   G.deselect = function () { G.sel = null; G.paint = null; };
   G.putAway = function (p) { // Put away sends it back to her storage, never lost (spec 001, part C)
     G.snapshot();
-    var all = [p].concat(G.W.stacked(p)); SS.roomEdit(G, p);
-    all.forEach(function (q) { G.save.stored.push({ id: q.id, sw: q.sw || 0, colors: q.colors, pats: q.pats, props: q.props }); });
+    var all = [p].concat(G.W.stacked(p));
+    if (G.gig) { G.W.remove(p); G.sel = null; G.paint = null; G.changed(true); return; }   // a gig's pieces are lent: they just go back
+    SS.roomEdit(G, p);
+    all.forEach(function (q) { G.save.stored.push({ id: q.id, sw: q.sw || 0, colors: q.colors, pats: q.pats, props: q.props, paid: q.paid }); });
     G.W.remove(p); G.sel = null; G.paint = null; G.changed(true);
     G.toast('PUT AWAY', 1300, 'It waits in its catalog tab, marked with how many are stored.');
   };
@@ -6169,7 +6470,11 @@ var SS = window.SS = window.SS || {};
   };
 
   // ---------- the Start menu ----------
-  G.openMenu = function () { cancelHold(false); G.bubble = null; G.menu = { kind: 'start', cur: 0 }; };
+  G.openMenu = function () {
+    cancelHold(false); G.bubble = null;
+    if (G.gig) { G.confirm = { title: 'LEAVE THIS GIG?', text: 'You can hand it in from the banner. Leaving now pays nothing, and you can find another gig at the desk.', options: ['KEEP GOING', 'LEAVE'], cur: 0, pick: function (i) { if (i === 1) SS.gigQuit(G); } }; return; }
+    G.menu = { kind: 'start', cur: 0 };
+  };
   G.closeMenu = function () { G.menu = null; };
   G.menuPick = function (i) {
     var r = SS.MENU_ROWS[i][1];
@@ -6213,6 +6518,7 @@ var SS = window.SS = window.SS || {};
     if (a.fx === 'charge') { G.meters = null; SS.startHunt(G); return; }
     if (a.fx === 'book') { G.meters = null; SS.openBook(G); return; }
     if (a.fx === 'cook') { G.meters = null; SS.openCooking(G); return; }   // the Cooking screen (spec 006, part E)
+    if (a.fx === 'gig') { SS.findGigs(G); return; }   // gigs at the desk (spec 006, part F)
     if (a.fx === 'keep') { b.target.piece.dress = null; G.changed(true); G.toast('IT\'S YOURS TO KEEP', 1500); return; }
     G.meters = null;
     var r = SS.chooseAction(G, b.target, a);
@@ -6240,7 +6546,7 @@ var SS = window.SS = window.SS || {};
       return;
     }
     var pick = SS.pick(G.lastHits || [], w[0], w[1]);
-    var playing = G.mode === 'life' && G.trayState() === 'closed';
+    var playing = G.mode === 'life' && G.trayState() === 'closed' && !G.gig;   // a gig's room is for decorating only
     if (playing) {
       G.bubble = null; G.meters = null;
       // looking for the charger: a tap on a place it could hide (a sofa, a bed, a cat) is a guess; any other tap stops looking
@@ -6343,6 +6649,8 @@ var SS = window.SS = window.SS || {};
     if (G.menu && G.menu.kind === 'note') { if (k === 'a' || k === 'b') SS.closeNote(G); return; }
     if (G.menu && G.menu.kind === 'fav') { SS.favPress(G, k); return; }
     if (G.menu && G.menu.kind === 'cook') { SS.cookPress(G, k); return; }
+    if (G.menu && G.menu.kind === 'gig') { SS.gigOfferPress(G, k); return; }
+    if (G.menu && G.menu.kind === 'gigdone') { SS.gigDonePress(G, k); return; }
     if (G.camera && !G.menu && !G.confirm) { // the camera: A takes the picture, B closes, the D-pad slides the view
       if (G.camera.shot) { if (k === 'a' || k === 'b') G.camera = null; return; }
       if (k === 'a') SS.snap(G); else if (k === 'b' || k === 'start') G.camera = null; else if (k === 'select') G.cycleWalls(); else if (DIRS[k]) pan(k); return;
@@ -6374,7 +6682,7 @@ var SS = window.SS = window.SS || {};
     var sel = G.sel && G.W.byUid[G.sel];
     if (sel) { if (k === 'select') turnPiece(sel); if (k === 'b') { if (G.paint) G.paint = null; else G.deselect(); } if (k === 'a') G.deselect(); if (DIRS[k]) pan(k); return; }
     if (k === 'select') { G.turnHome(); return; }   // nothing picked: Select turns the home (spec 001, part B)
-    var playing = G.mode === 'life' && G.trayState() === 'closed';
+    var playing = G.mode === 'life' && G.trayState() === 'closed' && !G.gig;
     if (playing && DIRS[k]) { stepSarah(k); return; }
     if (playing && k === 'a') { nearbyBubble(); return; }
     if (k === 'a' && G.trayState() === 'catalog') { G.focus = 'cards'; G.tray.cur = G.tray.page * 8; return; }
@@ -6522,7 +6830,7 @@ var SS = window.SS = window.SS || {};
       SS.R(mx - 1, my - 2, 3, 2, SS.P.rose); SS.R(mx, my, 1, 2, SS.P.rose);
     });
     if (G.sleeping) sleepScene(H - trayH, now);
-    SS.drawTopBar(G, W0);
+    if (G.gig) SS.drawGigBanner(G, W0); else SS.drawTopBar(G, W0);   // a gig's banner takes the top bar's place (gig-v1)
     if (G.favUse) SS.drawFavBanner(G, W0, H);
     SS.drawViewControls(G, W0, G.mode === 'life' && (G.act || G.queue.length) ? 40 : 24, H - trayH - 16);
     SS.drawTray(G, W0, H);
@@ -6584,10 +6892,10 @@ var SS = window.SS = window.SS || {};
         if (now - lastSecond > 1000) {
           lastSecond = now; G.look = SS.look(SS.now(), G.mode); if (G.mode === 'life') lampPhase(false);
           var today = SS.now().toDateString() + SS.now().getHours(); if (G._bookDay !== today) { G._bookDay = today; SS.bookDay(G); }   // dated moments (spec 007)
-          SS.bookTick(G);
+          if (!G.gig) SS.bookTick(G);
         }
         if (G.zoomTo) { G.cam.zoom += (G.zoomTo - G.cam.zoom) * .3; if (Math.abs(G.zoomTo - G.cam.zoom) < .01) { G.cam.zoom = G.zoomTo; G.zoomTo = null; } }
-        SS.updateAgents(G, dt);
+        if (!G.gig) SS.updateAgents(G, dt);   // during a gig she's in their room; her home waits as it was
         if (G.menu && G.menu.kind === 'cook') SS.cookTick(G, dt);
         var sf = G.people.sarah.f; if (G.mode === 'life' && G.sarahF !== undefined && sf !== G.sarahF && sf !== G.floor) G.setFloor(sf); G.sarahF = sf;   // follow her up and down the stairs
         drawHome(H, t, now);

@@ -450,7 +450,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
     });
     cats.forEach(a => bad.push(a));
     if (await page.evaluate(() => { SSG.openMode('sandbox'); return !!SS.lowNeed(SSG, 'sarah') || SSG.mode !== 'sandbox'; })) bad.push('Sandbox has needs');
-    const soon = await page.evaluate(() => { const need = ['FIND A GIG', 'CHANGE', 'GO TO', 'VIDEO-CALL', 'WIND DOWN']; const all = [].concat.apply([], Object.keys(SS.ACTIONS).map(k => SS.ACTIONS[k])); return need.filter(n => !all.some(a => a.name === n && a.soon)); });
+    const soon = await page.evaluate(() => { const need = ['CHANGE', 'GO TO', 'VIDEO-CALL', 'WIND DOWN']; const all = [].concat.apply([], Object.keys(SS.ACTIONS).map(k => SS.ACTIONS[k])); return need.filter(n => !all.some(a => a.name === n && a.soon)); });
     soon.forEach(n => bad.push(n + ' does not show Coming soon'));
     report('spec 006: four light looks, lamps at 5 PM, walking up the stairs, every starter action, crafts, the queue; needs; together actions; the cats\' needs; Keegan\'s day; her phone', bad.concat(errors));
     await ctx.close();
@@ -707,7 +707,7 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       // kept once for the whole game: it rebuilds in another mode, in another room; what doesn't fit goes to storage
       G.openMode('life'); if (!SS.favorites().length) out.push('favorites are not shared by every mode');
       const bed = G.W.pieces.find(p => p.id === 'double-bed'), n0 = G.W.pieces.length, s0 = G.save.stored.length;
-      const res = SS.applyFavorite(G, SS.favorites()[0], 2, bed.x, bed.y);
+      G.save.coins = 99999; const res = SS.applyFavorite(G, SS.favorites()[0], 2, bed.x, bed.y, 'buy');   // in Life she buys what she doesn't own
       if (!res || res.placed + res.stored !== fav.pieces.length) out.push('using a favorite loses pieces: ' + JSON.stringify(res));
       if (G.W.pieces.length - n0 !== res.placed || G.save.stored.length - s0 !== res.stored) out.push('placed and stored counts do not match the home');
       const R2 = SS.roomAt(G, 2, bed.x, bed.y); if (R2.r.floor !== fav.floor || R2.r.paper !== fav.paper) out.push('the room does not take the favorite\'s floor and wallpaper');
@@ -788,6 +788,70 @@ const report = (name, bad) => { console.log(`${bad.length ? 'FAIL' : 'ok  '} ${n
       bad.push(...errors.map(e => w + ' x ' + h + ': ' + e)); await ctx.close();
     }
     report('cooking (spec 006 E): the nine dishes play to the end by buttons at 375 x 667 and 320 x 480, moments, serve, eating fills both, Sandbox', bad);
+  }
+
+  // ---------- 6g. coins, the shop and gigs (spec 006, part F) ----------
+  {
+    const bad = [];
+    const { ctx, page, errors } = await fresh({ init: () => localStorage.setItem('ss.gift', '1') });
+    const r = await page.evaluate(() => {
+      const G = SSG, out = []; G.confirm = null; SS.setClock(14, 0); G.openMode('life'); G.toastT = null;
+      // prices on the cards; buying; not enough coins; selling back every coin, after a confirm on Keep
+      const it = G.catalogList('seating').items.find(x => x.id === 'club-armchair');
+      if (SS.cardTag(G, it).text !== String(it.def.price)) out.push('a card does not show its price in Life');
+      G.save.coins = 500; G.takeCard(it); const H = G.hold; if (!H || H.price !== it.def.price) out.push('taking a card does not hold its price');
+      let spot = null; for (let x = 0; x < 16 && !spot; x++) for (let y = 0; y < 16 && !spot; y++) if (G.W.check({ id: 'club-armchair', f: 0, x, y, r: 0 }).ok) spot = { x, y };
+      G.hold.cand = spot; G.hold.f = 0; G.hold.r = 0;
+      const before = G.save.coins; G.press ? 0 : 0;
+      return { out, before, price: it.def.price };
+    });
+    r.out.forEach(o => bad.push(o));
+    await page.keyboard.press('z'); await page.waitForTimeout(60);   // A sets it down
+    const buy = await page.evaluate(b => { const G = SSG, p = G.W.pieces.filter(q => q.id === 'club-armchair').find(q => q.paid); return { coins: G.save.coins, paid: p && p.paid, uid: p && p.uid, moment: SS.hasMoment('bought'), b }; }, r.before);
+    if (buy.coins !== r.before - r.price || buy.paid !== r.price) bad.push('setting a piece down does not buy it: ' + JSON.stringify(buy));
+    if (!buy.moment) bad.push('the first piece bought is not in the memory book');
+    const sell = await page.evaluate(uid => { const G = SSG, p = G.W.byUid[uid]; SS.sellBack(G, p); const q = G.confirm; const startsKeep = q && q.cur === 0 && /KEEP/.test(q.options[0]); G.confirmPick(1); return { startsKeep, coins: G.save.coins, gone: !G.W.byUid[uid] }; }, buy.uid);
+    if (!sell.startsKeep) bad.push('selling back does not ask first with the cursor on Keep');
+    if (sell.coins !== r.before || !sell.gone) bad.push('selling back does not refund every coin');
+    const poor = await page.evaluate(() => { const G = SSG; G.save.coins = 10; G.hold = null; G.takeCard(G.catalogList('seating').items.find(x => x.id === 'club-armchair')); return !!G.hold; });
+    if (poor) bad.push('a piece she can\'t afford can still be taken');
+    const sb = await page.evaluate(() => { const G = SSG; G.hold = null; G.openMode('sandbox'); const it = G.catalogList('seating').items[0]; return SS.priceOf(G, it); });
+    if (sb !== 0) bad.push('Sandbox pieces cost coins');
+    // coins survive a reload and a backup round trip
+    const kept = await page.evaluate(() => { const G = SSG; G.openMode('life'); G.save.coins = 1234; G.changed(true); G.openMode('sandbox'); G.openMode('life'); return G.save.coins; });
+    if (kept !== 1234) bad.push('coins are not kept');
+    // a gig: offered at the desk, accepted, designed in their room with lent pieces, handed in, rated and paid
+    const g = await page.evaluate(() => {
+      const G = SSG, out = []; G.save.coins = 500;
+      const desk = G.W.pieces.find(p => p.id === 'desk'); const a = SS.ACTIONS.desk.find(x => x.fx === 'gig');
+      G.bubble = { target: { piece: desk }, actions: [a], cur: 0, tip: [100, 100], title: 'DESK' }; G.doBubble(0);
+      if (!G.menu || G.menu.kind !== 'gig' || G.menu.offers.length < 2) { out.push('Find a gig does not offer 2 or 3 gigs'); return out; }
+      const homeN = G.W.pieces.length, homeSaved = JSON.parse(localStorage.getItem(SS.PRE + 'life')).pieces.length;
+      SS.acceptGig(G, G.menu.offers[0]); if (!G.gig || G.W.pieces.length !== 0) out.push('accepting does not open their empty room');
+      const it = G.catalogList('plants').items[0]; if (SS.priceOf(G, it) !== 0 || SS.cardTag(G, it).text !== 'FREE') out.push('gig pieces are not lent free');
+      const o = G.gig.offer; const W = G.W;
+      // match every like: a plant, books, a seat, a table, a rug, a lamp, art, soft things, in warm colors
+      [['monstera', 0, 0], ['bookshelf', 2, 0], ['club-armchair', 1, 2], ['side-table', 3, 2], ['wool-rug', 1, 3], ['floor-lamp', 0, 2], ['two-seat-sofa', 2, 3]].forEach(q => { const p = { id: q[0], f: 0, x: W.ax + q[1], y: W.ay + q[2], r: 0, sw: 0 }; if (W.check(p).ok) W.add(p); });
+      const segs = W.walls[0].filter(s => s.b && !s.op && !s.win); if (segs[0]) W.add({ id: 'framed-print', f: 0, wall: [segs[0].x, segs[0].y, segs[0].axis] });
+      W.pieces.forEach(p => { const d = SS.DEF[p.id]; const part = d.parts[0] && d.parts[0][0]; if (part) p.colors = { [part]: '#e46f6a' }; });
+      if (JSON.parse(localStorage.getItem(SS.PRE + 'life')).pieces.length !== homeSaved) out.push('a gig changes her own home\'s save');
+      const m = SS.gigMatches(G); SS.handIn(G);
+      if (!G.menu || G.menu.kind !== 'gigdone') { out.push('Hand in does not rate it'); return out; }
+      if (G.menu.hearts !== Math.max(1, m.filter(Boolean).length)) out.push('the hearts do not follow the likes matched');
+      const pay = G.menu.pay, c0 = G.save.coins; SS.gigDone(G);
+      if (G.save.coins !== c0 + pay || pay < 100 || pay > 200) out.push('the gig does not pay 100 to 200');
+      if (G.gig || G.W.pieces.length !== homeN) out.push('Done does not bring her home as she left it');
+      if (!(G.save.friends && G.save.friends[o.who] >= 1)) out.push('the gig does not grow friendship');
+      if (!SS.hasMoment('gig')) out.push('the first gig is not in the memory book');
+      // even an empty room pays the lowest
+      G.menu = { kind: 'gig', offers: [0, 1], cur: 0 }; SS.acceptGig(G, 0); SS.handIn(G); if (G.menu.hearts !== 1 || G.menu.pay !== 100) out.push('an empty design does not pay the lowest');
+      SS.gigDone(G);
+      return out;
+    });
+    g.forEach(o => bad.push(o));
+    await page.evaluate(() => { SS.findGigs(SSG); }); await page.waitForTimeout(150); await page.screenshot({ path: path.join(DIST, 'screen-gig-375x667.png') });
+    bad.push(...errors); await ctx.close();
+    report('coins, the shop and gigs (spec 006 F): prices, buying, selling back on Keep, Sandbox free, coins kept, a gig offered, designed, rated and paid', bad);
   }
 
   // ---------- 6c. turning the home (bible, Building, Turning the home; spec 001, part B) ----------

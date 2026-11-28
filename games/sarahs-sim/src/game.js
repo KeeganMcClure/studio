@@ -61,7 +61,7 @@
     if (save) {
       // a piece lifted to move is out of the home until it's set down; a save meanwhile (the app closing mid-move) keeps it, and
       // what was stacked on it, where they were, so nothing is ever lost
-      var all = G.W.pieces, H = G.hold; if (H && H.from === 'move' && H.orig && !G.W.byUid[H.orig.uid]) all = all.concat([H.orig]).concat(H.stack || []);
+      var all = G.gig ? G.gig.home.W.pieces : G.W.pieces, H = G.gig ? null : G.hold;   // during a gig, her own home is what's saved if (H && H.from === 'move' && H.orig && !G.W.byUid[H.orig.uid]) all = all.concat([H.orig]).concat(H.stack || []);
       G.save.pieces = all.map(function (p) { var q = {}; for (var k in p) if (k !== 'work') q[k] = p[k]; return q; }); SS.writeMode(G.mode, G.save);
     }
   };
@@ -88,7 +88,8 @@
     G.cam.x = q[0] + SS.OFF[0] - 10; G.cam.y = q[1] + SS.OFF[1] + (G.H / 2 - vc) / G.cam.zoom;
   }
   function clampCam() { var W = G.W, l = I.p(0, W.lot)[0] + SS.OFF[0] + 40, r = I.p(W.lot, 0)[0] + SS.OFF[0] - 40, t = I.p(0, 0, (G.floor + 1) * FH + 20)[1] + SS.OFF[1], b = I.p(W.lot, W.lot)[1] + SS.OFF[1] - 30; G.cam.clamp(l, t, r, b); }
-  G.setFloor = function (f) { if (f === G.floor) return; G.cam.y -= (f - G.floor) * FH; G.floor = f; G.bubble = null; clampCam(); };
+  G.centerCam = centerCam;
+  G.setFloor = function (f) { if (f === G.floor || f >= G.W.floors) return; G.cam.y -= (f - G.floor) * FH; G.floor = f; G.bubble = null; clampCam(); };
   // turning the home a quarter turn clockwise (bible, Building, Turning the home): the same spot stays in the middle of the
   // screen at the same zoom, the walls nearest her follow the view, and the home remembers it (spec 001, part B)
   G.turnHome = function () {
@@ -155,12 +156,13 @@
   G.takeCard = function (it, p) {
     if (it.soon) return;
     if (it.away) { G.toast(it.away, 1600, 'Christmas pieces are in the shop from December 1 to January 6.'); return; }
+    var d = it.def, st = G.gig ? null : G.save.stored.filter(function (s) { return s.id === d.id; })[0];
+    if (!st && !SS.canBuy(G, it)) return;   // the shop is the catalog (spec 006, part F)
     G.deselect(); G.bubble = null;
-    var d = it.def, st = G.save.stored.filter(function (s) { return s.id === d.id; })[0];
     var inst = { id: d.id, sw: st ? st.sw : 0, props: st ? st.props !== false : true };
-    if (st) { if (st.colors) inst.colors = st.colors; if (st.pats) inst.pats = st.pats; }
+    if (st) { if (st.colors) inst.colors = st.colors; if (st.pats) inst.pats = st.pats; if (st.paid) inst.paid = st.paid; }
     if (d.lamp) inst.lit = G.mode === 'sandbox' || G.save.lampPhase === 'on';
-    G.hold = { inst: inst, from: 'new', stored: st || null, r: 0, f: G.floor };
+    G.hold = { inst: inst, from: 'new', stored: st || null, r: 0, f: G.floor, price: st ? 0 : SS.priceOf(G, it) };
     var at = p || { x: W0 / 2, y: G.viewBottom / 2 + 10 };
     aimHold(at, !p);
   };
@@ -230,10 +232,11 @@
     p.f = cd.f; p.r = SS.DEF[p.id].kind === 'wall' ? 0 : H.r;
     delete p.side; if (cd.wall) { p.wall = cd.wall; if ((cd.side || 1) < 0) p.side = -1; } else if (cd.host) { p.host = cd.host; p.spot = cd.spot; delete p.f; } else { p.x = cd.x; p.y = cd.y; }
     if (H.from === 'move') { W.add(p); H.stack.forEach(function (q) { W.add(q); }); }
-    else { W.add(p); if (H.stored) G.save.stored.splice(G.save.stored.indexOf(H.stored), 1); }
+    else { W.add(p); if (H.stored) G.save.stored.splice(G.save.stored.indexOf(H.stored), 1); if (H.price) SS.payFor(G, p, H.price); }
     if (p.host) p.f = W.floorOf(p);
     SS.forgetSprite(p.uid);
     G.hold = null; G.changed(true);
+    if (G.gig) return true;   // designing a gig: her own home's moments and cats stay out of it
     if (H.from === 'new') SS.catsNotice(G, p);
     SS.roomEdit(G, p); SS.bookRooms(G); SS.bookTree(G);   // memory book moments (spec 007, part A)
     return true;
@@ -267,8 +270,10 @@
   G.deselect = function () { G.sel = null; G.paint = null; };
   G.putAway = function (p) { // Put away sends it back to her storage, never lost (spec 001, part C)
     G.snapshot();
-    var all = [p].concat(G.W.stacked(p)); SS.roomEdit(G, p);
-    all.forEach(function (q) { G.save.stored.push({ id: q.id, sw: q.sw || 0, colors: q.colors, pats: q.pats, props: q.props }); });
+    var all = [p].concat(G.W.stacked(p));
+    if (G.gig) { G.W.remove(p); G.sel = null; G.paint = null; G.changed(true); return; }   // a gig's pieces are lent: they just go back
+    SS.roomEdit(G, p);
+    all.forEach(function (q) { G.save.stored.push({ id: q.id, sw: q.sw || 0, colors: q.colors, pats: q.pats, props: q.props, paid: q.paid }); });
     G.W.remove(p); G.sel = null; G.paint = null; G.changed(true);
     G.toast('PUT AWAY', 1300, 'It waits in its catalog tab, marked with how many are stored.');
   };
@@ -297,7 +302,11 @@
   };
 
   // ---------- the Start menu ----------
-  G.openMenu = function () { cancelHold(false); G.bubble = null; G.menu = { kind: 'start', cur: 0 }; };
+  G.openMenu = function () {
+    cancelHold(false); G.bubble = null;
+    if (G.gig) { G.confirm = { title: 'LEAVE THIS GIG?', text: 'You can hand it in from the banner. Leaving now pays nothing, and you can find another gig at the desk.', options: ['KEEP GOING', 'LEAVE'], cur: 0, pick: function (i) { if (i === 1) SS.gigQuit(G); } }; return; }
+    G.menu = { kind: 'start', cur: 0 };
+  };
   G.closeMenu = function () { G.menu = null; };
   G.menuPick = function (i) {
     var r = SS.MENU_ROWS[i][1];
@@ -341,6 +350,7 @@
     if (a.fx === 'charge') { G.meters = null; SS.startHunt(G); return; }
     if (a.fx === 'book') { G.meters = null; SS.openBook(G); return; }
     if (a.fx === 'cook') { G.meters = null; SS.openCooking(G); return; }   // the Cooking screen (spec 006, part E)
+    if (a.fx === 'gig') { SS.findGigs(G); return; }   // gigs at the desk (spec 006, part F)
     if (a.fx === 'keep') { b.target.piece.dress = null; G.changed(true); G.toast('IT\'S YOURS TO KEEP', 1500); return; }
     G.meters = null;
     var r = SS.chooseAction(G, b.target, a);
@@ -368,7 +378,7 @@
       return;
     }
     var pick = SS.pick(G.lastHits || [], w[0], w[1]);
-    var playing = G.mode === 'life' && G.trayState() === 'closed';
+    var playing = G.mode === 'life' && G.trayState() === 'closed' && !G.gig;   // a gig's room is for decorating only
     if (playing) {
       G.bubble = null; G.meters = null;
       // looking for the charger: a tap on a place it could hide (a sofa, a bed, a cat) is a guess; any other tap stops looking
@@ -471,6 +481,8 @@
     if (G.menu && G.menu.kind === 'note') { if (k === 'a' || k === 'b') SS.closeNote(G); return; }
     if (G.menu && G.menu.kind === 'fav') { SS.favPress(G, k); return; }
     if (G.menu && G.menu.kind === 'cook') { SS.cookPress(G, k); return; }
+    if (G.menu && G.menu.kind === 'gig') { SS.gigOfferPress(G, k); return; }
+    if (G.menu && G.menu.kind === 'gigdone') { SS.gigDonePress(G, k); return; }
     if (G.camera && !G.menu && !G.confirm) { // the camera: A takes the picture, B closes, the D-pad slides the view
       if (G.camera.shot) { if (k === 'a' || k === 'b') G.camera = null; return; }
       if (k === 'a') SS.snap(G); else if (k === 'b' || k === 'start') G.camera = null; else if (k === 'select') G.cycleWalls(); else if (DIRS[k]) pan(k); return;
@@ -502,7 +514,7 @@
     var sel = G.sel && G.W.byUid[G.sel];
     if (sel) { if (k === 'select') turnPiece(sel); if (k === 'b') { if (G.paint) G.paint = null; else G.deselect(); } if (k === 'a') G.deselect(); if (DIRS[k]) pan(k); return; }
     if (k === 'select') { G.turnHome(); return; }   // nothing picked: Select turns the home (spec 001, part B)
-    var playing = G.mode === 'life' && G.trayState() === 'closed';
+    var playing = G.mode === 'life' && G.trayState() === 'closed' && !G.gig;
     if (playing && DIRS[k]) { stepSarah(k); return; }
     if (playing && k === 'a') { nearbyBubble(); return; }
     if (k === 'a' && G.trayState() === 'catalog') { G.focus = 'cards'; G.tray.cur = G.tray.page * 8; return; }
@@ -650,7 +662,7 @@
       SS.R(mx - 1, my - 2, 3, 2, SS.P.rose); SS.R(mx, my, 1, 2, SS.P.rose);
     });
     if (G.sleeping) sleepScene(H - trayH, now);
-    SS.drawTopBar(G, W0);
+    if (G.gig) SS.drawGigBanner(G, W0); else SS.drawTopBar(G, W0);   // a gig's banner takes the top bar's place (gig-v1)
     if (G.favUse) SS.drawFavBanner(G, W0, H);
     SS.drawViewControls(G, W0, G.mode === 'life' && (G.act || G.queue.length) ? 40 : 24, H - trayH - 16);
     SS.drawTray(G, W0, H);
@@ -712,10 +724,10 @@
         if (now - lastSecond > 1000) {
           lastSecond = now; G.look = SS.look(SS.now(), G.mode); if (G.mode === 'life') lampPhase(false);
           var today = SS.now().toDateString() + SS.now().getHours(); if (G._bookDay !== today) { G._bookDay = today; SS.bookDay(G); }   // dated moments (spec 007)
-          SS.bookTick(G);
+          if (!G.gig) SS.bookTick(G);
         }
         if (G.zoomTo) { G.cam.zoom += (G.zoomTo - G.cam.zoom) * .3; if (Math.abs(G.zoomTo - G.cam.zoom) < .01) { G.cam.zoom = G.zoomTo; G.zoomTo = null; } }
-        SS.updateAgents(G, dt);
+        if (!G.gig) SS.updateAgents(G, dt);   // during a gig she's in their room; her home waits as it was
         if (G.menu && G.menu.kind === 'cook') SS.cookTick(G, dt);
         var sf = G.people.sarah.f; if (G.mode === 'life' && G.sarahF !== undefined && sf !== G.sarahF && sf !== G.floor) G.setFloor(sf); G.sarahF = sf;   // follow her up and down the stairs
         drawHome(H, t, now);
